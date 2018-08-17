@@ -1,0 +1,10 @@
+[submodule "include/phosphor-ipmi-host"]
+	path = include/phosphor-ipmi-host
+	url = git://github.com/openbmc/phosphor-host-ipmid
+
+[submodule "include/phosphor-logging"]
+	path = include/phosphor-logging
+	url = git://github.com/openbmc/phosphor-logging
+[submodule "include/sdbusplus"]
+	path = include/sdbusplus
+	url = https://github.com/openbmc/sdbusplus.git
