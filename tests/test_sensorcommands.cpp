@@ -1,5 +1,5 @@
 #include <cmath>
-#include <sensorutils.hpp>
+#include <ipmid/sensorutils.hpp>
 
 #include "gtest/gtest.h"
 
