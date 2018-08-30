@@ -65,7 +65,7 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 option (ENABLE_TEST "Enable Google Test" OFF)
 if (ENABLE_TEST)
-    set (SENSOR_TEST_SRC tests/test_sensorcommands.cpp src/sensorutils.cpp)
+    set (SENSOR_TEST_SRC tests/test_sensorcommands.cpp)
     hunter_add_package (GTest)
     find_package (GTest CONFIG REQUIRED)
 
@@ -87,7 +87,7 @@ target_link_libraries (oemcmds sdbusplus)
 target_link_libraries (oemcmds ${LOGGING_LIBRARIES})
 
 add_library (
-    sensorcommands SHARED src/sensorcommands.cpp src/sensorutils.cpp
+    sensorcommands SHARED src/sensorcommands.cpp
     src/utils.cpp src/storagecommands.cpp
 )
 set_target_properties (sensorcommands PROPERTIES VERSION "0.1.0")

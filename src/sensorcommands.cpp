@@ -22,11 +22,12 @@
 #include <cmath>
 #include <commandutils.hpp>
 #include <iostream>
+#include <phosphor-ipmi-host/sdrutils.hpp>
+#include <phosphor-ipmi-host/sensorutils.hpp>
 #include <phosphor-ipmi-host/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sensorcommands.hpp>
-#include <sensorutils.hpp>
 #include <storagecommands.hpp>
 #include <string>
 
@@ -35,9 +36,6 @@ namespace ipmi
 using ManagedObjectType =
     std::map<sdbusplus::message::object_path,
              std::map<std::string, std::map<std::string, DbusVariant>>>;
-using GetSubTreeType = std::vector<
-    std::pair<std::string,
-              std::vector<std::pair<std::string, std::vector<std::string>>>>>;
 
 using SensorMap = std::map<std::string, std::map<std::string, DbusVariant>>;
 
@@ -46,12 +44,13 @@ static constexpr int sensorMapUpdatePeriod = 2;
 
 constexpr size_t maxSDRTotalSize =
     76; // Largest SDR Record Size (type 01) + SDR Overheader Size
+constexpr static const uint32_t noTimestamp = 0xFFFFFFFF;
 
 static uint16_t sdrReservationID;
-static uint32_t sdrLastUpdate = 0;
-static auto sdrLastCheck = std::chrono::time_point<std::chrono::steady_clock>();
+static uint32_t sdrLastAdd = noTimestamp;
+static uint32_t sdrLastRemove = noTimestamp;
 
-static GetSubTreeType sensorConnectionCache;
+static SensorSubTree sensorTree;
 static boost::container::flat_map<std::string, ManagedObjectType> SensorCache;
 
 struct CmpStr
@@ -62,13 +61,6 @@ struct CmpStr
     }
 };
 
-const static boost::container::flat_map<const char *, SensorTypeCodes, CmpStr>
-    sensorTypes{{{"temperature", SensorTypeCodes::temperature},
-                 {"voltage", SensorTypeCodes::voltage},
-                 {"current", SensorTypeCodes::current},
-                 {"fan_tach", SensorTypeCodes::fan},
-                 {"power", SensorTypeCodes::other}}};
-
 const static boost::container::flat_map<const char *, SensorUnits, CmpStr>
     sensorUnits{{{"temperature", SensorUnits::degreesC},
                  {"voltage", SensorUnits::volts},
@@ -78,6 +70,28 @@ const static boost::container::flat_map<const char *, SensorUnits, CmpStr>
 
 void registerSensorFunctions() __attribute__((constructor));
 sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection());
+
+static sdbusplus::bus::match::match sensorAdded(
+    dbus,
+    "type='signal',member='InterfacesAdded',arg0path='/xyz/openbmc_project/"
+    "sensors/'",
+    [](sdbusplus::message::message &m) {
+        sensorTree.clear();
+        sdrLastAdd = std::chrono::duration_cast<std::chrono::seconds>(
+                         std::chrono::system_clock::now().time_since_epoch())
+                         .count();
+    });
+
+static sdbusplus::bus::match::match sensorRemoved(
+    dbus,
+    "type='signal',member='InterfacesRemoved',arg0path='/xyz/openbmc_project/"
+    "sensors/'",
+    [](sdbusplus::message::message &m) {
+        sensorTree.clear();
+        sdrLastRemove = std::chrono::duration_cast<std::chrono::seconds>(
+                            std::chrono::system_clock::now().time_since_epoch())
+                            .count();
+    });
 
 static void
     getSensorMaxMin(const std::map<std::string, DbusVariant> &sensorPropertyMap,
@@ -98,98 +112,33 @@ static void
     }
 }
 
-static bool getSensorSubtree(GetSubTreeType &subtree, bool &updated)
-{
-    auto subtreeCopy = subtree;
-    auto mapperCall =
-        dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
-                             "/xyz/openbmc_project/object_mapper",
-                             "xyz.openbmc_project.ObjectMapper", "GetSubTree");
-    static const auto depth = 2;
-    static constexpr std::array<const char *, 3> interfaces = {
-        "xyz.openbmc_project.Sensor.Value",
-        "xyz.openbmc_project.Sensor.Threshold.Warning",
-        "xyz.openbmc_project.Sensor.Threshold.Critical"};
-    mapperCall.append("/xyz/openbmc_project/sensors", depth, interfaces);
-
-    subtree.clear();
-    try
-    {
-        auto mapperReply = dbus.call(mapperCall);
-        mapperReply.read(subtree);
-    }
-    catch (sdbusplus::exception_t &)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "getSensorSubtree: Error calling mapper");
-        return false;
-    }
-
-    // sort by sensor path
-    std::sort(subtree.begin(), subtree.end(), [](auto &left, auto &right) {
-        return boost::ilexicographical_compare<std::string, std::string>(
-            left.first, right.first);
-    });
-    updated = false;
-    if (subtreeCopy.empty())
-    {
-        updated = true;
-    }
-    else if (subtreeCopy.size() != subtree.size())
-    {
-        updated = true;
-    }
-    else
-    {
-        for (int ii = 0; ii < subtreeCopy.size(); ii++)
-        {
-            // if the path or the connection has changed
-            if (subtreeCopy[ii] != subtree[ii])
-            {
-                updated = true;
-                break;
-            }
-        }
-    }
-    return true;
-}
-
 static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string &connection,
                                       std::string &path)
 {
-    auto now = std::chrono::steady_clock::now();
-
-    if (std::chrono::duration_cast<std::chrono::seconds>(now - sdrLastCheck)
-                .count() > sensorListUpdatePeriod ||
-        sensorConnectionCache.empty())
-    {
-        sdrLastCheck = now;
-        bool updated;
-        if (!getSensorSubtree(sensorConnectionCache, updated))
-        {
-            return IPMI_CC_RESPONSE_ERROR;
-        }
-        if (updated)
-        {
-            sdrLastUpdate =
-                std::chrono::duration_cast<std::chrono::seconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count();
-        }
-    }
-
-    if (sensorConnectionCache.size() < (sensnum + 1))
-    {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
-    }
-
-    if (!sensorConnectionCache[sensnum].second.size())
+    if (sensorTree.empty() && !getSensorSubtree(sensorTree))
     {
         return IPMI_CC_RESPONSE_ERROR;
     }
 
-    connection = sensorConnectionCache[sensnum].second[0].first;
-    path = sensorConnectionCache[sensnum].first;
+    if (sensorTree.size() < (sensnum + 1))
+    {
+        return IPMI_CC_INVALID_FIELD_REQUEST;
+    }
+
+    uint8_t sensorIndex = sensnum;
+    for (const auto &sensor : sensorTree)
+    {
+        if (sensorIndex-- == 0)
+        {
+            if (!sensor.second.size())
+            {
+                return IPMI_CC_RESPONSE_ERROR;
+            }
+            connection = sensor.second.begin()->first;
+            path = sensor.first;
+            break;
+        }
+    }
 
     return 0;
 }
@@ -538,8 +487,8 @@ ipmi_ret_t ipmiSenGetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
         if (sensorPair == sensorMap.end())
         {
-            // should not have been able to find a sensor not implementing the
-            // sensor object
+            // should not have been able to find a sensor not implementing
+            // the sensor object
             return IPMI_CC_RESPONSE_ERROR;
         }
 
@@ -856,18 +805,11 @@ ipmi_ret_t ipmiStorageGetSDRRepositoryInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
     *dataLen = 0; // default to 0 in case of an error
-    bool updated = false;
-    if (!getSensorSubtree(sensorConnectionCache, updated))
+
+    if (sensorTree.empty() && !getSensorSubtree(sensorTree))
     {
         return IPMI_CC_RESPONSE_ERROR;
     }
-    if (updated)
-    {
-        sdrLastUpdate = std::chrono::duration_cast<std::chrono::seconds>(
-                            std::chrono::steady_clock::now().time_since_epoch())
-                            .count();
-    }
-    sdrLastCheck = std::chrono::steady_clock::now();
 
     // zero out response buff
     auto responseClear = static_cast<uint8_t *>(response);
@@ -875,7 +817,7 @@ ipmi_ret_t ipmiStorageGetSDRRepositoryInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     auto resp = static_cast<GetSDRInfoResp *>(response);
     resp->sdrVersion = ipmiSdrVersion;
-    uint16_t recordCount = sensorConnectionCache.size();
+    uint16_t recordCount = sensorTree.size();
 
     // todo: for now, sdr count is number of sensors
     resp->RecordCountLS = recordCount & 0xFF;
@@ -885,11 +827,8 @@ ipmi_ret_t ipmiStorageGetSDRRepositoryInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     resp->freeSpace[0] = 0xFF;
     resp->freeSpace[1] = 0xFF;
 
-    for (int ii = 0; ii < 4; ii++)
-    {
-        resp->mostRecentAddition[ii] = (sdrLastUpdate >> ii) & 0xFF;
-        resp->mostRecentErase[ii] = (sdrLastUpdate >> ii) & 0xFF;
-    }
+    resp->mostRecentAddition = sdrLastAdd;
+    resp->mostRecentErase = sdrLastRemove;
     resp->operationSupport = static_cast<uint8_t>(
         SdrRepositoryInfoOps::overflow); // write not supported
     resp->operationSupport |=
@@ -975,32 +914,17 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     uint8_t offset = req[4];
     uint8_t bytesToRead = req[5];
 
-    // reservation required for partial reads with non zero offset into record
+    // reservation required for partial reads with non zero offset into
+    // record
     if (reservation != sdrReservationID && offset)
     {
         return IPMI_CC_INVALID_RESERVATION_ID;
     }
     uint16_t recordId = (req[3] << 8) | (req[2] & 0xFF);
 
-    auto now = std::chrono::steady_clock::now();
-    // for now, only have sensor sdrs
-    if (sensorConnectionCache.empty() ||
-        (std::chrono::duration_cast<std::chrono::seconds>(now - sdrLastCheck)
-             .count() > sensorListUpdatePeriod))
+    if (sensorTree.empty() && !getSensorSubtree(sensorTree))
     {
-        bool updated = false;
-        if (!getSensorSubtree(sensorConnectionCache, updated))
-        {
-            return IPMI_CC_RESPONSE_ERROR;
-        }
-        if (updated)
-        {
-            sdrLastUpdate =
-                std::chrono::duration_cast<std::chrono::seconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count();
-        }
-        sdrLastCheck = std::chrono::steady_clock::now();
+        return IPMI_CC_RESPONSE_ERROR;
     }
 
     size_t fruCount = 0;
@@ -1010,7 +934,7 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return ret;
     }
 
-    size_t lastRecord = sensorConnectionCache.size() + fruCount - 1;
+    size_t lastRecord = sensorTree.size() + fruCount - 1;
     if (recordId == lastRecordIndex)
     {
         recordId = lastRecord;
@@ -1029,9 +953,9 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     resp->next_record_id_lsb = nextRecord & 0xFF;
     resp->next_record_id_msb = nextRecord >> 8;
 
-    if (recordId >= sensorConnectionCache.size())
+    if (recordId >= sensorTree.size())
     {
-        size_t fruIndex = recordId - sensorConnectionCache.size();
+        size_t fruIndex = recordId - sensorTree.size();
         if (fruIndex >= fruCount)
         {
             return IPMI_CC_INVALID_FIELD_REQUEST;
@@ -1057,8 +981,22 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_OK;
     }
 
-    auto connection = sensorConnectionCache[recordId].second[0].first;
-    auto path = sensorConnectionCache[recordId].first;
+    std::string connection;
+    std::string path;
+    uint16_t sensorIndex = recordId;
+    for (const auto &sensor : sensorTree)
+    {
+        if (sensorIndex-- == 0)
+        {
+            if (!sensor.second.size())
+            {
+                return IPMI_CC_RESPONSE_ERROR;
+            }
+            connection = sensor.second.begin()->first;
+            path = sensor.first;
+            break;
+        }
+    }
 
     SensorMap sensorMap;
     if (!getSensorMap(connection, path, sensorMap))
@@ -1078,32 +1016,12 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     record.key.owner_lun = 0x0;
     record.key.sensor_number = sensornumber;
 
-    // get sensor type string from path, path is defined as
-    // /xyz/openbmc_project/sensors/<type>/label
-    auto type = sensorConnectionCache[recordId].first;
-    auto lastSlash = type.rfind(std::string("/"));
-    // delete everything after last slash inclusive
-    if (lastSlash != std::string::npos)
-    {
-        type.erase(lastSlash);
-    }
-    // delete everything before new last slash inclusive
-    lastSlash = type.rfind(std::string("/"));
-    if (lastSlash != std::string::npos)
-    {
-        type.erase(0, lastSlash + 1);
-    }
-
     record.body.entity_id = 0x0;
     record.body.entity_instance = 0x01;
     record.body.sensor_capabilities = 0x60; // auto rearm - todo hysteresis
+    record.body.sensor_type = getSensorTypeFromPath(path);
+    std::string type = getSensorTypeStringFromPath(path);
     auto typeCstr = type.c_str();
-    auto findSensor = sensorTypes.find(typeCstr);
-    if (findSensor != sensorTypes.end())
-    {
-        record.body.sensor_type = static_cast<uint8_t>(findSensor->second);
-    } // else default 0x0 reserved
-
     auto findUnits = sensorUnits.find(typeCstr);
     if (findUnits != sensorUnits.end())
     {
@@ -1111,7 +1029,7 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             static_cast<uint8_t>(findUnits->second);
     } // else default 0x0 unspecified
 
-    record.body.event_reading_type = 0x1; // reading type = threshold
+    record.body.event_reading_type = getSensorEventTypeFromPath(path);
 
     auto sensorObject = sensorMap.find("xyz.openbmc_project.Sensor.Value");
     if (sensorObject == sensorMap.end())
@@ -1189,8 +1107,8 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     }
 
     // populate sensor name from path
-    auto name = sensorConnectionCache[recordId].first;
-    lastSlash = name.rfind(std::string("/"));
+    auto name = path;
+    auto lastSlash = name.rfind(std::string("/"));
     if (lastSlash != std::string::npos)
     {
         name.erase(0, lastSlash + 1);

@@ -26,8 +26,8 @@ struct GetSDRInfoResp
     uint8_t RecordCountLS;
     uint8_t RecordCountMS;
     uint8_t freeSpace[2];
-    uint8_t mostRecentAddition[4];
-    uint8_t mostRecentErase[4];
+    uint32_t mostRecentAddition;
+    uint32_t mostRecentErase;
     uint8_t operationSupport;
 } __attribute__((packed));
 

@@ -5,7 +5,7 @@
 
 TEST(sensorutils, TranslateToIPMI)
 {
-    /*bool GetSensorAttributes(double maxValue, double minValue, int16_t
+    /*bool getSensorAttributes(double maxValue, double minValue, int16_t
        &mValue, int8_t &rExp, int16_t &bValue, int8_t &bExp, bool &bSigned); */
     // normal unsigned sensor
     double maxValue = 0xFF;
@@ -19,7 +19,7 @@ TEST(sensorutils, TranslateToIPMI)
 
     uint8_t scaledVal;
 
-    result = ipmi::GetSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
+    result = ipmi::getSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
                                        bExp, bSigned);
     EXPECT_EQ(result, true);
     if (result)
@@ -31,7 +31,7 @@ TEST(sensorutils, TranslateToIPMI)
         EXPECT_EQ(bExp, 0);
     }
     double expected = 0x50;
-    scaledVal = ipmi::ScaleIPMIValueFromDouble(0x50, mValue, rExp, bValue, bExp,
+    scaledVal = ipmi::scaleIPMIValueFromDouble(0x50, mValue, rExp, bValue, bExp,
                                                bSigned);
     EXPECT_NEAR(scaledVal, expected, expected * 0.01);
 
@@ -39,7 +39,7 @@ TEST(sensorutils, TranslateToIPMI)
     maxValue = 127;
     minValue = -128;
 
-    result = ipmi::GetSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
+    result = ipmi::getSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
                                        bExp, bSigned);
     EXPECT_EQ(result, true);
 
@@ -56,7 +56,7 @@ TEST(sensorutils, TranslateToIPMI)
     maxValue = 16000;
     minValue = 0;
 
-    result = ipmi::GetSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
+    result = ipmi::getSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
                                        bExp, bSigned);
     EXPECT_EQ(result, true);
     if (result)
@@ -72,7 +72,7 @@ TEST(sensorutils, TranslateToIPMI)
     maxValue = 20;
     minValue = 0;
 
-    result = ipmi::GetSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
+    result = ipmi::getSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
                                        bExp, bSigned);
     EXPECT_EQ(result, true);
     if (result)
@@ -83,7 +83,7 @@ TEST(sensorutils, TranslateToIPMI)
         EXPECT_EQ(bValue, 0);
         EXPECT_EQ(bExp, 0);
     }
-    scaledVal = ipmi::ScaleIPMIValueFromDouble(12.2, mValue, rExp, bValue, bExp,
+    scaledVal = ipmi::scaleIPMIValueFromDouble(12.2, mValue, rExp, bValue, bExp,
                                                bSigned);
 
     expected = 12.2 / (mValue * std::pow(10, rExp));
@@ -93,7 +93,7 @@ TEST(sensorutils, TranslateToIPMI)
     maxValue = 16000;
     minValue = 8000;
 
-    result = ipmi::GetSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
+    result = ipmi::getSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
                                        bExp, bSigned);
     EXPECT_EQ(result, true);
 
@@ -110,7 +110,7 @@ TEST(sensorutils, TranslateToIPMI)
     maxValue = 10;
     minValue = -10;
 
-    result = ipmi::GetSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
+    result = ipmi::getSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
                                        bExp, bSigned);
     EXPECT_EQ(result, true);
     if (result)
@@ -123,7 +123,7 @@ TEST(sensorutils, TranslateToIPMI)
     }
 
     scaledVal =
-        ipmi::ScaleIPMIValueFromDouble(5, mValue, rExp, bValue, bExp, bSigned);
+        ipmi::scaleIPMIValueFromDouble(5, mValue, rExp, bValue, bExp, bSigned);
 
     expected = 5 / (mValue * std::pow(10, rExp));
     EXPECT_NEAR(scaledVal, expected, expected * 0.01);
@@ -131,14 +131,14 @@ TEST(sensorutils, TranslateToIPMI)
     // 0, 0 failure
     maxValue = 0;
     minValue = 0;
-    result = ipmi::GetSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
+    result = ipmi::getSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
                                        bExp, bSigned);
     EXPECT_EQ(result, false);
 
     // too close failure
     maxValue = 12;
     minValue = 10;
-    result = ipmi::GetSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
+    result = ipmi::getSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
                                        bExp, bSigned);
     EXPECT_EQ(result, false);
 }
