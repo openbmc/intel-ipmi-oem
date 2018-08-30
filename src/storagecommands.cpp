@@ -15,10 +15,14 @@
 */
 
 #include <host-ipmid/ipmid-api.h>
+#include <systemd/sd-journal.h>
 
 #include <boost/container/flat_map.hpp>
 #include <commandutils.hpp>
+#include <experimental/string_view>
 #include <iostream>
+#include <phosphor-ipmi-host/sdrutils.hpp>
+#include <phosphor-ipmi-host/selutility.hpp>
 #include <phosphor-ipmi-host/timer.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/message/types.hpp>

@@ -22,12 +22,12 @@
 #include <cmath>
 #include <commandutils.hpp>
 #include <iostream>
+#include <phosphor-ipmi-host/sdrutils.hpp>
+#include <phosphor-ipmi-host/sensorutils.hpp>
 #include <phosphor-ipmi-host/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
-#include <sdrutils.hpp>
 #include <sensorcommands.hpp>
-#include <sensorutils.hpp>
 #include <storagecommands.hpp>
 #include <string>
 
