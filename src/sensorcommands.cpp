@@ -21,12 +21,12 @@
 #include <commandutils.hpp>
 #include <iostream>
 #include <ipmid/api.hpp>
+#include <ipmid/sdrutils.hpp>
+#include <ipmid/sensorutils.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
-#include <sdrutils.hpp>
 #include <sensorcommands.hpp>
-#include <sensorutils.hpp>
 #include <storagecommands.hpp>
 #include <string>
 
