@@ -23,8 +23,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <phosphor-ipmi-host/utils.hpp>
-#include "xyz/openbmc_project/Common/error.hpp"
+#include <host-ipmid/utils.hpp>
+#include <xyz/openbmc_project/Common/error.hpp>
 
 
 namespace ipmi
