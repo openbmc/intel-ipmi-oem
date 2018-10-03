@@ -14,24 +14,25 @@
 // limitations under the License.
 */
 
+#include "xyz/openbmc_project/Common/error.hpp"
+
 #include <host-ipmid/ipmid-api.h>
 
 #include <array>
+#include <commandutils.hpp>
 #include <iostream>
 #include <oemcommands.hpp>
 #include <phosphor-ipmi-host/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
-#include <sstream>
 #include <string>
 #include <vector>
-#include <xyz/openbmc_project/Common/error.hpp>
 
 namespace ipmi
 {
-static void register_netfn_firmware_functions() __attribute__((constructor));
-sdbusplus::bus::bus _dbus(ipmid_get_sd_bus_connection()); // from ipmid-api.h
-static constexpr size_t maxFruStringLength = 0x3F;
+static void registerOEMFunctions() __attribute__((constructor));
+sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection()); // from ipmid-api.h
+static constexpr size_t maxFRUStringLength = 0x3F;
 
 // return code: 0 successful
 int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
@@ -48,7 +49,7 @@ int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
         return -1;
     }
 
-    for (auto& item : valueTree)
+    for (const auto& item : valueTree)
     {
         auto interface = item.second.find("xyz.openbmc_project.FruDevice");
         if (interface == item.second.end())
@@ -65,39 +66,34 @@ int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
         try
         {
             Value variant = property->second;
-            std::string& result = variant.get<std::string>();
-            if (result.size() > maxFruStringLength)
+            std::string& result =
+                sdbusplus::message::variant_ns::get<std::string>(variant);
+            if (result.size() > maxFRUStringLength)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "FRU serial number exceed maximum length");
-
                 return -1;
             }
-            else
-            {
-                serial = result;
-            }
+            serial = result;
             return 0;
         }
-        catch (mapbox::util::bad_variant_access& e)
+        catch (sdbusplus::message::variant_ns::bad_variant_access& e)
         {
-            std::cerr << e.what() << std::endl;
+            phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
             return -1;
         }
     }
     return -1;
 }
+
 ipmi_ret_t ipmiOEMWildcard(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                            ipmi_request_t request, ipmi_response_t response,
-                           ipmi_data_len_t data_len, ipmi_context_t context)
+                           ipmi_data_len_t dataLen, ipmi_context_t context)
 {
-    phosphor::logging::log<phosphor::logging::level::INFO>(
-        "Handling OEM WILDCARD", phosphor::logging::entry("NETFN=%x", netfn),
-        phosphor::logging::entry("CMD=%x", cmd));
-
+    printCommand(+netfn, +cmd);
     // Status code.
     ipmi_ret_t rc = IPMI_CC_INVALID;
-    *data_len = 0;
+    *dataLen = 0;
     return rc;
 }
 
@@ -105,46 +101,43 @@ ipmi_ret_t ipmiOEMWildcard(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                        ipmi_request_t request,
                                        ipmi_response_t response,
-                                       ipmi_data_len_t data_len,
+                                       ipmi_data_len_t dataLen,
                                        ipmi_context_t context)
 {
     std::string serial;
-    if (*data_len != 0) // invalid request if there are extra parameters
+    if (*dataLen != 0) // invalid request if there are extra parameters
     {
+        *dataLen = 0;
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
-    if (getChassisSerialNumber(_dbus, serial) == 0)
+    if (getChassisSerialNumber(dbus, serial) == 0)
     {
-        *data_len = serial.size(); // length will never exceed response length
-                                   // as it is checked in getChassisSerialNumber
+        *dataLen = serial.size(); // length will never exceed response length
+                                  // as it is checked in getChassisSerialNumber
         char* resp = static_cast<char*>(response);
-        serial.copy(resp, *data_len);
+        serial.copy(resp, *dataLen);
         return IPMI_CC_OK;
     }
-    else
-    {
-        *data_len = 0;
-        return IPMI_CC_RESPONSE_ERROR;
-    }
+    *dataLen = 0;
+    return IPMI_CC_RESPONSE_ERROR;
 }
 
 ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                 ipmi_request_t request,
                                 ipmi_response_t response,
-                                ipmi_data_len_t data_len,
-                                ipmi_context_t context)
+                                ipmi_data_len_t dataLen, ipmi_context_t context)
 {
     static constexpr size_t safeBufferLength = 50;
     char buf[safeBufferLength] = {0};
     GUIDData* Data = reinterpret_cast<GUIDData*>(request);
 
-    if (*data_len != sizeof(GUIDData)) // 16bytes
+    if (*dataLen != sizeof(GUIDData)) // 16bytes
     {
-        *data_len = 0;
+        *dataLen = 0;
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
 
-    *data_len = 0;
+    *dataLen = 0;
 
     snprintf(
         buf, safeBufferLength,
@@ -155,13 +148,11 @@ ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         Data->node3, Data->node2, Data->node1);
     // UUID is in RFC4122 format. Ex: 61a39523-78f2-11e5-9862-e6402cfc3223
     std::string guid = buf;
-    phosphor::logging::log<phosphor::logging::level::INFO>(
-        "Set System GUID", phosphor::logging::entry("GUID=%s", guid.c_str()));
 
     std::string objpath = "/xyz/openbmc_project/control/host0/systemGUID";
     std::string intf = "xyz.openbmc_project.Common.UUID";
-    std::string service = getService(_dbus, intf, objpath);
-    setDbusProperty(_dbus, service, objpath, intf, "UUID", guid);
+    std::string service = getService(dbus, intf, objpath);
+    setDbusProperty(dbus, service, objpath, intf, "UUID", guid);
     return IPMI_CC_OK;
 }
 
@@ -171,22 +162,18 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 {
     DeviceInfo* data = reinterpret_cast<DeviceInfo*>(request);
 
-    if ((*dataLen < 2) || (*dataLen != (1 + data->biosIdLength)))
+    if ((*dataLen < 2) || (*dataLen != (1 + data->biosIDLength)))
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Invalid parameter", phosphor::logging::entry("LEN=%d", *dataLen),
-            phosphor::logging::entry("BIOSIDLEN=%d", data->biosIdLength));
-
         *dataLen = 0;
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
-    std::string idString((char*)data->biosId, data->biosIdLength);
+    std::string idString((char*)data->biosId, data->biosIDLength);
 
-    std::string service = getService(_dbus, biosIntf, biosObjPath);
-    setDbusProperty(_dbus, service, biosObjPath, biosIntf, biosProp, idString);
+    std::string service = getService(dbus, biosIntf, biosObjPath);
+    setDbusProperty(dbus, service, biosObjPath, biosIntf, biosProp, idString);
     uint8_t* bytesWritten = static_cast<uint8_t*>(response);
     *bytesWritten =
-        data->biosIdLength; // how many bytes are written into storage
+        data->biosIDLength; // how many bytes are written into storage
     *dataLen = 1;
     return IPMI_CC_OK;
 }
@@ -201,71 +188,55 @@ ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     if (*dataLen == 0)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Paramter length should be at least one byte");
+        *dataLen = 0;
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
 
     size_t reqDataLen = *dataLen;
     *dataLen = 0;
-    if (req->entityType > OEMDevEntityType::sdrVer)
+    if (req->entityType > static_cast<uint8_t>(OEMDevEntityType::sdrVer))
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Out of range",
-            phosphor::logging::entry("TYPE=%x", req->entityType));
-
         return IPMI_CC_INVALID_FIELD_REQUEST;
     }
 
     // handle OEM command items
-    switch (req->entityType)
+    switch (OEMDevEntityType(req->entityType))
     {
         case OEMDevEntityType::biosId:
         {
             if (sizeof(GetOemDeviceInfoReq) != reqDataLen)
             {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "Data length does not match request",
-                    phosphor::logging::entry("REQLEN=%d", reqDataLen),
-                    phosphor::logging::entry("LEN=%d",
-                                             sizeof(GetOemDeviceInfoReq)));
                 return IPMI_CC_REQ_DATA_LEN_INVALID;
             }
 
-            std::string service = getService(_dbus, biosIntf, biosObjPath);
+            std::string service = getService(dbus, biosIntf, biosObjPath);
             try
             {
-                Value variant = getDbusProperty(_dbus, service, biosObjPath,
+                Value variant = getDbusProperty(dbus, service, biosObjPath,
                                                 biosIntf, biosProp);
-                std::string& idString = variant.get<std::string>();
+                std::string& idString =
+                    sdbusplus::message::variant_ns::get<std::string>(variant);
                 if (req->offset >= idString.size())
                 {
-                    phosphor::logging::log<phosphor::logging::level::ERR>(
-                        "offset exceed range",
-                        phosphor::logging::entry("OFFSET=%d", req->offset),
-                        phosphor::logging::entry("IDLEN=%d", idString.size()));
                     return IPMI_CC_PARM_OUT_OF_RANGE;
+                }
+                size_t length = 0;
+                if (req->countToRead > (idString.size() - req->offset))
+                {
+                    length = idString.size() - req->offset;
                 }
                 else
                 {
-                    size_t length = 0;
-                    if (req->countToRead > (idString.size() - req->offset))
-                    {
-                        length = idString.size() - req->offset;
-                    }
-                    else
-                    {
-                        length = req->countToRead;
-                    }
-                    std::copy(idString.begin() + req->offset, idString.end(),
-                              res->data);
-                    res->resDatalen = length;
-                    *dataLen = res->resDatalen + 1;
+                    length = req->countToRead;
                 }
+                std::copy(idString.begin() + req->offset, idString.end(),
+                          res->data);
+                res->resDatalen = length;
+                *dataLen = res->resDatalen + 1;
             }
-            catch (mapbox::util::bad_variant_access& e)
+            catch (sdbusplus::message::variant_ns::bad_variant_access& e)
             {
-                std::cerr << e.what() << std::endl;
+                phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
                 return IPMI_CC_UNSPECIFIED_ERROR;
             }
         }
@@ -287,8 +258,7 @@ ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 {
     if (*dataLen != 0)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "This command should not have any paramter");
+        *dataLen = 0;
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
 
@@ -301,35 +271,196 @@ ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-void ipmi_register(ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_context_t context,
-                   ipmid_callback_t handler, ipmi_cmd_privilege_t priv)
+ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                       ipmi_request_t request,
+                                       ipmi_response_t response,
+                                       ipmi_data_len_t dataLen,
+                                       ipmi_context_t context)
 {
-    std::ostringstream os;
-    os << "Registering NetFn:[0x" << std::hex << std::uppercase << netfn
-       << "], Cmd:[0x" << cmd << "]\n";
-    phosphor::logging::log<phosphor::logging::level::INFO>(os.str().c_str());
-    ipmi_register_callback(netfn, cmd, context, handler, priv);
+    GetPowerRestoreDelayRes* resp =
+        reinterpret_cast<GetPowerRestoreDelayRes*>(response);
+
+    if (*dataLen != 0)
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    std::string service =
+        getService(dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
+    Value variant =
+        getDbusProperty(dbus, service, powerRestoreDelayObjPath,
+                        powerRestoreDelayIntf, powerRestoreDelayProp);
+
+    uint16_t delay = sdbusplus::message::variant_ns::get<uint16_t>(variant);
+    resp->byteLSB = delay;
+    resp->byteMSB = delay >> 8;
+
+    *dataLen = sizeof(GetPowerRestoreDelayRes);
+
+    return IPMI_CC_OK;
 }
 
-static void register_netfn_firmware_functions(void)
+ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                       ipmi_request_t request,
+                                       ipmi_response_t response,
+                                       ipmi_data_len_t dataLen,
+                                       ipmi_context_t context)
+{
+    SetPowerRestoreDelayReq* data =
+        reinterpret_cast<SetPowerRestoreDelayReq*>(request);
+    uint16_t delay = 0;
+
+    if (*dataLen != sizeof(SetPowerRestoreDelayReq))
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+    delay = data->byteMSB;
+    delay = (delay << 8) | data->byteLSB;
+    std::string service =
+        getService(dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
+    setDbusProperty(dbus, service, powerRestoreDelayObjPath,
+                    powerRestoreDelayIntf, powerRestoreDelayProp, delay);
+    *dataLen = 0;
+
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                        ipmi_request_t request,
+                                        ipmi_response_t response,
+                                        ipmi_data_len_t dataLen,
+                                        ipmi_context_t context)
+{
+    GetProcessorErrConfigRes* resp =
+        reinterpret_cast<GetProcessorErrConfigRes*>(response);
+
+    if (*dataLen != 0)
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    std::string service =
+        getService(dbus, processorErrConfigIntf, processorErrConfigObjPath);
+    Value variant = getDbusProperty(dbus, service, processorErrConfigObjPath,
+                                    processorErrConfigIntf, "ResetCfg");
+    resp->resetCfg = sdbusplus::message::variant_ns::get<uint8_t>(variant);
+
+    std::vector<uint8_t> caterrStatus;
+
+    auto method =
+        dbus.new_method_call(service.c_str(), processorErrConfigObjPath,
+                             "org.freedesktop.DBus.Properties", "Get");
+
+    method.append(processorErrConfigIntf, "CATERRStatus");
+
+    try
+    {
+        auto reply = dbus.call(method);
+        reply.read(caterrStatus);
+    }
+    catch (sdbusplus::exception_t&)
+    {
+        phosphor::logging::log<phosphor::logging::level::DEBUG>(
+            "ipmiOEMGetProcessorErrConfig: error on dbus",
+            phosphor::logging::entry("PRORPERTY=CATERRStatus"),
+            phosphor::logging::entry("PATH=%s", processorErrConfigObjPath),
+            phosphor::logging::entry("INTERFACE=%s", processorErrConfigIntf));
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    size_t len =
+        maxCPUNum <= caterrStatus.size() ? maxCPUNum : caterrStatus.size();
+    caterrStatus.resize(len);
+    std::copy(caterrStatus.begin(), caterrStatus.end(), resp->caterrStatus);
+    *dataLen = sizeof(GetProcessorErrConfigRes);
+
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmiOEMSetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                        ipmi_request_t request,
+                                        ipmi_response_t response,
+                                        ipmi_data_len_t dataLen,
+                                        ipmi_context_t context)
+{
+    SetProcessorErrConfigReq* req =
+        reinterpret_cast<SetProcessorErrConfigReq*>(request);
+
+    if (*dataLen != sizeof(SetProcessorErrConfigReq))
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+    std::string service =
+        getService(dbus, processorErrConfigIntf, processorErrConfigObjPath);
+    setDbusProperty(dbus, service, processorErrConfigObjPath,
+                    processorErrConfigIntf, "ResetCfg", req->resetCfg);
+
+    setDbusProperty(dbus, service, processorErrConfigObjPath,
+                    processorErrConfigIntf, "ResetErrorOccurrenceCounts",
+                    req->resetErrorOccurrenceCounts);
+    *dataLen = 0;
+
+    return IPMI_CC_OK;
+}
+
+static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Registering OEM commands");
-    ipmi_register(netfunIntcOEMGeneral, IPMI_CMD_WILDCARD, NULL,
-                  ipmiOEMWildcard,
-                  PRIVILEGE_USER); // wildcard default handler
-    ipmi_register(netfunIntcOEMGeneral, cmdGetChassisIdentifier, NULL,
-                  ipmiOEMGetChassisIdentifier,
-                  PRIVILEGE_USER); // get chassis identifier
-    ipmi_register(netfunIntcOEMGeneral, cmdSetSystemGUID, NULL,
-                  ipmiOEMSetSystemGUID,
-                  PRIVILEGE_ADMIN); // set system guid
-    ipmi_register(netfunIntcOEMGeneral, cmdSetBIOSID, NULL, ipmiOEMSetBIOSID,
-                  PRIVILEGE_ADMIN);
-    ipmi_register(netfunIntcOEMGeneral, cmdGetOEMDeviceInfo, NULL,
-                  ipmiOEMGetDeviceInfo, PRIVILEGE_USER);
-    ipmi_register(netfunIntcOEMGeneral, cmdGetAICSlotFRUIDRecords, NULL,
-                  ipmiOEMGetAICFRU, PRIVILEGE_USER);
+    ipmiPrintAndRegister(netfnIntcOEMGeneral, IPMI_CMD_WILDCARD, NULL,
+                         ipmiOEMWildcard,
+                         PRIVILEGE_USER); // wildcard default handler
+    ipmiPrintAndRegister(netfunIntelAppOEM, IPMI_CMD_WILDCARD, NULL,
+                         ipmiOEMWildcard,
+                         PRIVILEGE_USER); // wildcard default handler
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetChassisIdentifier),
+        NULL, ipmiOEMGetChassisIdentifier,
+        PRIVILEGE_USER); // get chassis identifier
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetSystemGUID),
+        NULL, ipmiOEMSetSystemGUID,
+        PRIVILEGE_ADMIN); // set system guid
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetBIOSID),
+        NULL, ipmiOEMSetBIOSID, PRIVILEGE_ADMIN);
+    ipmiPrintAndRegister(netfnIntcOEMGeneral,
+                         static_cast<ipmi_cmd_t>(
+                             IPMINetfnIntelOEMGeneralCmd::cmdGetOEMDeviceInfo),
+                         NULL, ipmiOEMGetDeviceInfo, PRIVILEGE_USER);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetAICSlotFRUIDSlotPosRecords),
+        NULL, ipmiOEMGetAICFRU, PRIVILEGE_USER);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetPowerRestoreDelay),
+        NULL, ipmiOEMSetPowerRestoreDelay, PRIVILEGE_OPERATOR);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetPowerRestoreDelay),
+        NULL, ipmiOEMGetPowerRestoreDelay, PRIVILEGE_USER);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetProcessorErrConfig),
+        NULL, ipmiOEMGetProcessorErrConfig, PRIVILEGE_USER);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetProcessorErrConfig),
+        NULL, ipmiOEMSetProcessorErrConfig, PRIVILEGE_ADMIN);
     return;
 }
 
