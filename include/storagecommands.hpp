@@ -56,6 +56,19 @@ struct getallocinforesp_t
     uint8_t max_record_size;
 } __attribute__((packed));
 
+struct getFruAreaResp_t
+{
+    uint8_t inventorySizeLSB;
+    uint8_t inventorySizeMSB;
+    uint8_t accessType;
+} __attribute__((packed));
+
+enum class getFruAreaAccessType : uint8_t
+{
+    byte = 0x0,
+    words = 0x1
+};
+
 enum sensor_type_codes : uint8_t
 {
     RESERVED = 0x0,
@@ -96,6 +109,18 @@ enum ipmi_netfn_storage_cmds
     IPMI_CMD_GET_SEL_TIME = 0x48,
     IPMI_CMD_SET_SEL_TIME = 0x49,
 };
+
+struct fruHeader_t
+{
+    uint8_t commonHeaderFormat;
+    uint8_t internalOffset;
+    uint8_t chassisOffset;
+    uint8_t boardOffset;
+    uint8_t productOffset;
+    uint8_t multiRecordOffset;
+    uint8_t pad;
+    uint8_t checksum;
+} __attribute__((packed));
 
 namespace ipmi
 {
