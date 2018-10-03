@@ -84,6 +84,11 @@ set_target_properties (sensorcommands PROPERTIES SOVERSION "0")
 target_link_libraries (sensorcommands ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries (sensorcommands sdbusplus)
 
-install (TARGETS sensorcommands DESTINATION
+add_library (zstoragecommands SHARED src/storagecommands.cpp)
+set_target_properties (zstoragecommands PROPERTIES VERSION "0.1.0")
+set_target_properties (zstoragecommands PROPERTIES SOVERSION "0")
+target_link_libraries (zstoragecommands ${CMAKE_THREAD_LIBS_INIT})
+
+install (TARGETS sensorcommands zstoragecommands DESTINATION
                  lib/ipmid-providers)
 
