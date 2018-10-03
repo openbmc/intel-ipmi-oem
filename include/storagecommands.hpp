@@ -66,7 +66,34 @@ struct GetAllocInfoResp
     uint8_t allocUnitLargestFreeMSB;
     uint8_t maxRecordSize;
 };
+
+struct GetFRUAreaReq
+{
+    uint8_t fruDeviceID;
+    uint16_t fruInventoryOffset;
+    uint8_t countToRead;
+};
+
+struct GetFRUAreaResp
+{
+    uint8_t inventorySizeLSB;
+    uint8_t inventorySizeMSB;
+    uint8_t accessType;
+};
+
+struct WriteFRUDataReq
+{
+    uint8_t fruDeviceID;
+    uint16_t fruInventoryOffset;
+    uint8_t data[];
+};
 #pragma pack(pop)
+
+enum class GetFRUAreaAccessType : uint8_t
+{
+    byte = 0x0,
+    words = 0x1
+};
 
 enum class SensorTypeCodes : uint8_t
 {
@@ -106,6 +133,20 @@ enum class IPMINetfnStorageCmds : ipmi_cmd_t
     ipmiCmdGetSELTime = 0x48,
     ipmiCmdSetSELTime = 0x49,
 };
+
+#pragma pack(push, 1)
+struct FRUHeader
+{
+    uint8_t commonHeaderFormat;
+    uint8_t internalOffset;
+    uint8_t chassisOffset;
+    uint8_t boardOffset;
+    uint8_t productOffset;
+    uint8_t multiRecordOffset;
+    uint8_t pad;
+    uint8_t checksum;
+};
+#pragma pack(pop)
 
 namespace ipmi
 {
