@@ -16,16 +16,20 @@
 
 #pragma once
 
-enum IPMINetfnIntelOEMGeneralCmd
+enum class IPMINetfnIntelOEMGeneralCmd
 {
     cmdSetBIOSID = 0x26,
     cmdGetOEMDeviceInfo = 0x27,
-    cmdGetAICSlotFRUIDRecords = 0x31,
+    cmdGetAICSlotFRUIDSlotPosRecords = 0x31,
     cmdSetSystemGUID = 0x41,
+    cmdSetPowerRestoreDelay = 0x54,
+    cmdGetPowerRestoreDelay = 0x55,
     cmdGetChassisIdentifier = 0x92,
+    cmdGetProcessorErrConfig = 0x9A,
+    cmdSetProcessorErrConfig = 0x9B,
 };
 
-enum IPMIIntelOEMReturnCodes
+enum class IPMIIntelOEMReturnCodes
 {
     ipmiCCPayloadActive = 0x80,
     ipmiCCInvalidPCIESlotID = 0x80,
@@ -51,7 +55,7 @@ enum IPMIIntelOEMReturnCodes
 
 };
 
-enum IPMIReturnCodeExt
+enum class IPMIReturnCodeExt
 {
     ipmiCCInvalidLUN = 0xC2,
     ipmiCCTimeout = 0xC3,
@@ -64,17 +68,28 @@ enum IPMIReturnCodeExt
     ipmiCCParamterNotSupportInPresentState = 0xD5,
 };
 
-constexpr unsigned char netfunIntelAppOEM = 0x3E;
-static constexpr ipmi_netfn_t netfunIntcOEMGeneral =
+constexpr const uint8_t netfunIntelAppOEM = 0x3E;
+static constexpr ipmi_netfn_t netfnIntcOEMGeneral =
     NETFUN_NONE; // Netfun_none. In our platform, we use it as "intel oem
                  // general". The code is 0x30
-static constexpr unsigned char maxBiosIdLength = 0xFF;
-static constexpr char* biosObjPath = (char*)"/xyz/openbmc_project/bios";
-static constexpr char* biosIntf =
-    (char*)"xyz.openbmc_project.Inventory.Item.Bios";
-static constexpr char* biosProp = (char*)"BiosId";
+static constexpr const uint8_t maxBIOSIDLength = 0xFF;
+static constexpr const uint8_t maxCPUNum = 4;
+static constexpr const char* biosObjPath = "/xyz/openbmc_project/bios";
+static constexpr const char* biosIntf =
+    "xyz.openbmc_project.Inventory.Item.Bios";
+static constexpr const char* biosProp = "BiosId";
 
-enum IPMINetfnIntelOEMAppCmd
+static constexpr const char* powerRestoreDelayObjPath =
+    "/xyz/openbmc_project/control/power_restore_delay";
+static constexpr const char* powerRestoreDelayIntf =
+    "xyz.openbmc_project.Control.Power.RestoreDelay";
+static constexpr const char* powerRestoreDelayProp = "PowerRestoreDelay";
+static constexpr const char* processorErrConfigObjPath =
+    "/xyz/openbmc_project/control/processor_error_config";
+static constexpr const char* processorErrConfigIntf =
+    "xyz.openbmc_project.Control.Processor.ErrConfig";
+
+enum class IPMINetfnIntelOEMAppCmd
 {
     mdrStatus = 0x20,
     mdrComplete = 0x21,
@@ -96,32 +111,14 @@ enum IPMINetfnIntelOEMAppCmd
     mdr2SendDataBlock = 0x3d,
 };
 
-typedef enum
+enum class OEMDevEntityType
 {
     biosId,
     devVer,
     sdrVer,
-} OEMDevEntityType;
+};
 
-typedef union
-{
-    typedef struct
-    {
-        uint8_t bBrdSlotNum : 3;  // Bits 2:0
-        uint8_t riserSlotNum : 3; // Bits 5:3
-        uint8_t protocol : 1;     // Bit 6, FRU type
-        uint8_t reserved : 1;     // Bit 7
-    } bits;
-    uint8_t byte;
-} __attribute__((packed)) AICFruRec;
-
-typedef struct
-{
-    AICFruRec u8SlotPosition;
-    uint8_t u8FruID;
-} __attribute__((packed)) FRUSlotPosRecord;
-
-typedef struct
+struct GUIDData
 {
     uint8_t node1;
     uint8_t node2;
@@ -139,23 +136,75 @@ typedef struct
     uint8_t timeLow2;
     uint8_t timeLow3;
     uint8_t timeLow4;
-} __attribute__((packed)) GUIDData;
+} __attribute__((packed));
 
-typedef struct
+struct DeviceInfo
 {
-    uint8_t biosIdLength;
-    uint8_t biosId[maxBiosIdLength];
-} __attribute__((packed)) DeviceInfo;
+    uint8_t biosIDLength;
+    uint8_t biosId[maxBIOSIDLength];
+} __attribute__((packed));
 
-typedef struct
+struct SetPowerRestoreDelayReq
+{
+    uint8_t byteMSB;
+    uint8_t byteLSB;
+} __attribute__((packed));
+
+struct GetPowerRestoreDelayRes
+{
+    uint8_t byteMSB;
+    uint8_t byteLSB;
+} __attribute__((packed));
+
+struct GetOemDeviceInfoReq
 {
     uint8_t entityType;
     uint8_t countToRead;
     uint8_t offset;
-} __attribute__((packed)) GetOemDeviceInfoReq;
+} __attribute__((packed));
 
-typedef struct
+struct GetOemDeviceInfoRes
 {
     uint8_t resDatalen;
-    uint8_t data[maxBiosIdLength];
-} __attribute__((packed)) GetOemDeviceInfoRes;
+    uint8_t data[maxBIOSIDLength];
+} __attribute__((packed));
+
+struct SetProcessorErrConfigReq
+{
+    uint8_t resetCfg; // Reset Configuration
+                      //   [0]:   CATERR Reset Enabled
+                      //               0b: Disabled
+                      //               1b: Enabled
+                      //   [1]:   ERR2 Reset Enabled
+                      //               0b: Disabled
+                      //               1b: Enabled
+                      //   [7:2]: Reserved
+    uint8_t reserved; // Reserved
+    uint8_t
+        resetErrorOccurrenceCounts; // Reset Error Occurrence Counts
+                                    //[0]: Reset CPU Error Counts
+                                    //    0b: Keep CPU Error Counts
+                                    //    1b: Reset all CPU Error Counts to zero
+                                    //[7:1]: Reserved
+} __attribute__((packed));
+
+struct GetProcessorErrConfigRes
+{
+    uint8_t resetCfg;             // Reset Configuration
+                                  //   [0]:   CATERR Reset Enabled
+                                  //               0b: Disabled
+                                  //               1b: Enabled
+                                  //   [1]:   ERR2 Reset Enabled
+                                  //               0b: Disabled
+                                  //               1b: Enabled
+                                  //   [7:2]: Reserved
+    uint8_t reserved;             // Reserved
+    char caterrStatus[maxCPUNum]; // for all CPUs including the non-legacy
+                                  // socket CPU CPU CATERR (Core Error)
+                                  // occurrence
+                                  //     [5:0]: Error Occurrence Count
+                                  //     [7:6]: CPU Status
+                                  //                 00b: Disabled
+                                  //                 01b: Enabled
+                                  //                 11b: Not Present
+} __attribute__((packed));
