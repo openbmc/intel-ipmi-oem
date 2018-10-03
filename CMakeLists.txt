@@ -99,7 +99,13 @@ set_target_properties (globalcommands PROPERTIES SOVERSION "0")
 target_link_libraries (globalcommands ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries (globalcommands sdbusplus)
 
+add_library (oemcmds SHARED src/oemcommands.cpp phosphor-ipmi-host/utils.cpp)
+set_target_properties (oemcmds PROPERTIES VERSION "0.1.0")
+set_target_properties (oemcmds PROPERTIES SOVERSION "0")
+target_link_libraries (oemcmds sdbusplus)
+target_link_libraries (oemcmds ${LOGGING_LIBRARIES})
+
 install (
-    TARGETS sensorcommands zstoragecommands globalcommands
+    TARGETS sensorcommands zstoragecommands globalcommands oemcmds
     DESTINATION lib/ipmid-providers
 )
