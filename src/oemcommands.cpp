@@ -17,9 +17,9 @@
 #include <host-ipmid/ipmid-api.h>
 
 #include <array>
-#include <host-ipmid/utils.hpp>
 #include <iostream>
 #include <oemcommands.hpp>
+#include <phosphor-ipmi-host/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sstream>
