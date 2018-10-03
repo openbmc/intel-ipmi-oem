@@ -30,6 +30,7 @@ namespace ipmi
 namespace storage
 {
 
+constexpr size_t MAX_MESSAGE_SIZE = 64;
 constexpr size_t maxFruSdrNameSize = 16;
 using ManagedObjectType = boost::container::flat_map<
     sdbusplus::message::object_path,
@@ -41,6 +42,7 @@ using ManagedEntry = std::pair<
         std::string, boost::container::flat_map<std::string, DbusVariant>>>;
 
 constexpr const char* FRU_DEVICE_SERVICE_NAME = "com.intel.FruDevice";
+constexpr size_t CACHE_TIMEOUT_SECONDS = 10;
 
 static std::vector<uint8_t> fruCache;
 static uint8_t cacheBus = 0xFF;
@@ -52,6 +54,7 @@ std::unique_ptr<phosphor::ipmi::Timer> cacheTimer = nullptr;
 // collision to verify our dev-id
 boost::container::flat_map<uint8_t, std::pair<uint8_t, uint8_t>> deviceHashes;
 
+void register_netfn_storage_functions() __attribute__((constructor));
 sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection());
 
 bool writeFru()
@@ -68,6 +71,15 @@ bool writeFru()
         return false;
     }
     return true;
+}
+
+void createTimer()
+{
+    if (cacheTimer == nullptr)
+    {
+        cacheTimer = std::make_unique<phosphor::ipmi::Timer>(
+            ipmid_get_sd_event_connection(), writeFru);
+    }
 }
 
 ipmi_return_codes replaceCacheFru(uint8_t devId)
@@ -191,6 +203,169 @@ ipmi_return_codes replaceCacheFru(uint8_t devId)
     return IPMI_CC_OK;
 }
 
+ipmi_ret_t ipmi_storage_read_fru_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                      ipmi_request_t request,
+                                      ipmi_response_t response,
+                                      ipmi_data_len_t data_len,
+                                      ipmi_context_t context)
+{
+    if (*data_len != 4)
+    {
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    uint8_t devId = *(static_cast<uint8_t*>(request));
+    uint16_t offset = (*(static_cast<uint8_t*>(request) + 2) << 8) |
+                      *(static_cast<uint8_t*>(request) + 1);
+    uint8_t readCount = *(static_cast<uint8_t*>(request) + 3);
+
+    if (readCount > MAX_MESSAGE_SIZE - 1)
+    {
+        return IPMI_CC_INVALID_FIELD_REQUEST;
+    }
+    ipmi_return_codes status = replaceCacheFru(devId);
+
+    if (status != IPMI_CC_OK)
+    {
+        return status;
+    }
+
+    uint8_t fromFruByteLen = 0;
+    if (readCount + offset < fruCache.size())
+    {
+        fromFruByteLen = readCount;
+    }
+    else if (fruCache.size() > offset)
+    {
+        fromFruByteLen = fruCache.size() - offset;
+    }
+    uint8_t padByteLen = readCount - fromFruByteLen;
+    uint8_t* respPtr = static_cast<uint8_t*>(response);
+    *respPtr = readCount;
+    std::copy(fruCache.begin() + offset,
+              fruCache.begin() + offset + fromFruByteLen, ++respPtr);
+    // if longer than the fru is requested, fill with 0xFF
+    if (padByteLen)
+    {
+        respPtr += fromFruByteLen;
+        std::fill(respPtr, respPtr + padByteLen, 0xFF);
+    }
+    *data_len = readCount + 1;
+
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmi_storage_write_fru_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                       ipmi_request_t request,
+                                       ipmi_response_t response,
+                                       ipmi_data_len_t data_len,
+                                       ipmi_context_t context)
+{
+    if (*data_len < 4)
+    {
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+    uint8_t reqDev = *(static_cast<uint8_t*>(request));
+    uint16_t reqOffset = (*(static_cast<uint8_t*>(request) + 2) << 8) |
+                         *(static_cast<uint8_t*>(request) + 1);
+
+    uint8_t* reqData = (static_cast<uint8_t*>(request) + 3);
+    uint8_t writeLen = *data_len - 3;
+
+    ipmi_return_codes status = replaceCacheFru(reqDev);
+    if (status != IPMI_CC_OK)
+    {
+        return status;
+    }
+    int lastWriteAddr = reqOffset + writeLen;
+    if (fruCache.size() < lastWriteAddr)
+    {
+        fruCache.resize(reqOffset + writeLen);
+    }
+
+    std::copy(reqData, reqData + writeLen, fruCache.begin() + reqOffset);
+
+    bool atEnd = false;
+
+    if (fruCache.size() >= sizeof(fruHeader_t))
+    {
+
+        fruHeader_t* header = reinterpret_cast<fruHeader_t*>(fruCache.data());
+
+        int lastRecordStart =
+            std::max(header->internalOffset,
+                     std::max(header->chassisOffset,
+                              std::max(header->boardOffset,
+                                       std::max(header->productOffset,
+                                                header->multiRecordOffset))));
+
+        lastRecordStart *= 8; // header starts in are multiples of 8 bytes
+
+        // get the length of the area in multiples of 8 bytes
+        if (lastWriteAddr > (lastRecordStart + 1))
+        {
+            // second bit in record area is the length
+            int areaLength(fruCache[lastRecordStart + 1]);
+            areaLength *= 8; // it is in multiples of 8 bytes
+
+            if (lastWriteAddr >= (areaLength + lastRecordStart))
+            {
+                atEnd = true;
+            }
+        }
+    }
+    if (atEnd)
+    {
+        // cancel timer, we're at the end so might as well send it
+        cacheTimer->setTimer(SD_EVENT_OFF);
+        if (!writeFru())
+        {
+            return IPMI_CC_INVALID_FIELD_REQUEST;
+        }
+    }
+    else
+    {
+        // start a timer, if no further data is sent in CACHE_TIMEOUT_SECONDS
+        // seconds, check to see if it is valid
+        createTimer();
+        cacheTimer->startTimer(
+            std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::seconds(CACHE_TIMEOUT_SECONDS)));
+    }
+
+    *data_len = 1;
+    uint8_t* respPtr = static_cast<uint8_t*>(response);
+    *respPtr = writeLen;
+
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmi_storage_get_fru_inv_area_info(
+    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
+    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+{
+    if (*data_len != 1)
+    {
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    uint8_t reqDev = *(static_cast<uint8_t*>(request));
+    ipmi_return_codes status = replaceCacheFru(reqDev);
+
+    if (status != IPMI_CC_OK)
+    {
+        return status;
+    }
+
+    getFruAreaResp_t* respPtr = static_cast<getFruAreaResp_t*>(response);
+    respPtr->inventorySizeLSB = fruCache.size() & 0xFF;
+    respPtr->inventorySizeMSB = fruCache.size() >> 8;
+    respPtr->accessType = static_cast<uint8_t>(getFruAreaAccessType::byte);
+
+    *data_len = sizeof(getFruAreaResp_t);
+    return IPMI_CC_OK;
+}
+
 ipmi_ret_t getFruSdrCount(size_t& count)
 {
     ipmi_ret_t ret = replaceCacheFru(0);
@@ -307,6 +482,30 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     name.copy(resp.body.deviceID, name.size());
 
     return IPMI_CC_OK;
+}
+
+void register_netfn_storage_functions()
+{
+    // <Get FRU Inventory Area Info>
+    print_registration(NETFUN_STORAGE,
+                       ipmi_netfn_storage_cmds::IPMI_CMD_GET_FRU_INV_AREA_INFO);
+    ipmi_register_callback(
+        NETFUN_STORAGE, ipmi_netfn_storage_cmds::IPMI_CMD_GET_FRU_INV_AREA_INFO,
+        NULL, ipmi_storage_get_fru_inv_area_info, PRIVILEGE_OPERATOR);
+
+    // <Add READ FRU Data
+    print_registration(NETFUN_STORAGE,
+                       ipmi_netfn_storage_cmds::IPMI_CMD_READ_FRU_DATA);
+    ipmi_register_callback(
+        NETFUN_STORAGE, ipmi_netfn_storage_cmds::IPMI_CMD_READ_FRU_DATA, NULL,
+        ipmi_storage_read_fru_data, PRIVILEGE_OPERATOR);
+
+    // <Add WRITE FRU Data
+    print_registration(NETFUN_STORAGE,
+                       ipmi_netfn_storage_cmds::IPMI_CMD_WRITE_FRU_DATA);
+    ipmi_register_callback(
+        NETFUN_STORAGE, ipmi_netfn_storage_cmds::IPMI_CMD_WRITE_FRU_DATA, NULL,
+        ipmi_storage_write_fru_data, PRIVILEGE_OPERATOR);
 }
 } // namespace storage
 } // namespace ipmi
