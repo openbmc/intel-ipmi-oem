@@ -105,7 +105,13 @@ set_target_properties (oemcmds PROPERTIES SOVERSION "0")
 target_link_libraries (oemcmds sdbusplus)
 target_link_libraries (oemcmds ${LOGGING_LIBRARIES})
 
+add_library (smbioshandler
+             SHARED src/smbioshandler.cpp phosphor-ipmi-host/utils.cpp)
+set_target_properties (smbioshandler PROPERTIES VERSION "0.1.0")
+set_target_properties (smbioshandler PROPERTIES SOVERSION "0")
+target_link_libraries (smbioshandler sdbusplus)
+
 install (
-    TARGETS sensorcommands zstoragecommands globalcommands oemcmds
+    TARGETS sensorcommands zstoragecommands globalcommands oemcmds smbioshandler
     DESTINATION lib/ipmid-providers
 )
