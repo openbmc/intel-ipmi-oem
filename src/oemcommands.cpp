@@ -407,6 +407,90 @@ ipmi_ret_t ipmiOEMSetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                    ipmi_request_t request,
+                                    ipmi_response_t response,
+                                    ipmi_data_len_t dataLen,
+                                    ipmi_context_t context)
+{
+    GetOEMShutdownPolicyRes* resp =
+        reinterpret_cast<GetOEMShutdownPolicyRes*>(response);
+
+    if (*dataLen != 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "oem_set_shutdown_policy: invalid input len!");
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    *dataLen = 0;
+
+    try
+    {
+        std::string service =
+            getService(dbus, oemShutdownPolicyIntf, oemShutdownPolicyObjPath);
+        Value variant = getDbusProperty(dbus, service, oemShutdownPolicyObjPath,
+                                        oemShutdownPolicyIntf,
+                                        oemShutdownPolicyObjPathProp);
+        resp->policy = sdbusplus::message::variant_ns::get<uint8_t>(variant);
+        // TODO needs to check if it is multi-node products,
+        // policy is only supported on node 3/4
+        resp->policySupport = shutdownPolicySupported;
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.description());
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    *dataLen = sizeof(GetOEMShutdownPolicyRes);
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                    ipmi_request_t request,
+                                    ipmi_response_t response,
+                                    ipmi_data_len_t dataLen,
+                                    ipmi_context_t context)
+{
+    uint8_t* req = reinterpret_cast<uint8_t*>(request);
+
+    // TODO needs to check if it is multi-node products,
+    // policy is only supported on node 3/4
+    if (*dataLen != 1)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "oem_set_shutdown_policy: invalid input len!");
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    *dataLen = 0;
+    if ((*req != noShutdownOnOCOT) && (*req != shutdownOnOCOT))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "oem_set_shutdown_policy: invalid input!");
+        return IPMI_CC_INVALID_FIELD_REQUEST;
+    }
+
+    try
+    {
+        std::string service =
+            getService(dbus, oemShutdownPolicyIntf, oemShutdownPolicyObjPath);
+        setDbusProperty(dbus, service, oemShutdownPolicyObjPath,
+                        oemShutdownPolicyIntf, oemShutdownPolicyObjPathProp,
+                        *req);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.description());
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    return IPMI_CC_OK;
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -461,6 +545,14 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetProcessorErrConfig),
         NULL, ipmiOEMSetProcessorErrConfig, PRIVILEGE_ADMIN);
+    ipmiPrintAndRegister(netfnIntcOEMGeneral,
+                         static_cast<ipmi_cmd_t>(
+                             IPMINetfnIntelOEMGeneralCmd::cmdSetShutdownPolicy),
+                         NULL, ipmiOEMSetShutdownPolicy, PRIVILEGE_ADMIN);
+    ipmiPrintAndRegister(netfnIntcOEMGeneral,
+                         static_cast<ipmi_cmd_t>(
+                             IPMINetfnIntelOEMGeneralCmd::cmdGetShutdownPolicy),
+                         NULL, ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
     return;
 }
 
