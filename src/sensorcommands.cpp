@@ -53,12 +53,20 @@ static uint32_t sdrLastRemove = noTimestamp;
 static SensorSubTree sensorTree;
 static boost::container::flat_map<std::string, ManagedObjectType> SensorCache;
 
-const static boost::container::flat_map<const char *, SensorUnits> sensorUnits{
-    {{"temperature", SensorUnits::degreesC},
-     {"voltage", SensorUnits::volts},
-     {"current", SensorUnits::amps},
-     {"fan_tach", SensorUnits::rpm},
-     {"power", SensorUnits::watts}}};
+// Specify the comparison required to sort and find char* map objects
+struct CmpStr
+{
+    bool operator()(const char *a, const char *b) const
+    {
+        return std::strcmp(a, b) < 0;
+    }
+};
+const static boost::container::flat_map<const char *, SensorUnits, CmpStr>
+    sensorUnits{{{"temperature", SensorUnits::degreesC},
+                 {"voltage", SensorUnits::volts},
+                 {"current", SensorUnits::amps},
+                 {"fan_tach", SensorUnits::rpm},
+                 {"power", SensorUnits::watts}}};
 
 void registerSensorFunctions() __attribute__((constructor));
 static sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection());
