@@ -47,6 +47,29 @@ struct SensorThresholdReq
     uint8_t upperCritical;
     uint8_t upperNonRecoverable;
 };
+
+struct SetSensorOverrideReq
+{
+    uint8_t sensorNum;
+    uint8_t overrideValueLsb;
+#if BYTE_ORDER == LITTLE_ENDIAN
+    uint8_t overrideValueMsb : 7;
+    uint8_t forceOverride : 1;
+    uint8_t optionalDeasserted : 1;
+    uint8_t optionalSenUnavailable : 1;
+    uint8_t optionalSenError : 1;
+    uint8_t optionalReserved : 5;
+#endif
+#if BYTE_ORDER == BIG_ENDIAN
+    uint8_t forceOverride : 1;
+    uint8_t overrideValueMsb : 7;
+    uint8_t optionalReserved : 5;
+    uint8_t optionalSenError : 1;
+    uint8_t optionalSenUnavailable : 1;
+    uint8_t optionalDeasserted : 1;
+#endif
+};
+
 #pragma pack(pop)
 
 enum class SensorThresholdReqEnable : uint8_t

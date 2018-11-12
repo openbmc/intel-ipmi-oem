@@ -27,6 +27,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
+    cmdSetSensorOverride = 0xEE,
 };
 
 enum class IPMIIntelOEMReturnCodes

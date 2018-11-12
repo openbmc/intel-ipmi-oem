@@ -22,6 +22,7 @@
 #include <cmath>
 #include <commandutils.hpp>
 #include <iostream>
+#include <oemcommands.hpp>
 #include <phosphor-ipmi-host/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
@@ -796,6 +797,92 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
 /* end sensor commands */
 
+/* oem sensor commands */
+
+static ipmi_ret_t setSensorValueProperty(const std::string &connection,
+                                         const std::string &path,
+                                         const double &sensorValue)
+{
+    try
+    {
+        setDbusProperty(dbus, connection, path,
+                        "xyz.openbmc_project.Sensor.Value", "Value",
+                        ipmi::Value(sensorValue));
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            std::isnan(sensorValue) ? "Clear sensor overide"
+                                    : "Override sensor value",
+            phosphor::logging::entry("CONNECTION=%d", connection.c_str()),
+            phosphor::logging::entry("PATH=%s", path.c_str()),
+            phosphor::logging::entry("VALUE=%Lf", sensorValue));
+        return IPMI_CC_OK;
+    }
+    catch (const sdbusplus::exception_t &)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            std::isnan(sensorValue) ? "Error: Clearing sensor override"
+                                    : "Error: Overriding sensor value",
+            phosphor::logging::entry("CONNECTION=%d", connection.c_str()),
+            phosphor::logging::entry("PATH=%s", path.c_str()),
+            phosphor::logging::entry("VALUE=%Lf", sensorValue));
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+}
+
+ipmi_ret_t ipmiIntelSetSensorOverride(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                      ipmi_request_t request,
+                                      ipmi_response_t response,
+                                      ipmi_data_len_t dataLen,
+                                      ipmi_context_t context)
+{
+    const auto len = sizeof(SetSensorOverrideReq);
+    if (*dataLen > len || (*dataLen < (len - 1)))
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+    *dataLen = 0;
+
+    // TODO: Verify for system state to be in MTM Level2
+
+    const SetSensorOverrideReq *req =
+        static_cast<SetSensorOverrideReq *>(request);
+    std::string connection, path;
+    double overrideValue = std::numeric_limits<double>::quiet_NaN();
+    ipmi_ret_t retStatus = IPMI_CC_OK;
+    if (req->sensorNum == 0xFF)
+    {
+        if (sensorTree.empty() && !getSensorSubtree(sensorTree))
+        {
+            return IPMI_CC_UNSPECIFIED_ERROR;
+        }
+        for (const auto &sensor : sensorTree)
+        {
+            if (!sensor.second.size())
+            {
+                continue;
+            }
+            connection = sensor.second.begin()->first;
+            path = sensor.first;
+            retStatus |=
+                setSensorValueProperty(connection, path, overrideValue);
+        }
+        return retStatus;
+    }
+
+    auto status = getSensorConnection(req->sensorNum, connection, path);
+    if (status)
+    {
+        return IPMI_CC_SENSOR_INVALID;
+    }
+
+    if (req->forceOverride)
+    {
+        overrideValue = req->overrideValueLsb + (req->overrideValueMsb << 8);
+    }
+    return setSensorValueProperty(connection, path, overrideValue);
+}
+/* oem sensor commands */
+
 /* storage commands */
 
 ipmi_ret_t ipmiStorageGetSDRRepositoryInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1231,6 +1318,12 @@ void registerSensorFunctions()
         NETFUN_STORAGE,
         static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdGetSDR), nullptr,
         ipmiStorageGetSDR, PRIVILEGE_USER);
+
+    ipmiPrintAndRegister(netfnIntcOEMGeneral,
+                         static_cast<ipmi_cmd_t>(
+                             IPMINetfnIntelOEMGeneralCmd::cmdSetSensorOverride),
+                         nullptr, ipmiIntelSetSensorOverride, PRIVILEGE_USER);
+
     return;
 }
 } // namespace ipmi
