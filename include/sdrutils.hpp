@@ -94,12 +94,18 @@ inline static std::string getSensorTypeStringFromPath(const std::string& path)
     // get sensor type string from path, path is defined as
     // /xyz/openbmc_project/sensors/<type>/label
     size_t typeEnd = path.rfind("/");
-    size_t typeStart = path.rfind("/", typeEnd - 1) + 1;
-    if (typeEnd != std::string::npos && typeStart != std::string::npos)
+    if (typeEnd == std::string::npos)
     {
-        return path.substr(typeStart, typeEnd - typeStart);
+        return path;
     }
-    return path;
+    size_t typeStart = path.rfind("/", typeEnd - 1);
+    if (typeStart == std::string::npos)
+    {
+        return path;
+    }
+    // Start at the character after the '/'
+    typeStart++;
+    return path.substr(typeStart, typeEnd - typeStart);
 }
 
 inline static uint8_t getSensorTypeFromPath(const std::string& path)
