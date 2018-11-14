@@ -80,27 +80,15 @@ endif ()
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_library (oemcmds SHARED src/oemcommands.cpp src/utils.cpp)
-set_target_properties (oemcmds PROPERTIES VERSION "0.1.0")
-set_target_properties (oemcmds PROPERTIES SOVERSION "0")
-target_link_libraries (oemcmds sdbusplus)
-target_link_libraries (oemcmds ${LOGGING_LIBRARIES})
-
-add_library (
-    sensorcommands SHARED src/sensorcommands.cpp src/sensorutils.cpp
-    src/utils.cpp src/storagecommands.cpp
-)
-set_target_properties (sensorcommands PROPERTIES VERSION "0.1.0")
-set_target_properties (sensorcommands PROPERTIES SOVERSION "0")
-target_link_libraries (sensorcommands ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries (sensorcommands sdbusplus)
-
-add_library (zstoragecommands SHARED src/storagecommands.cpp)
-set_target_properties (zstoragecommands PROPERTIES VERSION "0.1.0")
-set_target_properties (zstoragecommands PROPERTIES SOVERSION "0")
-target_link_libraries (zstoragecommands ${CMAKE_THREAD_LIBS_INIT})
+add_library (zinteloemcmds SHARED src/oemcommands.cpp src/utils.cpp
+             src/sensorcommands.cpp src/sensorutils.cpp
+             src/storagecommands.cpp)
+set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
+set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
+target_link_libraries (zinteloemcmds sdbusplus)
+target_link_libraries (zinteloemcmds ${LOGGING_LIBRARIES})
+target_link_libraries (zinteloemcmds ${CMAKE_THREAD_LIBS_INIT})
 
 install (
-    TARGETS oemcmds sensorcommands zstoragecommands
-    DESTINATION lib/ipmid-providers
+    TARGETS zinteloemcmds DESTINATION lib/ipmid-providers
 )
