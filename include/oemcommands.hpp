@@ -26,6 +26,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetPowerRestoreDelay = 0x55,
     cmdSetShutdownPolicy = 0x60,
     cmdGetShutdownPolicy = 0x62,
+    cmdSetOEMUser2Activation =0x5A,
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
@@ -105,6 +106,8 @@ static constexpr const char* oemShutdownPolicyIntf =
 static constexpr const char* oemShutdownPolicyObjPath =
     "/xyz/openbmc_project/control/shutdown_policy_config";
 static constexpr const char* oemShutdownPolicyObjPathProp = "Policy";
+static constexpr uint8_t maxIpmi20PasswordSize = 20;
+static constexpr uint8_t ipmiMaxUserName = 16;
 
 enum class IPMINetfnIntelOEMAppCmd
 {
@@ -232,4 +235,12 @@ struct GetOEMShutdownPolicyRes
     uint8_t policy;
     uint8_t policySupport;
 };
+
+typedef struct
+{
+    uint8_t userName[ipmiMaxUserName];
+    uint8_t userPassword[maxIpmi20PasswordSize];
+} __attribute__((packed)) sSetOemUser2ActivationReq;
+
+
 #pragma pack(pop)
