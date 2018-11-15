@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <user_channel/user_layer.hpp>
+
 enum class IPMINetfnIntelOEMGeneralCmd
 {
     cmdSetBIOSID = 0x26,
@@ -26,6 +28,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetPowerRestoreDelay = 0x55,
     cmdSetShutdownPolicy = 0x60,
     cmdGetShutdownPolicy = 0x62,
+    cmdSetOEMUser2Activation = 0x5A,
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
@@ -105,6 +108,8 @@ static constexpr const char* oemShutdownPolicyIntf =
 static constexpr const char* oemShutdownPolicyObjPath =
     "/xyz/openbmc_project/control/shutdown_policy_config";
 static constexpr const char* oemShutdownPolicyObjPathProp = "Policy";
+
+static constexpr uint8_t ipmiDefaultUserId = 2;
 
 enum class IPMINetfnIntelOEMAppCmd
 {
@@ -232,4 +237,11 @@ struct GetOEMShutdownPolicyRes
     uint8_t policy;
     uint8_t policySupport;
 };
+
+typedef struct
+{
+    uint8_t userName[ipmi::ipmiMaxUserName];
+    uint8_t userPassword[ipmi::maxIpmi20PasswordSize];
+} __attribute__((packed)) sSetOemUser2ActivationReq;
+
 #pragma pack(pop)

@@ -26,6 +26,7 @@
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <string>
+#include <user_channel/user_layer.hpp>
 #include <vector>
 
 namespace ipmi
@@ -494,6 +495,61 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+ipmi_ret_t ipmiOEMSetUser2Activation(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                     ipmi_request_t request,
+                                     ipmi_response_t response,
+                                     ipmi_data_len_t dataLen,
+                                     ipmi_context_t context)
+{
+
+    // TODO: We need to restrict this command only in LAN interace and
+    // TODO:command should be allowed only in system where there is no host
+    // interface.
+    if (*dataLen != sizeof(sSetOemUser2ActivationReq))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetUser2Activation: invalid input len!");
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+    *dataLen = 0;
+    sSetOemUser2ActivationReq* req =
+        reinterpret_cast<sSetOemUser2ActivationReq*>(request);
+
+#if BYTE_ORDER == LITTLE_ENDIAN
+    PrivAccess privAccess = {PRIVILEGE_ADMIN, true, true, true, 0};
+#endif
+#if BYTE_ORDER == BIG_ENDIAN
+    PrivAccess privAccess = {0, true, true, true, PRIVILEGE_ADMIN};
+#endif
+
+    if (IPMI_CC_OK ==
+        ipmiUserSetUserName(ipmiDefaultUserId,
+                            reinterpret_cast<const char*>(req->userName)))
+    {
+        if (IPMI_CC_OK == ipmiUserSetUserPassword(
+                              ipmiDefaultUserId,
+                              reinterpret_cast<const char*>(req->userPassword)))
+        {
+            if (IPMI_CC_OK ==
+                ipmiUserSetPrivilegeAccess(
+                    ipmiDefaultUserId,
+                    static_cast<uint8_t>(ipmi::EChannelID::chanLan1),
+                    privAccess, true))
+            {
+                return IPMI_CC_OK;
+            }
+        }
+        // we need to delete  the default user id which added in this command as
+        // password / priv setting is failed.
+        ipmiUserSetUserName(ipmiDefaultUserId, "");
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetUser2Activation: password / priv setting is failed.");
+    }
+
+    return IPMI_CC_UNSPECIFIED_ERROR;
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -538,6 +594,11 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetPowerRestoreDelay),
         NULL, ipmiOEMGetPowerRestoreDelay, PRIVILEGE_USER);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetOEMUser2Activation),
+        NULL, ipmiOEMSetUser2Activation, PRIVILEGE_ADMIN);
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(
