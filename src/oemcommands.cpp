@@ -27,6 +27,8 @@
 #include <sdbusplus/bus.hpp>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 namespace ipmi
 {
@@ -327,6 +329,196 @@ ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+static constexpr const char* dimmOffsetNvDataFile =
+    "/var/lib/ipmi/ipmicmd_dimm_offset.json";
+static constexpr int maxDIMMNumber = 24;
+static constexpr uint8_t dimmOffsetStaticCLTT = 0;
+static constexpr uint8_t dimmOffsetPower = 2;
+static constexpr uint8_t dimmSettingOffset = 1;
+
+ipmi_ret_t ipmiSetDIMMOffset(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                    ipmi_request_t request,
+                                    ipmi_response_t response,
+                                    ipmi_data_len_t dataLen,
+                                    ipmi_context_t context)
+{
+    uint8_t* req = reinterpret_cast<uint8_t*>(request);
+    uint8_t* res = reinterpret_cast<uint8_t*>(response);
+
+    uint8_t type = req[0];
+    int paraLen = *dataLen;
+    *dataLen = 0;
+    if ((type != dimmOffsetStaticCLTT) && (type != dimmOffsetPower))
+    {
+        return IPMI_CC_PARM_OUT_OF_RANGE;
+    }
+
+    // check para length, which should be multiple of 2
+    paraLen -= dimmSettingOffset;
+    if (paraLen < 2 || paraLen % 2)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiSetDIMMOffset: invalid parameter length",
+            phosphor::logging::entry("paraLen=%d", paraLen));
+        std::cerr<<"err len" << std::endl;    
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    try
+    {
+        nlohmann::json offsetArray;
+        std::ifstream inFile(dimmOffsetNvDataFile);
+        inFile.exceptions(std::ifstream::badbit);
+        // if file doesn't exist, create it with default value
+        if (inFile.fail())
+        {
+            phosphor::logging::log<phosphor::logging::level::DEBUG>(
+               "json file not existed, create with default value");
+
+            // init with default value
+            nlohmann::json defaultOffsetJson = {{"Static CLTT", 0},
+                                                {"Power", 0}};
+            offsetArray = nlohmann::json(maxDIMMNumber, defaultOffsetJson);
+            std::ofstream outFile(dimmOffsetNvDataFile);
+            outFile.exceptions(std::ofstream::badbit);
+            outFile << offsetArray << std::endl;
+            outFile.close();
+        }
+        else
+        {
+            inFile >> offsetArray;
+            if (offsetArray.size() > maxDIMMNumber)
+            {
+                return IPMI_CC_PARM_OUT_OF_RANGE;
+            }
+        }
+
+        // The input para can be repeat pair of [<dimmNum> <value>]
+        for (int i = 0; i < paraLen; i += 2)
+        {
+            unsigned char dimmNum = req[dimmSettingOffset + i];
+            unsigned char value = req[dimmSettingOffset + i + 1];
+            if (dimmNum >= maxDIMMNumber)
+            {
+                return IPMI_CC_PARM_OUT_OF_RANGE;
+            }
+            else
+            {
+                if (type == dimmOffsetStaticCLTT)
+                {
+                    offsetArray.at(dimmNum).at("Static CLTT") = value;
+                }
+                else if (type == dimmOffsetPower)
+                {
+                    offsetArray.at(dimmNum).at("Power") = value;
+                }
+            }
+        }
+
+        // save setting file to NVM
+        std::ofstream outFile(dimmOffsetNvDataFile);
+        outFile.exceptions(std::ofstream::badbit);
+        outFile << offsetArray << std::endl;
+        outFile.close();
+    }
+    catch (nlohmann::json::parse_error& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Exception",
+            phosphor::logging::entry("exception=%s", e.what()));
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+    catch (std::ios_base::failure& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Exception",
+            phosphor::logging::entry("exception=%s", e.what()));
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    *dataLen = 1;
+    *res = 0;
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmiGetDIMMOffset(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                    ipmi_request_t request,
+                                    ipmi_response_t response,
+                                    ipmi_data_len_t dataLen,
+                                    ipmi_context_t context)
+{
+    uint8_t* req = reinterpret_cast<uint8_t*>(request);
+    uint8_t* res = reinterpret_cast<uint8_t*>(response);
+
+    nlohmann::json offsetArray;
+    std::ifstream inFile(dimmOffsetNvDataFile);
+
+    // check para length, para should be <type> <dimmNum>
+    if (*dataLen != 2)
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+    *dataLen = 0;
+
+    uint8_t type = req[0];
+    uint8_t dimmNum = req[1];
+    uint8_t value;
+
+    if ((type != dimmOffsetStaticCLTT) && (type != dimmOffsetPower))
+    {
+        return IPMI_CC_PARM_OUT_OF_RANGE;
+    }
+    if (dimmNum >= maxDIMMNumber)
+    {
+        return IPMI_CC_PARM_OUT_OF_RANGE;
+    }
+
+    // if file doesn't exist, return with default value
+    if (inFile.fail())
+    {
+        phosphor::logging::log<phosphor::logging::level::DEBUG>(
+               "json file not existed, create with default value");
+        *res = 0;
+        *dataLen = 1;
+        return IPMI_CC_OK;
+    }
+
+    try
+    {
+        // if file existed, read json data from it
+        inFile >> offsetArray;
+        if (inFile.bad())
+        {
+            return IPMI_CC_UNSPECIFIED_ERROR;
+        }
+
+        if (type == dimmOffsetStaticCLTT)
+        {
+            value = offsetArray.at(dimmNum).at("Static CLTT");
+        }
+        else if (type == dimmOffsetPower)
+        {
+            value = offsetArray.at(dimmNum).at("Power");
+        }
+        else
+        {
+            return IPMI_CC_PARM_OUT_OF_RANGE;
+        }
+    }
+    catch (nlohmann::json::parse_error& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Exception",
+            phosphor::logging::entry("exception=%s", e.what()));
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    *res = value;
+    *dataLen = 1;
+    return IPMI_CC_OK;
+}
+
 ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                         ipmi_request_t request,
                                         ipmi_response_t response,
@@ -451,6 +643,16 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetPowerRestoreDelay),
         NULL, ipmiOEMGetPowerRestoreDelay, PRIVILEGE_USER);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetDIMMOffset),
+        NULL, ipmiSetDIMMOffset, PRIVILEGE_USER);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetDIMMOffset),
+        NULL, ipmiGetDIMMOffset, PRIVILEGE_USER);
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(
