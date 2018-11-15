@@ -40,6 +40,7 @@ if (NOT YOCTO)
     include_directories (${CMAKE_BINARY_DIR}/phosphor-logging-src)
     link_directories (${CMAKE_BINARY_DIR}/phosphor-logging-src/.libs)
     include_directories (${CMAKE_BINARY_DIR}/phosphor-ipmi-host/include)
+    include_directories (${CMAKE_BINARY_DIR}/ipmid/user_channel)
     include_directories (${CMAKE_BINARY_DIR}) # link_directories
                                               # (${CMAKE_BINARY_DIR}/sdbusplus-
                                               # src/.libs)
@@ -85,5 +86,7 @@ set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
 target_link_libraries (zinteloemcmds ipmid)
 target_link_libraries (zinteloemcmds sdbusplus)
 target_link_libraries (zinteloemcmds phosphor_logging)
+target_link_libraries (zinteloemcmds -luserlayer)
+target_link_libraries (zinteloemcmds -lchannellayer)
 
 install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
