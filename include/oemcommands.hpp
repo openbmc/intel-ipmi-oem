@@ -24,6 +24,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetSystemGUID = 0x41,
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,
+    cmdSetOEMUser2Activation =0x5A,
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
@@ -88,6 +89,9 @@ static constexpr const char* processorErrConfigObjPath =
     "/xyz/openbmc_project/control/processor_error_config";
 static constexpr const char* processorErrConfigIntf =
     "xyz.openbmc_project.Control.Processor.ErrConfig";
+
+static constexpr uint8_t maxIpmi20PasswordSize = 20;
+static constexpr uint8_t ipmiMaxUserName = 16;
 
 enum class IPMINetfnIntelOEMAppCmd
 {
@@ -209,4 +213,11 @@ struct GetProcessorErrConfigRes
                                   //                 01b: Enabled
                                   //                 11b: Not Present
 };
+
+typedef struct
+{
+    uint8_t userName[ipmiMaxUserName];
+    uint8_t userPassword[maxIpmi20PasswordSize];
+} __attribute__((packed)) sSetOemUser2ActivationReq;
+
 #pragma pack(pop)

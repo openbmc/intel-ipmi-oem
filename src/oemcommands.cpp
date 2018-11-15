@@ -27,6 +27,7 @@
 #include <sdbusplus/bus.hpp>
 #include <string>
 #include <vector>
+#include<user_channel/user_layer.hpp>
 
 namespace ipmi
 {
@@ -407,6 +408,38 @@ ipmi_ret_t ipmiOEMSetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+ipmi_ret_t ipmiOEMSetUser2Activation(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                ipmi_request_t request,
+                                ipmi_response_t response,
+                                ipmi_data_len_t dataLen, ipmi_context_t context)
+{
+
+    if (*dataLen != sizeof(sSetOemUser2ActivationReq))
+    {
+        std::cerr << "this command should have userame and password" << std::endl;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    *dataLen = 1;
+    sSetOemUser2ActivationReq* req = reinterpret_cast<sSetOemUser2ActivationReq*>(request);
+    PrivAccess privAccess = {0};
+    privAccess.ipmiEnabled = true;
+    privAccess.linkAuthEnabled = true;
+    privAccess.accessCallback = true;
+    privAccess.privilege = PRIVILEGE_ADMIN;
+ 
+    if(IPMI_CC_OK == ipmiUserSetUserName( ipmiDefaultUserId, reinterpret_cast<const char*>(req->userName)))
+    {
+        if(IPMI_CC_OK == ipmiUserSetUserPassword(ipmiDefaultUserId,reinterpret_cast<const char*>(req->userPassword)))
+        {
+            if (IPMI_CC_OK == ipmiUserSetPrivilegeAccess(ipmiDefaultUserId,static_cast<uint8_t>(ipmi::EChannelID::chanLan1),privAccess,true))
+             {
+                 return IPMI_CC_OK;
+             }
+        }
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+}
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -451,6 +484,11 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetPowerRestoreDelay),
         NULL, ipmiOEMGetPowerRestoreDelay, PRIVILEGE_USER);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+         static_cast<ipmi_cmd_t>(
+        IPMINetfnIntelOEMGeneralCmd::cmdSetOEMUser2Activation),
+            NULL, ipmiOEMSetUser2Activation, PRIVILEGE_ADMIN);
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(
