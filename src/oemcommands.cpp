@@ -29,8 +29,14 @@
 #include <phosphor-ipmi-host/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
+#include <sdbusplus/message/types.hpp>
 #include <string>
+<<<<<<< HEAD
 #include <variant>
+=======
+#include <user_channel/channel_layer.hpp>
+#include <user_channel/user_layer.hpp>
+>>>>>>> 7eaba47... Adding Def user creation using Intel OEM command
 #include <vector>
 
 namespace ipmi
@@ -38,6 +44,13 @@ namespace ipmi
 static void registerOEMFunctions() __attribute__((constructor));
 sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection()); // from ipmid/api.h
 static constexpr size_t maxFRUStringLength = 0x3F;
+
+static constexpr auto ethernetIntf =
+    "xyz.openbmc_project.Network.EthernetInterface";
+static constexpr auto IPIntf = "xyz.openbmc_project.Network.IP";
+static constexpr auto service = "xyz.openbmc_project.Network";
+
+static constexpr auto networkRoot = "/xyz/openbmc_project/network";
 
 // return code: 0 successful
 int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
@@ -498,6 +511,158 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     return IPMI_CC_OK;
 }
+static bool isDHCPEnabled(uint8_t Channel)
+{
+    auto ethdevice = getChannelName(Channel);
+
+    if (ethdevice.empty())
+    {
+        return 0;
+    }
+    auto ethIP = ethdevice + "/ipv4";
+
+    auto ethernetObj = getDbusObject(dbus, IPIntf, networkRoot, ethIP);
+    auto value =
+        getDbusProperty(dbus, service, ethernetObj.first, IPIntf, "Origin");
+    if (sdbusplus::message::variant_ns::get<std::string>(value) ==
+        "xyz.openbmc_project.Network.IP.AddressOrigin.DHCP")
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+static bool isDHCPIPv6Enabled(uint8_t Channel)
+{
+    auto ethdevice = getChannelName(Channel);
+
+    if (ethdevice.empty())
+    {
+        return 0;
+    }
+
+    auto ethIP = ethdevice + "/ipv6";
+
+    auto objectInfo = getDbusObject(dbus, IPIntf, networkRoot, ethIP);
+
+    auto properties =
+        getAllDbusProperties(dbus, objectInfo.second, objectInfo.first, IPIntf);
+
+    std::string origin =
+        sdbusplus::message::variant_ns::get<std::string>(properties["Origin"]);
+    if (sdbusplus::message::variant_ns::get<std::string>(
+            properties["Origin"]) ==
+        "xyz.openbmc_project.Network.IP.AddressOrigin.DHCP")
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+ipmi_ret_t ipmiOEMSetUser2Activation(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                     ipmi_request_t request,
+                                     ipmi_response_t response,
+                                     ipmi_data_len_t dataLen,
+                                     ipmi_context_t context)
+{
+    bool userState = false;
+
+    // TODO:command should be allowed only in system where there is no host
+    // interface.
+
+    if (getInterfaceIndex() == interfaceKCS)
+    {
+
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetUser2Activation:KCS not supported");
+        *dataLen = 0;
+        return IPMI_CC_INVALID;
+    }
+    if (*dataLen != sizeof(sSetOemUser2ActivationReq))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetUser2Activation: invalid input len!");
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    // Check the user 2 is enabled or not
+    ipmiUserCheckEnabled(ipmiDefaultUserId, userState);
+
+    if (userState == true)
+    {
+        *dataLen = 0;
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetUser2Activation: user 2 already enabled .");
+        return IPMI_CC_INVALID_FIELD_REQUEST;
+    }
+
+    for (uint8_t channel = 0; channel < maxIpmiChannels; channel++)
+    {
+
+        ChannelInfo chInfo;
+        getChannelInfo(channel, chInfo);
+        if (chInfo.mediumType ==
+            static_cast<uint8_t>(EChannelMediumType::lan8032))
+        {
+            if (isDHCPIPv6Enabled(channel) || isDHCPEnabled(channel))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "ipmiOEMSetUser2Activation: DHCP enabled .");
+                *dataLen = 0;
+                return IPMI_CC_INVALID_FIELD_REQUEST;
+            }
+        }
+    }
+
+    *dataLen = 0;
+    sSetOemUser2ActivationReq* req =
+        reinterpret_cast<sSetOemUser2ActivationReq*>(request);
+
+#if BYTE_ORDER == LITTLE_ENDIAN
+    PrivAccess privAccess = {PRIVILEGE_ADMIN, true, true, true, 0};
+#endif
+#if BYTE_ORDER == BIG_ENDIAN
+    PrivAccess privAccess = {0, true, true, true, PRIVILEGE_ADMIN};
+#endif
+
+    if (IPMI_CC_OK ==
+        ipmiUserSetUserName(ipmiDefaultUserId,
+                            reinterpret_cast<const char*>(req->userName)))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetUser2Activation: username  passed .");
+        if (IPMI_CC_OK == ipmiUserSetUserPassword(
+                              ipmiDefaultUserId,
+                              reinterpret_cast<const char*>(req->userPassword)))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMSetUser2Activation: password passed .");
+            if (IPMI_CC_OK ==
+                ipmiUserSetPrivilegeAccess(
+                    ipmiDefaultUserId,
+                    static_cast<uint8_t>(ipmi::EChannelID::chanLan1),
+                    privAccess, true))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "ipmiOEMSetUser2Activation: priv setting passed .");
+                return IPMI_CC_OK;
+            }
+        }
+        // we need to delete  the default user id which added in this command as
+        // password / priv setting is failed.
+        ipmiUserSetUserName(ipmiDefaultUserId, "");
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetUser2Activation: password / priv setting is failed.");
+    }
+
+    return IPMI_CC_UNSPECIFIED_ERROR;
+}
 
 namespace ledAction
 {
@@ -890,6 +1055,11 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetPowerRestoreDelay),
         NULL, ipmiOEMGetPowerRestoreDelay, PRIVILEGE_USER);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetOEMUser2Activation),
+        NULL, ipmiOEMSetUser2Activation, PRIVILEGE_CALLBACK);
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(

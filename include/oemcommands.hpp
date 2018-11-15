@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <user_channel/user_layer.hpp>
 enum class IPMINetfnIntelOEMGeneralCmd
 {
     cmdSetBIOSID = 0x26,
@@ -26,8 +27,12 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetPowerRestoreDelay = 0x55,
     cmdSetShutdownPolicy = 0x60,
     cmdGetShutdownPolicy = 0x62,
+<<<<<<< HEAD
     cmdSetFanConfig = 0x89,
     cmdGetFanConfig = 0x8a,
+=======
+    cmdSetOEMUser2Activation = 0x5A,
+>>>>>>> 7eaba47... Adding Def user creation using Intel OEM command
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
@@ -140,6 +145,7 @@ static constexpr const uint8_t setHostSerialCfgCmd = 1;
 // 2: host serial port 1 normal spend, port 2 high speed
 // 3: host serial port 1 and 2 high speed
 static constexpr const uint8_t HostSerialCfgParamMax = 3;
+static constexpr uint8_t ipmiDefaultUserId = 2;
 
 enum class IPMINetfnIntelOEMAppCmd
 {
@@ -289,6 +295,11 @@ struct CfgHostSerialReq
     uint8_t command;
     uint8_t parameter;
 };
+typedef struct
+{
+    uint8_t userName[ipmi::ipmiMaxUserName];
+    uint8_t userPassword[ipmi::maxIpmi20PasswordSize];
+} __attribute__((packed)) sSetOemUser2ActivationReq;
 #pragma pack(pop)
 
 enum class setFanProfileFlags : uint8_t
