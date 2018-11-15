@@ -78,5 +78,6 @@ if (YOCTO)
 endif ()
 target_link_libraries (zinteloemcmds sdbusplus)
 target_link_libraries (zinteloemcmds phosphor_logging)
+target_link_libraries (zinteloemcmds -luserlayer)
 
 install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
