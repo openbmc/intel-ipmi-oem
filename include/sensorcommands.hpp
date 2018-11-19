@@ -132,3 +132,35 @@ enum class IPMINetfnSensorCmds : ipmi_cmd_t
     ipmiCmdGetSensorType = 0x2F,
     ipmiCmdSetSensorReadingAndEventStatus = 0x30,
 };
+
+extern SensorSubTree sensorTree;
+static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string &connection,
+                                      std::string &path)
+{
+    if (sensorTree.empty() && !getSensorSubtree(sensorTree))
+    {
+        return IPMI_CC_RESPONSE_ERROR;
+    }
+
+    if (sensorTree.size() < (sensnum + 1))
+    {
+        return IPMI_CC_INVALID_FIELD_REQUEST;
+    }
+
+    uint8_t sensorIndex = sensnum;
+    for (const auto &sensor : sensorTree)
+    {
+        if (sensorIndex-- == 0)
+        {
+            if (!sensor.second.size())
+            {
+                return IPMI_CC_RESPONSE_ERROR;
+            }
+            connection = sensor.second.begin()->first;
+            path = sensor.first;
+            break;
+        }
+    }
+
+    return 0;
+}

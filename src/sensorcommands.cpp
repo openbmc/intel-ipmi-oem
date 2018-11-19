@@ -50,7 +50,7 @@ static uint16_t sdrReservationID;
 static uint32_t sdrLastAdd = noTimestamp;
 static uint32_t sdrLastRemove = noTimestamp;
 
-static SensorSubTree sensorTree;
+SensorSubTree sensorTree;
 static boost::container::flat_map<std::string, ManagedObjectType> SensorCache;
 
 // Specify the comparison required to sort and find char* map objects
@@ -110,37 +110,6 @@ static void
     {
         min = apply_visitor(VariantToDoubleVisitor(), minMap->second);
     }
-}
-
-static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string &connection,
-                                      std::string &path)
-{
-    if (sensorTree.empty() && !getSensorSubtree(sensorTree))
-    {
-        return IPMI_CC_RESPONSE_ERROR;
-    }
-
-    if (sensorTree.size() < (sensnum + 1))
-    {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
-    }
-
-    uint8_t sensorIndex = sensnum;
-    for (const auto &sensor : sensorTree)
-    {
-        if (sensorIndex-- == 0)
-        {
-            if (!sensor.second.size())
-            {
-                return IPMI_CC_RESPONSE_ERROR;
-            }
-            connection = sensor.second.begin()->first;
-            path = sensor.first;
-            break;
-        }
-    }
-
-    return 0;
 }
 
 static bool getSensorMap(std::string sensorConnection, std::string sensorPath,
