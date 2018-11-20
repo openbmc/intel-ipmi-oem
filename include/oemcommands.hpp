@@ -24,6 +24,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetSystemGUID = 0x41,
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,
+    cmdSetDIMMOffset = 0x8E,
+    cmdGetDIMMOffset = 0x8F,
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
