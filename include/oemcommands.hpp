@@ -29,6 +29,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
+    cmdSetPayload = 0xD5,
+    cmdGetPayload = 0xD6,
 };
 
 enum class IPMIIntelOEMReturnCodes
@@ -105,6 +107,9 @@ static constexpr const char* oemShutdownPolicyIntf =
 static constexpr const char* oemShutdownPolicyObjPath =
     "/xyz/openbmc_project/control/shutdown_policy_config";
 static constexpr const char* oemShutdownPolicyObjPathProp = "Policy";
+
+static constexpr size_t maxPayloadLengthPerTransfer = 65512;
+static constexpr size_t maxPasswordLength = 32;
 
 enum class IPMINetfnIntelOEMAppCmd
 {
@@ -186,6 +191,8 @@ struct GetOemDeviceInfoRes
     uint8_t resDatalen;
     uint8_t data[maxBIOSIDLength];
 };
+
+
 
 struct SetProcessorErrConfigReq
 {

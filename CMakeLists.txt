@@ -86,6 +86,12 @@ set_target_properties (oemcmds PROPERTIES SOVERSION "0")
 target_link_libraries (oemcmds sdbusplus)
 target_link_libraries (oemcmds ${LOGGING_LIBRARIES})
 
+add_library (oob SHARED src/oobcommands.cpp src/utils.cpp)
+set_target_properties (oemcmds PROPERTIES VERSION "0.1.0")
+set_target_properties (oemcmds PROPERTIES SOVERSION "0")
+target_link_libraries (oemcmds sdbusplus)
+target_link_libraries (oemcmds ${LOGGING_LIBRARIES})
+
 add_library (
     sensorcommands SHARED src/sensorcommands.cpp src/sensorutils.cpp
     src/utils.cpp src/storagecommands.cpp
