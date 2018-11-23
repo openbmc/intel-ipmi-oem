@@ -349,21 +349,24 @@ ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     resp->resetCfg = sdbusplus::message::variant_ns::get<uint8_t>(variant);
 
     std::vector<uint8_t> caterrStatus;
+    sdbusplus::message::variant<std::vector<uint8_t>> message;
 
     auto method =
         dbus.new_method_call(service.c_str(), processorErrConfigObjPath,
                              "org.freedesktop.DBus.Properties", "Get");
 
     method.append(processorErrConfigIntf, "CATERRStatus");
+    auto reply = dbus.call(method);
 
     try
     {
-        auto reply = dbus.call(method);
-        reply.read(caterrStatus);
+        reply.read(message);
+        caterrStatus =
+            sdbusplus::message::variant_ns::get<std::vector<uint8_t>>(message);
     }
     catch (sdbusplus::exception_t&)
     {
-        phosphor::logging::log<phosphor::logging::level::DEBUG>(
+        phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMGetProcessorErrConfig: error on dbus",
             phosphor::logging::entry("PRORPERTY=CATERRStatus"),
             phosphor::logging::entry("PATH=%s", processorErrConfigObjPath),
