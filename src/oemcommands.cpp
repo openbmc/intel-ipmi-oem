@@ -349,17 +349,23 @@ ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     resp->resetCfg = sdbusplus::message::variant_ns::get<uint8_t>(variant);
 
     std::vector<uint8_t> caterrStatus;
+    sdbusplus::message::variant<std::vector<uint8_t>> message;
 
     auto method =
         dbus.new_method_call(service.c_str(), processorErrConfigObjPath,
                              "org.freedesktop.DBus.Properties", "Get");
 
     method.append(processorErrConfigIntf, "CATERRStatus");
-
+    auto reply = dbus.call(method);
+    if (reply.is_method_error())
+    {
+        phosphor::logging::log<phosphor::logging::level::DEBUG>(
+            "ipmiOEMGetProcessorErrConfig: error on dbus.call");
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
     try
     {
-        auto reply = dbus.call(method);
-        reply.read(caterrStatus);
+        reply.read(message);
     }
     catch (sdbusplus::exception_t&)
     {
@@ -370,7 +376,7 @@ ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             phosphor::logging::entry("INTERFACE=%s", processorErrConfigIntf));
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-
+    caterrStatus = sdbusplus::message::variant_ns::get<std::vector<uint8_t>>(message);
     size_t len =
         maxCPUNum <= caterrStatus.size() ? maxCPUNum : caterrStatus.size();
     caterrStatus.resize(len);
