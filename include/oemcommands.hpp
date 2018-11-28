@@ -24,6 +24,10 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetSystemGUID = 0x41,
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,
+    cmdSetShutdownPolicy = 0x60,
+    cmdGetShutdownPolicy = 0x62,
+    cmdSetDIMMOffset = 0x8E,
+    cmdGetDIMMOffset = 0x8F,
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
@@ -88,6 +92,21 @@ static constexpr const char* processorErrConfigObjPath =
     "/xyz/openbmc_project/control/processor_error_config";
 static constexpr const char* processorErrConfigIntf =
     "xyz.openbmc_project.Control.Processor.ErrConfig";
+
+static constexpr const char* postCodesObjPath =
+    "/xyz/openbmc_project/State/Boot/PostCode";
+static constexpr const char* postCodesIntf =
+    "xyz.openbmc_project.State.Boot.PostCode";
+
+static constexpr const uint8_t noShutdownOnOCOT = 0;
+static constexpr const uint8_t shutdownOnOCOT = 1;
+static constexpr const uint8_t noShutdownPolicySupported = 0;
+static constexpr const uint8_t shutdownPolicySupported = 1;
+static constexpr const char* oemShutdownPolicyIntf =
+    "xyz.openbmc_project.Control.ShutdownPolicy";
+static constexpr const char* oemShutdownPolicyObjPath =
+    "/xyz/openbmc_project/control/shutdown_policy_config";
+static constexpr const char* oemShutdownPolicyObjPathProp = "Policy";
 
 enum class IPMINetfnIntelOEMAppCmd
 {
@@ -208,5 +227,11 @@ struct GetProcessorErrConfigRes
                                   //                 00b: Disabled
                                   //                 01b: Enabled
                                   //                 11b: Not Present
+};
+
+struct GetOEMShutdownPolicyRes
+{
+    uint8_t policy;
+    uint8_t policySupport;
 };
 #pragma pack(pop)
