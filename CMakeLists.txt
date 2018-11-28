@@ -65,7 +65,7 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 option (ENABLE_TEST "Enable Google Test" OFF)
 if (ENABLE_TEST)
-    set (SENSOR_TEST_SRC tests/test_sensorcommands.cpp src/sensorutils.cpp)
+    set (SENSOR_TEST_SRC tests/test_sensorcommands.cpp)
     hunter_add_package (GTest)
     find_package (GTest CONFIG REQUIRED)
 
@@ -81,8 +81,7 @@ endif ()
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_library (zinteloemcmds SHARED src/oemcommands.cpp src/utils.cpp
-             src/sensorcommands.cpp src/sensorutils.cpp
-             src/storagecommands.cpp)
+             src/sensorcommands.cpp src/storagecommands.cpp)
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
 target_link_libraries (zinteloemcmds sdbusplus)
