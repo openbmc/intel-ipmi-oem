@@ -20,6 +20,26 @@
 
 static constexpr uint8_t ipmiSdrVersion = 0x51;
 
+namespace ipmi
+{
+namespace sel
+{
+// ID string generated using journalctl to include in the MESSAGE_ID field for
+// SEL entries.  Helps with filtering SEL entries in the journal.
+static constexpr const char* selMessageId = "b370836ccf2f4850ac5bee185b77893a";
+static constexpr uint8_t selOperationSupport = 0x02;
+static constexpr uint8_t systemEvent = 0x02;
+static constexpr size_t systemEventSize = 3;
+static constexpr uint8_t oemTsEventFirst = 0xC0;
+static constexpr uint8_t oemTsEventLast = 0xDF;
+static constexpr size_t oemTsEventSize = 9;
+static constexpr uint8_t oemEventFirst = 0xE0;
+static constexpr uint8_t oemEventLast = 0xFF;
+static constexpr size_t oemEventSize = 13;
+static constexpr uint8_t eventMsgRev = 0x04;
+} // namespace sel
+} // namespace ipmi
+
 #pragma pack(push, 1)
 struct GetSDRInfoResp
 {
@@ -86,6 +106,19 @@ struct WriteFRUDataReq
     uint8_t fruDeviceID;
     uint16_t fruInventoryOffset;
     uint8_t data[];
+};
+
+struct AddSELRequest
+{
+    uint8_t recordid[2];
+    uint8_t recordtype;
+    uint8_t timestamp[4];
+    uint8_t generatorid[2];
+    uint8_t evmrev;
+    uint8_t sensortype;
+    uint8_t sensornumber;
+    uint8_t eventdir;
+    uint8_t eventdata[3];
 };
 #pragma pack(pop)
 
