@@ -95,16 +95,6 @@ enum class GetFRUAreaAccessType : uint8_t
     words = 0x1
 };
 
-enum class SensorTypeCodes : uint8_t
-{
-    reserved = 0x0,
-    temperature = 0x1,
-    voltage = 0x2,
-    current = 0x3,
-    fan = 0x4,
-    other = 0xB,
-};
-
 enum class SensorUnits : uint8_t
 {
     unspecified = 0x0,
