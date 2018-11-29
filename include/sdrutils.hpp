@@ -18,7 +18,6 @@
 #include <boost/container/flat_map.hpp>
 #include <cstring>
 #include <phosphor-logging/log.hpp>
-#include <storagecommands.hpp>
 
 #pragma once
 
@@ -52,7 +51,7 @@ inline static bool getSensorSubtree(SensorSubTree& subtree)
         dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
                              "/xyz/openbmc_project/object_mapper",
                              "xyz.openbmc_project.ObjectMapper", "GetSubTree");
-    static const auto depth = 2;
+    static constexpr const auto depth = 2;
     static constexpr std::array<const char*, 3> interfaces = {
         "xyz.openbmc_project.Sensor.Value",
         "xyz.openbmc_project.Sensor.Threshold.Warning",
@@ -65,10 +64,9 @@ inline static bool getSensorSubtree(SensorSubTree& subtree)
         subtree.clear();
         mapperReply.read(subtree);
     }
-    catch (sdbusplus::exception_t&)
+    catch (sdbusplus::exception_t& e)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "getSensorSubtree: Error calling mapper");
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return false;
     }
     return true;
@@ -80,6 +78,16 @@ struct CmpStr
     {
         return std::strcmp(a, b) < 0;
     }
+};
+
+enum class SensorTypeCodes : uint8_t
+{
+    reserved = 0x0,
+    temperature = 0x1,
+    voltage = 0x2,
+    current = 0x3,
+    fan = 0x4,
+    other = 0xB,
 };
 
 const static boost::container::flat_map<const char*, SensorTypeCodes, CmpStr>
