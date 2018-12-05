@@ -31,6 +31,8 @@
 #include <storagecommands.hpp>
 #include <string>
 
+SensorSubTree sensorTree;
+
 namespace ipmi
 {
 using ManagedObjectType =
@@ -50,7 +52,6 @@ static uint16_t sdrReservationID;
 static uint32_t sdrLastAdd = noTimestamp;
 static uint32_t sdrLastRemove = noTimestamp;
 
-SensorSubTree sensorTree;
 static boost::container::flat_map<std::string, ManagedObjectType> SensorCache;
 
 // Specify the comparison required to sort and find char* map objects
