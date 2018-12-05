@@ -133,6 +133,8 @@ enum class IPMINetfnSensorCmds : ipmi_cmd_t
     ipmiCmdSetSensorReadingAndEventStatus = 0x30,
 };
 
+namespace ipmi
+{
 extern SensorSubTree sensorTree;
 static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string &connection,
                                       std::string &path)
@@ -164,3 +166,4 @@ static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string &connection,
 
     return 0;
 }
+} // namespace ipmi
