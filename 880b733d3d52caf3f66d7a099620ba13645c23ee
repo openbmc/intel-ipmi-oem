@@ -1,0 +1,9 @@
+Ok-To-Test+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Verified+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Code-Review+1: Jason Bills <jason.m.bills@linux.intel.com>
+Code-Review+2: Vernon Mauery <vernon.mauery@linux.intel.com>
+Submitted-by: Vernon Mauery <vernon.mauery@linux.intel.com>
+Submitted-at: Thu, 06 Dec 2018 21:33:34 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/16523
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
