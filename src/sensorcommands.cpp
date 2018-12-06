@@ -739,11 +739,13 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
             if (warningHigh != warningMap.end())
             {
-                warningHighAlarm = warningHigh->second.get<bool>();
+                warningHighAlarm = sdbusplus::message::variant_ns::get<bool>(
+                    warningHigh->second);
             }
             if (warningLow != warningMap.end())
             {
-                warningLowAlarm = warningLow->second.get<bool>();
+                warningLowAlarm = sdbusplus::message::variant_ns::get<bool>(
+                    warningLow->second);
             }
             if (warningHighAlarm)
             {
@@ -766,11 +768,13 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
             if (criticalHigh != criticalMap.end())
             {
-                criticalHighAlarm = criticalHigh->second.get<bool>();
+                criticalHighAlarm = sdbusplus::message::variant_ns::get<bool>(
+                    criticalHigh->second);
             }
             if (criticalLow != criticalMap.end())
             {
-                criticalLowAlarm = criticalLow->second.get<bool>();
+                criticalLowAlarm = sdbusplus::message::variant_ns::get<bool>(
+                    criticalLow->second);
             }
             if (criticalHighAlarm)
             {
