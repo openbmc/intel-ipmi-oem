@@ -38,6 +38,7 @@ using ManagedObjectType =
              std::map<std::string, std::map<std::string, DbusVariant>>>;
 
 using SensorMap = std::map<std::string, std::map<std::string, DbusVariant>>;
+namespace variant_ns = sdbusplus::message::variant_ns;
 
 static constexpr int sensorListUpdatePeriod = 10;
 static constexpr int sensorMapUpdatePeriod = 2;
@@ -104,11 +105,11 @@ static void
 
     if (maxMap != sensorPropertyMap.end())
     {
-        max = apply_visitor(VariantToDoubleVisitor(), maxMap->second);
+        max = variant_ns::visit(VariantToDoubleVisitor(), maxMap->second);
     }
     if (minMap != sensorPropertyMap.end())
     {
-        min = apply_visitor(VariantToDoubleVisitor(), minMap->second);
+        min = variant_ns::visit(VariantToDoubleVisitor(), minMap->second);
     }
 }
 
@@ -218,7 +219,7 @@ ipmi_ret_t ipmiSenGetSensorReading(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_RESPONSE_ERROR;
     }
     auto &value = sensorObject->second["Value"];
-    double reading = apply_visitor(VariantToDoubleVisitor(), value);
+    double reading = variant_ns::visit(VariantToDoubleVisitor(), value);
 
     double max;
     double min;
@@ -494,8 +495,8 @@ ipmi_ret_t ipmiSenGetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 msgReply->readable |=
                     1 << static_cast<int>(
                         IPMIhresholdRespBits::upperNonCritical);
-                double value = apply_visitor(VariantToDoubleVisitor(),
-                                             warningHigh->second);
+                double value = variant_ns::visit(VariantToDoubleVisitor(),
+                                                 warningHigh->second);
                 msgReply->uppernc = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
@@ -504,8 +505,8 @@ ipmi_ret_t ipmiSenGetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 msgReply->readable |=
                     1 << static_cast<int>(
                         IPMIhresholdRespBits::lowerNonCritical);
-                double value =
-                    apply_visitor(VariantToDoubleVisitor(), warningLow->second);
+                double value = variant_ns::visit(VariantToDoubleVisitor(),
+                                                 warningLow->second);
                 msgReply->lowernc = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
@@ -521,8 +522,8 @@ ipmi_ret_t ipmiSenGetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             {
                 msgReply->readable |=
                     1 << static_cast<int>(IPMIhresholdRespBits::upperCritical);
-                double value = apply_visitor(VariantToDoubleVisitor(),
-                                             criticalHigh->second);
+                double value = variant_ns::visit(VariantToDoubleVisitor(),
+                                                 criticalHigh->second);
                 msgReply->uppercritical = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
@@ -530,8 +531,8 @@ ipmi_ret_t ipmiSenGetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             {
                 msgReply->readable |=
                     1 << static_cast<int>(IPMIhresholdRespBits::lowerCritical);
-                double value = apply_visitor(VariantToDoubleVisitor(),
-                                             criticalLow->second);
+                double value = variant_ns::visit(VariantToDoubleVisitor(),
+                                                 criticalLow->second);
                 msgReply->lowercritical = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
@@ -1019,12 +1020,12 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     double min = -127;
     if (maxObject != sensorObject->second.end())
     {
-        max = apply_visitor(VariantToDoubleVisitor(), maxObject->second);
+        max = variant_ns::visit(VariantToDoubleVisitor(), maxObject->second);
     }
 
     if (minObject != sensorObject->second.end())
     {
-        min = apply_visitor(VariantToDoubleVisitor(), minObject->second);
+        min = variant_ns::visit(VariantToDoubleVisitor(), minObject->second);
     }
 
     int16_t mValue;
