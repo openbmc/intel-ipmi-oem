@@ -41,7 +41,8 @@ using ManagedEntry = std::pair<
     boost::container::flat_map<
         std::string, boost::container::flat_map<std::string, DbusVariant>>>;
 
-constexpr static const char* fruDeviceServiceName = "com.intel.FruDevice";
+constexpr static const char* fruDeviceServiceName =
+    "xyz.openbmc_project.FruDevice";
 constexpr static const size_t cacheTimeoutSeconds = 10;
 
 static std::vector<uint8_t> fruCache;
