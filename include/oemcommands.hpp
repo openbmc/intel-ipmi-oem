@@ -29,6 +29,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
+    cmdGetLEDStatus = 0xB0,
 };
 
 enum class IPMIIntelOEMReturnCodes
@@ -95,6 +96,15 @@ static constexpr const char* postCodesObjPath =
     "/xyz/openbmc_project/State/Boot/PostCode";
 static constexpr const char* postCodesIntf =
     "xyz.openbmc_project.State.Boot.PostCode";
+
+static constexpr const char* identifyLEDObjPath =
+    "/xyz/openbmc_project/led/physical/identify";
+static constexpr const char* ledIntf =
+    "xyz.openbmc_project.Led.Physical";
+static constexpr const char* statusAmberObjPath =
+    "/xyz/openbmc_project/led/physical/status_amber";
+static constexpr const char* statusGreenObjPath =
+    "/xyz/openbmc_project/led/physical/status_green";
 
 static constexpr const uint8_t noShutdownOnOCOT = 0;
 static constexpr const uint8_t shutdownOnOCOT = 1;
@@ -231,5 +241,19 @@ struct GetOEMShutdownPolicyRes
 {
     uint8_t policy;
     uint8_t policySupport;
+};
+
+struct GetLEDStatusRes
+{
+    uint8_t status; //LED Status
+                    //[1:0] = Reserved
+                    //[3:2] = Status(Amber)
+                    //[5:4] = Status(Green)
+                    //[7:6] = System Identify
+                    //Status definitions:
+                    //00b = Off
+                    //01b = Blink
+                    //10b = On
+                    //11b = invalid
 };
 #pragma pack(pop)
