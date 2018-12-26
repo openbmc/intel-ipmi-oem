@@ -29,6 +29,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
+    cmdGetLEDStatus = 0xB0,
 };
 
 enum class IPMIIntelOEMReturnCodes
@@ -96,6 +97,14 @@ static constexpr const char* postCodesObjPath =
 static constexpr const char* postCodesIntf =
     "xyz.openbmc_project.State.Boot.PostCode";
 
+static constexpr const char* identifyLEDObjPath =
+    "/xyz/openbmc_project/led/physical/identify";
+static constexpr const char* ledIntf = "xyz.openbmc_project.Led.Physical";
+static constexpr const char* statusAmberObjPath =
+    "/xyz/openbmc_project/led/physical/status_amber";
+static constexpr const char* statusGreenObjPath =
+    "/xyz/openbmc_project/led/physical/status_green";
+
 static constexpr const uint8_t noShutdownOnOCOT = 0;
 static constexpr const uint8_t shutdownOnOCOT = 1;
 static constexpr const uint8_t noShutdownPolicySupported = 0;
@@ -126,6 +135,13 @@ enum class IPMINetfnIntelOEMAppCmd
     mdr2DataStart = 0x3b,
     mdr2DataDone = 0x3c,
     mdr2SendDataBlock = 0x3d,
+};
+
+enum class LedOffset
+{
+    statusAmberOffset = 2,
+    statusGreenOffset = 4,
+    idLedOffset = 6,
 };
 
 enum class OEMDevEntityType
@@ -232,4 +248,5 @@ struct GetOEMShutdownPolicyRes
     uint8_t policy;
     uint8_t policySupport;
 };
+
 #pragma pack(pop)
