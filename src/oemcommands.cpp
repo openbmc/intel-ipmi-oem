@@ -15,6 +15,7 @@
 */
 
 #include "xyz/openbmc_project/Common/error.hpp"
+#include "xyz/openbmc_project/Led/Physical/server.hpp"
 
 #include <host-ipmid/ipmid-api.h>
 
@@ -422,7 +423,7 @@ ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     if (*dataLen != 0)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "oem_set_shutdown_policy: invalid input len!");
+            "oem_get_shutdown_policy: invalid input len!");
         *dataLen = 0;
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
@@ -494,6 +495,76 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+namespace ledAction
+{
+using namespace sdbusplus::xyz::openbmc_project::Led::server;
+std::map<Physical::Action, uint8_t> actionDbusToIpmi = {
+    {Physical::Action::Off, 0x00},
+    {Physical::Action::On, 0x10},
+    {Physical::Action::Blink, 0x01}};
+} // namespace ledAction
+
+int8_t getLEDState(sdbusplus::bus::bus& bus, const char* intf,
+                   const char* objPath, uint8_t& state)
+{
+    try
+    {
+        std::string service = getService(bus, intf, objPath);
+        Value stateValue = getDbusProperty(bus, service, objPath,
+                                        intf, "State");
+        std::string strState =
+            sdbusplus::message::variant_ns::get<std::string>(stateValue);
+        state = ledAction::actionDbusToIpmi.at(
+            sdbusplus::xyz::openbmc_project::Led::server::Physical::
+                convertActionFromString(strState));
+    }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return -1;
+    }
+    return state;
+}
+
+ipmi_ret_t ipmiOEMGetLEDStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                               ipmi_request_t request, ipmi_response_t response,
+                               ipmi_data_len_t dataLen, ipmi_context_t context)
+{
+    GetLEDStatusRes* resp = reinterpret_cast<GetLEDStatusRes*>(response);
+
+    if (*dataLen != 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "oem_get_led_status: invalid input len!");
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    phosphor::logging::log<phosphor::logging::level::DEBUG>(
+        "GET led status");
+    resp->status = 0;
+    uint8_t state = 0;
+    if(getLEDState(dbus, ledIntf, identifyLEDObjPath, state) == -1)
+    {
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+    resp->status |= state << 6;
+
+    if(getLEDState(dbus, ledIntf, statusGreenObjPath, state) == -1)
+    {
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+    resp->status |= state << 4;
+
+    if(getLEDState(dbus, ledIntf, statusAmberObjPath, state) == -1)
+    {
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+    resp->status |= state << 2;
+
+    *dataLen = sizeof(*resp);
+    return IPMI_CC_OK;
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -556,6 +627,10 @@ static void registerOEMFunctions(void)
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdGetShutdownPolicy),
                          NULL, ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetLEDStatus),
+        NULL, ipmiOEMGetLEDStatus, PRIVILEGE_ADMIN);
     return;
 }
 
