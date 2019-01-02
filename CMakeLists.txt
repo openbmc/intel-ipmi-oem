@@ -12,14 +12,6 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
 project (intel-ipmi-oem CXX)
 
-option (HUNTER_ENABLED "Enable hunter package pulling" OFF)
-include ("cmake/HunterGate.cmake")
-
-huntergate (
-    URL "https://github.com/ruslo/hunter/archive/v0.18.64.tar.gz" SHA1
-    "baf9c8cc4f65306f0e442b5419967b4c4c04589a"
-)
-
 add_definitions (-DBOOST_ERROR_CODE_HEADER_ONLY)
 add_definitions (-DBOOST_SYSTEM_NO_DEPRECATED)
 add_definitions (-DBOOST_ALL_NO_LIB)
@@ -28,29 +20,24 @@ add_definitions (-DBOOST_NO_TYPEID)
 
 if (NOT YOCTO)
     configure_file (CMakeLists.txt.in 3rdparty/CMakeLists.txt)
-    execute_process (
-        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty
-    )
-    execute_process (
-        COMMAND ${CMAKE_COMMAND} --build .
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty
-    )
+    execute_process (COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty)
+    execute_process (COMMAND ${CMAKE_COMMAND} --build .
+                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty)
 
     set (CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/prefix ${CMAKE_PREFIX_PATH})
     include_directories (${CMAKE_BINARY_DIR}/prefix/include)
 endif ()
 
-# sdbusplus
 if (NOT YOCTO)
     include_directories (${CMAKE_BINARY_DIR}/sdbusplus-src)
     link_directories (${CMAKE_BINARY_DIR}/sdbusplus-src/.libs)
-endif ()
+    include_directories (${CMAKE_BINARY_DIR}/phosphor-logging-src)
+    link_directories (${CMAKE_BINARY_DIR}/phosphor-logging-src/.libs)
 
-# phosphor-host-ipmid
-if (NOT YOCTO)
-    include_directories (${CMAKE_BINARY_DIR})
-    # link_directories (${CMAKE_BINARY_DIR}/sdbusplus-src/.libs)
+    include_directories (${CMAKE_BINARY_DIR}) # link_directories
+                                              # (${CMAKE_BINARY_DIR}/sdbusplus-
+                                              # src/.libs)
 endif ()
 
 if (YOCTO)
@@ -63,25 +50,25 @@ endif ()
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-option (ENABLE_TEST "Enable Google Test" OFF)
-if (ENABLE_TEST)
+if (NOT YOCTO)
     set (SENSOR_TEST_SRC tests/test_sensorcommands.cpp)
-    hunter_add_package (GTest)
-    find_package (GTest CONFIG REQUIRED)
+
+    find_package (GTest REQUIRED)
 
     enable_testing ()
 
     add_executable (runSensorTests ${SENSOR_TEST_SRC})
     add_test (NAME test_sensorcommands COMMAND runSensorTests)
-    target_link_libraries (
-        runSensorTests GTest::main GTest::gtest ${CMAKE_THREAD_LIBS_INIT}
-    )
+    target_link_libraries (runSensorTests ${GTEST_LIBRARIES}
+                           ${CMAKE_THREAD_LIBS_INIT} ${LOGGING_LIBRARIES}
+                           phosphor_logging sdbusplus -lsystemd)
 endif ()
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_library (zinteloemcmds SHARED src/oemcommands.cpp src/utils.cpp
-             src/sensorcommands.cpp src/storagecommands.cpp)
+add_library (zinteloemcmds
+             SHARED src/oemcommands.cpp src/utils.cpp src/sensorcommands.cpp
+             src/storagecommands.cpp)
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
 target_link_libraries (zinteloemcmds sdbusplus)
@@ -89,6 +76,4 @@ target_link_libraries (zinteloemcmds ${LOGGING_LIBRARIES})
 target_link_libraries (zinteloemcmds ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries (zinteloemcmds phosphor_logging)
 
-install (
-    TARGETS zinteloemcmds DESTINATION lib/ipmid-providers
-)
+install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
