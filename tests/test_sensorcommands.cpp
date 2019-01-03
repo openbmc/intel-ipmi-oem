@@ -62,7 +62,7 @@ TEST(sensorutils, TranslateToIPMI)
     if (result)
     {
         EXPECT_EQ(bSigned, false);
-        EXPECT_EQ(mValue, floor(16000.0 / 0xFF + 0.5));
+        EXPECT_EQ(mValue, floor(16000.0 / 0xFF));
         EXPECT_EQ(rExp, 0);
         EXPECT_EQ(bValue, 0);
         EXPECT_EQ(bExp, 0);
@@ -78,7 +78,7 @@ TEST(sensorutils, TranslateToIPMI)
     if (result)
     {
         EXPECT_EQ(bSigned, false);
-        EXPECT_EQ(mValue, floor(0.5 + ((20.0 / 0xFF) / std::pow(10, rExp))));
+        EXPECT_EQ(mValue, floor(((20.0 / 0xFF) / std::pow(10, rExp))));
         EXPECT_EQ(rExp, -3);
         EXPECT_EQ(bValue, 0);
         EXPECT_EQ(bExp, 0);
@@ -100,7 +100,7 @@ TEST(sensorutils, TranslateToIPMI)
     if (result)
     {
         EXPECT_EQ(bSigned, false);
-        EXPECT_EQ(mValue, floor(8000.0 / 0xFF + 0.5));
+        EXPECT_EQ(mValue, floor(8000.0 / 0xFF));
         EXPECT_EQ(rExp, 0);
         EXPECT_EQ(bValue, 80);
         EXPECT_EQ(bExp, 2);
@@ -116,7 +116,7 @@ TEST(sensorutils, TranslateToIPMI)
     if (result)
     {
         EXPECT_EQ(bSigned, true);
-        EXPECT_EQ(mValue, floor(0.5 + ((20.0 / 0xFF) / std::pow(10, rExp))));
+        EXPECT_EQ(mValue, floor(((20.0 / 0xFF) / std::pow(10, rExp))));
         EXPECT_EQ(rExp, -3);
         EXPECT_EQ(bValue, 0);
         EXPECT_EQ(bExp, 0);
