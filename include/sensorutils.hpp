@@ -24,7 +24,7 @@
 namespace ipmi
 {
 static constexpr int16_t maxInt10 = 0x1FF;
-static constexpr int16_t minInt10 = -(0x200);
+static constexpr int16_t minInt10 = -0x200;
 static constexpr int8_t maxInt4 = 7;
 static constexpr int8_t minInt4 = -8;
 
@@ -37,20 +37,14 @@ static inline bool getSensorAttributes(const double max, const double min,
     // check for 0, assume always positive
     double mDouble;
     double bDouble;
-    if (!(max > min))
+    if (max <= min)
     {
         phosphor::logging::log<phosphor::logging::level::DEBUG>(
             "getSensorAttributes: Max must be greater than min");
         return false;
     }
-    else
-    {
-        mDouble = (max - min) / 0xFF;
-    }
-    if (!mDouble)
-    {
-        mDouble = 1;
-    }
+
+    mDouble = (max - min) / 0xFF;
 
     if (min < 0)
     {
@@ -68,7 +62,7 @@ static inline bool getSensorAttributes(const double max, const double min,
     // M too big for 10 bit variable
     while (mDouble > maxInt10)
     {
-        if (rExp == maxInt4)
+        if (rExp >= maxInt4)
         {
             phosphor::logging::log<phosphor::logging::level::DEBUG>(
                 "rExp Too big, Max and Min range too far",
@@ -76,13 +70,13 @@ static inline bool getSensorAttributes(const double max, const double min,
             return false;
         }
         mDouble /= 10;
-        rExp += 1;
+        rExp++;
     }
 
     // M too small, loop until we lose less than 1 eight bit count of precision
     while (((mDouble - floor(mDouble)) / mDouble) > (1.0 / 255))
     {
-        if (rExp == minInt4)
+        if (rExp <= minInt4)
         {
             phosphor::logging::log<phosphor::logging::level::DEBUG>(
                 "rExp Too Small, Max and Min range too close");
@@ -107,7 +101,7 @@ static inline bool getSensorAttributes(const double max, const double min,
             break;
         }
         mDouble *= 10;
-        rExp -= 1;
+        rExp--;
     }
 
     bDouble /= std::pow(10, rExp);
@@ -116,20 +110,20 @@ static inline bool getSensorAttributes(const double max, const double min,
     // B too big for 10 bit variable
     while (bDouble > maxInt10 || bDouble < minInt10)
     {
-        if (bExp == maxInt4)
+        if (bExp >= maxInt4)
         {
             phosphor::logging::log<phosphor::logging::level::DEBUG>(
                 "bExp Too Big, Max and Min range need to be adjusted");
             return false;
         }
         bDouble /= 10;
-        bExp += 1;
+        bExp++;
     }
 
     while (((fabs(bDouble) - floor(fabs(bDouble))) / fabs(bDouble)) >
            (1.0 / 255))
     {
-        if (bExp == minInt4)
+        if (bExp <= minInt4)
         {
             phosphor::logging::log<phosphor::logging::level::DEBUG>(
                 "bExp Too Small, Max and Min range need to be adjusted");
@@ -139,8 +133,8 @@ static inline bool getSensorAttributes(const double max, const double min,
         bExp -= 1;
     }
 
-    mValue = static_cast<int16_t>(mDouble + 0.5) & maxInt10;
-    bValue = static_cast<int16_t>(bDouble + 0.5) & maxInt10;
+    mValue = static_cast<int16_t>(mDouble) & maxInt10;
+    bValue = static_cast<int16_t>(bDouble) & maxInt10;
 
     return true;
 }
@@ -153,6 +147,12 @@ static inline uint8_t
     uint32_t scaledValue =
         (value - (bValue * std::pow(10, bExp) * std::pow(10, rExp))) /
         (mValue * std::pow(10, rExp));
+
+    if (scaledValue > std::numeric_limits<uint8_t>::max() ||
+        scaledValue < std::numeric_limits<uint8_t>::lowest())
+    {
+        throw std::out_of_range("Value out of range");
+    }
     if (bSigned)
     {
         return static_cast<int8_t>(scaledValue);
@@ -176,7 +176,7 @@ static inline uint8_t getScaledIPMIValue(const double value, const double max,
     result = getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned);
     if (!result)
     {
-        return 0xFF;
+        throw std::runtime_error("Illegal sensor attributes");
     }
     return scaleIPMIValueFromDouble(value, mValue, rExp, bValue, bExp, bSigned);
 }
