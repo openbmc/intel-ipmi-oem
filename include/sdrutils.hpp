@@ -95,6 +95,7 @@ const static boost::container::flat_map<const char*, SensorTypeCodes, CmpStr>
                  {"voltage", SensorTypeCodes::voltage},
                  {"current", SensorTypeCodes::current},
                  {"fan_tach", SensorTypeCodes::fan},
+                 {"fan_pwm", SensorTypeCodes::fan},
                  {"power", SensorTypeCodes::other}}};
 
 inline static std::string getSensorTypeStringFromPath(const std::string& path)
