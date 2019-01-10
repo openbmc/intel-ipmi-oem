@@ -39,6 +39,25 @@ externalproject_add (
 )
 
 externalproject_add (
+    intel-dbus-interfaces PREFIX ${CMAKE_BINARY_DIR}/intel-dbus-interfaces DEPENDS
+    sdbusplus-project GIT_REPOSITORY
+    https://github.com/openbmc/intel-dbus-interfaces GIT_TAG
+    299018f99693771c175980315a3ee54f7abd7303 SOURCE_DIR
+    ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src BINARY_DIR
+    ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-build CONFIGURE_COMMAND ""
+    BUILD_COMMAND cd ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src && echo
+    "#!/bin/bash" > build.sh && echo
+    "export PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}"
+    >> build.sh && echo "export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH}"
+    >> build.sh && echo
+    "export PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig" >>
+    build.sh && echo "./bootstrap.sh " >> build.sh && echo
+    "./configure --prefix=${CMAKE_BINARY_DIR}/prefix  CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/ "
+    >> build.sh && echo "make verbose=1" >> build.sh && echo "make install " >>
+    build.sh && chmod 777 build.sh && ./build.sh INSTALL_COMMAND "" LOG_DOWNLOAD
+    ON
+)
+externalproject_add (
     cereal GIT_REPOSITORY https://github.com/USCiLab/cereal GIT_TAG
     51cbda5f30e56c801c07fe3d3aba5d7fb9e6cca4 SOURCE_DIR
     "${CMAKE_BINARY_DIR}/cereal-src" BINARY_DIR

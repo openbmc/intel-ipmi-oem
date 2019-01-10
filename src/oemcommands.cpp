@@ -19,6 +19,7 @@
 #include <ipmid/api.h>
 
 #include <array>
+#include <com/intel/Control/OCOTShutdownPolicy/server.hpp>
 #include <commandutils.hpp>
 #include <iostream>
 #include <oemcommands.hpp>
@@ -436,7 +437,35 @@ ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         Value variant = getDbusProperty(dbus, service, oemShutdownPolicyObjPath,
                                         oemShutdownPolicyIntf,
                                         oemShutdownPolicyObjPathProp);
-        resp->policy = sdbusplus::message::variant_ns::get<uint8_t>(variant);
+
+        if (sdbusplus::com::intel::Control::server::OCOTShutdownPolicy::
+                convertPolicyFromString(
+                    sdbusplus::message::variant_ns::get<std::string>(
+                        variant)) ==
+            sdbusplus::com::intel::Control::server::OCOTShutdownPolicy::Policy::
+                NoShutdownOnOCOT)
+        {
+            resp->policy = 0;
+        }
+        else if (sdbusplus::com::intel::Control::server::OCOTShutdownPolicy::
+                     convertPolicyFromString(
+                         sdbusplus::message::variant_ns::get<std::string>(
+                             variant)) ==
+                 sdbusplus::com::intel::Control::server::OCOTShutdownPolicy::
+                     Policy::ShutdownOnOCOT)
+        {
+            resp->policy = 1;
+        }
+        else
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "oem_set_shutdown_policy: invalid property!",
+                phosphor::logging::entry(
+                    "PROP=%s",
+                    sdbusplus::message::variant_ns::get<std::string>(variant)
+                        .c_str()));
+            return IPMI_CC_UNSPECIFIED_ERROR;
+        }
         // TODO needs to check if it is multi-node products,
         // policy is only supported on node 3/4
         resp->policySupport = shutdownPolicySupported;
@@ -458,6 +487,9 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                     ipmi_context_t context)
 {
     uint8_t* req = reinterpret_cast<uint8_t*>(request);
+    sdbusplus::com::intel::Control::server::OCOTShutdownPolicy::Policy policy =
+        sdbusplus::com::intel::Control::server::OCOTShutdownPolicy::Policy::
+            NoShutdownOnOCOT;
 
     // TODO needs to check if it is multi-node products,
     // policy is only supported on node 3/4
@@ -477,13 +509,25 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_INVALID_FIELD_REQUEST;
     }
 
+    if (*req == noShutdownOnOCOT)
+    {
+        policy = sdbusplus::com::intel::Control::server::OCOTShutdownPolicy::
+            Policy::NoShutdownOnOCOT;
+    }
+    else
+    {
+        policy = sdbusplus::com::intel::Control::server::OCOTShutdownPolicy::
+            Policy::ShutdownOnOCOT;
+    }
+
     try
     {
         std::string service =
             getService(dbus, oemShutdownPolicyIntf, oemShutdownPolicyObjPath);
-        setDbusProperty(dbus, service, oemShutdownPolicyObjPath,
-                        oemShutdownPolicyIntf, oemShutdownPolicyObjPathProp,
-                        *req);
+        setDbusProperty(
+            dbus, service, oemShutdownPolicyObjPath, oemShutdownPolicyIntf,
+            oemShutdownPolicyObjPathProp,
+            sdbusplus::com::intel::Control::server::convertForMessage(policy));
     }
     catch (sdbusplus::exception_t& e)
     {
