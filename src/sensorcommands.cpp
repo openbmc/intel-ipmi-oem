@@ -22,6 +22,7 @@
 #include <cmath>
 #include <commandutils.hpp>
 #include <iostream>
+#include <ipmi_to_redfish_hooks.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
@@ -266,6 +267,14 @@ ipmi_ret_t ipmiSenPlatformEvent(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         // Capture the generator ID
         generatorID = *reinterpret_cast<uint8_t *>(request);
 
+        // Send this request to the Redfish hooks to see if it should be a
+        // Redfish message instead.  If so, no need to add it to the SEL, so
+        // just return success.
+        if (intel_oem::ipmi::sel::checkRedfishHooks(generatorID, req))
+        {
+            return IPMI_CC_OK;
+        }
+
         // Platform Event usually comes from other firmware, like BIOS.
         // Unlike BMC sensor, it does not have BMC DBUS sensor path.
         sensorPath = "System";
@@ -275,6 +284,15 @@ ipmi_ret_t ipmiSenPlatformEvent(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         req = reinterpret_cast<PlatformEventRequest *>(request);
         // TODO GenratorID for IPMB is combination of RqSA and RqLUN
         generatorID = 0xff;
+
+        // Send this request to the Redfish hooks to see if it should be a
+        // Redfish message instead.  If so, no need to add it to the SEL, so
+        // just return success.
+        if (intel_oem::ipmi::sel::checkRedfishHooks(generatorID, req))
+        {
+            return IPMI_CC_OK;
+        }
+
         sensorPath = "IPMB";
     }
     // Content of event data field depends on sensor class.
