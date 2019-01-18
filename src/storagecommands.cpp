@@ -20,6 +20,7 @@
 #include <boost/process.hpp>
 #include <commandutils.hpp>
 #include <iostream>
+#include <ipmi_to_redfish_hooks.hpp>
 #include <phosphor-ipmi-host/selutility.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/message/types.hpp>
@@ -94,7 +95,7 @@ constexpr static const char* fruDeviceServiceName =
     "xyz.openbmc_project.FruDevice";
 constexpr static const size_t cacheTimeoutSeconds = 10;
 
-constexpr static const uint8_t deassertionEvent = 1;
+constexpr static const uint8_t deassertionEvent = 0x80;
 
 static std::vector<uint8_t> fruCache;
 static uint8_t cacheBus = 0xFF;
@@ -852,7 +853,7 @@ ipmi_ret_t ipmiStorageGetSELEntry(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 // Set the event direction
                 if (eventDir == 0)
                 {
-                    record.record.system.eventDir = deassertionEvent;
+                    record.record.system.eventType |= deassertionEvent;
                 }
 
                 std::vector<uint8_t> evtData;
@@ -975,6 +976,16 @@ ipmi_ret_t ipmiStorageAddSELEntry(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     // added
     cancelSELReservation();
 
+    // Send this request to the Redfish hooks to see if it should be a Redfish
+    // message instead.  If so, no need to add it to the SEL, so just return
+    // success.
+    if (intel_oem::ipmi::sel::checkRedfishHooks(req))
+    {
+        *static_cast<uint16_t*>(response) = 0xFFFF;
+        *data_len = sizeof(recordID);
+        return IPMI_CC_OK;
+    }
+
     if (req->recordType == intel_oem::ipmi::sel::systemEvent)
     {
         std::string sensorPath =
@@ -983,7 +994,9 @@ ipmi_ret_t ipmiStorageAddSELEntry(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             req->record.system.eventData,
             req->record.system.eventData +
                 intel_oem::ipmi::sel::systemEventSize);
-        bool assert = req->record.system.eventDir ? false : true;
+        bool assert =
+            (req->record.system.eventType & ipmi::sel::deassertionEvent) ? false
+                                                                         : true;
         uint16_t genId = req->record.system.generatorID;
         sdbusplus::message::message writeSEL = bus.new_method_call(
             ipmiSELObject, ipmiSELPath, ipmiSELAddInterface, "IpmiSelAdd");
