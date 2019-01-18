@@ -22,6 +22,7 @@
 #include <cmath>
 #include <commandutils.hpp>
 #include <iostream>
+#include <ipmi_to_redfish_hooks.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/registration.hpp>
 #include <ipmid/utils.hpp>
@@ -268,6 +269,16 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload &p)
     if (!p.fullyUnpacked())
     {
         return ipmi::response(ipmi::ccReqDataLenInvalid);
+    }
+
+    // Send this request to the Redfish hooks to see if it should be a
+    // Redfish message instead.  If so, no need to add it to the SEL, so
+    // just return success.
+    if (intel_oem::ipmi::sel::checkRedfishHooks(
+            generatorID, evmRev, sensorType, sensorNum, eventType, eventData1,
+            eventData2.value_or(0xFF), eventData3.value_or(0xFF)))
+    {
+        return ipmi::responseSuccess();
     }
 
     bool assert = eventType & directionMask ? false : true;
