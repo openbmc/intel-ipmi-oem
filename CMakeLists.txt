@@ -93,7 +93,7 @@ add_library (
     src/storagecommands.cpp src/multinodecommands.cpp src/firmware-update.cpp
     src/smbioshandler.cpp src/smbiosmdrv2handler.cpp
     src/manufacturingcommands.cpp src/bmccontrolservices.cpp
-    src/bridgingcommands.cpp
+    src/bridgingcommands.cpp src/ipmi_to_redfish_hooks.cpp
 )
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
