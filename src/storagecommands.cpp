@@ -20,6 +20,7 @@
 #include <boost/process.hpp>
 #include <commandutils.hpp>
 #include <iostream>
+#include <ipmi_to_redfish_hooks.hpp>
 #include <phosphor-ipmi-host/selutility.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/message/types.hpp>
@@ -975,6 +976,16 @@ ipmi_ret_t ipmiStorageAddSELEntry(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     // Per the IPMI spec, need to cancel any reservation when a SEL entry is
     // added
     cancelSELReservation();
+
+    // Send this request to the Redfish hooks to see if it should be a Redfish
+    // message instead.  If so, no need to add it to the SEL, so just return
+    // success.
+    if (intel_oem::ipmi::sel::checkRedfishHooks(req))
+    {
+        *static_cast<uint16_t*>(response) = 0xFFFF;
+        *data_len = sizeof(recordID);
+        return IPMI_CC_OK;
+    }
 
     if (req->recordType == intel_oem::ipmi::sel::systemEvent)
     {
