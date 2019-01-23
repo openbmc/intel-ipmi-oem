@@ -17,9 +17,12 @@
 #include "xyz/openbmc_project/Common/error.hpp"
 
 #include <host-ipmid/ipmid-api.h>
+#include <signal.h>
+#include <sys/types.h>
 
 #include <array>
 #include <commandutils.hpp>
+#include <fstream>
 #include <iostream>
 #include <oemcommands.hpp>
 #include <phosphor-ipmi-host/utils.hpp>
@@ -494,6 +497,91 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+ipmi_ret_t ipmiOEMWDTStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                            ipmi_request_t request, ipmi_response_t response,
+                            ipmi_data_len_t dataLen, ipmi_context_t context)
+{
+
+    uint16_t timeout = 0;
+    GetOEMWDTStatusRes* resp = reinterpret_cast<GetOEMWDTStatusRes*>(response);
+
+    // TODO needs to check MTM mode
+
+    *dataLen = 0;
+    std::ifstream ifsTimeout(oemWDTStatusTimeoutPath, std::ios::in);
+    ifsTimeout >> timeout;
+    if (timeout == 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Read timeout error!");
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    std::string status;
+    std::ifstream ifsState(oemWDTStatusStatusPath, std::ios::in);
+    ifsState >> status;
+
+    if (status.compare("0x0"))
+    {
+        resp->enabled = 0;
+        resp->state = 0;
+    }
+    else
+    {
+        resp->enabled = 1;
+        resp->state = 1;
+    }
+
+    resp->reseved1 = 0;
+    resp->reseved2 = 0;
+    resp->counter = timeout;
+    resp->countDown = 0;
+    resp->restartCount = 0;
+
+    *dataLen = sizeof(GetOEMWDTStatusRes);
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmiOEMWDTBlockRefresh(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                  ipmi_request_t request,
+                                  ipmi_response_t response,
+                                  ipmi_data_len_t dataLen,
+                                  ipmi_context_t context)
+{
+    pid_t pid = 0;
+    uint8_t* req = reinterpret_cast<uint8_t*>(request);
+
+    // TODO needs to check MTM mode
+
+    if (*dataLen != strlen(oemWDTBlockRefreshCmd) ||
+        memcmp(req, oemWDTBlockRefreshCmd, strlen(oemWDTBlockRefreshCmd)))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>("invalid input!");
+        *dataLen = 0;
+        return IPMI_CC_INVALID_FIELD_REQUEST;
+    }
+
+    *dataLen = 0;
+
+    // Kill the watchdog service to test the hardware watchdog
+    std::ifstream ifs(oemWDTBlockRefreshPIDPath, std::ios::in);
+    ifs >> pid;
+
+    if (pid == 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>("PID error!");
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    if (::kill(pid, SIGKILL))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>("kill error!");
+        return IPMI_CC_RESPONSE_ERROR;
+    }
+
+    return IPMI_CC_OK;
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -556,6 +644,17 @@ static void registerOEMFunctions(void)
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdGetShutdownPolicy),
                          NULL, ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
+
+    ipmiPrintAndRegister(
+        netfunIntelAppOEM,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMAppCmd::WDTStatus), NULL,
+        ipmiOEMWDTStatus, PRIVILEGE_ADMIN);
+
+    ipmiPrintAndRegister(
+        netfunIntelAppOEM,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMAppCmd::WDTBlockRefresh), NULL,
+        ipmiOEMWDTBlockRefresh, PRIVILEGE_ADMIN);
+
     return;
 }
 
