@@ -106,6 +106,13 @@ static constexpr const char* oemShutdownPolicyObjPath =
     "/xyz/openbmc_project/control/shutdown_policy_config";
 static constexpr const char* oemShutdownPolicyObjPathProp = "Policy";
 
+static constexpr const char* oemWDTBlockRefreshCmd = "INTEL\1";
+static constexpr const char* oemWDTBlockRefreshPIDPath = "/run/watchdog.pid";
+static constexpr const char* oemWDTStatusStatePath =
+    "/sys/class/watchdog/watchdog1/state";
+static constexpr const char* oemWDTStatusTimeoutPath =
+    "/sys/class/watchdog/watchdog1/timeout";
+
 enum class IPMINetfnIntelOEMAppCmd
 {
     mdrStatus = 0x20,
@@ -126,6 +133,8 @@ enum class IPMINetfnIntelOEMAppCmd
     mdr2DataStart = 0x3b,
     mdr2DataDone = 0x3c,
     mdr2SendDataBlock = 0x3d,
+    WDTStatus = 0x45,
+    WDTBlockRefresh = 0x46,
 };
 
 enum class OEMDevEntityType
@@ -231,5 +240,16 @@ struct GetOEMShutdownPolicyRes
 {
     uint8_t policy;
     uint8_t policySupport;
+};
+
+struct GetOEMWDTStatusRes
+{
+    uint8_t enabled;
+    uint8_t state;
+    uint8_t reseved1;
+    uint8_t reseved2;
+    uint16_t counter;
+    uint16_t countDown;
+    uint32_t restartCount;
 };
 #pragma pack(pop)
