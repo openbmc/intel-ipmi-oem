@@ -106,6 +106,9 @@ static constexpr const char* oemShutdownPolicyObjPath =
     "/xyz/openbmc_project/control/shutdown_policy_config";
 static constexpr const char* oemShutdownPolicyObjPathProp = "Policy";
 
+static constexpr const char* oemWDTBlockRefreshCmd = "INTEL\1";
+static constexpr const char* oemWDTBlockRefreshPIDPath = "/run/watchdog.pid";
+
 enum class IPMINetfnIntelOEMAppCmd
 {
     mdrStatus = 0x20,
@@ -126,6 +129,7 @@ enum class IPMINetfnIntelOEMAppCmd
     mdr2DataStart = 0x3b,
     mdr2DataDone = 0x3c,
     mdr2SendDataBlock = 0x3d,
+    WDTBlockRefresh = 0x46,
 };
 
 enum class OEMDevEntityType
