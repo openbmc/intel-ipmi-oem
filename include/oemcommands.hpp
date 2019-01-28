@@ -31,6 +31,11 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetProcessorErrConfig = 0x9B,
 };
 
+enum class IPMINetfnIntelOEMPlatformCmd
+{
+    cmdCfgHostSerialPortSpeed = 0x90,
+};
+
 enum class IPMIIntelOEMReturnCodes
 {
     ipmiCCPayloadActive = 0x80,
@@ -74,6 +79,9 @@ constexpr const uint8_t netfunIntelAppOEM = 0x3E;
 static constexpr ipmi_netfn_t netfnIntcOEMGeneral =
     NETFUN_NONE; // Netfun_none. In our platform, we use it as "intel oem
                  // general". The code is 0x30
+
+// Intel OEM Platform code is 0x32
+static constexpr ipmi_netfn_t netfnIntcOEMPlatform = NETFUN_OEM;
 static constexpr const uint8_t maxBIOSIDLength = 0xFF;
 static constexpr const uint8_t maxCPUNum = 4;
 static constexpr const char* biosObjPath = "/xyz/openbmc_project/bios";
@@ -105,6 +113,20 @@ static constexpr const char* oemShutdownPolicyIntf =
 static constexpr const char* oemShutdownPolicyObjPath =
     "/xyz/openbmc_project/control/shutdown_policy_config";
 static constexpr const char* oemShutdownPolicyObjPathProp = "Policy";
+
+static constexpr const char* fwGetEnvCmd = "/sbin/fw_printenv";
+static constexpr const char* fwSetEnvCmd = "/sbin/fw_setenv";
+static constexpr const char* fwHostSerailCfgEnvName = "hostserialcfg";
+
+static constexpr const uint8_t getHostSerialCfgCmd = 0;
+static constexpr const uint8_t setHostSerialCfgCmd = 1;
+
+// parameters:
+// 0: host serial port 1 and 2 normal speed
+// 1: host serial port 1 high spend, port 2 normal speed
+// 2: host serial port 1 normal spend, port 2 high speed
+// 3: host serial port 1 and 2 high speed
+static constexpr const uint8_t HostSerialCfgParamMax = 3;
 
 enum class IPMINetfnIntelOEMAppCmd
 {
@@ -231,5 +253,11 @@ struct GetOEMShutdownPolicyRes
 {
     uint8_t policy;
     uint8_t policySupport;
+};
+
+struct CfgHostSerialReq
+{
+    uint8_t command;
+    uint8_t parameter;
 };
 #pragma pack(pop)
