@@ -19,6 +19,8 @@
 #include <ipmid/api.h>
 
 #include <array>
+#include <boost/process/child.hpp>
+#include <boost/process/io.hpp>
 #include <commandutils.hpp>
 #include <iostream>
 #include <oemcommands.hpp>
@@ -494,6 +496,135 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                         ipmi_request_t request,
+                                         ipmi_response_t response,
+                                         ipmi_data_len_t dataLen,
+                                         ipmi_context_t context)
+{
+    CfgHostSerialReq* req = reinterpret_cast<CfgHostSerialReq*>(request);
+    uint8_t* resp = reinterpret_cast<uint8_t*>(response);
+
+    if (*dataLen == 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "CfgHostSerial: invalid input len!",
+            phosphor::logging::entry("LEN=%d", *dataLen));
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    switch (req->command)
+    {
+        case getHostSerialCfgCmd:
+        {
+            if (*dataLen != 1)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "CfgHostSerial: invalid input len!");
+                *dataLen = 0;
+                return IPMI_CC_REQ_DATA_LEN_INVALID;
+            }
+
+            *dataLen = 0;
+
+            boost::process::ipstream is;
+            std::vector<std::string> data;
+            std::string line;
+            boost::process::child c1(fwGetEnvCmd, "-n", fwHostSerailCfgEnvName,
+                                     boost::process::std_out > is);
+
+            while (c1.running() && std::getline(is, line) && !line.empty())
+            {
+                data.push_back(line);
+            }
+
+            c1.wait();
+            if (c1.exit_code())
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "CfgHostSerial:: error on execute",
+                    phosphor::logging::entry("EXECUTE=%s", fwSetEnvCmd));
+                // Using the default value
+                *resp = 0;
+            }
+            else
+            {
+                if (data.size() != 1)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "CfgHostSerial:: error on read env");
+                    return IPMI_CC_UNSPECIFIED_ERROR;
+                }
+                try
+                {
+                    unsigned long tmp = std::stoul(data[0]);
+                    if (tmp > std::numeric_limits<uint8_t>::max())
+                    {
+                        throw std::out_of_range("Out of range");
+                    }
+                    *resp = static_cast<uint8_t>(tmp);
+                }
+                catch (const std::invalid_argument& e)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "invalid config ",
+                        phosphor::logging::entry("ERR=%s", e.what()));
+                    return IPMI_CC_UNSPECIFIED_ERROR;
+                }
+                catch (const std::out_of_range& e)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "out_of_range config ",
+                        phosphor::logging::entry("ERR=%s", e.what()));
+                    return IPMI_CC_UNSPECIFIED_ERROR;
+                }
+            }
+
+            *dataLen = 1;
+            break;
+        }
+        case setHostSerialCfgCmd:
+        {
+            if (*dataLen != sizeof(CfgHostSerialReq))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "CfgHostSerial: invalid input len!");
+                *dataLen = 0;
+                return IPMI_CC_REQ_DATA_LEN_INVALID;
+            }
+
+            *dataLen = 0;
+
+            if (req->parameter > HostSerialCfgParamMax)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "CfgHostSerial: invalid input!");
+                return IPMI_CC_INVALID_FIELD_REQUEST;
+            }
+
+            boost::process::child c1(fwSetEnvCmd, fwHostSerailCfgEnvName,
+                                     std::to_string(req->parameter));
+
+            c1.wait();
+            if (c1.exit_code())
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "CfgHostSerial:: error on execute",
+                    phosphor::logging::entry("EXECUTE=%s", fwGetEnvCmd));
+                return IPMI_CC_UNSPECIFIED_ERROR;
+            }
+            break;
+        }
+        default:
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "CfgHostSerial: invalid input!");
+            *dataLen = 0;
+            return IPMI_CC_INVALID_FIELD_REQUEST;
+    }
+
+    return IPMI_CC_OK;
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -556,6 +687,11 @@ static void registerOEMFunctions(void)
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdGetShutdownPolicy),
                          NULL, ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
+    ipmiPrintAndRegister(
+        netfnIntcOEMPlatform,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMPlatformCmd::cmdCfgHostSerialPortSpeed),
+        NULL, ipmiOEMCfgHostSerialPortSpeed, PRIVILEGE_ADMIN);
     return;
 }
 
