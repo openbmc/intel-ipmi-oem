@@ -1055,6 +1055,17 @@ ipmi_ret_t ipmiStorageClearSEL(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+ipmi_ret_t ipmiStorageSetSELTime(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                 ipmi_request_t request,
+                                 ipmi_response_t response,
+                                 ipmi_data_len_t data_len,
+                                 ipmi_context_t context)
+{
+    // Set SEL Time is not supported
+    *data_len = 0;
+    return IPMI_CC_INVALID;
+}
+
 void registerStorageFunctions()
 {
     // <Get FRU Inventory Area Info>
@@ -1098,6 +1109,12 @@ void registerStorageFunctions()
         NETFUN_STORAGE,
         static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdClearSEL), NULL,
         ipmiStorageClearSEL, PRIVILEGE_OPERATOR);
+
+    // <Set SEL Time>
+    ipmiPrintAndRegister(
+        NETFUN_STORAGE,
+        static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdSetSELTime), NULL,
+        ipmiStorageSetSELTime, PRIVILEGE_OPERATOR);
 }
 } // namespace storage
 } // namespace ipmi
