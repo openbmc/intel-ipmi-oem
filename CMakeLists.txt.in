@@ -87,15 +87,9 @@ externalproject_add (
     ${CMAKE_BINARY_DIR}/phosphor-ipmi-host BINARY_DIR
     ${CMAKE_BINARY_DIR}/phosphor-host-ipmid-build CONFIGURE_COMMAND ""
     BUILD_COMMAND "" INSTALL_COMMAND mkdir -p
-    "${CMAKE_BINARY_DIR}/prefix/include/host-ipmid" && cp
-    ${CMAKE_BINARY_DIR}/phosphor-ipmi-host/host-ipmid/ipmid-api.h
-    ${CMAKE_BINARY_DIR}/prefix/include/host-ipmid && cp
-    ${CMAKE_BINARY_DIR}/phosphor-ipmi-host/elog-errors.hpp
-    ${CMAKE_BINARY_DIR}/prefix/include/host-ipmid && cp
-    ${CMAKE_BINARY_DIR}/phosphor-ipmi-host/utils.hpp
-    ${CMAKE_BINARY_DIR}/prefix/include/host-ipmid && cp
-    ${CMAKE_BINARY_DIR}/phosphor-ipmi-host/types.hpp
-    ${CMAKE_BINARY_DIR}/prefix/include/host-ipmid LOG_DOWNLOAD ON
+    "${CMAKE_BINARY_DIR}/prefix/include/ipmid" && cp
+    ${CMAKE_BINARY_DIR}/phosphor-ipmi-host/include/ipmid/api.h
+    ${CMAKE_BINARY_DIR}/prefix/include/ipmid LOG_DOWNLOAD ON
 )
 
 externalproject_add (

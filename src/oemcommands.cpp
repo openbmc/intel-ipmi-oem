@@ -16,7 +16,7 @@
 
 #include "xyz/openbmc_project/Common/error.hpp"
 
-#include <host-ipmid/ipmid-api.h>
+#include <ipmid/api.h>
 
 #include <array>
 #include <commandutils.hpp>
@@ -31,7 +31,7 @@
 namespace ipmi
 {
 static void registerOEMFunctions() __attribute__((constructor));
-sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection()); // from ipmid-api.h
+sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection()); // from ipmid/api.h
 static constexpr size_t maxFRUStringLength = 0x3F;
 
 // return code: 0 successful

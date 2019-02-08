@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-#include <host-ipmid/ipmid-api.h>
+#include <ipmid/api.h>
 
 #include <boost/container/flat_map.hpp>
 #include <commandutils.hpp>
