@@ -869,6 +869,10 @@ ipmi_ret_t ipmiStorageReserveSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     }
     *dataLen = 0; // default to 0 in case of an error
     sdrReservationID++;
+    if (sdrReservationID == 0)
+    {
+        sdrReservationID++;
+    }
     *dataLen = 2;
     auto resp = static_cast<uint8_t *>(response);
     resp[0] = sdrReservationID & 0xFF;
@@ -896,7 +900,8 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     // reservation required for partial reads with non zero offset into
     // record
-    if (req->reservationID != sdrReservationID && req->offset)
+    if ((sdrReservationID == 0 || req->reservationID != sdrReservationID) &&
+        req->offset)
     {
         return IPMI_CC_INVALID_RESERVATION_ID;
     }
