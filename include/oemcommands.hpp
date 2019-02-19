@@ -26,6 +26,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetPowerRestoreDelay = 0x55,
     cmdSetShutdownPolicy = 0x60,
     cmdGetShutdownPolicy = 0x62,
+    cmdSetFanConfig = 0x89,
+    cmdGetFanConfig = 0x8a,
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
@@ -126,6 +128,8 @@ static constexpr const char* oemShutdownPolicyObjPathProp = "Policy";
 static constexpr const char* fwGetEnvCmd = "/sbin/fw_printenv";
 static constexpr const char* fwSetEnvCmd = "/sbin/fw_setenv";
 static constexpr const char* fwHostSerailCfgEnvName = "hostserialcfg";
+
+constexpr const char* settingsBusName = "xyz.openbmc_project.Settings";
 
 static constexpr const uint8_t getHostSerialCfgCmd = 0;
 static constexpr const uint8_t setHostSerialCfgCmd = 1;
@@ -264,9 +268,34 @@ struct GetOEMShutdownPolicyRes
     uint8_t policySupport;
 };
 
+struct SetFanConfigReq
+{
+    uint8_t selectedProfile;
+    uint8_t flags;
+    // other parameters from previous generation are not supported
+};
+
+struct GetFanConfigResp
+{
+    uint8_t supportMask;
+    uint8_t profileSupport;
+    uint8_t fanControlProfileEnable;
+    uint8_t flags;
+    uint8_t dimmPresenceMap[4];
+};
+
 struct CfgHostSerialReq
 {
     uint8_t command;
     uint8_t parameter;
 };
 #pragma pack(pop)
+
+enum class setFanProfileFlags : uint8_t
+{
+    setFanProfile = 7,
+    setPerfAcousMode = 6,
+    // reserved [5:3]
+    performAcousSelect = 2
+    // reserved [1:0]
+};
