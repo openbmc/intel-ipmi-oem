@@ -20,6 +20,7 @@
 #include <ipmid/api.h>
 
 #include <array>
+#include <boost/container/flat_map.hpp>
 #include <boost/process/child.hpp>
 #include <boost/process/io.hpp>
 #include <commandutils.hpp>
@@ -29,6 +30,7 @@
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace ipmi
@@ -704,6 +706,145 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+constexpr const char* thermalModeInterface =
+    "xyz.openbmc_project.Control.ThermalMode";
+constexpr const char* thermalModePath =
+    "/xyz/openbmc_project/control/thermal/mode";
+bool getFanProfileInterface(
+    sdbusplus::bus::bus& bus,
+    boost::container::flat_map<
+        std::string, std::variant<std::vector<std::string>, std::string>>& resp)
+{
+    auto call = bus.new_method_call(settingsBusName, thermalModePath, PROP_INTF,
+                                    "GetAll");
+    call.append(thermalModeInterface);
+    try
+    {
+        auto data = bus.call(call);
+        data.read(resp);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getFanProfileInterface: can't get thermal mode!",
+            phosphor::logging::entry("ERR=%s", e.what()));
+        return false;
+    }
+    return true;
+}
+
+ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                               ipmi_request_t request, ipmi_response_t response,
+                               ipmi_data_len_t dataLen, ipmi_context_t context)
+{
+
+    if (*dataLen < 2 || *dataLen > 7)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetFanConfig: invalid input len!");
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    // todo: tell bios to only send first 2 bytes
+
+    SetFanConfigReq* req = reinterpret_cast<SetFanConfigReq*>(request);
+    boost::container::flat_map<
+        std::string, std::variant<std::vector<std::string>, std::string>>
+        profileData;
+    if (!getFanProfileInterface(dbus, profileData))
+    {
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    std::vector<std::string>* supported =
+        std::get_if<std::vector<std::string>>(&profileData["Supported"]);
+    if (supported == nullptr)
+    {
+        return IPMI_CC_INVALID_FIELD_REQUEST;
+    }
+    std::string mode;
+    if (req->flags &
+        (1 << static_cast<uint8_t>(setFanProfileFlags::setPerfAcousMode)))
+    {
+        bool performanceMode =
+            (req->flags & (1 << static_cast<uint8_t>(
+                               setFanProfileFlags::performAcousSelect))) > 0;
+
+        if (performanceMode)
+        {
+            auto findPerf =
+                std::find(supported->begin(), supported->end(), "Performance");
+            if (findPerf != supported->end())
+            {
+                mode = "Performance";
+            }
+        }
+        else
+        {
+            auto findAcous =
+                std::find(supported->begin(), supported->end(), "Acoustic");
+            if (findAcous != supported->end())
+            {
+                mode = "Acoustic";
+            }
+        }
+        if (mode.empty())
+        {
+            return IPMI_CC_INVALID_FIELD_REQUEST;
+        }
+        setDbusProperty(dbus, settingsBusName, thermalModePath,
+                        thermalModeInterface, "Current", mode);
+    }
+
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                               ipmi_request_t request, ipmi_response_t response,
+                               ipmi_data_len_t dataLen, ipmi_context_t context)
+{
+
+    if (*dataLen > 1)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMGetFanConfig: invalid input len!");
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    // todo: talk to bios about needing less information
+
+    GetFanConfigResp* resp = reinterpret_cast<GetFanConfigResp*>(response);
+    *dataLen = sizeof(GetFanConfigResp);
+
+    boost::container::flat_map<
+        std::string, std::variant<std::vector<std::string>, std::string>>
+        profileData;
+
+    if (!getFanProfileInterface(dbus, profileData))
+    {
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    std::string* current = std::get_if<std::string>(&profileData["Current"]);
+
+    if (current == nullptr)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMGetFanConfig: can't get current mode!");
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+    bool performance = (*current == "Performance");
+
+    if (performance)
+    {
+        resp->flags |= 1 << 2;
+    }
+
+    return IPMI_CC_OK;
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -766,6 +907,17 @@ static void registerOEMFunctions(void)
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdGetShutdownPolicy),
                          NULL, ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
+
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetFanConfig),
+        NULL, ipmiOEMSetFanConfig, PRIVILEGE_USER);
+
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetFanConfig),
+        NULL, ipmiOEMGetFanConfig, PRIVILEGE_USER);
+
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetLEDStatus),

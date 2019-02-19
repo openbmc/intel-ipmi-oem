@@ -1,9 +1,8 @@
-#include "phosphor-ipmi-host/utils.hpp"
-
 #include <arpa/inet.h>
 #include <dirent.h>
 #include <net/if.h>
 
+#include <phosphor-ipmi-host/utils.hpp>
 #include <phosphor-logging/elog-errors.hpp>
 #include <phosphor-logging/log.hpp>
 #include <xyz/openbmc_project/Common/error.hpp>
