@@ -1041,11 +1041,13 @@ ipmi_ret_t ipmiStorageClearSEL(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     // Clear the SEL by by rotating the journal to start a new file then
     // vacuuming to keep only the new file
-    if (boost::process::system("journalctl", "--rotate") != 0)
+    if (boost::process::system(boost::process::search_path("journalctl"),
+                               "--rotate") != 0)
     {
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    if (boost::process::system("journalctl", "--vacuum-files=1") != 0)
+    if (boost::process::system(boost::process::search_path("journalctl"),
+                               "--vacuum-files=1") != 0)
     {
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
