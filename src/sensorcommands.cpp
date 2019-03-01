@@ -243,6 +243,8 @@ ipmi_ret_t ipmiSenGetSensorReading(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         scaleIPMIValueFromDouble(reading, mValue, rExp, bValue, bExp, bSigned);
     msgReply->operation =
         static_cast<uint8_t>(IPMISensorReadingByte2::sensorScanningEnable);
+    msgReply->operation |=
+        static_cast<uint8_t>(IPMISensorReadingByte2::eventMessagesEnable);
     msgReply->indication[0] = 0; // ignore for non-threshold sensors
     msgReply->indication[1] = 0;
 
