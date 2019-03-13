@@ -1006,7 +1006,7 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     record.body.entity_id = 0x0;
     record.body.entity_instance = 0x01;
-    record.body.sensor_capabilities = 0x60; // auto rearm - todo hysteresis
+    record.body.sensor_capabilities = 0x68; // auto rearm - todo hysteresis
     record.body.sensor_type = getSensorTypeFromPath(path);
     std::string type = getSensorTypeStringFromPath(path);
     auto typeCstr = type.c_str();
