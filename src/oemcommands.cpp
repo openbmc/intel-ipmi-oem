@@ -846,6 +846,167 @@ ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+constexpr const char* cfmLimitSettingPath =
+    "/xyz/openbmc_project/control/cfm_limit";
+constexpr const char* cfmLimitIface = "xyz.openbmc_project.Control.CFMLimit";
+
+ipmi_ret_t ipmiOEMSetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                  ipmi_request_t request,
+                                  ipmi_response_t response,
+                                  ipmi_data_len_t dataLen,
+                                  ipmi_context_t context)
+{
+    constexpr const size_t disableLimiting = 0x0;
+
+    if (*dataLen < 2)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetFscParameter: invalid input len!");
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    uint8_t* req = static_cast<uint8_t*>(request);
+
+    if (*req == static_cast<uint8_t>(setFscParamFlags::cfm))
+    {
+        if (*dataLen != 3)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMSetFscParameter: invalid input len!");
+            *dataLen = 0;
+            return IPMI_CC_REQ_DATA_LEN_INVALID;
+        }
+        *dataLen = 0;
+
+        uint16_t cfm = req[1] | (static_cast<uint16_t>(req[2]) << 8);
+
+        // must be greater than 50 based on eps
+        if (cfm < 50 && cfm != disableLimiting)
+        {
+            return IPMI_CC_PARM_OUT_OF_RANGE;
+        }
+
+        try
+        {
+            ipmi::setDbusProperty(dbus, settingsBusName, cfmLimitSettingPath,
+                                  cfmLimitIface, "Limit",
+                                  static_cast<double>(cfm));
+        }
+        catch (sdbusplus::exception_t& e)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMSetFscParameter: can't set cfm setting!",
+                phosphor::logging::entry("ERR=%s", e.what()));
+            return IPMI_CC_UNSPECIFIED_ERROR;
+        }
+        return IPMI_CC_OK;
+    }
+    else
+    {
+        // todo other command parts possibly
+        // tcontrol is handled in peci now
+        // fan speed offset not implemented yet
+        // domain pwm limit not implemented
+        *dataLen = 0;
+        return IPMI_CC_PARM_OUT_OF_RANGE;
+    }
+}
+
+ipmi_ret_t ipmiOEMGetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                  ipmi_request_t request,
+                                  ipmi_response_t response,
+                                  ipmi_data_len_t dataLen,
+                                  ipmi_context_t context)
+{
+
+    if (*dataLen < 1)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMGetFscParameter: invalid input len!");
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    uint8_t* req = static_cast<uint8_t*>(request);
+
+    if (*req == static_cast<uint8_t>(setFscParamFlags::cfm))
+    {
+
+        /*
+        DataLen should be 1, but host is sending us an extra bit. As the
+        previous behavior didn't seem to prevent this, ignore the check for now.
+
+        if (*dataLen != 1)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMGetFscParameter: invalid input len!");
+            *dataLen = 0;
+            return IPMI_CC_REQ_DATA_LEN_INVALID;
+        }
+        */
+        Value cfmLimit;
+        Value cfmMaximum;
+        try
+        {
+            cfmLimit = ipmi::getDbusProperty(dbus, settingsBusName,
+                                             cfmLimitSettingPath, cfmLimitIface,
+                                             "Limit");
+            cfmMaximum = ipmi::getDbusProperty(
+                dbus, "xyz.openbmc_project.ExitAirTempSensor",
+                "/xyz/openbmc_project/control/MaxCFM", cfmLimitIface, "Limit");
+        }
+        catch (sdbusplus::exception_t& e)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMSetFscParameter: can't get cfm setting!",
+                phosphor::logging::entry("ERR=%s", e.what()));
+            *dataLen = 0;
+            return IPMI_CC_UNSPECIFIED_ERROR;
+        }
+
+        auto cfmLim = std::get_if<double>(&cfmLimit);
+        if (cfmLim == nullptr ||
+            *cfmLim > std::numeric_limits<uint16_t>::max() || *cfmLim < 0)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMSetFscParameter: cfm limit out of range!");
+            *dataLen = 0;
+            return IPMI_CC_UNSPECIFIED_ERROR;
+        }
+
+        auto cfmMax = std::get_if<double>(&cfmMaximum);
+        if (cfmMax == nullptr ||
+            *cfmMax > std::numeric_limits<uint16_t>::max() || *cfmMax < 0)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMSetFscParameter: cfm max out of range!");
+            *dataLen = 0;
+            return IPMI_CC_UNSPECIFIED_ERROR;
+        }
+        *cfmLim = std::floor(*cfmLim + 0.5);
+        *cfmMax = std::floor(*cfmMax + 0.5);
+        uint16_t resp = static_cast<uint16_t>(*cfmLim);
+        uint16_t* ptr = static_cast<uint16_t*>(response);
+        ptr[0] = resp;
+        resp = static_cast<uint16_t>(*cfmMax);
+        ptr[1] = resp;
+
+        *dataLen = 4;
+
+        return IPMI_CC_OK;
+    }
+    else
+    {
+        // todo other command parts possibly
+        // tcontrol is handled in peci now
+        // fan speed offset not implemented yet
+        // domain pwm limit not implemented
+        *dataLen = 0;
+        return IPMI_CC_PARM_OUT_OF_RANGE;
+    }
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -918,6 +1079,16 @@ static void registerOEMFunctions(void)
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetFanConfig),
         NULL, ipmiOEMGetFanConfig, PRIVILEGE_USER);
+
+    ipmiPrintAndRegister(netfnIntcOEMGeneral,
+                         static_cast<ipmi_cmd_t>(
+                             IPMINetfnIntelOEMGeneralCmd::cmdSetFscParameter),
+                         NULL, ipmiOEMSetFscParameter, PRIVILEGE_USER);
+
+    ipmiPrintAndRegister(netfnIntcOEMGeneral,
+                         static_cast<ipmi_cmd_t>(
+                             IPMINetfnIntelOEMGeneralCmd::cmdGetFscParameter),
+                         NULL, ipmiOEMGetFscParameter, PRIVILEGE_USER);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
