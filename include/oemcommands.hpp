@@ -28,6 +28,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetShutdownPolicy = 0x62,
     cmdSetFanConfig = 0x89,
     cmdGetFanConfig = 0x8a,
+    cmdSetFscParameter = 0x90,
+    cmdGetFscParameter = 0x91,
     cmdGetChassisIdentifier = 0x92,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
@@ -298,4 +300,12 @@ enum class setFanProfileFlags : uint8_t
     // reserved [5:3]
     performAcousSelect = 2
     // reserved [1:0]
+};
+
+enum class setFscParamFlags : uint8_t
+{
+    tcontrol = 0x1,
+    pwmOffset = 0x2,
+    maxPwm = 0x3,
+    cfm = 0x4
 };
