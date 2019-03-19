@@ -94,6 +94,56 @@ static sdbusplus::bus::match::match sensorRemoved(
                             .count();
     });
 
+// this keeps track of deassertions for sensor event status command. A
+// deasertion can only happen if an assertion was seen first.
+static boost::container::flat_map<
+    std::string, boost::container::flat_map<std::string, std::optional<bool>>>
+    thresholdDeassertMap;
+
+static sdbusplus::bus::match::match thresholdChanged(
+    dbus,
+    "type='signal',member='PropertiesChanged',interface='org.freedesktop.DBus."
+    "Properties',arg0namespace='xyz.openbmc_project.Sensor.Threshold'",
+    [](sdbusplus::message::message &m) {
+        boost::container::flat_map<std::string, std::variant<bool, double>>
+            values;
+        m.read(std::string(), values);
+
+        auto findAssert =
+            std::find_if(values.begin(), values.end(), [](const auto &pair) {
+                return pair.first.find("Alarm") != std::string::npos;
+            });
+        if (findAssert != values.end())
+        {
+            auto ptr = std::get_if<bool>(&(findAssert->second));
+            if (ptr == nullptr)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "thresholdChanged: Assert non bool");
+                return;
+            }
+            if (*ptr)
+            {
+                phosphor::logging::log<phosphor::logging::level::INFO>(
+                    "thresholdChanged: Assert",
+                    phosphor::logging::entry("SENSOR=%s", m.get_path()));
+                thresholdDeassertMap[m.get_path()][findAssert->first] = *ptr;
+            }
+            else
+            {
+                auto &value =
+                    thresholdDeassertMap[m.get_path()][findAssert->first];
+                if (value)
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "thresholdChanged: deassert",
+                        phosphor::logging::entry("SENSOR=%s", m.get_path()));
+                    value = *ptr;
+                }
+            }
+        }
+    });
+
 static void
     getSensorMaxMin(const std::map<std::string, DbusVariant> &sensorPropertyMap,
                     double &max, double &min)
@@ -693,6 +743,36 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     auto resp = static_cast<SensorEventStatusResp *>(response);
     resp->enabled =
         static_cast<uint8_t>(IPMISensorEventEnableByte2::sensorScanningEnable);
+
+    std::optional<bool> criticalDeassertHigh =
+        thresholdDeassertMap[path]["CriticalAlarmHigh"];
+    std::optional<bool> criticalDeassertLow =
+        thresholdDeassertMap[path]["CriticalAlarmLow"];
+    std::optional<bool> warningDeassertHigh =
+        thresholdDeassertMap[path]["WarningAlarmHigh"];
+    std::optional<bool> warningDeassertLow =
+        thresholdDeassertMap[path]["WarningAlarmLow"];
+
+    if (criticalDeassertHigh && !*criticalDeassertHigh)
+    {
+        resp->deassertionsMSB |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::upperCriticalGoingHigh);
+    }
+    if (criticalDeassertLow && !*criticalDeassertLow)
+    {
+        resp->deassertionsMSB |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::upperCriticalGoingLow);
+    }
+    if (warningDeassertHigh && !*warningDeassertHigh)
+    {
+        resp->deassertionsLSB |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::upperNonCriticalGoingHigh);
+    }
+    if (warningDeassertLow && !*warningDeassertLow)
+    {
+        resp->deassertionsLSB |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::lowerNonCriticalGoingHigh);
+    }
 
     if ((warningInterface != sensorMap.end()) ||
         (criticalInterface != sensorMap.end()))

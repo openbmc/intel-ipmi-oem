@@ -74,9 +74,8 @@ struct SensorEventStatusResp
     uint8_t enabled;
     uint8_t assertionsLSB;
     uint8_t assertionsMSB;
-    // deassertion events currently not supported
-    // uint8_t deassertionsLSB;
-    // uint8_t deassertionsMSB;
+    uint8_t deassertionsLSB;
+    uint8_t deassertionsMSB;
 };
 #pragma pack(pop)
 
