@@ -17,6 +17,7 @@ add_definitions (-DBOOST_SYSTEM_NO_DEPRECATED)
 add_definitions (-DBOOST_ALL_NO_LIB)
 add_definitions (-DBOOST_NO_RTTI)
 add_definitions (-DBOOST_NO_TYPEID)
+add_definitions (-DBOOST_ASIO_DISABLE_THREADS)
 
 if (NOT YOCTO)
     configure_file (CMakeLists.txt.in 3rdparty/CMakeLists.txt)
@@ -72,7 +73,6 @@ add_library (zinteloemcmds
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
 target_link_libraries (zinteloemcmds sdbusplus)
-target_link_libraries (zinteloemcmds ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries (zinteloemcmds phosphor_logging)
 
 install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
