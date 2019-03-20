@@ -931,7 +931,7 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     }
 
     uint16_t nextRecord =
-        lastRecord > (req->recordID + 1) ? req->recordID + 1 : 0XFFFF;
+        lastRecord > req->recordID ? req->recordID + 1 : 0XFFFF;
 
     auto responseClear = static_cast<uint8_t *>(response);
     std::fill(responseClear, responseClear + requestedSize, 0);
