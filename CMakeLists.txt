@@ -73,6 +73,6 @@ set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
 target_link_libraries (zinteloemcmds sdbusplus)
 target_link_libraries (zinteloemcmds ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries (zinteloemcmds phosphor_logging)
+target_link_libraries (zinteloemcmds phosphor_logging systemd)
 
 install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
