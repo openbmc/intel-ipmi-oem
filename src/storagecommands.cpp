@@ -29,6 +29,50 @@
 #include <storagecommands.hpp>
 #include <string_view>
 
+namespace intel_oem::ipmi::sel::erase_time
+{
+static constexpr const char* selEraseTimestamp = "/var/lib/ipmi/sel_erase_time";
+
+void save()
+{
+    // open the file, creating it if necessary
+    int fd = open(selEraseTimestamp, O_WRONLY | O_CREAT | O_CLOEXEC, 0644);
+    if (fd < 0)
+    {
+        std::cerr << "Failed to open file\n";
+        return;
+    }
+
+    // update the file timestamp to the current time
+    if (futimens(fd, NULL) < 0)
+    {
+        std::cerr << "Failed to update timestamp: "
+                  << std::string(strerror(errno));
+    }
+    close(fd);
+}
+
+int get()
+{
+    struct stat st;
+    // default to an invalid timestamp
+    int timestamp = ::ipmi::sel::invalidTimeStamp;
+
+    int fd = open(selEraseTimestamp, O_RDWR | O_CLOEXEC, 0644);
+    if (fd < 0)
+    {
+        return timestamp;
+    }
+
+    if (fstat(fd, &st) >= 0)
+    {
+        timestamp = st.st_mtime;
+    }
+
+    return timestamp;
+}
+} // namespace intel_oem::ipmi::sel::erase_time
+
 namespace ipmi
 {
 
@@ -519,11 +563,12 @@ ipmi_ret_t ipmiStorageGetSELInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         static_cast<ipmi::sel::GetSELInfoResponse*>(response);
 
     responseData->selVersion = ipmi::sel::selVersion;
-    // Last erase timestamp is not available from log manager.
-    responseData->eraseTimeStamp = ipmi::sel::invalidTimeStamp;
     responseData->addTimeStamp = ipmi::sel::invalidTimeStamp;
     responseData->operationSupport = intel_oem::ipmi::sel::selOperationSupport;
     responseData->entries = 0;
+
+    // Fill in the last erase time
+    responseData->eraseTimeStamp = intel_oem::ipmi::sel::erase_time::get();
 
     // Open the journal
     sd_journal* journalTmp = nullptr;
@@ -1038,6 +1083,9 @@ ipmi_ret_t ipmiStorageClearSEL(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     // Per the IPMI spec, need to cancel any reservation when the SEL is cleared
     cancelSELReservation();
+
+    // Save the erase time
+    intel_oem::ipmi::sel::erase_time::save();
 
     // Clear the SEL by by rotating the journal to start a new file then
     // vacuuming to keep only the new file
