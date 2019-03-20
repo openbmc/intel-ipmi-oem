@@ -7,15 +7,28 @@ file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/prefix/include)
 
 # requires apt install autoconf-archive and autoconf
 externalproject_add (
-    sdbusplus-project PREFIX ${CMAKE_BINARY_DIR}/sdbusplus-project
+    sdbusplus-project PREFIX ${CMAKE_BINARY_DIR}/sdbusplus-project DEPENDS Boost
     GIT_REPOSITORY https://github.com/openbmc/sdbusplus.git GIT_TAG
     f0dd3b5a3c6c54b4f38844b573e3f157f8064088 SOURCE_DIR
     ${CMAKE_BINARY_DIR}/sdbusplus-src BINARY_DIR
-    ${CMAKE_BINARY_DIR}/sdbusplus-build CONFIGURE_COMMAND "" BUILD_COMMAND cd
+    ${CMAKE_BINARY_DIR}/sdbusplus-build CONFIGURE_COMMAND cd
     ${CMAKE_BINARY_DIR}/sdbusplus-src && ./bootstrap.sh clean && ./bootstrap.sh
     && ./configure --prefix=${CMAKE_BINARY_DIR}/prefix
-    CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/ --enable-transaction && make
-    && make install INSTALL_COMMAND "" LOG_DOWNLOAD ON
+    CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/ --enable-transaction
+    BUILD_COMMAND cd ${CMAKE_BINARY_DIR}/sdbusplus-src && make INSTALL_COMMAND
+    cd ${CMAKE_BINARY_DIR}/sdbusplus-src && make install LOG_DOWNLOAD ON
+)
+
+externalproject_add (
+    sdeventplus-project PREFIX ${CMAKE_BINARY_DIR}/sdeventplus-project
+    GIT_REPOSITORY https://github.com/openbmc/sdeventplus.git SOURCE_DIR
+    ${CMAKE_BINARY_DIR}/sdeventplus-src BINARY_DIR
+    ${CMAKE_BINARY_DIR}/sdeventplus-build CONFIGURE_COMMAND cd
+    ${CMAKE_BINARY_DIR}/sdeventplus-src && ./bootstrap.sh clean &&
+    ./bootstrap.sh && ./configure --prefix=${CMAKE_BINARY_DIR}/prefix
+    CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/ BUILD_COMMAND cd
+    ${CMAKE_BINARY_DIR}/sdeventplus-src && make INSTALL_COMMAND cd
+    ${CMAKE_BINARY_DIR}/sdeventplus-src && make install LOG_DOWNLOAD ON
 )
 
 externalproject_add (
@@ -24,18 +37,19 @@ externalproject_add (
     https://github.com/openbmc/phosphor-dbus-interfaces GIT_TAG
     05207d69427cc5f016f08dde801b702d1461cfec SOURCE_DIR
     ${CMAKE_BINARY_DIR}/phosphor-dbus-interfaces-src BINARY_DIR
-    ${CMAKE_BINARY_DIR}/phosphor-dbus-interfaces-build CONFIGURE_COMMAND ""
-    BUILD_COMMAND cd ${CMAKE_BINARY_DIR}/phosphor-dbus-interfaces-src && echo
-    "#!/bin/bash" > build.sh && echo
-    "export PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}"
-    >> build.sh && echo "export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH}"
-    >> build.sh && echo
-    "export PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig" >>
-    build.sh && echo "./bootstrap.sh " >> build.sh && echo
-    "./configure --prefix=${CMAKE_BINARY_DIR}/prefix  CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/ "
-    >> build.sh && echo "make verbose=1" >> build.sh && echo "make install " >>
-    build.sh && chmod 777 build.sh && ./build.sh INSTALL_COMMAND "" LOG_DOWNLOAD
-    ON
+    ${CMAKE_BINARY_DIR}/phosphor-dbus-interfaces-build CONFIGURE_COMMAND cd
+    ${CMAKE_BINARY_DIR}/phosphor-dbus-interfaces-src && export
+    PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}
+    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && export
+    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && ./bootstrap.sh
+    && ./configure --prefix=${CMAKE_BINARY_DIR}/prefix
+    CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/ BUILD_COMMAND cd
+    ${CMAKE_BINARY_DIR}/phosphor-dbus-interfaces-src && export
+    PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}
+    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && export
+    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && make verbose=1
+    INSTALL_COMMAND cd ${CMAKE_BINARY_DIR}/phosphor-dbus-interfaces-src && make
+    install LOG_DOWNLOAD ON
 )
 
 externalproject_add (
@@ -54,20 +68,21 @@ externalproject_add (
     https://github.com/openbmc/phosphor-logging GIT_TAG
     8024d1dc7dfff6360f3e1bdbce145652eb5698be SOURCE_DIR
     ${CMAKE_BINARY_DIR}/phosphor-logging-src BINARY_DIR
-    ${CMAKE_BINARY_DIR}/phosphor-logging-build CONFIGURE_COMMAND ""
-    BUILD_COMMAND cd ${CMAKE_BINARY_DIR}/phosphor-logging-src && echo
-    "#!/bin/bash" > build.sh && echo
-    "export PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}"
-    >> build.sh && echo "export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH}"
-    >> build.sh && echo
-    "export PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}"
-    >> build.sh && echo "./bootstrap.sh clean" >> build.sh && echo
-    "./bootstrap.sh" >> build.sh && echo
-    "./configure --prefix=${CMAKE_BINARY_DIR}/prefix  CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/ \
-             YAML_DIR=${CMAKE_BINARY_DIR}/prefix/share/phosphor-dbus-yaml/yaml --enable-metadata-processing"
-    >> build.sh && echo "make verbose=1" >> build.sh && echo "make install " >>
-    build.sh && chmod 777 build.sh && ./build.sh INSTALL_COMMAND "" LOG_DOWNLOAD
-    ON
+    ${CMAKE_BINARY_DIR}/phosphor-logging-build CONFIGURE_COMMAND cd
+    ${CMAKE_BINARY_DIR}/phosphor-logging-src && export
+    PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}
+    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && export
+    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && ./bootstrap.sh
+    && ./configure --prefix=${CMAKE_BINARY_DIR}/prefix
+    CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/
+    YAML_DIR=${CMAKE_BINARY_DIR}/prefix/share/phosphor-dbus-yaml/yaml
+    --enable-metadata-processing BUILD_COMMAND cd
+    ${CMAKE_BINARY_DIR}/phosphor-logging-src && export
+    PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}
+    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && export
+    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && make verbose=1
+    INSTALL_COMMAND cd ${CMAKE_BINARY_DIR}/phosphor-logging-src && make install
+    LOG_DOWNLOAD ON
 )
 
 externalproject_add (
@@ -81,25 +96,54 @@ externalproject_add (
 )
 
 externalproject_add (
+    phosphor-objmgr PREFIX ${CMAKE_BINARY_DIR}/phosphor-objmgr DEPENDS Boost
+    sdbusplus-project phosphor-logging GIT_REPOSITORY
+    https://github.com/openbmc/phosphor-objmgr SOURCE_DIR
+    ${CMAKE_BINARY_DIR}/phosphor-objmgr-src BINARY_DIR
+    ${CMAKE_BINARY_DIR}/phosphor-objmgr-build CONFIGURE_COMMAND cd
+    ${CMAKE_BINARY_DIR}/phosphor-objmgr-src && export
+    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && ./bootstrap.sh
+    && ./configure --prefix=${CMAKE_BINARY_DIR}/prefix
+    CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/ BUILD_COMMAND cd
+    ${CMAKE_BINARY_DIR}/phosphor-objmgr-src && export
+    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && make verbose=1
+    INSTALL_COMMAND cd ${CMAKE_BINARY_DIR}/phosphor-objmgr-src && make install
+    LOG_DOWNLOAD ON
+)
+
+externalproject_add (
     host-ipmid PREFIX ${CMAKE_BINARY_DIR}/phosphor-host-ipmid DEPENDS
-    sdbusplus-project dbus-interfaces nlohmann-json GIT_REPOSITORY
+    sdeventplus-project sdbusplus-project phosphor-objmgr dbus-interfaces
+    nlohmann-json Boost GIT_REPOSITORY
     https://github.com/openbmc/phosphor-host-ipmid SOURCE_DIR
-    ${CMAKE_BINARY_DIR}/phosphor-ipmi-host BINARY_DIR
-    ${CMAKE_BINARY_DIR}/phosphor-host-ipmid-build CONFIGURE_COMMAND ""
-    BUILD_COMMAND "" INSTALL_COMMAND mkdir -p
-    "${CMAKE_BINARY_DIR}/prefix/include/ipmid" && cp
-    ${CMAKE_BINARY_DIR}/phosphor-ipmi-host/include/ipmid/api.h
-    ${CMAKE_BINARY_DIR}/prefix/include/ipmid LOG_DOWNLOAD ON
+    ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src BINARY_DIR
+    ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-build CONFIGURE_COMMAND cd
+    ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src && export
+    PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}
+    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && export
+    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && ./bootstrap.sh
+    && ./configure --prefix=${CMAKE_BINARY_DIR}/prefix
+    CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/
+    CXXFLAGS=-Wno-error=unused-result LDFLAGS=-L${CMAKE_BINARY_DIR}/prefix/lib/
+    BUILD_COMMAND cd ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src && export
+    PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}
+    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && export
+    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && make verbose=1
+    INSTALL_COMMAND cd ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src && make
+    install && mkdir -p "${CMAKE_BINARY_DIR}/prefix/include/phosphor-ipmi-host"
+    && cp sensorhandler.hpp selutility.hpp
+    "${CMAKE_BINARY_DIR}/prefix/include/phosphor-ipmi-host/" LOG_DOWNLOAD ON
 )
 
 externalproject_add (
     Boost URL
-    https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
-    URL_MD5 d275cd85b00022313c171f602db59fc5 SOURCE_DIR
+    https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz
+    URL_MD5 b50944c0c13f81ce2c006802a1186f5a SOURCE_DIR
     "${CMAKE_BINARY_DIR}/boost-src" BINARY_DIR "${CMAKE_BINARY_DIR}/boost-build"
-    CONFIGURE_COMMAND "" BUILD_COMMAND "" INSTALL_COMMAND mkdir -p
-    "${CMAKE_BINARY_DIR}/prefix/include/" && cp -R
-    ${CMAKE_BINARY_DIR}/boost-src/boost ${CMAKE_BINARY_DIR}/prefix/include
+    CONFIGURE_COMMAND cd ${CMAKE_BINARY_DIR}/boost-src && ./bootstrap.sh
+    --prefix=${CMAKE_BINARY_DIR}/prefix --with-toolset=gcc BUILD_COMMAND ""
+    INSTALL_COMMAND cd ${CMAKE_BINARY_DIR}/boost-src && ./b2 --with-coroutine
+    --with-context install
 )
 
 externalproject_add (
@@ -108,5 +152,13 @@ externalproject_add (
     -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/googletest-build SOURCE_DIR
     "${CMAKE_BINARY_DIR}/googletest-src" BINARY_DIR
     "${CMAKE_BINARY_DIR}/googletest-build" CMAKE_ARGS
+    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/prefix
+)
+
+externalproject_add (
+    tinyxml2 GIT_REPOSITORY "https://github.com/leethomason/tinyxml2.git"
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/tinyxml2-build
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/tinyxml2-src" BINARY_DIR
+    "${CMAKE_BINARY_DIR}/tinyxml2-build" CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/prefix
 )
