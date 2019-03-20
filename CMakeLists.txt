@@ -44,6 +44,7 @@ endif ()
 if (YOCTO)
     find_package (PkgConfig REQUIRED)
     pkg_check_modules (LOGGING phosphor-logging REQUIRED)
+    pkg_check_modules (LIBIPMID libipmid REQUIRED)
     include_directories (${LOGGING_INCLUDE_DIRS})
     link_directories (${LOGGING_LIBRARY_DIRS})
 
@@ -68,10 +69,11 @@ endif ()
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_library (zinteloemcmds
-             SHARED src/oemcommands.cpp src/utils.cpp src/sensorcommands.cpp
+             SHARED src/oemcommands.cpp src/sensorcommands.cpp
              src/storagecommands.cpp)
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
+target_link_libraries (zinteloemcmds ipmid)
 target_link_libraries (zinteloemcmds sdbusplus)
 target_link_libraries (zinteloemcmds phosphor_logging)
 

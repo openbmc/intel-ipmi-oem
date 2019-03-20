@@ -25,8 +25,8 @@
 #include <boost/process/io.hpp>
 #include <commandutils.hpp>
 #include <iostream>
+#include <ipmid/utils.hpp>
 #include <oemcommands.hpp>
-#include <phosphor-ipmi-host/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <string>
