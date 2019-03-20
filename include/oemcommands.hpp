@@ -21,11 +21,14 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetBIOSID = 0x26,
     cmdGetOEMDeviceInfo = 0x27,
     cmdGetAICSlotFRUIDSlotPosRecords = 0x31,
+    cmdGetMultiNodeRole = 0x33,
+    cmdGetMultiNodeId = 0x36,
     cmdSetSystemGUID = 0x41,
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,
     cmdSetShutdownPolicy = 0x60,
     cmdGetShutdownPolicy = 0x62,
+    cmdGetMultiNodePresence = 0x63,
     cmdSetFanConfig = 0x89,
     cmdGetFanConfig = 0x8a,
     cmdGetChassisIdentifier = 0x92,
@@ -114,6 +117,11 @@ static constexpr const char* statusAmberObjPath =
     "/xyz/openbmc_project/led/physical/status_amber";
 static constexpr const char* statusGreenObjPath =
     "/xyz/openbmc_project/led/physical/status_green";
+
+static constexpr const char* multiNodeObjPath =
+    "/xyz/openbmc_project/MultiNode/Status";
+static constexpr const char* multiNodeIntf =
+    "xyz.openbmc_project.Chassis.MultiNode";
 
 static constexpr const uint8_t noShutdownOnOCOT = 0;
 static constexpr const uint8_t shutdownOnOCOT = 1;

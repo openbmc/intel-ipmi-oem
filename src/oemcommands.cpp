@@ -846,6 +846,110 @@ ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+int8_t getMultiNodeInfo(std::string name, uint8_t& value)
+{
+    try
+    {
+        std::string service = getService(dbus, multiNodeIntf, multiNodeObjPath);
+        Value dbusValue = getDbusProperty(dbus, service, multiNodeObjPath,
+                                          multiNodeIntf, name);
+        value = sdbusplus::message::variant_ns::get<uint8_t>(dbusValue);
+    }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return -1;
+    }
+    return 0;
+}
+
+ipmi_ret_t ipmiOEMGetMultiNodePresence(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                       ipmi_request_t request,
+                                       ipmi_response_t response,
+                                       ipmi_data_len_t dataLen,
+                                       ipmi_context_t context)
+{
+    if (*dataLen != 0)
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    uint8_t value = 0;
+    if (getMultiNodeInfo("NodeRole", value) == -1 || (value == 0))
+    {
+        *dataLen = 0;
+        return IPMI_CC_INVALID;
+    }
+
+    if (getMultiNodeInfo("NodePresence", value) == -1)
+    {
+        *dataLen = 0;
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    uint8_t* resp = reinterpret_cast<uint8_t*>(response);
+    *resp = value;
+    *dataLen = 1;
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmiOEMGetMultiNodeId(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                 ipmi_request_t request,
+                                 ipmi_response_t response,
+                                 ipmi_data_len_t dataLen,
+                                 ipmi_context_t context)
+{
+    if (*dataLen != 0)
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    uint8_t value = 0;
+    if (getMultiNodeInfo("NodeRole", value) == -1 || (value == 0))
+    {
+        *dataLen = 0;
+        return IPMI_CC_INVALID;
+    }
+
+    if (getMultiNodeInfo("NodeId", value) == -1)
+    {
+        *dataLen = 0;
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    uint8_t* resp = reinterpret_cast<uint8_t*>(response);
+    *resp = value;
+    *dataLen = 1;
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmiOEMGetMultiNodeRole(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                   ipmi_request_t request,
+                                   ipmi_response_t response,
+                                   ipmi_data_len_t dataLen,
+                                   ipmi_context_t context)
+{
+    if (*dataLen != 0)
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    uint8_t value = 0;
+    if (getMultiNodeInfo("NodeRole", value) == -1)
+    {
+        *dataLen = 0;
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    uint8_t* resp = reinterpret_cast<uint8_t*>(response);
+    *resp = value;
+    *dataLen = 1;
+    return IPMI_CC_OK;
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -928,6 +1032,20 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMPlatformCmd::cmdCfgHostSerialPortSpeed),
         NULL, ipmiOEMCfgHostSerialPortSpeed, PRIVILEGE_ADMIN);
+
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetMultiNodePresence),
+        NULL, ipmiOEMGetMultiNodePresence, PRIVILEGE_USER);
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetMultiNodeId),
+        NULL, ipmiOEMGetMultiNodeId, PRIVILEGE_USER);
+    ipmiPrintAndRegister(netfnIntcOEMGeneral,
+                         static_cast<ipmi_cmd_t>(
+                             IPMINetfnIntelOEMGeneralCmd::cmdGetMultiNodeRole),
+                         NULL, ipmiOEMGetMultiNodeRole, PRIVILEGE_USER);
     return;
 }
 
