@@ -18,6 +18,7 @@ add_definitions (-DBOOST_ALL_NO_LIB)
 add_definitions (-DBOOST_NO_RTTI)
 add_definitions (-DBOOST_NO_TYPEID)
 add_definitions (-DBOOST_ASIO_DISABLE_THREADS)
+add_definitions (-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 
 if (NOT YOCTO)
     configure_file (CMakeLists.txt.in 3rdparty/CMakeLists.txt)
@@ -28,9 +29,8 @@ if (NOT YOCTO)
 
     set (CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/prefix ${CMAKE_PREFIX_PATH})
     include_directories (${CMAKE_BINARY_DIR}/prefix/include)
-endif ()
+    link_directories (${CMAKE_BINARY_DIR}/prefix/lib)
 
-if (NOT YOCTO)
     include_directories (${CMAKE_BINARY_DIR}/sdbusplus-src)
     link_directories (${CMAKE_BINARY_DIR}/sdbusplus-src/.libs)
     include_directories (${CMAKE_BINARY_DIR}/phosphor-logging-src)
@@ -47,6 +47,10 @@ if (YOCTO)
     pkg_check_modules (LIBIPMID libipmid REQUIRED)
     include_directories (${LOGGING_INCLUDE_DIRS})
     link_directories (${LOGGING_LIBRARY_DIRS})
+
+    pkg_check_modules (LIBIPMID libipmid REQUIRED)
+    include_directories (${LIBIPMID_INCLUDE_DIRS})
+    link_directories (${LIBIPMID_LIBRARY_DIRS})
 
 endif ()
 
@@ -73,9 +77,7 @@ add_library (zinteloemcmds
              src/storagecommands.cpp)
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
-if (YOCTO)
-    target_link_libraries (zinteloemcmds ipmid)
-endif ()
+target_link_libraries (zinteloemcmds ipmid)
 target_link_libraries (zinteloemcmds sdbusplus)
 target_link_libraries (zinteloemcmds phosphor_logging)
 
