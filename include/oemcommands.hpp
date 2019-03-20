@@ -22,6 +22,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetOEMDeviceInfo = 0x27,
     cmdGetAICSlotFRUIDSlotPosRecords = 0x31,
     cmdSetSystemGUID = 0x41,
+    cmdSendEmbeddedFWUpdStatus = 0x44,
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,
     cmdSetShutdownPolicy = 0x60,
@@ -141,6 +142,12 @@ static constexpr const uint8_t setHostSerialCfgCmd = 1;
 // 3: host serial port 1 and 2 high speed
 static constexpr const uint8_t HostSerialCfgParamMax = 3;
 
+static constexpr const uint8_t selEvtTargetMask = 0xF0;
+static constexpr const uint8_t selEvtTargetShift = 4;
+
+static constexpr const uint8_t targetInstanceMask = 0x0E;
+static constexpr const uint8_t targetInstanceShift = 1;
+
 enum class IPMINetfnIntelOEMAppCmd
 {
     mdrStatus = 0x20,
@@ -168,6 +175,14 @@ enum class OEMDevEntityType
     biosId,
     devVer,
     sdrVer,
+};
+
+enum class FWUpdateTarget : uint8_t
+{
+    targetBMC = 0x0,
+    targetBIOS = 0x1,
+    targetME = 0x2,
+    targetOEMEWS = 0x4,
 };
 
 #pragma pack(push, 1)
