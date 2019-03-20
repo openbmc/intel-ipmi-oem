@@ -18,6 +18,7 @@
 #include "xyz/openbmc_project/Led/Physical/server.hpp"
 
 #include <ipmid/api.h>
+#include <systemd/sd-journal.h>
 
 #include <array>
 #include <boost/container/flat_map.hpp>
@@ -303,6 +304,126 @@ ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *dataLen = sizeof(GetPowerRestoreDelayRes);
 
+    return IPMI_CC_OK;
+}
+
+static uint8_t bcdToDec(uint8_t val)
+{
+    return ((val / 16 * 10) + (val % 16));
+}
+
+// Allows an update utility or system BIOS to send the status of an embedded
+// firmware update attempt to the BMC. After received, BMC will create a logging
+// record.
+ipmi_ret_t ipmiOEMSendEmbeddedFwUpdStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                          ipmi_request_t request,
+                                          ipmi_response_t response,
+                                          ipmi_data_len_t dataLen,
+                                          ipmi_context_t context)
+{
+    LogFWUpdStatus* pUpdStatus = static_cast<LogFWUpdStatus*>(request);
+    std::string firmware;
+    size_t szExpLen = 8;
+    uint8_t target =
+        (pUpdStatus->target & selEvtTargetMask) >> selEvtTargetShift;
+
+    /* make sure we have the right number of bytes for this target */
+    if (*dataLen < szExpLen || *dataLen > sizeof(LogFWUpdStatus))
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+    /* make sure the status is 0, 1, or 2 as per the spec */
+    if (pUpdStatus->status > 2)
+    {
+        *dataLen = 0;
+        return IPMI_CC_INVALID_FIELD_REQUEST;
+    }
+    /*orignal OEM command is to record OEM SEL.
+    But openbmc does not support OEM SEL, so we redirect it to redfish event
+    logging. */
+    *dataLen = 0;
+    std::string buildInfo;
+    std::string action;
+    switch (FWUpdateTarget(target))
+    {
+        case FWUpdateTarget::targetBMC:
+            firmware = "BMC";
+            buildInfo = " major: " + std::to_string(pUpdStatus->majorRevision) +
+                        " minor: " +
+                        std::to_string(bcdToDec(
+                            pUpdStatus->minorRevision)) + // BCD encoded
+                        " BuildID: " +
+                        std::to_string(pUpdStatus->build.revisions);
+            break;
+        case FWUpdateTarget::targetBIOS:
+            firmware = "BIOS";
+            buildInfo =
+                " major: " +
+                std::to_string(
+                    bcdToDec(pUpdStatus->majorRevision)) + // BCD encoded
+                " minor: " +
+                std::to_string(
+                    bcdToDec(pUpdStatus->minorRevision)) + // BCD encoded
+                " ReleaseNumber: " +                       // ASCII encoded
+                std::to_string(pUpdStatus->build.revision[0] - '0') +
+                std::to_string(pUpdStatus->build.revision[1] - '0') +
+                std::to_string(pUpdStatus->build.revision[2] - '0') +
+                std::to_string(pUpdStatus->build.revision[3] - '0');
+            break;
+        case FWUpdateTarget::targetME:
+            firmware = "ME";
+            buildInfo =
+                " major: " + std::to_string(pUpdStatus->majorRevision) +
+                " minor1: " +
+                std::to_string(
+                    bcdToDec(pUpdStatus->minorRevision)) + // BCD encoded
+                " minor2: " +
+                std::to_string(
+                    bcdToDec(pUpdStatus->build.revision[0])) + // BCD encoded
+                " build1: " +
+                std::to_string(
+                    bcdToDec(pUpdStatus->build.revision[1])) + // BCD encoded
+                " build2: " +
+                std::to_string(
+                    bcdToDec(pUpdStatus->build.revision[2])); // BCD encoded
+            break;
+        case FWUpdateTarget::targetOEMEWS:
+            firmware = "EWS";
+            buildInfo = " major: " + std::to_string(pUpdStatus->majorRevision) +
+                        " minor: " +
+                        std::to_string(bcdToDec(
+                            pUpdStatus->minorRevision)) + // BCD encoded
+                        " BuildID: " +
+                        std::to_string(pUpdStatus->build.revisions);
+            break;
+    }
+
+    switch (pUpdStatus->status)
+    {
+        case 0x0:
+            action = "update started";
+            break;
+        case 0x1:
+            action = "update completed successfully";
+            break;
+        case 0x2:
+            action = "update failure";
+            break;
+        default:
+            action = "unknown";
+            break;
+    }
+
+    std::string message(
+        "[firmware update] " + firmware + " instance: " +
+        std::to_string((pUpdStatus->target & targetInstanceMask) >>
+                       targetInstanceShift) +
+        " status: <" + action + ">" + buildInfo);
+    std::string redfishMsgId("FirmwareUpdate");
+
+    sd_journal_send("MESSAGE=%s", message.c_str(), "PRIORITY=%i", LOG_INFO,
+                    "REDFISH_MESSAGE_ID=%s", redfishMsgId.c_str(), NULL);
     return IPMI_CC_OK;
 }
 
@@ -880,6 +1001,13 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetAICSlotFRUIDSlotPosRecords),
         NULL, ipmiOEMGetAICFRU, PRIVILEGE_USER);
+
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSendEmbeddedFWUpdStatus),
+        NULL, ipmiOEMSendEmbeddedFwUpdStatus, PRIVILEGE_OPERATOR);
+
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(
