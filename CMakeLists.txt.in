@@ -81,7 +81,8 @@ externalproject_add (
 )
 
 externalproject_add (
-    host-ipmid PREFIX ${CMAKE_BINARY_DIR}/phosphor-host-ipmid DEPENDS
+    host-ipmid PREFIX ${CMAKE_BINARY_DIR}/phosphor-host-ipmid GIT_TAG
+    bfe55a1f7ca6388662cf9613d08ebb5266cd82f8 DEPENDS
     sdbusplus-project dbus-interfaces nlohmann-json GIT_REPOSITORY
     https://github.com/openbmc/phosphor-host-ipmid SOURCE_DIR
     ${CMAKE_BINARY_DIR}/phosphor-ipmi-host BINARY_DIR
