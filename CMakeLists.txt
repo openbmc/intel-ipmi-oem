@@ -35,7 +35,7 @@ if (NOT YOCTO)
     link_directories (${CMAKE_BINARY_DIR}/sdbusplus-src/.libs)
     include_directories (${CMAKE_BINARY_DIR}/phosphor-logging-src)
     link_directories (${CMAKE_BINARY_DIR}/phosphor-logging-src/.libs)
-
+    include_directories (${CMAKE_BINARY_DIR}/phosphor-ipmi-host/include)
     include_directories (${CMAKE_BINARY_DIR}) # link_directories
                                               # (${CMAKE_BINARY_DIR}/sdbusplus-
                                               # src/.libs)
@@ -44,6 +44,7 @@ endif ()
 if (YOCTO)
     find_package (PkgConfig REQUIRED)
     pkg_check_modules (LOGGING phosphor-logging REQUIRED)
+    pkg_check_modules (LIBIPMID libipmid REQUIRED)
     include_directories (${LOGGING_INCLUDE_DIRS})
     link_directories (${LOGGING_LIBRARY_DIRS})
 
@@ -61,17 +62,20 @@ if (NOT YOCTO)
     add_executable (runSensorTests ${SENSOR_TEST_SRC})
     add_test (NAME test_sensorcommands COMMAND runSensorTests)
     target_link_libraries (runSensorTests ${GTEST_BOTH_LIBRARIES}
-                           ${CMAKE_THREAD_LIBS_INIT}
-                           phosphor_logging sdbusplus -lsystemd)
+                           ${CMAKE_THREAD_LIBS_INIT} phosphor_logging sdbusplus
+                           -lsystemd)
 endif ()
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_library (zinteloemcmds
-             SHARED src/oemcommands.cpp src/utils.cpp src/sensorcommands.cpp
+             SHARED src/oemcommands.cpp src/sensorcommands.cpp
              src/storagecommands.cpp)
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
+if (YOCTO)
+    target_link_libraries (zinteloemcmds ipmid)
+endif ()
 target_link_libraries (zinteloemcmds sdbusplus)
 target_link_libraries (zinteloemcmds phosphor_logging)
 
