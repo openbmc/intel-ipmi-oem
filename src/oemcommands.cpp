@@ -849,6 +849,41 @@ ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 constexpr const char* cfmLimitSettingPath =
     "/xyz/openbmc_project/control/cfm_limit";
 constexpr const char* cfmLimitIface = "xyz.openbmc_project.Control.CFMLimit";
+constexpr const size_t legacyExitAirSensorNumber = 0x2e;
+
+static std::string getExitAirConfigPath()
+{
+
+    auto method =
+        dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
+                             "/xyz/openbmc_project/object_mapper",
+                             "xyz.openbmc_project.ObjectMapper", "GetSubTree");
+
+    method.append(
+        "/", 0,
+        std::array<const char*, 1>{"xyz.openbmc_project.Configuration.Pid"});
+    std::string path;
+    try
+    {
+        GetSubTreeType resp;
+        auto reply = dbus.call(method);
+        reply.read(resp);
+        auto config =
+            std::find_if(resp.begin(), resp.end(), [](const auto& pair) {
+                return pair.first.find("Exit_Air") != std::string::npos;
+            });
+        if (config != resp.end())
+        {
+            path = std::move(config->first);
+        }
+    }
+    catch (sdbusplus::exception_t&)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMGetFscParameter: mapper error");
+    };
+    return path;
+}
 
 ipmi_ret_t ipmiOEMSetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                   ipmi_request_t request,
@@ -868,7 +903,29 @@ ipmi_ret_t ipmiOEMSetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     uint8_t* req = static_cast<uint8_t*>(request);
 
-    if (*req == static_cast<uint8_t>(setFscParamFlags::cfm))
+    if (*req == static_cast<uint8_t>(setFscParamFlags::tcontrol))
+    {
+        if (*dataLen == 3 && req[1] == legacyExitAirSensorNumber)
+        {
+            *dataLen = 0;
+            std::string path = getExitAirConfigPath();
+            ipmi::setDbusProperty(dbus, "xyz.openbmc_project.EntityManager",
+                                  path, "xyz.openbmc_project.Configuration.Pid",
+                                  "SetPoint", static_cast<double>(req[2]));
+            return IPMI_CC_OK;
+        }
+        else if (*dataLen == 3)
+        {
+            *dataLen = 0;
+            return IPMI_CC_INVALID_FIELD_REQUEST;
+        }
+        else
+        {
+            *dataLen = 0;
+            return IPMI_CC_REQ_DATA_LEN_INVALID;
+        }
+    }
+    else if (*req == static_cast<uint8_t>(setFscParamFlags::cfm))
     {
         if (*dataLen != 3)
         {
@@ -919,6 +976,7 @@ ipmi_ret_t ipmiOEMGetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                   ipmi_data_len_t dataLen,
                                   ipmi_context_t context)
 {
+    constexpr uint8_t legacyDefaultExitAirLimit = -128;
 
     if (*dataLen < 1)
     {
@@ -930,7 +988,41 @@ ipmi_ret_t ipmiOEMGetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     uint8_t* req = static_cast<uint8_t*>(request);
 
-    if (*req == static_cast<uint8_t>(setFscParamFlags::cfm))
+    if (*req == static_cast<uint8_t>(setFscParamFlags::tcontrol))
+    {
+        if (*dataLen != 2)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMGetFscParameter: invalid input len!");
+            *dataLen = 0;
+            return IPMI_CC_REQ_DATA_LEN_INVALID;
+        }
+
+        if (req[1] != legacyExitAirSensorNumber)
+        {
+            return IPMI_CC_PARM_OUT_OF_RANGE;
+        }
+        uint8_t setpoint = legacyDefaultExitAirLimit;
+        std::string path = getExitAirConfigPath();
+        if (path.size())
+        {
+            Value val = ipmi::getDbusProperty(
+                dbus, "xyz.openbmc_project.EntityManager", path,
+                "xyz.openbmc_project.Configuration.Pid", "SetPoint");
+            setpoint = std::floor(std::get<double>(val) + 0.5);
+        }
+
+        // old implementation used to return the "default" and current, we
+        // don't make the default readily available so just make both the
+        // same
+        auto resp = static_cast<uint8_t*>(response);
+        resp[0] = setpoint;
+        resp[1] = setpoint;
+
+        *dataLen = 2;
+        return IPMI_CC_OK;
+    }
+    else if (*req == static_cast<uint8_t>(setFscParamFlags::cfm))
     {
 
         /*
@@ -999,10 +1091,10 @@ ipmi_ret_t ipmiOEMGetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     else
     {
         // todo other command parts possibly
-        // tcontrol is handled in peci now
         // fan speed offset not implemented yet
         // domain pwm limit not implemented
         *dataLen = 0;
+
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 }
