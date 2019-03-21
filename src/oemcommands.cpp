@@ -612,7 +612,8 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             std::vector<std::string> data;
             std::string line;
             boost::process::child c1(fwGetEnvCmd, "-n", fwHostSerailCfgEnvName,
-                                     boost::process::std_out > is);
+                                     boost::process::std_out > is,
+                                     boost::process::ignore_error);
 
             while (c1.running() && std::getline(is, line) && !line.empty())
             {
@@ -684,7 +685,8 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             }
 
             boost::process::child c1(fwSetEnvCmd, fwHostSerailCfgEnvName,
-                                     std::to_string(req->parameter));
+                                     std::to_string(req->parameter),
+                                     boost::process::ignore_error);
 
             c1.wait();
             if (c1.exit_code())
