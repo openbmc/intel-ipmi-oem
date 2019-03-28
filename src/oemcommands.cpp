@@ -26,7 +26,7 @@
 #include <commandutils.hpp>
 #include <iostream>
 #include <oemcommands.hpp>
-#include <phosphor-ipmi-host/utils.hpp>
+#include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <string>
