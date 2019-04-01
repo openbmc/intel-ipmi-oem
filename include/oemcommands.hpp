@@ -24,6 +24,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetSystemGUID = 0x41,
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,
+    cmdSetFaultIndication = 0x57,
     cmdSetShutdownPolicy = 0x60,
     cmdGetShutdownPolicy = 0x62,
     cmdSetFanConfig = 0x89,
@@ -291,7 +292,71 @@ struct CfgHostSerialReq
     uint8_t command;
     uint8_t parameter;
 };
+
+struct SetFaultReq
+{
+    uint8_t source;     // fault source
+    uint8_t eFaultType; // fan, temp, power, or drive slot
+    uint8_t eState;     // fault criticality (ok, non crit, crit etc.)
+    uint8_t faultLEDGroup;
+    uint8_t LEDState[6]; // DIMM/FAN LED state(48 bit field, LSByte first)
+};
 #pragma pack(pop)
+struct LedFaultConfiguration
+{
+    std::string name;
+    std::string faultGroup;
+    std::string faultType;
+    uint32_t phyGpio;
+    uint32_t faultOffset;
+
+    bool operator<(const LedFaultConfiguration& sname) const
+    {
+        return sname.name < name;
+    }
+};
+
+//
+// Fault type enumeration
+//
+enum class ERemoteFaultType
+{
+    faultFan,         // 0
+    faultTemp,        // 1
+    faultPower,       // 2
+    faultDriveSlot,   // 3
+    faultSoftware,    // 4
+    faultMemory,      // 5
+    maxFaultTypes = 6 // 6
+};
+
+// Enumeration for remote fault states as required by the HSC
+//
+enum class ERemoteFaultState
+{
+    // major fault types
+    stateOk,       // Lowest priority,nominal state
+    stateDegraded, // degraded state
+    stateNonCrit,  // non-critical state
+    stateCritical, // critical state
+    stateNonRec,   // Highest priority,non-coverable state
+    maxFaultState, // Criticality State Terminator
+
+    // fault indicators
+    fanLEDs = 0,
+    cpu1DimmLeds,
+    cpu2DimmLeds,
+    cpu3DimmLeds,
+    cpu4DimmLeds,
+};
+
+enum class EDimmFaultType
+{
+    fanGroup = 0,
+    cpu1cpu2Dimm = 0,
+    cpu3cpu4Dimm,
+    maxFaultGroup,
+};
 
 enum class setFanProfileFlags : uint8_t
 {
