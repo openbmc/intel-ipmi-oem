@@ -94,7 +94,7 @@ constexpr static const char* fruDeviceServiceName =
     "xyz.openbmc_project.FruDevice";
 constexpr static const size_t cacheTimeoutSeconds = 10;
 
-constexpr static const uint8_t deassertionEvent = 1;
+constexpr static const uint8_t deassertionEvent = 0x80;
 
 static std::vector<uint8_t> fruCache;
 static uint8_t cacheBus = 0xFF;
@@ -852,7 +852,7 @@ ipmi_ret_t ipmiStorageGetSELEntry(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 // Set the event direction
                 if (eventDir == 0)
                 {
-                    record.record.system.eventDir = deassertionEvent;
+                    record.record.system.eventType |= deassertionEvent;
                 }
 
                 std::vector<uint8_t> evtData;
@@ -983,7 +983,9 @@ ipmi_ret_t ipmiStorageAddSELEntry(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             req->record.system.eventData,
             req->record.system.eventData +
                 intel_oem::ipmi::sel::systemEventSize);
-        bool assert = req->record.system.eventDir ? false : true;
+        bool assert =
+            (req->record.system.eventType & ipmi::sel::deassertionEvent) ? false
+                                                                         : true;
         uint16_t genId = req->record.system.generatorID;
         sdbusplus::message::message writeSEL = bus.new_method_call(
             ipmiSELObject, ipmiSELPath, ipmiSELAddInterface, "IpmiSelAdd");
