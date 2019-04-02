@@ -31,6 +31,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetShutdownPolicy = 0x62,
     cmdSetFanConfig = 0x89,
     cmdGetFanConfig = 0x8a,
+    cmdSetFanSpeedOffset = 0x8c,
+    cmdGetFanSpeedOffset = 0x8d,
     cmdSetFscParameter = 0x90,
     cmdGetFscParameter = 0x91,
     cmdGetChassisIdentifier = 0x92,
