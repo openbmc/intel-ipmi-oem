@@ -231,6 +231,96 @@ ipmi_ret_t ipmiSensorWildcardHandler(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_INVALID;
 }
 
+static bool isFromSystemChannel()
+{
+    // TODO we could not figure out where the request is from based on IPMI
+    // command handler parameters. because of it, we can not differentiate
+    // request from SMS/SMM or IPMB channel
+    return true;
+}
+
+ipmi_ret_t ipmiSenPlatformEvent(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                ipmi_request_t request,
+                                ipmi_response_t response,
+                                ipmi_data_len_t dataLen, ipmi_context_t context)
+{
+    int generatorID;
+    size_t count;
+    bool assert = true;
+    std::string sensorPath;
+    size_t paraLen = *dataLen;
+    PlatformEventRequest *req;
+    *dataLen = 0;
+
+    if ((paraLen < selSystemEventSizeWith1Bytes) ||
+        (paraLen > selSystemEventSizeWith3Bytes))
+    {
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    if (isFromSystemChannel())
+    { // first byte for SYSTEM Interface is Generator ID
+        // +1 to get common struct
+        req = reinterpret_cast<PlatformEventRequest *>((uint8_t *)request + 1);
+        // Capture the generator ID
+        generatorID = *reinterpret_cast<uint8_t *>(request);
+
+        // Platform Event usually comes from other firmware, like BIOS.
+        // Unlike BMC sensor, it does not have BMC DBUS sensor path.
+        sensorPath = "System";
+    }
+    else
+    {
+        req = reinterpret_cast<PlatformEventRequest *>(request);
+        // TODO GenratorID for IPMB is combination of RqSA and RqLUN
+        generatorID = 0xff;
+        sensorPath = "IPMB";
+    }
+    // Content of event data field depends on sensor class.
+    // When data0 bit[5:4] is non-zero, valid data counts is 3.
+    // When data0 bit[7:6] is non-zero, valid data counts is 2.
+    if (((req->data[0] & byte3EnableMask) != 0 &&
+         paraLen < selSystemEventSizeWith3Bytes) ||
+        ((req->data[0] & byte2EnableMask) != 0 &&
+         paraLen < selSystemEventSizeWith2Bytes))
+    {
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    // Count bytes of Event Data
+    if ((req->data[0] & byte3EnableMask) != 0)
+    {
+        count = 3;
+    }
+    else if ((req->data[0] & byte2EnableMask) != 0)
+    {
+        count = 2;
+    }
+    else
+    {
+        count = 1;
+    }
+    assert = req->eventDirectionType & directionMask ? false : true;
+    std::vector<uint8_t> eventData(req->data, req->data + count);
+
+    std::string service =
+        ipmi::getService(dbus, ipmiSELAddInterface, ipmiSELPath);
+    sdbusplus::message::message writeSEL = dbus.new_method_call(
+        service.c_str(), ipmiSELPath, ipmiSELAddInterface, "IpmiSelAdd");
+    writeSEL.append(ipmiSELAddMessage, sensorPath, eventData, assert,
+                    generatorID);
+    try
+    {
+        dbus.call(writeSEL);
+    }
+    catch (sdbusplus::exception_t &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+    return IPMI_CC_OK;
+}
+
 ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
     ipmiSenGetSensorReading(uint8_t sensnum)
 {
@@ -1258,6 +1348,12 @@ void registerSensorFunctions()
         static_cast<ipmi_cmd_t>(
             IPMINetfnSensorCmds::ipmiCmdSetSensorReadingAndEventStatus),
         nullptr, ipmiSensorWildcardHandler, PRIVILEGE_OPERATOR);
+
+    // <Platform Event>
+    ipmiPrintAndRegister(
+        NETFUN_SENSOR,
+        static_cast<ipmi_cmd_t>(IPMINetfnSensorCmds::ipmiCmdPlatformEvent),
+        nullptr, ipmiSenPlatformEvent, PRIVILEGE_OPERATOR);
 
     // <Get Sensor Reading>
     ipmi::registerHandler(
