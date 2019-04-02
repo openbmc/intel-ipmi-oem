@@ -119,8 +119,7 @@ struct GetSELEntryResponse
             uint8_t eventMsgRevision;
             uint8_t sensorType;
             uint8_t sensorNum;
-            uint8_t eventType : 7;
-            uint8_t eventDir : 1;
+            uint8_t eventType;
             uint8_t eventData[intel_oem::ipmi::sel::systemEventSize];
         } system;
         struct
@@ -148,8 +147,7 @@ struct AddSELRequest
             uint8_t eventMsgRevision;
             uint8_t sensorType;
             uint8_t sensorNum;
-            uint8_t eventType : 7;
-            uint8_t eventDir : 1;
+            uint8_t eventType;
             uint8_t eventData[intel_oem::ipmi::sel::systemEventSize];
         } system;
         struct
