@@ -1142,6 +1142,8 @@ constexpr const char* cfmLimitSettingPath =
     "/xyz/openbmc_project/control/cfm_limit";
 constexpr const char* cfmLimitIface = "xyz.openbmc_project.Control.CFMLimit";
 constexpr const size_t legacyExitAirSensorNumber = 0x2e;
+constexpr const char* pidConfigurationIface =
+    "xyz.openbmc_project.Configuration.Pid";
 
 static std::string getExitAirConfigPath()
 {
@@ -1151,9 +1153,7 @@ static std::string getExitAirConfigPath()
                              "/xyz/openbmc_project/object_mapper",
                              "xyz.openbmc_project.ObjectMapper", "GetSubTree");
 
-    method.append(
-        "/", 0,
-        std::array<const char*, 1>{"xyz.openbmc_project.Configuration.Pid"});
+    method.append("/", 0, std::array<const char*, 1>{pidConfigurationIface});
     std::string path;
     GetSubTreeType resp;
     try
@@ -1176,63 +1176,164 @@ static std::string getExitAirConfigPath()
     return path;
 }
 
-ipmi_ret_t ipmiOEMSetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                  ipmi_request_t request,
-                                  ipmi_response_t response,
-                                  ipmi_data_len_t dataLen,
-                                  ipmi_context_t context)
+// flat map to make alphabetical
+static boost::container::flat_map<std::string, PropertyMap> getPidConfigs()
+{
+    boost::container::flat_map<std::string, PropertyMap> ret;
+    auto method =
+        dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
+                             "/xyz/openbmc_project/object_mapper",
+                             "xyz.openbmc_project.ObjectMapper", "GetSubTree");
+
+    method.append("/", 0, std::array<const char*, 1>{pidConfigurationIface});
+    GetSubTreeType resp;
+
+    try
+    {
+        auto reply = dbus.call(method);
+        reply.read(resp);
+    }
+    catch (sdbusplus::exception_t&)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getFanConfigPaths: mapper error");
+    };
+    for (const auto& [path, objects] : resp)
+    {
+        if (objects.empty())
+        {
+            continue; // should be impossible
+        }
+        ret.emplace(path, getAllDbusProperties(dbus, objects[0].first, path,
+                                               pidConfigurationIface));
+    }
+    return ret;
+}
+
+ipmi::RspType<uint8_t> ipmiOEMGetFanSpeedOffset(void)
+{
+    boost::container::flat_map<std::string, PropertyMap> data = getPidConfigs();
+    if (data.empty())
+    {
+        return ipmi::responseResponseError();
+    }
+    uint8_t minOffset = std::numeric_limits<uint8_t>::max();
+    for (const auto& [_, pid] : data)
+    {
+        auto findClass = pid.find("Class");
+        if (findClass == pid.end())
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMGetFscParameter: found illegal pid "
+                "configurations");
+            return ipmi::responseResponseError();
+        }
+        std::string type = std::get<std::string>(findClass->second);
+        if (type == "fan")
+        {
+            auto findOutLimit = pid.find("OutLimitMin");
+            if (findOutLimit == pid.end())
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "ipmiOEMGetFscParameter: found illegal pid "
+                    "configurations");
+                return ipmi::responseResponseError();
+            }
+            // get the min out of all the offsets
+            minOffset = std::min(
+                minOffset,
+                static_cast<uint8_t>(std::get<double>(findOutLimit->second)));
+        }
+    }
+    if (minOffset == std::numeric_limits<uint8_t>::max())
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMGetFscParameter: found no fan configurations!");
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess(minOffset);
+}
+
+ipmi::RspType<> ipmiOEMSetFanSpeedOffset(uint8_t offset)
+{
+    boost::container::flat_map<std::string, PropertyMap> data = getPidConfigs();
+    if (data.empty())
+    {
+
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetFanSpeedOffset: found no pid configurations!");
+        return ipmi::responseResponseError();
+    }
+
+    bool found = false;
+    for (const auto& [path, pid] : data)
+    {
+        auto findClass = pid.find("Class");
+        if (findClass == pid.end())
+        {
+
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMSetFanSpeedOffset: found illegal pid "
+                "configurations");
+            return ipmi::responseResponseError();
+        }
+        std::string type = std::get<std::string>(findClass->second);
+        if (type == "fan")
+        {
+            auto findOutLimit = pid.find("OutLimitMin");
+            if (findOutLimit == pid.end())
+            {
+
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "ipmiOEMSetFanSpeedOffset: found illegal pid "
+                    "configurations");
+                return ipmi::responseResponseError();
+            }
+            ipmi::setDbusProperty(dbus, "xyz.openbmc_project.EntityManager",
+                                  path, pidConfigurationIface, "OutLimitMin",
+                                  static_cast<double>(offset));
+            found = true;
+        }
+    }
+    if (!found)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetFanSpeedOffset: set no fan offsets");
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
+ipmi::RspType<> ipmiOEMSetFscParameter(uint8_t command, uint8_t param1,
+                                       uint8_t param2)
 {
     constexpr const size_t disableLimiting = 0x0;
 
-    if (*dataLen < 2)
+    if (command == static_cast<uint8_t>(setFscParamFlags::tcontrol))
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMSetFscParameter: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    uint8_t* req = static_cast<uint8_t*>(request);
-
-    if (*req == static_cast<uint8_t>(setFscParamFlags::tcontrol))
-    {
-        if (*dataLen == 3 && req[1] == legacyExitAirSensorNumber)
+        if (param1 == legacyExitAirSensorNumber)
         {
-            *dataLen = 0;
             std::string path = getExitAirConfigPath();
             ipmi::setDbusProperty(dbus, "xyz.openbmc_project.EntityManager",
-                                  path, "xyz.openbmc_project.Configuration.Pid",
-                                  "SetPoint", static_cast<double>(req[2]));
-            return IPMI_CC_OK;
-        }
-        else if (*dataLen == 3)
-        {
-            *dataLen = 0;
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+                                  path, pidConfigurationIface, "SetPoint",
+                                  static_cast<double>(param2));
+            return ipmi::responseSuccess();
         }
         else
         {
-            *dataLen = 0;
-            return IPMI_CC_REQ_DATA_LEN_INVALID;
+            return ipmi::responseParmOutOfRange();
         }
     }
-    else if (*req == static_cast<uint8_t>(setFscParamFlags::cfm))
+    else if (command == static_cast<uint8_t>(setFscParamFlags::cfm))
     {
-        if (*dataLen != 3)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "ipmiOEMSetFscParameter: invalid input len!");
-            *dataLen = 0;
-            return IPMI_CC_REQ_DATA_LEN_INVALID;
-        }
-        *dataLen = 0;
-
-        uint16_t cfm = req[1] | (static_cast<uint16_t>(req[2]) << 8);
+        uint16_t cfm = param1 | (static_cast<uint16_t>(param2) << 8);
 
         // must be greater than 50 based on eps
         if (cfm < 50 && cfm != disableLimiting)
         {
-            return IPMI_CC_PARM_OUT_OF_RANGE;
+            return ipmi::responseParmOutOfRange();
         }
 
         try
@@ -1246,9 +1347,48 @@ ipmi_ret_t ipmiOEMSetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "ipmiOEMSetFscParameter: can't set cfm setting!",
                 phosphor::logging::entry("ERR=%s", e.what()));
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return ipmi::responseResponseError();
         }
-        return IPMI_CC_OK;
+        return ipmi::responseSuccess();
+    }
+    else if (command == static_cast<uint8_t>(setFscParamFlags::maxPwm))
+    {
+        constexpr const size_t maxDomainCount = 8;
+        uint8_t requestedDomainMask = param1;
+        boost::container::flat_map data = getPidConfigs();
+        if (data.empty())
+        {
+
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMSetFscParameter: found no pid configurations!");
+            return ipmi::responseResponseError();
+        }
+        size_t count = 0;
+        for (const auto& [path, pid] : data)
+        {
+            auto findClass = pid.find("Class");
+            if (findClass == pid.end())
+            {
+
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "ipmiOEMSetFscParameter: found illegal pid "
+                    "configurations");
+                return ipmi::responseResponseError();
+            }
+            std::string type = std::get<std::string>(findClass->second);
+            if (type == "fan")
+            {
+                if (requestedDomainMask & (1 << count))
+                {
+                    ipmi::setDbusProperty(
+                        dbus, "xyz.openbmc_project.EntityManager", path,
+                        pidConfigurationIface, "OutLimitMax",
+                        static_cast<double>(param2));
+                }
+                count++;
+            }
+        }
+        return ipmi::responseSuccess();
     }
     else
     {
@@ -1256,75 +1396,115 @@ ipmi_ret_t ipmiOEMSetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         // tcontrol is handled in peci now
         // fan speed offset not implemented yet
         // domain pwm limit not implemented
-        *dataLen = 0;
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 }
 
-ipmi_ret_t ipmiOEMGetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                  ipmi_request_t request,
-                                  ipmi_response_t response,
-                                  ipmi_data_len_t dataLen,
-                                  ipmi_context_t context)
+ipmi::RspType<
+    std::variant<uint8_t, std::array<uint8_t, 2>, std::array<uint16_t, 2>>>
+    ipmiOEMGetFscParameter(uint8_t command, std::optional<uint8_t> param)
 {
     constexpr uint8_t legacyDefaultExitAirLimit = -128;
 
-    if (*dataLen < 1)
+    if (command == static_cast<uint8_t>(setFscParamFlags::tcontrol))
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMGetFscParameter: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    uint8_t* req = static_cast<uint8_t*>(request);
-
-    if (*req == static_cast<uint8_t>(setFscParamFlags::tcontrol))
-    {
-        if (*dataLen != 2)
+        if (!param)
         {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "ipmiOEMGetFscParameter: invalid input len!");
-            *dataLen = 0;
-            return IPMI_CC_REQ_DATA_LEN_INVALID;
+            return ipmi::responseReqDataLenInvalid();
         }
 
-        if (req[1] != legacyExitAirSensorNumber)
+        if (*param != legacyExitAirSensorNumber)
         {
-            return IPMI_CC_PARM_OUT_OF_RANGE;
+            return ipmi::responseParmOutOfRange();
         }
         uint8_t setpoint = legacyDefaultExitAirLimit;
         std::string path = getExitAirConfigPath();
         if (path.size())
         {
-            Value val = ipmi::getDbusProperty(
-                dbus, "xyz.openbmc_project.EntityManager", path,
-                "xyz.openbmc_project.Configuration.Pid", "SetPoint");
+            Value val =
+                ipmi::getDbusProperty(dbus, "xyz.openbmc_project.EntityManager",
+                                      path, pidConfigurationIface, "SetPoint");
             setpoint = std::floor(std::get<double>(val) + 0.5);
         }
 
         // old implementation used to return the "default" and current, we
         // don't make the default readily available so just make both the
         // same
-        auto resp = static_cast<uint8_t*>(response);
-        resp[0] = setpoint;
-        resp[1] = setpoint;
 
-        *dataLen = 2;
-        return IPMI_CC_OK;
+        return ipmi::responseSuccess(
+            std::array<uint8_t, 2>{setpoint, setpoint});
     }
-    else if (*req == static_cast<uint8_t>(setFscParamFlags::cfm))
+    else if (command == static_cast<uint8_t>(setFscParamFlags::maxPwm))
+    {
+        constexpr const size_t maxDomainCount = 8;
+
+        if (!param)
+        {
+            return ipmi::responseReqDataLenInvalid();
+        }
+        uint8_t requestedDomain = *param;
+        if (requestedDomain >= maxDomainCount)
+        {
+            return ipmi::responseInvalidFieldRequest();
+        }
+
+        boost::container::flat_map data = getPidConfigs();
+        if (data.empty())
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMGetFscParameter: found no pid configurations!");
+            return ipmi::responseResponseError();
+        }
+        size_t count = 0;
+        for (const auto& [_, pid] : data)
+        {
+            auto findClass = pid.find("Class");
+            if (findClass == pid.end())
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "ipmiOEMGetFscParameter: found illegal pid "
+                    "configurations");
+                return ipmi::responseResponseError();
+            }
+            std::string type = std::get<std::string>(findClass->second);
+            if (type == "fan")
+            {
+                if (requestedDomain == count)
+                {
+                    auto findOutLimit = pid.find("OutLimitMax");
+                    if (findOutLimit == pid.end())
+                    {
+                        phosphor::logging::log<phosphor::logging::level::ERR>(
+                            "ipmiOEMGetFscParameter: found illegal pid "
+                            "configurations");
+                        return ipmi::responseResponseError();
+                    }
+
+                    return ipmi::responseSuccess(
+                        static_cast<uint8_t>(std::floor(
+                            std::get<double>(findOutLimit->second) + 0.5)));
+                }
+                else
+                {
+                    count++;
+                }
+            }
+        }
+
+        return ipmi::responseInvalidFieldRequest();
+    }
+    else if (command == static_cast<uint8_t>(setFscParamFlags::cfm))
     {
 
         /*
         DataLen should be 1, but host is sending us an extra bit. As the
-        previous behavior didn't seem to prevent this, ignore the check for now.
+        previous behavior didn't seem to prevent this, ignore the check for
+        now.
 
-        if (*dataLen != 1)
+        if (param)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "ipmiOEMGetFscParameter: invalid input len!");
-            *dataLen = 0;
             return IPMI_CC_REQ_DATA_LEN_INVALID;
         }
         */
@@ -1342,51 +1522,29 @@ ipmi_ret_t ipmiOEMGetFscParameter(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         catch (sdbusplus::exception_t& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
-                "ipmiOEMSetFscParameter: can't get cfm setting!",
+                "ipmiOEMGetFscParameter: can't get cfm setting!",
                 phosphor::logging::entry("ERR=%s", e.what()));
-            *dataLen = 0;
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return ipmi::responseResponseError();
         }
 
-        auto cfmLim = std::get_if<double>(&cfmLimit);
-        if (cfmLim == nullptr ||
-            *cfmLim > std::numeric_limits<uint16_t>::max() || *cfmLim < 0)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "ipmiOEMSetFscParameter: cfm limit out of range!");
-            *dataLen = 0;
-            return IPMI_CC_UNSPECIFIED_ERROR;
-        }
+        double cfmMax = std::get<double>(cfmMaximum);
+        double cfmLim = std::get<double>(cfmLimit);
 
-        auto cfmMax = std::get_if<double>(&cfmMaximum);
-        if (cfmMax == nullptr ||
-            *cfmMax > std::numeric_limits<uint16_t>::max() || *cfmMax < 0)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "ipmiOEMSetFscParameter: cfm max out of range!");
-            *dataLen = 0;
-            return IPMI_CC_UNSPECIFIED_ERROR;
-        }
-        *cfmLim = std::floor(*cfmLim + 0.5);
-        *cfmMax = std::floor(*cfmMax + 0.5);
-        uint16_t resp = static_cast<uint16_t>(*cfmLim);
-        uint16_t* ptr = static_cast<uint16_t*>(response);
-        ptr[0] = resp;
-        resp = static_cast<uint16_t>(*cfmMax);
-        ptr[1] = resp;
+        cfmLim = std::floor(cfmLim + 0.5);
+        cfmMax = std::floor(cfmMax + 0.5);
+        uint16_t cfmLimResp = static_cast<uint16_t>(cfmLim);
+        uint16_t cfmMaxResp = static_cast<uint16_t>(cfmMax);
 
-        *dataLen = 4;
-
-        return IPMI_CC_OK;
+        std::cerr << "setting return\n";
+        return ipmi::responseSuccess(
+            std::array<uint16_t, 2>{cfmLimResp, cfmMaxResp});
     }
+
     else
     {
         // todo other command parts possibly
-        // fan speed offset not implemented yet
         // domain pwm limit not implemented
-        *dataLen = 0;
-
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 }
 
@@ -1477,15 +1635,27 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetFanConfig),
         NULL, ipmiOEMGetFanConfig, PRIVILEGE_USER);
 
-    ipmiPrintAndRegister(netfnIntcOEMGeneral,
-                         static_cast<ipmi_cmd_t>(
-                             IPMINetfnIntelOEMGeneralCmd::cmdSetFscParameter),
-                         NULL, ipmiOEMSetFscParameter, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetFanSpeedOffset),
+        ipmi::Privilege::User, ipmiOEMGetFanSpeedOffset);
 
-    ipmiPrintAndRegister(netfnIntcOEMGeneral,
-                         static_cast<ipmi_cmd_t>(
-                             IPMINetfnIntelOEMGeneralCmd::cmdGetFscParameter),
-                         NULL, ipmiOEMGetFscParameter, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetFanSpeedOffset),
+        ipmi::Privilege::User, ipmiOEMSetFanSpeedOffset);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetFscParameter),
+        ipmi::Privilege::User, ipmiOEMSetFscParameter);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetFscParameter),
+        ipmi::Privilege::User, ipmiOEMGetFscParameter);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
