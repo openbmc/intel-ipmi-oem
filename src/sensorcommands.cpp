@@ -231,6 +231,68 @@ ipmi_ret_t ipmiSensorWildcardHandler(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_INVALID;
 }
 
+ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload &p)
+{
+    uint8_t generatorID = 0;
+    uint8_t evmRev = 0;
+    uint8_t sensorType = 0;
+    uint8_t sensorNum = 0;
+    uint8_t eventType = 0;
+    uint8_t eventData1 = 0;
+    std::optional<uint8_t> eventData2 = 0;
+    std::optional<uint8_t> eventData3 = 0;
+
+    // todo: This check is supposed to be based on the incoming channel.
+    //      e.g. system channel will provide upto 8 bytes including generator
+    //      ID, but ipmb channel will provide only up to 7 bytes without the
+    //      generator ID.
+    // Support for this check is coming in future patches, so for now just base
+    // it on if the first byte is the EvMRev (0x04).
+    if (p.size() && p.data()[0] == 0x04)
+    {
+        p.unpack(evmRev, sensorType, sensorNum, eventType, eventData1,
+                 eventData2, eventData3);
+        // todo: the generator ID for this channel is supposed to come from the
+        // IPMB requesters slave address. Support for this is coming in future
+        // patches, so for now just assume it is coming from the ME (0x2C).
+        generatorID = 0x2C;
+    }
+    else
+    {
+        p.unpack(generatorID, evmRev, sensorType, sensorNum, eventType,
+                 eventData1, eventData2, eventData3);
+    }
+    if (!p.fullyUnpacked())
+    {
+        return ipmi::responseReqDataLenInvalid();
+    }
+
+    bool assert = eventType & directionMask ? false : true;
+    std::vector<uint8_t> eventData;
+    eventData.push_back(eventData1);
+    eventData.push_back(eventData2.value_or(0xFF));
+    eventData.push_back(eventData3.value_or(0xFF));
+
+    std::string sensorPath = getPathFromSensorNumber(sensorNum);
+    std::string service =
+        ipmi::getService(dbus, ipmiSELAddInterface, ipmiSELPath);
+    sdbusplus::message::message writeSEL = dbus.new_method_call(
+        service.c_str(), ipmiSELPath, ipmiSELAddInterface, "IpmiSelAdd");
+    writeSEL.append(ipmiSELAddMessage, sensorPath, eventData, assert,
+                    static_cast<uint16_t>(generatorID));
+    try
+    {
+        dbus.call(writeSEL);
+    }
+    catch (sdbusplus::exception_t &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseUnspecifiedError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
 ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
     ipmiSenGetSensorReading(uint8_t sensnum)
 {
@@ -1258,6 +1320,12 @@ void registerSensorFunctions()
         static_cast<ipmi_cmd_t>(
             IPMINetfnSensorCmds::ipmiCmdSetSensorReadingAndEventStatus),
         nullptr, ipmiSensorWildcardHandler, PRIVILEGE_OPERATOR);
+
+    // <Platform Event>
+    ipmi::registerHandler(
+        ipmi::prioOemBase, ipmi::netFnSensor,
+        static_cast<ipmi::Cmd>(ipmi::sensor_event::cmdPlatformEvent),
+        ipmi::Privilege::Operator, ipmiSenPlatformEvent);
 
     // <Get Sensor Reading>
     ipmi::registerHandler(
