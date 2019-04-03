@@ -323,10 +323,16 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
                                                uint32_t auxInfo)
 {
     std::string firmware;
+    int instance = (target & targetInstanceMask) >> targetInstanceShift;
     target = (target & selEvtTargetMask) >> selEvtTargetShift;
 
     /* make sure the status is 0, 1, or 2 as per the spec */
     if (status > 2)
+    {
+        return ipmi::response(ipmi::ccInvalidFieldRequest);
+    }
+    /* make sure the target is 0, 1, 2, or 4 as per the spec */
+    if (target > 4 || target == 3)
     {
         return ipmi::response(ipmi::ccInvalidFieldRequest);
     }
@@ -339,8 +345,7 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
     {
         case FWUpdateTarget::targetBMC:
             firmware = "BMC";
-            buildInfo = " major: " + std::to_string(majorRevision) +
-                        " minor: " +
+            buildInfo = "major: " + std::to_string(majorRevision) + " minor: " +
                         std::to_string(bcdToDec(minorRevision)) + // BCD encoded
                         " BuildID: " + std::to_string(auxInfo);
             buildInfo += std::to_string(auxInfo);
@@ -348,7 +353,7 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
         case FWUpdateTarget::targetBIOS:
             firmware = "BIOS";
             buildInfo =
-                " major: " +
+                "major: " +
                 std::to_string(bcdToDec(majorRevision)) + // BCD encoded
                 " minor: " +
                 std::to_string(bcdToDec(minorRevision)) + // BCD encoded
@@ -361,7 +366,7 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
         case FWUpdateTarget::targetME:
             firmware = "ME";
             buildInfo =
-                " major: " + std::to_string(majorRevision) + " minor1: " +
+                "major: " + std::to_string(majorRevision) + " minor1: " +
                 std::to_string(bcdToDec(minorRevision)) + // BCD encoded
                 " minor2: " +
                 std::to_string(bcdToDec(static_cast<uint8_t>(auxInfo >> 0))) +
@@ -372,37 +377,43 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
             break;
         case FWUpdateTarget::targetOEMEWS:
             firmware = "EWS";
-            buildInfo = " major: " + std::to_string(majorRevision) +
-                        " minor: " +
+            buildInfo = "major: " + std::to_string(majorRevision) + " minor: " +
                         std::to_string(bcdToDec(minorRevision)) + // BCD encoded
                         " BuildID: " + std::to_string(auxInfo);
             break;
     }
 
+    static const std::string openBMCMessageRegistryVersion("0.1");
+    std::string redfishMsgID = "OpenBMC." + openBMCMessageRegistryVersion;
+
     switch (status)
     {
         case 0x0:
             action = "update started";
+            redfishMsgID += ".FirmwareUpdateStarted";
             break;
         case 0x1:
             action = "update completed successfully";
+            redfishMsgID += ".FirmwareUpdateCompleted";
             break;
         case 0x2:
             action = "update failure";
+            redfishMsgID += ".FirmwareUpdateFailed";
             break;
         default:
             action = "unknown";
             break;
     }
 
-    std::string message(
-        "[firmware update] " + firmware + " instance: " +
-        std::to_string((target & targetInstanceMask) >> targetInstanceShift) +
-        " status: <" + action + ">" + buildInfo);
-    static constexpr const char* redfishMsgId = "FirmwareUpdate";
+    std::string firmwareInstanceStr =
+        firmware + " instance: " + std::to_string(instance);
+    std::string message("[firmware update] " + firmwareInstanceStr +
+                        " status: <" + action + "> " + buildInfo);
 
     sd_journal_send("MESSAGE=%s", message.c_str(), "PRIORITY=%i", LOG_INFO,
-                    "REDFISH_MESSAGE_ID=%s", redfishMsgId, NULL);
+                    "REDFISH_MESSAGE_ID=%s", redfishMsgID.c_str(),
+                    "REDFISH_MESSAGE_ARGS=%s,%s", firmwareInstanceStr.c_str(),
+                    buildInfo.c_str(), NULL);
     return ipmi::responseSuccess();
 }
 
