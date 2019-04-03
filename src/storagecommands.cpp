@@ -539,6 +539,7 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     resp.key.channelNumber = 0x0;
     resp.body.reserved = 0x0;
     resp.body.deviceType = 0x10;
+    resp.body.deviceTypeModifier = 0x0;
     resp.body.entityID = 0x0;
     resp.body.entityInstance = 0x1;
     resp.body.oem = 0x0;
