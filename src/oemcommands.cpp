@@ -17,7 +17,6 @@
 #include "xyz/openbmc_project/Common/error.hpp"
 #include "xyz/openbmc_project/Led/Physical/server.hpp"
 
-#include <ipmid/api.h>
 #include <systemd/sd-journal.h>
 
 #include <array>
@@ -27,7 +26,6 @@
 #include <commandutils.hpp>
 #include <iostream>
 #include <ipmid/api.hpp>
-#include <ipmid/registration.hpp>
 #include <ipmid/utils.hpp>
 #include <oemcommands.hpp>
 #include <phosphor-logging/log.hpp>

@@ -15,10 +15,9 @@
 */
 
 #pragma once
-#include <ipmid/api.h>
-
 #include <cmath>
 #include <iostream>
+#include <ipmid/api.hpp>
 #include <phosphor-logging/log.hpp>
 
 namespace ipmi

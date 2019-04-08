@@ -14,14 +14,13 @@
 // limitations under the License.
 */
 
-#include <ipmid/api.h>
-
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <chrono>
 #include <cmath>
 #include <commandutils.hpp>
 #include <iostream>
+#include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
