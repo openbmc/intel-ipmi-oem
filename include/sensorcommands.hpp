@@ -120,7 +120,6 @@ enum class IPMISensorEventEnableThresholds : uint8_t
 
 enum class IPMINetfnSensorCmds : ipmi_cmd_t
 {
-    ipmiCmdPlatformEvent = 0x02,
     ipmiCmdGetDeviceSDRInfo = 0x20,
     ipmiCmdGetDeviceSDR = 0x21,
     ipmiCmdReserveDeviceSDRRepo = 0x22,

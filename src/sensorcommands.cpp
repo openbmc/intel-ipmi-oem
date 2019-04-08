@@ -21,6 +21,7 @@
 #include <commandutils.hpp>
 #include <iostream>
 #include <ipmid/api.hpp>
+#include <ipmid/registration.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
@@ -231,84 +232,55 @@ ipmi_ret_t ipmiSensorWildcardHandler(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_INVALID;
 }
 
-static bool isFromSystemChannel()
+ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload &p)
 {
-    // TODO we could not figure out where the request is from based on IPMI
-    // command handler parameters. because of it, we can not differentiate
-    // request from SMS/SMM or IPMB channel
-    return true;
-}
+    uint8_t generatorID = 0;
+    uint8_t evmRev = 0;
+    uint8_t sensorType = 0;
+    uint8_t sensorNum = 0;
+    uint8_t eventType = 0;
+    uint8_t eventData1 = 0;
+    std::optional<uint8_t> eventData2 = 0;
+    std::optional<uint8_t> eventData3 = 0;
 
-ipmi_ret_t ipmiSenPlatformEvent(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                ipmi_request_t request,
-                                ipmi_response_t response,
-                                ipmi_data_len_t dataLen, ipmi_context_t context)
-{
-    int generatorID;
-    size_t count;
-    bool assert = true;
-    std::string sensorPath;
-    size_t paraLen = *dataLen;
-    PlatformEventRequest *req;
-    *dataLen = 0;
-
-    if ((paraLen < selSystemEventSizeWith1Bytes) ||
-        (paraLen > selSystemEventSizeWith3Bytes))
+    // todo: This check is supposed to be based on the incoming channel.
+    //      e.g. system channel will provide upto 8 bytes including generator
+    //      ID, but ipmb channel will provide only up to 7 bytes without the
+    //      generator ID.
+    // Support for this check is coming in future patches, so for now just base
+    // it on if the first byte is the EvMRev (0x04).
+    if (p.data()[0] == 0x04)
     {
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    if (isFromSystemChannel())
-    { // first byte for SYSTEM Interface is Generator ID
-        // +1 to get common struct
-        req = reinterpret_cast<PlatformEventRequest *>((uint8_t *)request + 1);
-        // Capture the generator ID
-        generatorID = *reinterpret_cast<uint8_t *>(request);
-
-        // Platform Event usually comes from other firmware, like BIOS.
-        // Unlike BMC sensor, it does not have BMC DBUS sensor path.
-        sensorPath = "System";
+        p.unpack(evmRev, sensorType, sensorNum, eventType, eventData1,
+                 eventData2, eventData3);
+        // todo: the generator ID for this channel is supposed to come from the
+        // IPMB requesters slave address. Support for this is coming in future
+        // patches, so for now just assume it is coming from the ME (0x2C).
+        generatorID = 0x2C;
     }
     else
     {
-        req = reinterpret_cast<PlatformEventRequest *>(request);
-        // TODO GenratorID for IPMB is combination of RqSA and RqLUN
-        generatorID = 0xff;
-        sensorPath = "IPMB";
+        p.unpack(generatorID, evmRev, sensorType, sensorNum, eventType,
+                 eventData1, eventData2, eventData3);
     }
-    // Content of event data field depends on sensor class.
-    // When data0 bit[5:4] is non-zero, valid data counts is 3.
-    // When data0 bit[7:6] is non-zero, valid data counts is 2.
-    if (((req->data[0] & byte3EnableMask) != 0 &&
-         paraLen < selSystemEventSizeWith3Bytes) ||
-        ((req->data[0] & byte2EnableMask) != 0 &&
-         paraLen < selSystemEventSizeWith2Bytes))
+    if (!p.fullyUnpacked())
     {
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::response(ipmi::ccReqDataLenInvalid);
     }
 
-    // Count bytes of Event Data
-    if ((req->data[0] & byte3EnableMask) != 0)
-    {
-        count = 3;
-    }
-    else if ((req->data[0] & byte2EnableMask) != 0)
-    {
-        count = 2;
-    }
-    else
-    {
-        count = 1;
-    }
-    assert = req->eventDirectionType & directionMask ? false : true;
-    std::vector<uint8_t> eventData(req->data, req->data + count);
+    bool assert = eventType & directionMask ? false : true;
+    std::vector<uint8_t> eventData;
+    eventData.push_back(eventData1);
+    eventData.push_back(eventData2.value_or(0xFF));
+    eventData.push_back(eventData3.value_or(0xFF));
 
+    std::string sensorPath = getPathFromSensorNumber(sensorNum);
     std::string service =
         ipmi::getService(dbus, ipmiSELAddInterface, ipmiSELPath);
     sdbusplus::message::message writeSEL = dbus.new_method_call(
         service.c_str(), ipmiSELPath, ipmiSELAddInterface, "IpmiSelAdd");
     writeSEL.append(ipmiSELAddMessage, sensorPath, eventData, assert,
-                    generatorID);
+                    static_cast<uint16_t>(generatorID));
     try
     {
         dbus.call(writeSEL);
@@ -316,9 +288,10 @@ ipmi_ret_t ipmiSenPlatformEvent(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     catch (sdbusplus::exception_t &e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::response(ipmi::ccUnspecifiedError);
     }
-    return IPMI_CC_OK;
+
+    return ipmi::responseSuccess();
 }
 
 ipmi_ret_t ipmiSenGetSensorReading(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1316,10 +1289,10 @@ void registerSensorFunctions()
         nullptr, ipmiSensorWildcardHandler, PRIVILEGE_OPERATOR);
 
     // <Platform Event>
-    ipmiPrintAndRegister(
-        NETFUN_SENSOR,
-        static_cast<ipmi_cmd_t>(IPMINetfnSensorCmds::ipmiCmdPlatformEvent),
-        nullptr, ipmiSenPlatformEvent, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, ipmi::netFnSensor,
+        static_cast<ipmi::Cmd>(ipmi::sensor_event::cmdPlatformEvent),
+        ipmi::Privilege::Operator, ipmiSenPlatformEvent);
 
     // <Get Sensor Reading>
     ipmiPrintAndRegister(
