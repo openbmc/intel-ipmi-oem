@@ -27,7 +27,6 @@
 #include <commandutils.hpp>
 #include <iostream>
 #include <ipmid/api.hpp>
-#include <ipmid/registration.hpp>
 #include <ipmid/utils.hpp>
 #include <oemcommands.hpp>
 #include <phosphor-logging/log.hpp>
