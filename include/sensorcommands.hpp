@@ -18,12 +18,6 @@
 #include <cstdint>
 
 #pragma pack(push, 1)
-struct SensorReadingResp
-{
-    uint8_t value;
-    uint8_t operation;
-    uint8_t indication[2];
-};
 
 struct SensorThresholdResp
 {
@@ -94,6 +88,16 @@ enum class IPMISensorReadingByte2 : uint8_t
     eventMessagesEnable = (1 << 7),
     sensorScanningEnable = (1 << 6),
     readingStateUnavailable = (1 << 5),
+};
+
+enum class IPMISensorReadingByte3 : uint8_t
+{
+    upperNonRecoverable = (1 << 5),
+    upperCritical = (1 << 4),
+    upperNonCritical = (1 << 3),
+    lowerNonRecoverable = (1 << 2),
+    lowerCritical = (1 << 1),
+    lowerNonCritical = (1 << 0),
 };
 
 enum class IPMISensorEventEnableByte2 : uint8_t
