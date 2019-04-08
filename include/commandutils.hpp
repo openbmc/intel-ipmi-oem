@@ -16,6 +16,7 @@
 
 #pragma once
 #include <iostream>
+#include <ipmid/api.hpp>
 #include <sdbusplus/bus.hpp>
 
 static constexpr bool debug = false;
