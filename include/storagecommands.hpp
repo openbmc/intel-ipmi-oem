@@ -133,34 +133,6 @@ struct GetSELEntryResponse
         } oem;
     } record;
 };
-
-struct AddSELRequest
-{
-    uint16_t recordID;
-    uint8_t recordType;
-    union
-    {
-        struct
-        {
-            uint32_t timestamp;
-            uint16_t generatorID;
-            uint8_t eventMsgRevision;
-            uint8_t sensorType;
-            uint8_t sensorNum;
-            uint8_t eventType;
-            uint8_t eventData[intel_oem::ipmi::sel::systemEventSize];
-        } system;
-        struct
-        {
-            uint32_t timestamp;
-            uint8_t eventData[intel_oem::ipmi::sel::oemTsEventSize];
-        } oemTs;
-        struct
-        {
-            uint8_t eventData[intel_oem::ipmi::sel::oemEventSize];
-        } oem;
-    } record;
-};
 #pragma pack(pop)
 
 enum class GetFRUAreaAccessType : uint8_t

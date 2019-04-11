@@ -949,111 +949,24 @@ ipmi_ret_t ipmiStorageGetSELEntry(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiStorageAddSELEntry(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                  ipmi_request_t request,
-                                  ipmi_response_t response,
-                                  ipmi_data_len_t data_len,
-                                  ipmi_context_t context)
+ipmi::RspType<uint16_t> ipmiStorageAddSELEntry(
+    uint16_t recordID, uint8_t recordType, uint32_t timestamp,
+    uint16_t generatorID, uint8_t evmRev, uint8_t sensorType, uint8_t sensorNum,
+    uint8_t eventType, uint8_t eventData1, uint8_t eventData2,
+    uint8_t eventData3)
 {
-    static constexpr char const* ipmiSELObject =
-        "xyz.openbmc_project.Logging.IPMI";
-    static constexpr char const* ipmiSELPath =
-        "/xyz/openbmc_project/Logging/IPMI";
-    static constexpr char const* ipmiSELAddInterface =
-        "xyz.openbmc_project.Logging.IPMI";
-    static const std::string ipmiSELAddMessage =
-        "IPMI SEL entry logged using IPMI Add SEL Entry command.";
-    uint16_t recordID = 0;
-    sdbusplus::bus::bus bus{ipmid_get_sd_bus_connection()};
-
-    if (*data_len != sizeof(AddSELRequest))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    AddSELRequest* req = static_cast<AddSELRequest*>(request);
-
     // Per the IPMI spec, need to cancel any reservation when a SEL entry is
     // added
     cancelSELReservation();
 
-    // Send this request to the Redfish hooks to see if it should be a Redfish
-    // message instead.  If so, no need to add it to the SEL, so just return
-    // success.
-    if (intel_oem::ipmi::sel::checkRedfishHooks(req))
-    {
-        *static_cast<uint16_t*>(response) = 0xFFFF;
-        *data_len = sizeof(recordID);
-        return IPMI_CC_OK;
-    }
+    // Send this request to the Redfish hooks to log it as a Redfish message
+    // instead.  There is no need to add it to the SEL, so just return success.
+    intel_oem::ipmi::sel::checkRedfishHooks(
+        recordID, recordType, timestamp, generatorID, evmRev, sensorType,
+        sensorNum, eventType, eventData1, eventData2, eventData3);
 
-    if (req->recordType == intel_oem::ipmi::sel::systemEvent)
-    {
-        std::string sensorPath =
-            getPathFromSensorNumber(req->record.system.sensorNum);
-        std::vector<uint8_t> eventData(
-            req->record.system.eventData,
-            req->record.system.eventData +
-                intel_oem::ipmi::sel::systemEventSize);
-        bool assert = !(req->record.system.eventType & deassertionEvent);
-        uint16_t genId = req->record.system.generatorID;
-        sdbusplus::message::message writeSEL = bus.new_method_call(
-            ipmiSELObject, ipmiSELPath, ipmiSELAddInterface, "IpmiSelAdd");
-        writeSEL.append(ipmiSELAddMessage, sensorPath, eventData, assert,
-                        genId);
-        try
-        {
-            sdbusplus::message::message writeSELResp = bus.call(writeSEL);
-            writeSELResp.read(recordID);
-        }
-        catch (sdbusplus::exception_t& e)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-            *data_len = 0;
-            return IPMI_CC_UNSPECIFIED_ERROR;
-        }
-    }
-    else if (req->recordType >= intel_oem::ipmi::sel::oemTsEventFirst &&
-             req->recordType <= intel_oem::ipmi::sel::oemEventLast)
-    {
-        std::vector<uint8_t> eventData;
-        if (req->recordType <= intel_oem::ipmi::sel::oemTsEventLast)
-        {
-            eventData =
-                std::vector<uint8_t>(req->record.oemTs.eventData,
-                                     req->record.oemTs.eventData +
-                                         intel_oem::ipmi::sel::oemTsEventSize);
-        }
-        else
-        {
-            eventData = std::vector<uint8_t>(
-                req->record.oem.eventData,
-                req->record.oem.eventData + intel_oem::ipmi::sel::oemEventSize);
-        }
-        sdbusplus::message::message writeSEL = bus.new_method_call(
-            ipmiSELObject, ipmiSELPath, ipmiSELAddInterface, "IpmiSelAddOem");
-        writeSEL.append(ipmiSELAddMessage, eventData, req->recordType);
-        try
-        {
-            sdbusplus::message::message writeSELResp = bus.call(writeSEL);
-            writeSELResp.read(recordID);
-        }
-        catch (sdbusplus::exception_t& e)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-            *data_len = 0;
-            return IPMI_CC_UNSPECIFIED_ERROR;
-        }
-    }
-    else
-    {
-        *data_len = 0;
-        return IPMI_CC_PARM_OUT_OF_RANGE;
-    }
-
-    *static_cast<uint16_t*>(response) = recordID;
-    *data_len = sizeof(recordID);
-    return IPMI_CC_OK;
+    uint16_t responseID = 0xFFFF;
+    return ipmi::responseSuccess(responseID);
 }
 
 ipmi_ret_t ipmiStorageClearSEL(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1159,10 +1072,9 @@ void registerStorageFunctions()
         ipmiStorageGetSELEntry, PRIVILEGE_OPERATOR);
 
     // <Add SEL Entry>
-    ipmiPrintAndRegister(
-        NETFUN_STORAGE,
-        static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdAddSEL), NULL,
-        ipmiStorageAddSELEntry, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnStorage,
+                          static_cast<ipmi::Cmd>(ipmi::storage::cmdAddSelEntry),
+                          ipmi::Privilege::Operator, ipmiStorageAddSELEntry);
 
     // <Clear SEL>
     ipmiPrintAndRegister(

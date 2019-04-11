@@ -268,38 +268,11 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload &p)
         return ipmi::responseReqDataLenInvalid();
     }
 
-    // Send this request to the Redfish hooks to see if it should be a
-    // Redfish message instead.  If so, no need to add it to the SEL, so
-    // just return success.
-    if (intel_oem::ipmi::sel::checkRedfishHooks(
-            generatorID, evmRev, sensorType, sensorNum, eventType, eventData1,
-            eventData2.value_or(0xFF), eventData3.value_or(0xFF)))
-    {
-        return ipmi::responseSuccess();
-    }
-
-    bool assert = eventType & directionMask ? false : true;
-    std::vector<uint8_t> eventData;
-    eventData.push_back(eventData1);
-    eventData.push_back(eventData2.value_or(0xFF));
-    eventData.push_back(eventData3.value_or(0xFF));
-
-    std::string sensorPath = getPathFromSensorNumber(sensorNum);
-    std::string service =
-        ipmi::getService(dbus, ipmiSELAddInterface, ipmiSELPath);
-    sdbusplus::message::message writeSEL = dbus.new_method_call(
-        service.c_str(), ipmiSELPath, ipmiSELAddInterface, "IpmiSelAdd");
-    writeSEL.append(ipmiSELAddMessage, sensorPath, eventData, assert,
-                    static_cast<uint16_t>(generatorID));
-    try
-    {
-        dbus.call(writeSEL);
-    }
-    catch (sdbusplus::exception_t &e)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-        return ipmi::responseUnspecifiedError();
-    }
+    // Send this request to the Redfish hooks to log it as a Redfish message
+    // instead.  There is no need to add it to the SEL, so just return success.
+    intel_oem::ipmi::sel::checkRedfishHooks(
+        generatorID, evmRev, sensorType, sensorNum, eventType, eventData1,
+        eventData2.value_or(0xFF), eventData3.value_or(0xFF));
 
     return ipmi::responseSuccess();
 }
