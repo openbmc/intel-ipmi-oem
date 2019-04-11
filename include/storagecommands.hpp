@@ -101,34 +101,6 @@ struct WriteFRUDataReq
     uint16_t fruInventoryOffset;
     uint8_t data[];
 };
-
-struct AddSELRequest
-{
-    uint16_t recordID;
-    uint8_t recordType;
-    union
-    {
-        struct
-        {
-            uint32_t timestamp;
-            uint16_t generatorID;
-            uint8_t eventMsgRevision;
-            uint8_t sensorType;
-            uint8_t sensorNum;
-            uint8_t eventType;
-            uint8_t eventData[intel_oem::ipmi::sel::systemEventSize];
-        } system;
-        struct
-        {
-            uint32_t timestamp;
-            uint8_t eventData[intel_oem::ipmi::sel::oemTsEventSize];
-        } oemTs;
-        struct
-        {
-            uint8_t eventData[intel_oem::ipmi::sel::oemEventSize];
-        } oem;
-    } record;
-};
 #pragma pack(pop)
 
 enum class GetFRUAreaAccessType : uint8_t
@@ -156,7 +128,6 @@ enum class IPMINetfnStorageCmds : ipmi_cmd_t
     ipmiCmdGetSDRAllocationInfo = 0x21,
     ipmiCmdReserveSDR = 0x22,
     ipmiCmdGetSDR = 0x23,
-    ipmiCmdAddSEL = 0x44,
 };
 
 #pragma pack(push, 1)
