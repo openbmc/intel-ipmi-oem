@@ -40,6 +40,29 @@ static void toHexStr(const boost::beast::span<uint8_t> bytes,
     hexStr = stream.str();
 }
 
+static bool defaultMessageHook(const std::string& ipmiRaw)
+{
+    // Log the record as a default Redfish message instead of a SEL record
+
+    static const std::string openBMCMessageRegistryVersion("0.1");
+    std::string messageID =
+        "OpenBMC." + openBMCMessageRegistryVersion + ".SELEntryAdded";
+
+    std::vector<std::string> messageArgs;
+    messageArgs.push_back(ipmiRaw);
+
+    // Log the Redfish message to the journal with the appropriate metadata
+    std::string journalMsg = "SEL Entry Added: " + ipmiRaw;
+    std::string messageArgsString = boost::algorithm::join(messageArgs, ",");
+    phosphor::logging::log<phosphor::logging::level::INFO>(
+        journalMsg.c_str(),
+        phosphor::logging::entry("REDFISH_MESSAGE_ID=%s", messageID.c_str()),
+        phosphor::logging::entry("REDFISH_MESSAGE_ARGS=%s",
+                                 messageArgsString.c_str()));
+
+    return true;
+}
+
 // Record a BIOS message as a Redfish message instead of a SEL record
 static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
 {
@@ -70,8 +93,7 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
                             messageID += ".MemoryRASConfigurationEnabled";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -117,8 +139,7 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -133,8 +154,7 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
                             messageID += ".BIOSPOSTError";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -153,8 +173,7 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -172,8 +191,7 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
                             messageID += ".IntelUPILinkWidthReducedToQuarter";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2
@@ -187,8 +205,7 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -206,8 +223,7 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
                             messageID += ".MemoryRASModeEnabled";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -259,8 +275,7 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -275,21 +290,18 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
                             messageID += ".BIOSBoot";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
         default:
-            messageID += ".Unknown";
-            messageArgs.push_back(ipmiRaw);
+            return defaultMessageHook(ipmiRaw);
             break;
     }
 
@@ -348,8 +360,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                             messageID += ".MirroringRedundancyDegraded";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -378,8 +389,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -397,8 +407,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                             messageID += ".MemoryECCUncorrectable";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -424,8 +433,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -443,8 +451,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                             messageID += ".LegacyPCISERR";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -464,8 +471,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -527,8 +533,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                             messageID += ".PCIeFatalMCBlockedTLP";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -548,8 +553,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -591,8 +595,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                             messageID += ".PCIeCorrectableUnspecifiedAERError";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -612,8 +615,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -631,8 +633,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                             messageID += ".SparingRedundancyDegraded";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -663,8 +664,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -689,15 +689,13 @@ static bool biosSMIMessageHook(const SELData& selData,
                                         ".MemoryParityCommandAndAddress";
                                     break;
                                 default:
-                                    messageID += ".Unknown";
-                                    messageArgs.push_back(ipmiRaw);
+                                    return defaultMessageHook(ipmiRaw);
                                     break;
                             }
                             break;
                         }
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -726,8 +724,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -749,8 +746,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                                 ".PCIeFatalUnspecifiedNonAERFatalError";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     // Get the message data from eventData2 and eventData3
@@ -770,8 +766,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -786,8 +781,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                             messageID += ".BIOSRecoveryStart";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     break;
@@ -800,15 +794,13 @@ static bool biosSMIMessageHook(const SELData& selData,
                             messageID += ".BIOSRecoveryComplete";
                             break;
                         default:
-                            messageID += ".Unknown";
-                            messageArgs.push_back(ipmiRaw);
+                            return defaultMessageHook(ipmiRaw);
                             break;
                     }
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
@@ -842,14 +834,12 @@ static bool biosSMIMessageHook(const SELData& selData,
                     break;
                 }
                 default:
-                    messageID += ".Unknown";
-                    messageArgs.push_back(ipmiRaw);
+                    return defaultMessageHook(ipmiRaw);
                     break;
             }
             break;
         default:
-            messageID += ".Unknown";
-            messageArgs.push_back(ipmiRaw);
+            return defaultMessageHook(ipmiRaw);
             break;
     }
 
@@ -880,35 +870,52 @@ static bool startRedfishHook(const SELData& selData, const std::string& ipmiRaw)
             break;
     }
 
-    // No hooks handled the request, so let it go to the SEL
-    return false;
+    // No hooks handled the request, so let it go to default
+    return defaultMessageHook(ipmiRaw);
 }
 } // namespace redfish_hooks
 
-bool checkRedfishHooks(AddSELRequest* selRequest)
+bool checkRedfishHooks(uint16_t recordID, uint8_t recordType,
+                       uint32_t timestamp, uint16_t generatorID, uint8_t evmRev,
+                       uint8_t sensorType, uint8_t sensorNum, uint8_t eventType,
+                       uint8_t eventData1, uint8_t eventData2,
+                       uint8_t eventData3)
 {
-    // First check that this is a system event record type since that
-    // determines the definition of the rest of the data
-    if (selRequest->recordType != ipmi::sel::systemEvent)
-    {
-        // OEM record type, so let it go to the SEL
-        return false;
-    }
-
     // Save the raw IPMI string of the request
     std::string ipmiRaw;
-    const boost::beast::span<uint8_t> selBytes(
-        reinterpret_cast<uint8_t*>(selRequest), sizeof(AddSELRequest));
-    redfish_hooks::toHexStr(selBytes, ipmiRaw);
+    std::array selBytes = {static_cast<uint8_t>(recordID),
+                           static_cast<uint8_t>(recordID >> 8),
+                           recordType,
+                           static_cast<uint8_t>(timestamp),
+                           static_cast<uint8_t>(timestamp >> 8),
+                           static_cast<uint8_t>(timestamp >> 16),
+                           static_cast<uint8_t>(timestamp >> 24),
+                           static_cast<uint8_t>(generatorID),
+                           static_cast<uint8_t>(generatorID >> 8),
+                           evmRev,
+                           sensorType,
+                           sensorNum,
+                           eventType,
+                           eventData1,
+                           eventData2,
+                           eventData3};
+    redfish_hooks::toHexStr(boost::beast::span<uint8_t>(selBytes), ipmiRaw);
+
+    // First check that this is a system event record type since that
+    // determines the definition of the rest of the data
+    if (recordType != ipmi::sel::systemEvent)
+    {
+        // OEM record type, so let it go to the SEL
+        return redfish_hooks::defaultMessageHook(ipmiRaw);
+    }
 
     // Extract the SEL data for the hook
-    redfish_hooks::SELData selData = {
-        .generatorID = selRequest->record.system.generatorID,
-        .sensorNum = selRequest->record.system.sensorNum,
-        .eventType = selRequest->record.system.eventType,
-        .offset = selRequest->record.system.eventData[0] & 0x0F,
-        .eventData2 = selRequest->record.system.eventData[1],
-        .eventData3 = selRequest->record.system.eventData[2]};
+    redfish_hooks::SELData selData = {.generatorID = generatorID,
+                                      .sensorNum = sensorNum,
+                                      .eventType = eventType,
+                                      .offset = eventData1 & 0x0F,
+                                      .eventData2 = eventData2,
+                                      .eventData3 = eventData3};
 
     return redfish_hooks::startRedfishHook(selData, ipmiRaw);
 }

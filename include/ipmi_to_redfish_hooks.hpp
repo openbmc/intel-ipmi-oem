@@ -19,7 +19,11 @@
 
 namespace intel_oem::ipmi::sel
 {
-bool checkRedfishHooks(AddSELRequest* selRequest);
+bool checkRedfishHooks(uint16_t recordID, uint8_t recordType,
+                       uint32_t timestamp, uint16_t generatorID, uint8_t evmRev,
+                       uint8_t sensorType, uint8_t sensorNum, uint8_t eventType,
+                       uint8_t eventData1, uint8_t eventData2,
+                       uint8_t eventData3);
 bool checkRedfishHooks(uint8_t generatorID, uint8_t evmRev, uint8_t sensorType,
                        uint8_t sensorNum, uint8_t eventType, uint8_t eventData1,
                        uint8_t eventData2, uint8_t eventData3);
