@@ -22,6 +22,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetBIOSID = 0x26,
     cmdGetOEMDeviceInfo = 0x27,
     cmdGetAICSlotFRUIDSlotPosRecords = 0x31,
+    cmdGetMultiNodeRole = 0x33,
+    cmdGetMultiNodeId = 0x36,
     cmdSetSystemGUID = 0x41,
     cmdSendEmbeddedFWUpdStatus = 0x44,
     cmdSetPowerRestoreDelay = 0x54,
@@ -29,6 +31,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetOEMUser2Activation = 0x5A,
     cmdSetShutdownPolicy = 0x60,
     cmdGetShutdownPolicy = 0x62,
+    cmdGetMultiNodePresence = 0x63,
     cmdSetFanConfig = 0x89,
     cmdGetFanConfig = 0x8a,
     cmdSetFscParameter = 0x90,
@@ -120,6 +123,11 @@ static constexpr const char* statusAmberObjPath =
 static constexpr const char* statusGreenObjPath =
     "/xyz/openbmc_project/led/physical/status_green";
 
+static constexpr const char* multiNodeObjPath =
+    "/xyz/openbmc_project/MultiNode/Status";
+static constexpr const char* multiNodeIntf =
+    "xyz.openbmc_project.Chassis.MultiNode";
+
 static constexpr const uint8_t noShutdownOnOCOT = 0;
 static constexpr const uint8_t shutdownOnOCOT = 1;
 static constexpr const uint8_t noShutdownPolicySupported = 0;
@@ -188,6 +196,14 @@ enum class FWUpdateTarget : uint8_t
     targetBIOS = 0x1,
     targetME = 0x2,
     targetOEMEWS = 0x4,
+};
+
+enum class NodeRole : uint8_t
+{
+    single,
+    master,
+    slave,
+    arbitrating
 };
 
 #pragma pack(push, 1)
