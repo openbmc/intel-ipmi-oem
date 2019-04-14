@@ -27,6 +27,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,
     cmdSetOEMUser2Activation = 0x5A,
+    cmdSetSpecialUserPassword = 0x5F,
     cmdSetShutdownPolicy = 0x60,
     cmdGetShutdownPolicy = 0x62,
     cmdSetFanConfig = 0x89,

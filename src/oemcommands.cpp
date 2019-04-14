@@ -789,6 +789,53 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
     return ipmi::response(ipmi::ccCommandNotAvailable);
 }
 
+/** @brief implementes setting password for special user
+ *  @param[in] specialUserIndex
+ *  @param[in] userPassword - new password in 20 bytes
+ *  @returns ipmi completion code.
+ */
+ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
+                                              uint8_t specialUserIndex,
+                                              std::vector<uint8_t> userPassword)
+{
+    ChannelInfo chInfo;
+    try
+    {
+        getChannelInfo(ctx->channel, chInfo);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetSpecialUserPassword: Failed to get Channel Info",
+            phosphor::logging::entry("MSG: %s", e.description()));
+        return ipmi::responseUnspecifiedError();
+    }
+    if (chInfo.mediumType !=
+        static_cast<uint8_t>(EChannelMediumType::systemInterface))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetSpecialUserPassword: Error - supported only in KCS "
+            "interface");
+        return ipmi::responseCommandNotAvailable();
+    }
+    if (specialUserIndex != 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetSpecialUserPassword: Invalid user account");
+        return ipmi::responseParmOutOfRange();
+    }
+    constexpr uint8_t minPasswordSizeRequired = 6;
+    if (userPassword.size() < minPasswordSizeRequired ||
+        userPassword.size() > ipmi::maxIpmi20PasswordSize)
+    {
+        return ipmi::responseReqDataLenInvalid();
+    }
+    std::string passwd;
+    passwd.assign(reinterpret_cast<const char*>(userPassword.data()),
+                  userPassword.size());
+    return ipmi::response(ipmiSetSpecialUserPassword("root", passwd));
+}
+
 namespace ledAction
 {
 using namespace sdbusplus::xyz::openbmc_project::Led::server;
@@ -1602,6 +1649,12 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetOEMUser2Activation),
         ipmi::Privilege::Callback, ipmiOEMSetUser2Activation);
+
+    ipmi::registerHandler(
+        ipmi::prioOpenBmcBase, ipmi::netFnOemOne,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetSpecialUserPassword),
+        ipmi::Privilege::Callback, ipmiOEMSetSpecialUserPassword);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
