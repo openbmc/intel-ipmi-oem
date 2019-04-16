@@ -562,40 +562,9 @@ ipmi_ret_t ipmiSenSetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiSenGetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                      ipmi_request_t request,
-                                      ipmi_response_t response,
-                                      ipmi_data_len_t dataLen,
-                                      ipmi_context_t context)
+IPMIThresholds getIPMIThresholds(const SensorMap &sensorMap)
 {
-    if (*dataLen != 1)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    *dataLen = 0; // default to 0 in case of an error
-
-    uint8_t sensnum = *(static_cast<uint8_t *>(request));
-
-    std::string connection;
-    std::string path;
-
-    auto status = getSensorConnection(sensnum, connection, path);
-    if (status)
-    {
-        return status;
-    }
-
-    SensorMap sensorMap;
-    if (!getSensorMap(connection, path, sensorMap))
-    {
-        return IPMI_CC_RESPONSE_ERROR;
-    }
-
-    // zero out response buff
-    auto responseClear = static_cast<uint8_t *>(response);
-    std::fill(responseClear, responseClear + sizeof(SensorThresholdResp), 0);
-
+    IPMIThresholds resp;
     auto warningInterface =
         sensorMap.find("xyz.openbmc_project.Sensor.Threshold.Warning");
     auto criticalInterface =
@@ -610,7 +579,7 @@ ipmi_ret_t ipmiSenGetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         {
             // should not have been able to find a sensor not implementing
             // the sensor object
-            return IPMI_CC_RESPONSE_ERROR;
+            throw std::runtime_error("Invalid sensor map");
         }
 
         double max;
@@ -625,11 +594,8 @@ ipmi_ret_t ipmiSenGetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
         if (!getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned))
         {
-            return IPMI_CC_RESPONSE_ERROR;
+            throw std::runtime_error("Invalid sensor atrributes");
         }
-
-        auto msgReply = static_cast<SensorThresholdResp *>(response);
-
         if (warningInterface != sensorMap.end())
         {
             auto &warningMap = warningInterface->second;
@@ -639,22 +605,17 @@ ipmi_ret_t ipmiSenGetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
             if (warningHigh != warningMap.end())
             {
-                msgReply->readable |=
-                    1 << static_cast<int>(
-                        IPMIhresholdRespBits::upperNonCritical);
+
                 double value = variant_ns::visit(VariantToDoubleVisitor(),
                                                  warningHigh->second);
-                msgReply->uppernc = scaleIPMIValueFromDouble(
+                resp.warningHigh = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
             if (warningLow != warningMap.end())
             {
-                msgReply->readable |=
-                    1 << static_cast<int>(
-                        IPMIhresholdRespBits::lowerNonCritical);
                 double value = variant_ns::visit(VariantToDoubleVisitor(),
                                                  warningLow->second);
-                msgReply->lowernc = scaleIPMIValueFromDouble(
+                resp.warningLow = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
         }
@@ -667,27 +628,94 @@ ipmi_ret_t ipmiSenGetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
             if (criticalHigh != criticalMap.end())
             {
-                msgReply->readable |=
-                    1 << static_cast<int>(IPMIhresholdRespBits::upperCritical);
                 double value = variant_ns::visit(VariantToDoubleVisitor(),
                                                  criticalHigh->second);
-                msgReply->uppercritical = scaleIPMIValueFromDouble(
+                resp.criticalHigh = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
             if (criticalLow != criticalMap.end())
             {
-                msgReply->readable |=
-                    1 << static_cast<int>(IPMIhresholdRespBits::lowerCritical);
                 double value = variant_ns::visit(VariantToDoubleVisitor(),
                                                  criticalLow->second);
-                msgReply->lowercritical = scaleIPMIValueFromDouble(
+                resp.criticalLow = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
         }
     }
+    return resp;
+}
 
-    *dataLen = sizeof(SensorThresholdResp);
-    return IPMI_CC_OK;
+ipmi::RspType<uint8_t, // readable
+              uint8_t, // lowerNCrit
+              uint8_t, // lowerCrit
+              uint8_t, // lowerNrecoverable
+              uint8_t, // upperNC
+              uint8_t, // upperCrit
+              uint8_t> // upperNRecoverable
+    ipmiSenGetSensorThresholds(uint8_t sensorNumber)
+{
+    std::string connection;
+    std::string path;
+
+    auto status = getSensorConnection(sensorNumber, connection, path);
+    if (status)
+    {
+        return ipmi::response(status);
+    }
+
+    SensorMap sensorMap;
+    if (!getSensorMap(connection, path, sensorMap))
+    {
+        return ipmi::responseResponseError();
+    }
+
+    IPMIThresholds thresholdData;
+    try
+    {
+        thresholdData = getIPMIThresholds(sensorMap);
+    }
+    catch (std::exception &)
+    {
+        return ipmi::responseResponseError();
+    }
+
+    uint8_t readable = 0;
+    uint8_t lowerNC = 0;
+    uint8_t lowerCritical = 0;
+    uint8_t lowerNonRecoverable = 0;
+    uint8_t upperNC = 0;
+    uint8_t upperCritical = 0;
+    uint8_t upperNonRecoverable = 0;
+
+    if (thresholdData.warningHigh)
+    {
+        readable |=
+            1 << static_cast<uint8_t>(IPMIThresholdRespBits::upperNonCritical);
+        upperNC = *thresholdData.warningHigh;
+    }
+    if (thresholdData.warningLow)
+    {
+        readable |=
+            1 << static_cast<uint8_t>(IPMIThresholdRespBits::lowerNonCritical);
+        lowerNC = *thresholdData.warningLow;
+    }
+
+    if (thresholdData.criticalHigh)
+    {
+        readable |=
+            1 << static_cast<uint8_t>(IPMIThresholdRespBits::upperCritical);
+        upperCritical = *thresholdData.criticalHigh;
+    }
+    if (thresholdData.criticalLow)
+    {
+        readable |=
+            1 << static_cast<uint8_t>(IPMIThresholdRespBits::lowerCritical);
+        lowerCritical = *thresholdData.criticalLow;
+    }
+
+    return ipmi::responseSuccess(readable, lowerNC, lowerCritical,
+                                 lowerNonRecoverable, upperNC, upperCritical,
+                                 upperNonRecoverable);
 }
 
 ipmi_ret_t ipmiSenGetSensorEventEnable(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1313,10 +1341,10 @@ void registerSensorFunctions()
         ipmi::Privilege::User, ipmiSenGetSensorReading);
 
     // <Get Sensor Threshold>
-    ipmiPrintAndRegister(
-        NETFUN_SENSOR,
-        static_cast<ipmi_cmd_t>(IPMINetfnSensorCmds::ipmiCmdGetSensorThreshold),
-        nullptr, ipmiSenGetSensorThresholds, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, NETFUN_SENSOR,
+        static_cast<ipmi::Cmd>(IPMINetfnSensorCmds::ipmiCmdGetSensorThreshold),
+        ipmi::Privilege::User, ipmiSenGetSensorThresholds);
 
     ipmiPrintAndRegister(
         NETFUN_SENSOR,
