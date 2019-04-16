@@ -73,7 +73,7 @@ struct SensorEventStatusResp
 };
 #pragma pack(pop)
 
-enum class IPMIhresholdRespBits
+enum class IPMIThresholdRespBits
 {
     lowerNonCritical,
     lowerCritical,
@@ -169,4 +169,12 @@ static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string &connection,
 
     return 0;
 }
+struct IPMIThresholds
+{
+    std::optional<uint8_t> warningLow;
+    std::optional<uint8_t> warningHigh;
+    std::optional<uint8_t> criticalLow;
+    std::optional<uint8_t> criticalHigh;
+};
+
 } // namespace ipmi
