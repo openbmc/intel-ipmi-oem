@@ -1237,6 +1237,61 @@ ipmi::RspType<uint16_t,            // next record ID
     std::strncpy(record.body.id_string, name.c_str(),
                  sizeof(record.body.id_string));
 
+    IPMIThresholds thresholdData;
+    try
+    {
+        thresholdData = getIPMIThresholds(sensorMap);
+    }
+    catch (std::exception &)
+    {
+        return ipmi::responseResponseError();
+    }
+
+    if (thresholdData.criticalHigh)
+    {
+        record.body.upper_critical_threshold = *thresholdData.criticalHigh;
+        record.body.supported_deassertions[1] |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::upperCriticalGoingHigh);
+        record.body.supported_assertions[1] |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::upperCriticalGoingHigh);
+        record.body.discrete_reading_setting_mask[0] |=
+            static_cast<uint8_t>(IPMISensorReadingByte3::upperCritical);
+    }
+    if (thresholdData.warningHigh)
+    {
+        record.body.upper_noncritical_threshold = *thresholdData.warningHigh;
+        record.body.supported_deassertions[0] |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::upperNonCriticalGoingHigh);
+        record.body.supported_assertions[0] |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::upperNonCriticalGoingHigh);
+        record.body.discrete_reading_setting_mask[0] |=
+            static_cast<uint8_t>(IPMISensorReadingByte3::upperNonCritical);
+    }
+    if (thresholdData.criticalLow)
+    {
+        record.body.lower_critical_threshold = *thresholdData.criticalLow;
+        record.body.supported_deassertions[0] |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::lowerCriticalGoingLow);
+        record.body.supported_assertions[0] |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::lowerCriticalGoingLow);
+        record.body.discrete_reading_setting_mask[0] |=
+            static_cast<uint8_t>(IPMISensorReadingByte3::lowerCritical);
+    }
+    if (thresholdData.warningLow)
+    {
+        record.body.lower_noncritical_threshold = *thresholdData.warningLow;
+        record.body.supported_deassertions[0] |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::lowerNonCriticalGoingLow);
+        record.body.supported_assertions[0] |= static_cast<uint8_t>(
+            IPMISensorEventEnableThresholds::lowerNonCriticalGoingLow);
+        record.body.discrete_reading_setting_mask[0] |=
+            static_cast<uint8_t>(IPMISensorReadingByte3::lowerNonCritical);
+    }
+
+    // everything that is readable is setable
+    record.body.discrete_reading_setting_mask[1] =
+        record.body.discrete_reading_setting_mask[0];
+
     if (sizeof(get_sdr::SensorDataFullRecord) < (offset + bytesToRead))
     {
         bytesToRead = sizeof(get_sdr::SensorDataFullRecord) - offset;
