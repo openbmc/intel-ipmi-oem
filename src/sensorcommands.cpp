@@ -1058,102 +1058,85 @@ ipmi_ret_t ipmiStorageReserveSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                             ipmi_request_t request, ipmi_response_t response,
-                             ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi::RspType<uint16_t,            // next record ID
+              std::vector<uint8_t> // payload
+              >
+    ipmiStorageGetSDR(uint16_t reservationID, uint16_t recordID, uint8_t offset,
+                      uint8_t bytesToRead)
 {
-    printCommand(+netfn, +cmd);
-
-    if (*dataLen != 6)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    auto requestedSize = *dataLen;
-    *dataLen = 0; // default to 0 in case of an error
-
     constexpr uint16_t lastRecordIndex = 0xFFFF;
-    auto req = static_cast<GetSDRReq *>(request);
 
     // reservation required for partial reads with non zero offset into
     // record
-    if ((sdrReservationID == 0 || req->reservationID != sdrReservationID) &&
-        req->offset)
+    if ((sdrReservationID == 0 || reservationID != sdrReservationID) && offset)
     {
-        return IPMI_CC_INVALID_RESERVATION_ID;
+        return ipmi::responseInvalidReservationId();
     }
 
     if (sensorTree.empty() && !getSensorSubtree(sensorTree))
     {
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
     }
 
     size_t fruCount = 0;
     ipmi_ret_t ret = ipmi::storage::getFruSdrCount(fruCount);
     if (ret != IPMI_CC_OK)
     {
-        return ret;
+        return ipmi::response(ret);
     }
 
     size_t lastRecord = sensorTree.size() + fruCount - 1;
-    if (req->recordID == lastRecordIndex)
+    if (recordID == lastRecordIndex)
     {
-        req->recordID = lastRecord;
+        recordID = lastRecord;
     }
-    if (req->recordID > lastRecord)
+    if (recordID > lastRecord)
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::responseInvalidFieldRequest();
     }
 
-    uint16_t nextRecord =
-        lastRecord > req->recordID ? req->recordID + 1 : 0XFFFF;
+    uint16_t nextRecordId = lastRecord > recordID ? recordID + 1 : 0XFFFF;
 
-    auto responseClear = static_cast<uint8_t *>(response);
-    std::fill(responseClear, responseClear + requestedSize, 0);
-
-    auto resp = static_cast<get_sdr::GetSdrResp *>(response);
-    resp->next_record_id_lsb = nextRecord & 0xFF;
-    resp->next_record_id_msb = nextRecord >> 8;
-
-    if (req->recordID >= sensorTree.size())
+    if (recordID >= sensorTree.size())
     {
-        size_t fruIndex = req->recordID - sensorTree.size();
+        size_t fruIndex = recordID - sensorTree.size();
         if (fruIndex >= fruCount)
         {
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
         }
         get_sdr::SensorDataFruRecord data;
-        if (req->offset > sizeof(data))
+        if (offset > sizeof(data))
         {
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
         }
         ret = ipmi::storage::getFruSdrs(fruIndex, data);
         if (ret != IPMI_CC_OK)
         {
-            return ret;
+            return ipmi::response(ret);
         }
-        data.header.record_id_msb = req->recordID << 8;
-        data.header.record_id_lsb = req->recordID & 0xFF;
-        if (sizeof(data) < (req->offset + req->bytesToRead))
+        data.header.record_id_msb = recordID << 8;
+        data.header.record_id_lsb = recordID & 0xFF;
+        if (sizeof(data) < (offset + bytesToRead))
         {
-            req->bytesToRead = sizeof(data) - req->offset;
+            bytesToRead = sizeof(data) - offset;
         }
-        *dataLen = req->bytesToRead + 2; // next record
-        std::memcpy(&resp->record_data, (char *)&data + req->offset,
-                    req->bytesToRead);
-        return IPMI_CC_OK;
+
+        uint8_t *respStart = reinterpret_cast<uint8_t *>(&data) + offset;
+        std::vector<uint8_t> recordData(respStart, respStart + bytesToRead);
+
+        return ipmi::responseSuccess(nextRecordId, recordData);
     }
 
     std::string connection;
     std::string path;
-    uint16_t sensorIndex = req->recordID;
+    uint16_t sensorIndex = recordID;
     for (const auto &sensor : sensorTree)
     {
         if (sensorIndex-- == 0)
         {
             if (!sensor.second.size())
             {
-                return IPMI_CC_RESPONSE_ERROR;
+                return ipmi::responseResponseError();
             }
             connection = sensor.second.begin()->first;
             path = sensor.first;
@@ -1164,13 +1147,13 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     SensorMap sensorMap;
     if (!getSensorMap(connection, path, sensorMap))
     {
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
     }
-    uint8_t sensornumber = (req->recordID & 0xFF);
+    uint8_t sensornumber = (recordID & 0xFF);
     get_sdr::SensorDataFullRecord record = {0};
 
-    record.header.record_id_msb = req->recordID << 8;
-    record.header.record_id_lsb = req->recordID & 0xFF;
+    record.header.record_id_msb = recordID << 8;
+    record.header.record_id_lsb = recordID & 0xFF;
     record.header.sdr_version = ipmiSdrVersion;
     record.header.record_type = get_sdr::SENSOR_DATA_FULL_RECORD;
     record.header.record_length = sizeof(get_sdr::SensorDataFullRecord) -
@@ -1197,7 +1180,7 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     auto sensorObject = sensorMap.find("xyz.openbmc_project.Sensor.Value");
     if (sensorObject == sensorMap.end())
     {
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
     }
 
     auto maxObject = sensorObject->second.find("MaxValue");
@@ -1222,7 +1205,7 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     if (!getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned))
     {
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
     }
 
     // apply M, B, and exponents, M and B are 10 bit values, exponents are 4
@@ -1286,19 +1269,15 @@ ipmi_ret_t ipmiStorageGetSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     std::strncpy(record.body.id_string, name.c_str(),
                  sizeof(record.body.id_string));
 
-    if (sizeof(get_sdr::SensorDataFullRecord) <
-        (req->offset + req->bytesToRead))
+    if (sizeof(get_sdr::SensorDataFullRecord) < (offset + bytesToRead))
     {
-        req->bytesToRead = sizeof(get_sdr::SensorDataFullRecord) - req->offset;
+        bytesToRead = sizeof(get_sdr::SensorDataFullRecord) - offset;
     }
 
-    *dataLen =
-        2 + req->bytesToRead; // bytesToRead + MSB and LSB of next record id
+    uint8_t *respStart = reinterpret_cast<uint8_t *>(&record) + offset;
+    std::vector<uint8_t> recordData(respStart, respStart + bytesToRead);
 
-    std::memcpy(&resp->record_data, (char *)&record + req->offset,
-                req->bytesToRead);
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(nextRecordId, recordData);
 }
 /* end storage commands */
 
@@ -1384,15 +1363,16 @@ void registerSensorFunctions()
         nullptr, ipmiStorageReserveSDR, PRIVILEGE_USER);
 
     // <Get Sdr>
-    ipmiPrintAndRegister(
-        NETFUN_SENSOR,
-        static_cast<ipmi_cmd_t>(IPMINetfnSensorCmds::ipmiCmdGetDeviceSDR),
-        nullptr, ipmiStorageGetSDR, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, NETFUN_SENSOR,
+        static_cast<ipmi::Cmd>(IPMINetfnSensorCmds::ipmiCmdGetDeviceSDR),
+        ipmi::Privilege::User, ipmiStorageGetSDR);
 
-    ipmiPrintAndRegister(
-        NETFUN_STORAGE,
-        static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdGetSDR), nullptr,
-        ipmiStorageGetSDR, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, NETFUN_STORAGE,
+        static_cast<ipmi::Cmd>(IPMINetfnStorageCmds::ipmiCmdGetSDR),
+        ipmi::Privilege::User, ipmiStorageGetSDR);
+
     return;
 }
 } // namespace ipmi
