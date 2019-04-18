@@ -1545,6 +1545,189 @@ ipmi::RspType<
     }
 }
 
+ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
+                                          uint8_t faultState,
+                                          uint8_t faultGroup,
+                                          std::array<uint8_t, 8>& ledStateData)
+{
+    static constexpr const char* objpath = "/xyz/openbmc_project/EntityManager";
+    static constexpr const char* intf = "xyz.openbmc_project.EntityManager";
+    static const std::array<std::string, 6> fType = {
+        "faultFan",       "faultTemp",     "faultPower",
+        "faultDriveSlot", "faultSoftware", "faultMemory"};
+    static constexpr const char* sysGpioPath = "/sys/class/gpio/gpio";
+    static constexpr const char* postfixValue = "/value";
+    static constexpr uint8_t maxFaultSource = 0x4;
+    static constexpr uint8_t skipLEDs = 0xFF;
+    static constexpr uint8_t pinSize = 64;
+    std::vector<uint16_t> ledFaultPins(pinSize, 0xFFFF);
+    uint64_t resFIndex = 0;
+    std::string resFType;
+    std::string service;
+    ObjectValueTree valueTree;
+
+    // Validate the source, fault type
+    if ((sourceId >= maxFaultSource) ||
+        (faultType >= static_cast<int8_t>(RemoteFaultType::maxFaultTypes)) ||
+        (faultState >= static_cast<int8_t>(RemoteFaultState::maxFaultState)) ||
+        (faultGroup >= static_cast<int8_t>(DimmFaultType::maxFaultGroup)))
+    {
+        return ipmi::responseParmOutOfRange();
+    }
+
+    try
+    {
+        service = getService(dbus, intf, objpath);
+        valueTree = getManagedObjects(dbus, service, "/");
+    }
+    catch (const std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "No object implements interface",
+            phosphor::logging::entry("SERVICE=%s", service.c_str()),
+            phosphor::logging::entry("INTF=%s", intf));
+        return ipmi::responseResponseError();
+    }
+
+    if (valueTree.empty())
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "No object implements interface",
+            phosphor::logging::entry("INTF=%s", intf));
+        return ipmi::responseResponseError();
+    }
+
+    for (const auto& item : valueTree)
+    {
+        // find LedFault configuration
+        auto interface =
+            item.second.find("xyz.openbmc_project.Configuration.LedFault");
+        if (interface == item.second.end())
+        {
+            continue;
+        }
+
+        // find matched fault type: faultMemmory / faultFan
+        // find LedGpioPins/FaultIndex configuration
+        auto propertyFaultType = interface->second.find("FaultType");
+        auto propertyFIndex = interface->second.find("FaultIndex");
+        auto ledIndex = interface->second.find("LedGpioPins");
+
+        if (propertyFaultType == interface->second.end() ||
+            propertyFIndex == interface->second.end() ||
+            ledIndex == interface->second.end())
+        {
+            continue;
+        }
+
+        try
+        {
+            Value valIndex = propertyFIndex->second;
+            resFIndex = std::get<uint64_t>(valIndex);
+
+            Value valFType = propertyFaultType->second;
+            resFType = std::get<std::string>(valFType);
+        }
+        catch (std::bad_variant_access& e)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+            return ipmi::responseResponseError();
+        }
+        // find the matched requested fault type: faultMemmory or faultFan
+        if (resFType != fType[faultType])
+        {
+            continue;
+        }
+
+        // read LedGpioPins data
+        std::vector<uint64_t> ledgpios;
+        sdbusplus::message::variant<std::vector<uint64_t>> message;
+
+        auto method = dbus.new_method_call(
+            service.c_str(), (std::string(item.first)).c_str(),
+            "org.freedesktop.DBus.Properties", "Get");
+
+        method.append("xyz.openbmc_project.Configuration.LedFault",
+                      "LedGpioPins");
+
+        try
+        {
+            auto reply = dbus.call(method);
+            reply.read(message);
+            ledgpios = std::get<std::vector<uint64_t>>(message);
+        }
+        catch (std::exception& e)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+            return ipmi::responseResponseError();
+        }
+
+        // Store data, according to command data bit index order
+        for (int i = 0; i < ledgpios.size(); i++)
+        {
+            ledFaultPins[i + 16 * resFIndex] = ledgpios[i];
+        }
+    }
+
+    switch (RemoteFaultType(faultType))
+    {
+        case (RemoteFaultType::fan):
+        case (RemoteFaultType::memory):
+        {
+            if (faultGroup == skipLEDs)
+            {
+                return ipmi::responseSuccess();
+            }
+
+            uint64_t ledState = 0;
+            // calculate led state bit filed count, each byte has 8bits
+            // the maximum bits will be 8 * 8 bits
+            constexpr uint8_t size = sizeof(ledStateData) * 8;
+            for (int i = 0; i < sizeof(ledStateData); i++)
+            {
+                ledState = (uint64_t)(ledState << 8);
+                ledState = (uint64_t)(ledState | (uint64_t)ledStateData[i]);
+            }
+
+            std::bitset<size> ledStateBits(ledState);
+            std::string gpioValue;
+            for (int i = 0; i < size; i++)
+            { // skip invalid value
+                if (ledFaultPins[i] == 0xFFFF)
+                {
+                    continue;
+                }
+
+                std::string device = sysGpioPath +
+                                     std::to_string(ledFaultPins[i]) +
+                                     postfixValue;
+                std::fstream gpioFile;
+
+                gpioFile.open(device, std::ios::out);
+
+                if (!gpioFile.good())
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "Not Find Led Gpio Device!",
+                        phosphor::logging::entry("DEVICE=%s", device.c_str()));
+                    return ipmi::responseResponseError();
+                }
+                gpioFile << std::to_string(
+                    static_cast<uint8_t>(ledStateBits[i]));
+                gpioFile.close();
+            }
+            break;
+        }
+        default:
+        {
+            // now only support two fault types
+            return ipmi::responseParmOutOfRange();
+        }
+    }
+
+    return ipmi::responseSuccess();
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -1663,6 +1846,11 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMPlatformCmd::cmdCfgHostSerialPortSpeed),
         NULL, ipmiOEMCfgHostSerialPortSpeed, PRIVILEGE_ADMIN);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetFaultIndication),
+        ipmi::Privilege::Operator, ipmiOEMSetFaultIndication);
     return;
 }
 
