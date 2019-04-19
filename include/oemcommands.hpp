@@ -26,6 +26,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSendEmbeddedFWUpdStatus = 0x44,
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,
+    cmdSetFaultIndication = 0x57,
     cmdSetOEMUser2Activation = 0x5A,
     cmdSetShutdownPolicy = 0x60,
     cmdGetShutdownPolicy = 0x62,
@@ -312,6 +313,40 @@ struct CfgHostSerialReq
     uint8_t parameter;
 };
 #pragma pack(pop)
+
+//
+// Fault type enumeration
+//
+enum class RemoteFaultType
+{
+    fan,         // 0
+    temperature, // 1
+    power,       // 2
+    driveslot,   // 3
+    software,    // 4
+    memory,      // 5
+    max = 6      // 6
+};
+
+// Enumeration for remote fault states as required by the HSC
+//
+enum class RemoteFaultState
+{
+    // fault indicators
+    fanLEDs,
+    cpu1DimmLeds,
+    cpu2DimmLeds,
+    cpu3DimmLeds,
+    cpu4DimmLeds,
+    maxFaultState,
+};
+
+enum class DimmFaultType
+{
+    cpu1cpu2Dimm,
+    cpu3cpu4Dimm,
+    maxFaultGroup,
+};
 
 enum class setFanProfileFlags : uint8_t
 {
