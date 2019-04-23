@@ -16,15 +16,13 @@
 
 #pragma once
 #include <cstdint>
+#include <filesystem>
 #include <phosphor-ipmi-host/sensorhandler.hpp>
 
 static constexpr uint8_t ipmiSdrVersion = 0x51;
 
 namespace intel_oem::ipmi::sel
 {
-// ID string generated using journalctl to include in the MESSAGE_ID field for
-// SEL entries.  Helps with filtering SEL entries in the journal.
-static constexpr const char* selMessageId = "b370836ccf2f4850ac5bee185b77893a";
 static constexpr uint8_t selOperationSupport = 0x02;
 static constexpr uint8_t systemEvent = 0x02;
 static constexpr size_t systemEventSize = 3;
@@ -35,6 +33,8 @@ static constexpr uint8_t oemEventFirst = 0xE0;
 static constexpr uint8_t oemEventLast = 0xFF;
 static constexpr size_t oemEventSize = 13;
 static constexpr uint8_t eventMsgRev = 0x04;
+static const std::filesystem::path selLogDir = "/var/log";
+static const std::string selLogFilename = "ipmi_sel";
 } // namespace intel_oem::ipmi::sel
 
 #pragma pack(push, 1)
@@ -103,35 +103,6 @@ struct WriteFRUDataReq
     uint8_t fruDeviceID;
     uint16_t fruInventoryOffset;
     uint8_t data[];
-};
-
-struct GetSELEntryResponse
-{
-    uint16_t nextRecordID;
-    uint16_t recordID;
-    uint8_t recordType;
-    union
-    {
-        struct
-        {
-            uint32_t timestamp;
-            uint16_t generatorID;
-            uint8_t eventMsgRevision;
-            uint8_t sensorType;
-            uint8_t sensorNum;
-            uint8_t eventType;
-            uint8_t eventData[intel_oem::ipmi::sel::systemEventSize];
-        } system;
-        struct
-        {
-            uint32_t timestamp;
-            uint8_t eventData[intel_oem::ipmi::sel::oemTsEventSize];
-        } oemTs;
-        struct
-        {
-            uint8_t eventData[intel_oem::ipmi::sel::oemEventSize];
-        } oem;
-    } record;
 };
 
 struct AddSELRequest
