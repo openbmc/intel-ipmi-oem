@@ -22,9 +22,6 @@ static constexpr uint8_t ipmiSdrVersion = 0x51;
 
 namespace intel_oem::ipmi::sel
 {
-// ID string generated using journalctl to include in the MESSAGE_ID field for
-// SEL entries.  Helps with filtering SEL entries in the journal.
-static constexpr const char* selMessageId = "b370836ccf2f4850ac5bee185b77893a";
 static constexpr uint8_t selOperationSupport = 0x02;
 static constexpr uint8_t systemEvent = 0x02;
 static constexpr size_t systemEventSize = 3;
@@ -105,35 +102,6 @@ struct WriteFRUDataReq
     uint8_t data[];
 };
 
-struct GetSELEntryResponse
-{
-    uint16_t nextRecordID;
-    uint16_t recordID;
-    uint8_t recordType;
-    union
-    {
-        struct
-        {
-            uint32_t timestamp;
-            uint16_t generatorID;
-            uint8_t eventMsgRevision;
-            uint8_t sensorType;
-            uint8_t sensorNum;
-            uint8_t eventType;
-            uint8_t eventData[intel_oem::ipmi::sel::systemEventSize];
-        } system;
-        struct
-        {
-            uint32_t timestamp;
-            uint8_t eventData[intel_oem::ipmi::sel::oemTsEventSize];
-        } oemTs;
-        struct
-        {
-            uint8_t eventData[intel_oem::ipmi::sel::oemEventSize];
-        } oem;
-    } record;
-};
-
 struct AddSELRequest
 {
     uint16_t recordID;
@@ -188,14 +156,7 @@ enum class IPMINetfnStorageCmds : ipmi_cmd_t
     ipmiCmdGetSDRAllocationInfo = 0x21,
     ipmiCmdReserveSDR = 0x22,
     ipmiCmdGetSDR = 0x23,
-    ipmiCmdGetSELInfo = 0x40,
-    ipmiCmdReserveSEL = 0x42,
-    ipmiCmdGetSELEntry = 0x43,
     ipmiCmdAddSEL = 0x44,
-    ipmiCmdDeleteSEL = 0x46,
-    ipmiCmdClearSEL = 0x47,
-    ipmiCmdGetSELTime = 0x48,
-    ipmiCmdSetSELTime = 0x49,
 };
 
 #pragma pack(push, 1)
