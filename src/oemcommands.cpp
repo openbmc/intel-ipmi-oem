@@ -1796,6 +1796,33 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
     return ipmi::responseSuccess();
 }
 
+ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
+{
+    // TODO: Move this hard coded pin numbers to single place.
+    // Can't use direct platoform configurations as these pins are
+    // needed to detect proper configuration
+    static const std::array<int, 6> productIdPins = {8, 9, 10, 11, 12, 53};
+    uint8_t prodId = 0;
+    for (int index = 0; index < productIdPins.size(); ++index)
+    {
+        std::ofstream gpioExport("/sys/class/gpio/export");
+        gpioExport << productIdPins[index];
+        gpioExport.close();
+        std::ifstream gpioPin("/sys/class/gpio/gpio" +
+                              std::to_string(productIdPins[index]) + "/value");
+        std::string value;
+        gpioPin >> value;
+        if (value.empty())
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMReadBoardProductId: Failure to read product id gpio's");
+            return ipmi::responseUnspecifiedError();
+        }
+        prodId |= (((value == "0") ? 0 : 1) << index);
+    }
+    return ipmi::responseSuccess(prodId);
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -1910,6 +1937,12 @@ static void registerOEMFunctions(void)
         ipmi::prioOemBase, netfnIntcOEMGeneral,
         static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetFscParameter),
         ipmi::Privilege::User, ipmiOEMGetFscParameter);
+
+    ipmi::registerHandler(
+        ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
+        ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
