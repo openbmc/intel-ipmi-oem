@@ -1796,6 +1796,32 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
     return ipmi::responseSuccess();
 }
 
+ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
+{
+    static const std::array<uint8_t, 6> productIdGpioPins = {8,  9,  10,
+                                                             11, 12, 53};
+    uint8_t prodId = 0;
+    int index = 0;
+    for (auto pinNumber : productIdGpioPins)
+    {
+        std::ofstream gpioExport("/sys/class/gpio/export");
+        gpioExport << pinNumber;
+        std::ifstream gpioPin("/sys/class/gpio/gpio" +
+                              std::to_string(pinNumber) + "/value");
+        std::string value;
+        gpioPin >> value;
+        if (value.empty())
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMReadBoardProductId: Failure to read product id gpio's");
+            return ipmi::responseUnspecifiedError();
+        }
+        prodId |= (((value == "0") ? 0 : 1) << index);
+        index++;
+    }
+    return ipmi::responseSuccess(prodId);
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -1910,6 +1936,12 @@ static void registerOEMFunctions(void)
         ipmi::prioOemBase, netfnIntcOEMGeneral,
         static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetFscParameter),
         ipmi::Privilege::User, ipmiOEMGetFscParameter);
+
+    ipmi::registerHandler(
+        ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
+        ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
