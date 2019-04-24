@@ -1796,6 +1796,28 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
     return ipmi::responseSuccess();
 }
 
+ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
+{
+    uint8_t prodId = 0;
+    try
+    {
+        const DbusObjectInfo& object = getDbusObject(
+            dbus, "xyz.openbmc_project.Inventory.Item.Board",
+            "/xyz/openbmc_project/inventory/system/board/", "Baseboard");
+        const Value& propValue = getDbusProperty(
+            dbus, object.second, object.first,
+            "xyz.openbmc_project.Inventory.Item.Board", "ProductId");
+        prodId = static_cast<uint8_t>(std::get<uint64_t>(propValue));
+    }
+    catch (std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMReadBoardProductId: Product ID read failed!",
+            phosphor::logging::entry("ERR=%s", e.what()));
+    }
+    return ipmi::responseSuccess(prodId);
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -1910,6 +1932,12 @@ static void registerOEMFunctions(void)
         ipmi::prioOemBase, netfnIntcOEMGeneral,
         static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetFscParameter),
         ipmi::Privilege::User, ipmiOEMGetFscParameter);
+
+    ipmi::registerHandler(
+        ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
+        ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
