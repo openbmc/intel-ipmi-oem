@@ -62,7 +62,7 @@ TEST(sensorutils, TranslateToIPMI)
     if (result)
     {
         EXPECT_EQ(bSigned, false);
-        EXPECT_EQ(mValue, floor(16000.0 / 0xFF));
+        EXPECT_EQ(mValue, floor((16000.0 / 0xFF) + 0.5));
         EXPECT_EQ(rExp, 0);
         EXPECT_EQ(bValue, 0);
         EXPECT_EQ(bExp, 0);
@@ -126,6 +126,24 @@ TEST(sensorutils, TranslateToIPMI)
         ipmi::scaleIPMIValueFromDouble(5, mValue, rExp, bValue, bExp, bSigned);
 
     expected = 5 / (mValue * std::pow(10, rExp));
+    EXPECT_NEAR(scaledVal, expected, expected * 0.01);
+
+    // reading = max example
+    maxValue = 277;
+    minValue = 0;
+
+    result = ipmi::getSensorAttributes(maxValue, minValue, mValue, rExp, bValue,
+                                       bExp, bSigned);
+    EXPECT_EQ(result, true);
+    if (result)
+    {
+        EXPECT_EQ(bSigned, false);
+    }
+
+    scaledVal = ipmi::scaleIPMIValueFromDouble(maxValue, mValue, rExp, bValue,
+                                               bExp, bSigned);
+
+    expected = 0xFF;
     EXPECT_NEAR(scaledVal, expected, expected * 0.01);
 
     // 0, 0 failure
