@@ -17,7 +17,6 @@
 #pragma once
 #include <cmath>
 #include <iostream>
-#include <ipmid/api.hpp>
 #include <phosphor-logging/log.hpp>
 
 namespace ipmi
@@ -132,7 +131,7 @@ static inline bool getSensorAttributes(const double max, const double min,
         bExp -= 1;
     }
 
-    mValue = static_cast<int16_t>(mDouble) & maxInt10;
+    mValue = static_cast<int16_t>(std::floor(mDouble + 0.5)) & maxInt10;
     bValue = static_cast<int16_t>(bDouble) & maxInt10;
 
     return true;
