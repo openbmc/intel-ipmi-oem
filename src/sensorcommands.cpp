@@ -143,22 +143,66 @@ static sdbusplus::bus::match::match thresholdChanged(
         }
     });
 
-static void
-    getSensorMaxMin(const std::map<std::string, DbusVariant> &sensorPropertyMap,
-                    double &max, double &min)
+static void getSensorMaxMin(const SensorMap &sensorMap, double &max,
+                            double &min)
 {
-    auto maxMap = sensorPropertyMap.find("MaxValue");
-    auto minMap = sensorPropertyMap.find("MinValue");
     max = 127;
     min = -128;
 
-    if (maxMap != sensorPropertyMap.end())
+    auto sensorObject = sensorMap.find("xyz.openbmc_project.Sensor.Value");
+    auto critical =
+        sensorMap.find("xyz.openbmc_project.Sensor.Threshold.Critical");
+    auto warning =
+        sensorMap.find("xyz.openbmc_project.Sensor.Threshold.Warning");
+
+    if (sensorObject != sensorMap.end())
     {
-        max = variant_ns::visit(VariantToDoubleVisitor(), maxMap->second);
+        auto maxMap = sensorObject->second.find("MaxValue");
+        auto minMap = sensorObject->second.find("MinValue");
+
+        if (maxMap != sensorObject->second.end())
+        {
+            max = variant_ns::visit(VariantToDoubleVisitor(), maxMap->second);
+        }
+        if (minMap != sensorObject->second.end())
+        {
+            min = variant_ns::visit(VariantToDoubleVisitor(), minMap->second);
+        }
     }
-    if (minMap != sensorPropertyMap.end())
+    if (critical != sensorMap.end())
     {
-        min = variant_ns::visit(VariantToDoubleVisitor(), minMap->second);
+        auto lower = critical->second.find("CriticalLow");
+        auto upper = critical->second.find("CriticalHigh");
+        if (lower != critical->second.end())
+        {
+            double value =
+                variant_ns::visit(VariantToDoubleVisitor(), lower->second);
+            min = std::min(value, min);
+        }
+        if (upper != critical->second.end())
+        {
+            double value =
+                variant_ns::visit(VariantToDoubleVisitor(), upper->second);
+            max = std::max(value, max);
+        }
+    }
+    if (warning != sensorMap.end())
+    {
+
+        auto lower = warning->second.find("WarningLow");
+        auto upper = warning->second.find("WarningHigh");
+        if (lower != warning->second.end())
+        {
+            double value =
+                variant_ns::visit(VariantToDoubleVisitor(), lower->second);
+            min = std::min(value, min);
+        }
+        if (upper != warning->second.end())
+        {
+            double value =
+                variant_ns::visit(VariantToDoubleVisitor(), upper->second);
+            max = std::max(value, max);
+        }
     }
 }
 
@@ -260,7 +304,7 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
 
     double max;
     double min;
-    getSensorMaxMin(sensorObject->second, max, min);
+    getSensorMaxMin(sensorMap, max, min);
 
     int16_t mValue = 0;
     int16_t bValue = 0;
@@ -384,15 +428,9 @@ ipmi_ret_t ipmiSenSetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_RESPONSE_ERROR;
     }
 
-    auto sensorObject = sensorMap.find("xyz.openbmc_project.Sensor.Value");
-
-    if (sensorObject == sensorMap.end())
-    {
-        return IPMI_CC_RESPONSE_ERROR;
-    }
     double max = 0;
     double min = 0;
-    getSensorMaxMin(sensorObject->second, max, min);
+    getSensorMaxMin(sensorMap, max, min);
 
     int16_t mValue = 0;
     int16_t bValue = 0;
@@ -523,7 +561,7 @@ IPMIThresholds getIPMIThresholds(const SensorMap &sensorMap)
 
         double max;
         double min;
-        getSensorMaxMin(sensorPair->second, max, min);
+        getSensorMaxMin(sensorMap, max, min);
 
         int16_t mValue = 0;
         int16_t bValue = 0;
