@@ -130,10 +130,10 @@ static constexpr const uint8_t shutdownOnOCOT = 1;
 static constexpr const uint8_t noShutdownPolicySupported = 0;
 static constexpr const uint8_t shutdownPolicySupported = 1;
 static constexpr const char* oemShutdownPolicyIntf =
-    "xyz.openbmc_project.Control.ShutdownPolicy";
+    "com.intel.Control.OCOTShutdownPolicy";
 static constexpr const char* oemShutdownPolicyObjPath =
-    "/xyz/openbmc_project/control/shutdown_policy_config";
-static constexpr const char* oemShutdownPolicyObjPathProp = "Policy";
+    "/com/intel/control/ocotshutdown_policy_config";
+static constexpr const char* oemShutdownPolicyObjPathProp = "OCOTPolicy";
 
 static constexpr const char* fwGetEnvCmd = "/sbin/fw_printenv";
 static constexpr const char* fwSetEnvCmd = "/sbin/fw_setenv";
