@@ -71,6 +71,28 @@ externalproject_add (
     LOG_DOWNLOAD ON
 )
 
+externalproject_add (
+    intel-dbus-interfaces PREFIX ${CMAKE_BINARY_DIR}/intel-dbus-interfaces DEPENDS
+    sdbusplus-project GIT_REPOSITORY
+    https://github.com/openbmc/intel-dbus-interfaces GIT_TAG
+    2b8f89f5876c5a97a34cdf922729d4283d5f2627 SOURCE_DIR
+    ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src BINARY_DIR
+    ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-build CONFIGURE_COMMAND cd
+    ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src && export
+    PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}
+    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && export
+    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && ./bootstrap.sh
+    && ./configure --prefix=${CMAKE_BINARY_DIR}/prefix
+    CPPFLAGS=-I${CMAKE_BINARY_DIR}/prefix/include/ BUILD_COMMAND cd
+    ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src && export
+    PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH}
+    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && export
+    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && make -j
+    verbose=1 INSTALL_COMMAND cd
+    ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src && make install
+    LOG_DOWNLOAD ON
+)
+
 externalproject_add (cereal GIT_REPOSITORY https://github.com/USCiLab/cereal
                      GIT_TAG 51cbda5f30e56c801c07fe3d3aba5d7fb9e6cca4
                      SOURCE_DIR "${CMAKE_BINARY_DIR}/cereal-src" BINARY_DIR
