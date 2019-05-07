@@ -1045,41 +1045,30 @@ ipmi_ret_t ipmiStorageAddSELEntry(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiStorageClearSEL(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                               ipmi_request_t request, ipmi_response_t response,
-                               ipmi_data_len_t data_len, ipmi_context_t context)
+ipmi::RspType<uint8_t // erase status
+              >
+    clearSEL(uint16_t reservationID, const std::array<char, 3>& clr,
+             uint8_t eraseOperation)
 {
-    if (*data_len != sizeof(ipmi::sel::ClearSELRequest))
+    static constexpr std::array<char, 3> clrOk = {'C', 'L', 'R'};
+    if (clr != clrOk)
     {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    auto requestData = static_cast<const ipmi::sel::ClearSELRequest*>(request);
-
-    if (!checkSELReservation(requestData->reservationID))
-    {
-        *data_len = 0;
-        return IPMI_CC_INVALID_RESERVATION_ID;
+        return ipmi::responseInvalidFieldRequest();
     }
 
-    if (requestData->charC != 'C' || requestData->charL != 'L' ||
-        requestData->charR != 'R')
+    if (!checkSELReservation(reservationID))
     {
-        *data_len = 0;
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::responseInvalidReservationId();
     }
-
-    uint8_t eraseProgress = ipmi::sel::eraseComplete;
 
     /*
      * Erasure status cannot be fetched from DBUS, so always return erasure
      * status as `erase completed`.
      */
-    if (requestData->eraseOperation == ipmi::sel::getEraseStatus)
+    if (eraseOperation == ipmi::sel::getEraseStatus)
     {
-        *static_cast<uint8_t*>(response) = eraseProgress;
-        *data_len = sizeof(eraseProgress);
-        return IPMI_CC_OK;
+        return ipmi::responseSuccess(
+            static_cast<uint8_t>(ipmi::sel::eraseComplete));
     }
 
     // Per the IPMI spec, need to cancel any reservation when the SEL is cleared
@@ -1092,16 +1081,17 @@ ipmi_ret_t ipmiStorageClearSEL(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     // vacuuming to keep only the new file
     if (boost::process::system("/bin/journalctl", "--rotate") != 0)
     {
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
+        ;
     }
     if (boost::process::system("/bin/journalctl", "--vacuum-files=1") != 0)
     {
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
+        ;
     }
 
-    *static_cast<uint8_t*>(response) = eraseProgress;
-    *data_len = sizeof(eraseProgress);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(
+        static_cast<uint8_t>(ipmi::sel::eraseComplete));
 }
 
 ipmi_ret_t ipmiStorageSetSELTime(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1154,10 +1144,9 @@ void registerStorageFunctions()
         ipmiStorageAddSELEntry, PRIVILEGE_OPERATOR);
 
     // <Clear SEL>
-    ipmiPrintAndRegister(
-        NETFUN_STORAGE,
-        static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdClearSEL), NULL,
-        ipmiStorageClearSEL, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnStorage,
+                          ipmi::storage::cmdClearSel, ipmi::Privilege::Operator,
+                          clearSEL);
 
     // <Set SEL Time>
     ipmiPrintAndRegister(
