@@ -28,6 +28,7 @@
 #include <sdrutils.hpp>
 #include <stdexcept>
 #include <storagecommands.hpp>
+#include <string_view>
 
 namespace intel_oem::ipmi::sel
 {
@@ -777,22 +778,37 @@ ipmi::RspType<uint16_t, // Next Record ID
         }
     }
 
-    // The format of the ipmi_sel message is "<timestamp>
-    // <ID>,<Type>,<EventData>,[<Generator ID>,<Path>,<Direction>]". Split it
-    // into the individual fields.
+    // The format of the ipmi_sel message is "<Timestamp>
+    // <ID>,<Type>,<EventData>,[<Generator ID>,<Path>,<Direction>]".
+    // First get the Timestamp
+    size_t space = targetEntry.find_first_of(" ");
+    if (space == std::string::npos)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+    std::string entryTimestamp = targetEntry.substr(0, space);
+    // Then get the log contents
+    size_t entryStart = targetEntry.find_first_not_of(" ", space);
+    if (entryStart == std::string::npos)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+    std::string_view entry(targetEntry);
+    entry.remove_prefix(entryStart);
+    // Use split to separate the entry into its fields
     std::vector<std::string> targetEntryFields;
-    boost::split(targetEntryFields, targetEntry, boost::is_any_of(" ,"),
+    boost::split(targetEntryFields, entry, boost::is_any_of(","),
                  boost::token_compress_on);
-    if (targetEntryFields.size() < 4)
+    if (targetEntryFields.size() < 3)
     {
         return ipmi::responseUnspecifiedError();
     }
 
-    uint16_t recordID = std::stoul(targetEntryFields[1]);
+    uint16_t recordID = std::stoul(targetEntryFields[0]);
     uint16_t nextRecordID = getNextRecordID(recordID, selLogFiles);
-    uint8_t recordType = std::stoul(targetEntryFields[2], nullptr, 16);
+    uint8_t recordType = std::stoul(targetEntryFields[1], nullptr, 16);
     std::vector<uint8_t> eventDataBytes;
-    if (fromHexStr(targetEntryFields[3], eventDataBytes) < 0)
+    if (fromHexStr(targetEntryFields[2], eventDataBytes) < 0)
     {
         return ipmi::responseUnspecifiedError();
     }
@@ -800,14 +816,14 @@ ipmi::RspType<uint16_t, // Next Record ID
     if (recordType == intel_oem::ipmi::sel::systemEvent)
     {
         // System type events have three additional fields
-        if (targetEntryFields.size() < 7)
+        if (targetEntryFields.size() < 6)
         {
             return ipmi::responseUnspecifiedError();
         }
 
         // Get the timestamp
         std::tm timeStruct = {};
-        std::istringstream entryStream(targetEntryFields[0]);
+        std::istringstream entryStream(entryTimestamp);
 
         uint32_t timestamp = ipmi::sel::invalidTimeStamp;
         if (entryStream >> std::get_time(&timeStruct, "%Y-%m-%dT%H:%M:%S"))
@@ -816,18 +832,18 @@ ipmi::RspType<uint16_t, // Next Record ID
         }
 
         // Get the generator ID
-        uint16_t generatorID = std::stoul(targetEntryFields[4], nullptr, 16);
+        uint16_t generatorID = std::stoul(targetEntryFields[3], nullptr, 16);
 
         // Set the event message revision
         uint8_t evmRev = intel_oem::ipmi::sel::eventMsgRev;
 
         // Get the sensor type, sensor number, and event type for the sensor
-        uint8_t sensorType = getSensorTypeFromPath(targetEntryFields[5]);
-        uint8_t sensorNum = getSensorNumberFromPath(targetEntryFields[5]);
-        uint7_t eventType = getSensorEventTypeFromPath(targetEntryFields[5]);
+        uint8_t sensorType = getSensorTypeFromPath(targetEntryFields[4]);
+        uint8_t sensorNum = getSensorNumberFromPath(targetEntryFields[4]);
+        uint7_t eventType = getSensorEventTypeFromPath(targetEntryFields[4]);
 
         // Get the event direction
-        bool eventDir = std::stoul(targetEntryFields[6]) ? 0 : 1;
+        bool eventDir = std::stoul(targetEntryFields[5]) ? 0 : 1;
 
         // Only keep the eventData bytes that fit in the record
         std::array<uint8_t, intel_oem::ipmi::sel::systemEventSize> eventData{};
@@ -845,7 +861,7 @@ ipmi::RspType<uint16_t, // Next Record ID
     {
         // Get the timestamp
         std::tm timeStruct = {};
-        std::istringstream entryStream(targetEntryFields[0]);
+        std::istringstream entryStream(entryTimestamp);
 
         uint32_t timestamp = ipmi::sel::invalidTimeStamp;
         if (entryStream >> std::get_time(&timeStruct, "%Y-%m-%dT%H:%M:%S"))
