@@ -804,9 +804,18 @@ ipmi::RspType<uint16_t, // Next Record ID
         return ipmi::responseUnspecifiedError();
     }
 
-    uint16_t recordID = std::stoul(targetEntryFields[0]);
+    uint16_t recordID;
+    uint8_t recordType;
+    try
+    {
+        recordID = std::stoul(targetEntryFields[0]);
+        recordType = std::stoul(targetEntryFields[1], nullptr, 16);
+    }
+    catch (const std::invalid_argument&)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
     uint16_t nextRecordID = getNextRecordID(recordID, selLogFiles);
-    uint8_t recordType = std::stoul(targetEntryFields[1], nullptr, 16);
     std::vector<uint8_t> eventDataBytes;
     if (fromHexStr(targetEntryFields[2], eventDataBytes) < 0)
     {
@@ -815,12 +824,6 @@ ipmi::RspType<uint16_t, // Next Record ID
 
     if (recordType == intel_oem::ipmi::sel::systemEvent)
     {
-        // System type events have three additional fields
-        if (targetEntryFields.size() < 6)
-        {
-            return ipmi::responseUnspecifiedError();
-        }
-
         // Get the timestamp
         std::tm timeStruct = {};
         std::istringstream entryStream(entryTimestamp);
@@ -831,19 +834,43 @@ ipmi::RspType<uint16_t, // Next Record ID
             timestamp = std::mktime(&timeStruct);
         }
 
-        // Get the generator ID
-        uint16_t generatorID = std::stoul(targetEntryFields[3], nullptr, 16);
-
         // Set the event message revision
         uint8_t evmRev = intel_oem::ipmi::sel::eventMsgRev;
 
-        // Get the sensor type, sensor number, and event type for the sensor
-        uint8_t sensorType = getSensorTypeFromPath(targetEntryFields[4]);
-        uint8_t sensorNum = getSensorNumberFromPath(targetEntryFields[4]);
-        uint7_t eventType = getSensorEventTypeFromPath(targetEntryFields[4]);
+        // Initialize values in case the entry doesn't provide them
+        uint16_t generatorID = 0;
+        uint8_t sensorType = 0;
+        uint8_t sensorNum = 0xFF;
+        uint7_t eventType = 0;
+        bool eventDir = 0;
+        // System type events should have six fields
+        if (targetEntryFields.size() >= 6)
+        {
+            // Get the generator ID
+            try
+            {
+                generatorID = std::stoul(targetEntryFields[3], nullptr, 16);
+            }
+            catch (const std::invalid_argument&)
+            {
+                std::cerr << "Invalid Generator ID\n";
+            }
 
-        // Get the event direction
-        bool eventDir = std::stoul(targetEntryFields[5]) ? 0 : 1;
+            // Get the sensor type, sensor number, and event type for the sensor
+            sensorType = getSensorTypeFromPath(targetEntryFields[4]);
+            sensorNum = getSensorNumberFromPath(targetEntryFields[4]);
+            eventType = getSensorEventTypeFromPath(targetEntryFields[4]);
+
+            // Get the event direction
+            try
+            {
+                eventDir = std::stoul(targetEntryFields[5]) ? 0 : 1;
+            }
+            catch (const std::invalid_argument&)
+            {
+                std::cerr << "Invalid Event Direction\n";
+            }
+        }
 
         // Only keep the eventData bytes that fit in the record
         std::array<uint8_t, intel_oem::ipmi::sel::systemEventSize> eventData{};
