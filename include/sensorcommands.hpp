@@ -30,17 +30,6 @@ struct SensorThresholdResp
     uint8_t uppernonrecoverable;
 };
 
-struct SensorThresholdReq
-{
-    uint8_t sensorNum;
-    uint8_t mask;
-    uint8_t lowerNonCritical;
-    uint8_t lowerCritical;
-    uint8_t lowerNonRecoverable;
-    uint8_t upperNonCritical;
-    uint8_t upperCritical;
-    uint8_t upperNonRecoverable;
-};
 #pragma pack(pop)
 
 enum class SensorThresholdReqEnable : uint8_t
@@ -54,14 +43,6 @@ enum class SensorThresholdReqEnable : uint8_t
 };
 
 #pragma pack(push, 1)
-struct SensorEventEnableResp
-{
-    uint8_t enabled;
-    uint8_t assertionEnabledLSB;
-    uint8_t assertionEnabledMSB;
-    uint8_t deassertionEnabledLSB;
-    uint8_t deassertionEnabledMSB;
-};
 
 struct SensorEventStatusResp
 {
