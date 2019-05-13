@@ -33,14 +33,6 @@ struct SensorThresholdResp
     uint8_t uppernonrecoverable;
 };
 
-struct SensorEventStatusResp
-{
-    uint8_t enabled;
-    uint8_t assertionsLSB;
-    uint8_t assertionsMSB;
-    uint8_t deassertionsLSB;
-    uint8_t deassertionsMSB;
-};
 #pragma pack(pop)
 
 enum class IPMIThresholdRespBits
