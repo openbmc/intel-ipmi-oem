@@ -33,14 +33,6 @@ struct SensorThresholdResp
     uint8_t uppernonrecoverable;
 };
 
-struct SensorEventStatusResp
-{
-    uint8_t enabled;
-    uint8_t assertionsLSB;
-    uint8_t assertionsMSB;
-    uint8_t deassertionsLSB;
-    uint8_t deassertionsMSB;
-};
 #pragma pack(pop)
 
 enum class IPMIThresholdRespBits
@@ -90,6 +82,22 @@ enum class IPMISensorEventEnableThresholds : uint8_t
     lowerCriticalGoingLow = (1 << 2),
     lowerNonCriticalGoingHigh = (1 << 1),
     lowerNonCriticalGoingLow = (1 << 0),
+};
+
+enum class IPMIGetSensorEventEnableThresholds : uint8_t
+{
+    lowerNonCriticalGoingLow = 0,
+    lowerNonCriticalGoingHigh = 1,
+    lowerCriticalGoingLow = 2,
+    lowerCriticalGoingHigh = 3,
+    lowerNonRecoverableGoingLow = 4,
+    lowerNonRecoverableGoingHigh = 5,
+    upperNonCriticalGoingLow = 6,
+    upperNonCriticalGoingHigh = 7,
+    upperCriticalGoingLow = 8,
+    upperCriticalGoingHigh = 9,
+    upperNonRecoverableGoingLow = 10,
+    upperNonRecoverableGoingHigh = 11,
 };
 
 enum class IPMINetfnSensorCmds : ipmi_cmd_t
