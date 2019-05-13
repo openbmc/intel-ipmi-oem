@@ -34,27 +34,6 @@ static constexpr size_t oemEventSize = 13;
 static constexpr uint8_t eventMsgRev = 0x04;
 } // namespace intel_oem::ipmi::sel
 
-#pragma pack(push, 1)
-struct GetSDRInfoResp
-{
-    uint8_t sdrVersion;
-    uint8_t recordCountLS;
-    uint8_t recordCountMS;
-    uint8_t freeSpace[2];
-    uint32_t mostRecentAddition;
-    uint32_t mostRecentErase;
-    uint8_t operationSupport;
-};
-
-struct GetSDRReq
-{
-    uint16_t reservationID;
-    uint16_t recordID;
-    uint8_t offset;
-    uint8_t bytesToRead;
-};
-#pragma pack(pop)
-
 enum class SdrRepositoryInfoOps : uint8_t
 {
     allocCommandSupported = 0x1,
