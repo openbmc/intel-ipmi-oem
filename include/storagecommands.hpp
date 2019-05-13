@@ -35,17 +35,6 @@ static constexpr uint8_t eventMsgRev = 0x04;
 } // namespace intel_oem::ipmi::sel
 
 #pragma pack(push, 1)
-struct GetSDRInfoResp
-{
-    uint8_t sdrVersion;
-    uint8_t recordCountLS;
-    uint8_t recordCountMS;
-    uint8_t freeSpace[2];
-    uint32_t mostRecentAddition;
-    uint32_t mostRecentErase;
-    uint8_t operationSupport;
-};
-
 struct GetSDRReq
 {
     uint16_t reservationID;
