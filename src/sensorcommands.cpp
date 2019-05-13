@@ -914,46 +914,50 @@ ipmi::RspType<uint8_t, // enabled
                                  deassertionEnabledMsb);
 }
 
-ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                       ipmi_request_t request,
-                                       ipmi_response_t response,
-                                       ipmi_data_len_t dataLen,
-                                       ipmi_context_t context)
+/** @brief implements the get Sensor event status command
+ *  @param sensorNumber - sensor number, FFh = reserved
+ *
+ *  @returns IPMI completion code plus response data
+ *   - sensorEventStatus - Sensor Event messages state
+ *   - assertions        - Assertion event messages
+ *   - deassertions      - Deassertion event messages
+ */
+ipmi::RspType<uint8_t,         // sensorEventStatus
+              std::bitset<16>, // assertions
+              std::bitset<16>  // deassertion
+              >
+    ipmiSenGetSensorEventStatus(uint8_t sensorNum)
 {
-    if (*dataLen != 1)
+    if (sensorNum == 0xFF)
     {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::responseInvalidFieldRequest();
     }
-    *dataLen = 0; // default to 0 in case of an error
-
-    uint8_t sensnum = *(static_cast<uint8_t *>(request));
 
     std::string connection;
     std::string path;
-
-    auto status = getSensorConnection(sensnum, connection, path);
+    auto status = getSensorConnection(sensorNum, connection, path);
     if (status)
     {
-        return status;
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiSenGetSensorEventStatus: Sensor connection Error",
+            phosphor::logging::entry("SENSOR=%s", path.c_str()));
+        return ipmi::response(status);
     }
 
     SensorMap sensorMap;
     if (!getSensorMap(connection, path, sensorMap))
     {
-        return IPMI_CC_RESPONSE_ERROR;
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiSenGetSensorEventStatus: Sensor Mapping Error",
+            phosphor::logging::entry("SENSOR=%s", path.c_str()));
+        return ipmi::responseResponseError();
     }
-
     auto warningInterface =
         sensorMap.find("xyz.openbmc_project.Sensor.Threshold.Warning");
     auto criticalInterface =
         sensorMap.find("xyz.openbmc_project.Sensor.Threshold.Critical");
 
-    // zero out response buff
-    auto responseClear = static_cast<uint8_t *>(response);
-    std::fill(responseClear, responseClear + sizeof(SensorEventStatusResp), 0);
-    auto resp = static_cast<SensorEventStatusResp *>(response);
-    resp->enabled =
+    uint8_t sensorEventStatus =
         static_cast<uint8_t>(IPMISensorEventEnableByte2::sensorScanningEnable);
 
     std::optional<bool> criticalDeassertHigh =
@@ -965,31 +969,33 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     std::optional<bool> warningDeassertLow =
         thresholdDeassertMap[path]["WarningAlarmLow"];
 
+    std::bitset<16> assertions = 0;
+    std::bitset<16> deassertions = 0;
+
     if (criticalDeassertHigh && !*criticalDeassertHigh)
     {
-        resp->deassertionsMSB |= static_cast<uint8_t>(
-            IPMISensorEventEnableThresholds::upperCriticalGoingHigh);
+        deassertions.set(static_cast<size_t>(
+            IPMIGetSensorEventEnableThresholds::upperCriticalGoingHigh));
     }
     if (criticalDeassertLow && !*criticalDeassertLow)
     {
-        resp->deassertionsMSB |= static_cast<uint8_t>(
-            IPMISensorEventEnableThresholds::upperCriticalGoingLow);
+        deassertions.set(static_cast<size_t>(
+            IPMIGetSensorEventEnableThresholds::upperCriticalGoingLow));
     }
     if (warningDeassertHigh && !*warningDeassertHigh)
     {
-        resp->deassertionsLSB |= static_cast<uint8_t>(
-            IPMISensorEventEnableThresholds::upperNonCriticalGoingHigh);
+        deassertions.set(static_cast<size_t>(
+            IPMIGetSensorEventEnableThresholds::upperNonCriticalGoingHigh));
     }
     if (warningDeassertLow && !*warningDeassertLow)
     {
-        resp->deassertionsLSB |= static_cast<uint8_t>(
-            IPMISensorEventEnableThresholds::lowerNonCriticalGoingHigh);
+        deassertions.set(static_cast<size_t>(
+            IPMIGetSensorEventEnableThresholds::lowerNonCriticalGoingHigh));
     }
-
     if ((warningInterface != sensorMap.end()) ||
         (criticalInterface != sensorMap.end()))
     {
-        resp->enabled = static_cast<uint8_t>(
+        sensorEventStatus = static_cast<size_t>(
             IPMISensorEventEnableByte2::eventMessagesEnable);
         if (warningInterface != sensorMap.end())
         {
@@ -1010,12 +1016,13 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             }
             if (warningHighAlarm)
             {
-                resp->assertionsLSB |= static_cast<uint8_t>(
-                    IPMISensorEventEnableThresholds::upperNonCriticalGoingHigh);
+                assertions.set(
+                    static_cast<size_t>(IPMIGetSensorEventEnableThresholds::
+                                            upperNonCriticalGoingHigh));
             }
             if (warningLowAlarm)
             {
-                resp->assertionsLSB |= 1; // lower nc going low
+                assertions |= 1; // lower nc going low
             }
         }
         if (criticalInterface != sensorMap.end())
@@ -1037,25 +1044,19 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             }
             if (criticalHighAlarm)
             {
-                resp->assertionsMSB |= static_cast<uint8_t>(
-                    IPMISensorEventEnableThresholds::upperCriticalGoingHigh);
+                assertions.set(
+                    static_cast<size_t>(IPMIGetSensorEventEnableThresholds::
+                                            upperCriticalGoingHigh));
             }
             if (criticalLowAlarm)
             {
-                resp->assertionsLSB |= static_cast<uint8_t>(
-                    IPMISensorEventEnableThresholds::lowerCriticalGoingLow);
+                assertions.set(static_cast<size_t>(
+                    IPMIGetSensorEventEnableThresholds::lowerCriticalGoingLow));
             }
         }
-        *dataLen = sizeof(SensorEventStatusResp);
     }
 
-    // no thresholds enabled, don't need assertionMSB
-    else
-    {
-        *dataLen = sizeof(SensorEventStatusResp) - 1;
-    }
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(sensorEventStatus, assertions, deassertions);
 }
 
 /* end sensor commands */
@@ -1511,9 +1512,9 @@ void registerSensorFunctions()
                           ipmi::Privilege::User, ipmiSenGetSensorEventEnable);
 
     // <Get Sensor Event Status>
-    ipmiPrintAndRegister(NETFUN_SENSOR,
-                         ipmi::sensor_event::cmdGetSensorEventStatus, nullptr,
-                         ipmiSenGetSensorEventStatus, PRIVILEGE_USER);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
+                          ipmi::sensor_event::cmdGetSensorEventStatus,
+                          ipmi::Privilege::User, ipmiSenGetSensorEventStatus);
 
     // register all storage commands for both Sensor and Storage command
     // versions
