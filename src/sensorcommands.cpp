@@ -863,46 +863,48 @@ ipmi_ret_t ipmiSenGetSensorEventEnable(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                       ipmi_request_t request,
-                                       ipmi_response_t response,
-                                       ipmi_data_len_t dataLen,
-                                       ipmi_context_t context)
+/** @brief implements the get Sensor event status command
+ *  @param sensorNumber - sensor number
+ *
+ *  @returns IPMI completion code plus response data
+ *   - enabled        - Sensor Event messages state
+ *   - assertionLsb   - Assertion event messages
+ *   - assertionMsb   - Assertion event messages
+ *   - deassertionLsb - Deassertion event messages
+ *   - deassertionMsb - Deassertion event messages
+ */
+ipmi::RspType<uint8_t, // enabled
+              uint8_t, // assertiondLsb
+              uint8_t, // assertionMsb
+              uint8_t, // deassertionLsb
+              uint8_t> // deassertionMsb
+    ipmiSenGetSensorEventStatus(uint8_t sensorNum)
 {
-    if (*dataLen != 1)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    *dataLen = 0; // default to 0 in case of an error
-
-    uint8_t sensnum = *(static_cast<uint8_t *>(request));
-
     std::string connection;
     std::string path;
+    uint8_t enabled;
+    uint8_t assertionsLsb;
+    uint8_t assertionsMsb;
+    uint8_t deassertionsLsb;
+    uint8_t deassertionsMsb;
 
-    auto status = getSensorConnection(sensnum, connection, path);
+    auto status = getSensorConnection(sensorNum, connection, path);
     if (status)
     {
-        return status;
+        return ipmi::response(status);
     }
 
     SensorMap sensorMap;
     if (!getSensorMap(connection, path, sensorMap))
     {
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
     }
-
     auto warningInterface =
         sensorMap.find("xyz.openbmc_project.Sensor.Threshold.Warning");
     auto criticalInterface =
         sensorMap.find("xyz.openbmc_project.Sensor.Threshold.Critical");
 
-    // zero out response buff
-    auto responseClear = static_cast<uint8_t *>(response);
-    std::fill(responseClear, responseClear + sizeof(SensorEventStatusResp), 0);
-    auto resp = static_cast<SensorEventStatusResp *>(response);
-    resp->enabled =
+    enabled =
         static_cast<uint8_t>(IPMISensorEventEnableByte2::sensorScanningEnable);
 
     std::optional<bool> criticalDeassertHigh =
@@ -916,29 +918,28 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     if (criticalDeassertHigh && !*criticalDeassertHigh)
     {
-        resp->deassertionsMSB |= static_cast<uint8_t>(
+        deassertionsMsb |= static_cast<uint8_t>(
             IPMISensorEventEnableThresholds::upperCriticalGoingHigh);
     }
     if (criticalDeassertLow && !*criticalDeassertLow)
     {
-        resp->deassertionsMSB |= static_cast<uint8_t>(
+        deassertionsMsb |= static_cast<uint8_t>(
             IPMISensorEventEnableThresholds::upperCriticalGoingLow);
     }
     if (warningDeassertHigh && !*warningDeassertHigh)
     {
-        resp->deassertionsLSB |= static_cast<uint8_t>(
+        deassertionsLsb |= static_cast<uint8_t>(
             IPMISensorEventEnableThresholds::upperNonCriticalGoingHigh);
     }
     if (warningDeassertLow && !*warningDeassertLow)
     {
-        resp->deassertionsLSB |= static_cast<uint8_t>(
+        deassertionsLsb |= static_cast<uint8_t>(
             IPMISensorEventEnableThresholds::lowerNonCriticalGoingHigh);
     }
-
     if ((warningInterface != sensorMap.end()) ||
         (criticalInterface != sensorMap.end()))
     {
-        resp->enabled = static_cast<uint8_t>(
+        enabled = static_cast<uint8_t>(
             IPMISensorEventEnableByte2::eventMessagesEnable);
         if (warningInterface != sensorMap.end())
         {
@@ -961,12 +962,12 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             }
             if (warningHighAlarm)
             {
-                resp->assertionsLSB |= static_cast<uint8_t>(
+                assertionsLsb |= static_cast<uint8_t>(
                     IPMISensorEventEnableThresholds::upperNonCriticalGoingHigh);
             }
             if (warningLowAlarm)
             {
-                resp->assertionsLSB |= 1; // lower nc going low
+                assertionsLsb |= 1; // lower nc going low
             }
         }
         if (criticalInterface != sensorMap.end())
@@ -990,77 +991,70 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             }
             if (criticalHighAlarm)
             {
-                resp->assertionsMSB |= static_cast<uint8_t>(
+                assertionsMsb |= static_cast<uint8_t>(
                     IPMISensorEventEnableThresholds::upperCriticalGoingHigh);
             }
             if (criticalLowAlarm)
             {
-                resp->assertionsLSB |= static_cast<uint8_t>(
+                assertionsLsb |= static_cast<uint8_t>(
                     IPMISensorEventEnableThresholds::lowerCriticalGoingLow);
             }
         }
-        *dataLen = sizeof(SensorEventStatusResp);
     }
 
-    // no thresholds enabled, don't need assertionMSB
-    else
-    {
-        *dataLen = sizeof(SensorEventStatusResp) - 1;
-    }
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(enabled, assertionsLsb, assertionsMsb,
+                                 deassertionsLsb, deassertionsMsb);
 }
 
 /* end sensor commands */
 
 /* storage commands */
 
-ipmi_ret_t ipmiStorageGetSDRRepositoryInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                           ipmi_request_t request,
-                                           ipmi_response_t response,
-                                           ipmi_data_len_t dataLen,
-                                           ipmi_context_t context)
+/** @brief implements the get SDR repository info command
+ *  @returns IPMI completion code plus response data
+ *   - sdrVersion - version number of the SDR command set for the SDR Device.
+ *   - recordCountLs - Record count LS Byte
+ *   - recordCountMs - Record count MS Byte
+ *   - freeSpace     - Free Space in bytes
+ *   - mostRecentAddition - Most recent addition timestamp.
+ *   - mostRecentErase -  Most recent erase (delete or clear) timestamp.
+ *   - operationSupport - Command supported operations
+ */
+ipmi::RspType<uint8_t,  // sdrVersion
+              uint16_t, // recordCount
+              uint16_t, // freeSpace
+              uint32_t, // mostRecentAddition
+              uint32_t, // mostRecentErase
+              uint8_t   // operationSupport
+              >
+    ipmiStorageGetSDRRepositoryInfo()
 {
-    printCommand(+netfn, +cmd);
-
-    if (*dataLen)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    *dataLen = 0; // default to 0 in case of an error
-
+    constexpr uint16_t freeSpaceUnspecified = 0xFFFF;
     if (sensorTree.empty() && !getSensorSubtree(sensorTree))
     {
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
     }
 
-    // zero out response buff
-    auto responseClear = static_cast<uint8_t *>(response);
-    std::fill(responseClear, responseClear + sizeof(GetSDRInfoResp), 0);
-
-    auto resp = static_cast<GetSDRInfoResp *>(response);
-    resp->sdrVersion = ipmiSdrVersion;
+    constexpr uint8_t sdrVersion = ipmiSdrVersion;
     uint16_t recordCount = sensorTree.size();
 
     // todo: for now, sdr count is number of sensors
-    resp->recordCountLS = recordCount & 0xFF;
-    resp->recordCountMS = recordCount >> 8;
 
     // free space unspcified
-    resp->freeSpace[0] = 0xFF;
-    resp->freeSpace[1] = 0xFF;
+    constexpr uint16_t freeSpace = static_cast<uint16_t>(freeSpaceUnspecified);
 
-    resp->mostRecentAddition = sdrLastAdd;
-    resp->mostRecentErase = sdrLastRemove;
-    resp->operationSupport = static_cast<uint8_t>(
+    uint32_t mostRecentAddition = sdrLastAdd;
+    uint32_t mostRecentErase = sdrLastRemove;
+    uint8_t operationSupport = static_cast<uint8_t>(
         SdrRepositoryInfoOps::overflow); // write not supported
-    resp->operationSupport |=
+    operationSupport |=
         static_cast<uint8_t>(SdrRepositoryInfoOps::allocCommandSupported);
-    resp->operationSupport |= static_cast<uint8_t>(
+    operationSupport |= static_cast<uint8_t>(
         SdrRepositoryInfoOps::reserveSDRRepositoryCommandSupported);
-    *dataLen = sizeof(GetSDRInfoResp);
-    return IPMI_CC_OK;
+
+    return ipmi::responseSuccess(sdrVersion, recordCount, freeSpace,
+                                 mostRecentAddition, mostRecentErase,
+                                 operationSupport);
 }
 
 ipmi_ret_t ipmiStorageGetSDRAllocationInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1460,19 +1454,19 @@ void registerSensorFunctions()
                          nullptr, ipmiSenGetSensorEventEnable, PRIVILEGE_USER);
 
     // <Get Sensor Event Status>
-    ipmiPrintAndRegister(NETFUN_SENSOR,
-                         static_cast<ipmi_cmd_t>(
-                             IPMINetfnSensorCmds::ipmiCmdGetSensorEventStatus),
-                         nullptr, ipmiSenGetSensorEventStatus, PRIVILEGE_USER);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_SENSOR,
+                          static_cast<ipmi::Cmd>(
+                              IPMINetfnSensorCmds::ipmiCmdGetSensorEventStatus),
+                          ipmi::Privilege::User, ipmiSenGetSensorEventStatus);
 
     // register all storage commands for both Sensor and Storage command
     // versions
 
     // <Get SDR Repository Info>
-    ipmiPrintAndRegister(
-        NETFUN_STORAGE,
-        static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdGetRepositoryInfo),
-        nullptr, ipmiStorageGetSDRRepositoryInfo, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, NETFUN_STORAGE,
+        static_cast<ipmi::Cmd>(IPMINetfnStorageCmds::ipmiCmdGetRepositoryInfo),
+        ipmi::Privilege::User, ipmiStorageGetSDRRepositoryInfo);
 
     // <Get SDR Allocation Info>
     ipmiPrintAndRegister(NETFUN_STORAGE,
