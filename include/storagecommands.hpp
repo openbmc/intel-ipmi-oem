@@ -68,19 +68,6 @@ enum class SdrRepositoryInfoOps : uint8_t
 };
 
 #pragma pack(push, 1)
-struct GetAllocInfoResp
-{
-    uint8_t allocUnitsLSB;
-    uint8_t allocUnitsMSB;
-    uint8_t allocUnitSizeLSB;
-    uint8_t allocUnitSizeMSB;
-    uint8_t allocUnitFreeLSB;
-    uint8_t allocUnitFreeMSB;
-    uint8_t allocUnitLargestFreeLSB;
-    uint8_t allocUnitLargestFreeMSB;
-    uint8_t maxRecordSize;
-};
-
 struct GetFRUAreaReq
 {
     uint8_t fruDeviceID;
