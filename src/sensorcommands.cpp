@@ -1063,65 +1063,73 @@ ipmi_ret_t ipmiStorageGetSDRRepositoryInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiStorageGetSDRAllocationInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                           ipmi_request_t request,
-                                           ipmi_response_t response,
-                                           ipmi_data_len_t dataLen,
-                                           ipmi_context_t context)
+/** @brief implements the get SDR allocation info command
+ *
+ *  @returns ipmi completion code plus response data
+ *   - allocUnitsLSB    - Number of possible allocation units, LS Byte
+ *   - allocUnitsMSB    - Number of possible allocation units, MS Bytes
+ *   - allocUnitSizeLSB - Allocation unit size in bytes.
+ *   - allocUnitSizeMSB - Allocation unit size in bytes.
+ *   - allocUnitFreeLSB - Number of free allocation units, LS Byte
+ *   - allocUnitFreeMSB - Number of free allocation units, MS Byte
+ *   - allocUnitLargestFreeLSB - Largest free block in allocation units,LS Byte
+ *   - allocUnitLargestFreeMSB - Largest free block in allocation units, MS Byte
+ *   - maxRecordSize    - Maximum record size in allocation units.
+ */
+ipmi::RspType<uint8_t, // allocUnitsLSB
+              uint8_t, // allocUnitsMSB
+              uint8_t, // allocUnitSizeLSB
+              uint8_t, // allocUnitSizeMSB
+              uint8_t, // allocUnitFreeLSB
+              uint8_t, // allocUnitFreeMSB
+              uint8_t, // allocUnitLargestFreeLSB
+              uint8_t, // allocUnitLargestFreeMSB
+              uint8_t  // maxRecordSize
+              >
+    ipmiStorageGetSDRAllocationInfo()
 {
-    if (*dataLen)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    *dataLen = 0; // default to 0 in case of an error
-    GetAllocInfoResp *resp = static_cast<GetAllocInfoResp *>(response);
-
+    constexpr uint8_t allocUnitSizeLsbMask = 0xFF;
+    constexpr uint8_t allocUnitSizeMsbMask = 8;
     // 0000h unspecified number of alloc units
-    resp->allocUnitsLSB = 0;
-    resp->allocUnitsMSB = 0;
+    uint8_t allocUnitsLSB = 0;
+    uint8_t allocUnitsMSB = 0;
 
     // max unit size is size of max record
-    resp->allocUnitSizeLSB = maxSDRTotalSize & 0xFF;
-    resp->allocUnitSizeMSB = maxSDRTotalSize >> 8;
+    uint8_t allocUnitSizeLSB = maxSDRTotalSize & allocUnitSizeLsbMask;
+    uint8_t allocUnitSizeMSB = maxSDRTotalSize >> allocUnitSizeMsbMask;
     // read only sdr, no free alloc blocks
-    resp->allocUnitFreeLSB = 0;
-    resp->allocUnitFreeMSB = 0;
-    resp->allocUnitLargestFreeLSB = 0;
-    resp->allocUnitLargestFreeMSB = 0;
+    uint8_t allocUnitFreeLSB = 0;
+    uint8_t allocUnitFreeMSB = 0;
+    uint8_t allocUnitLargestFreeLSB = 0;
+    uint8_t allocUnitLargestFreeMSB = 0;
     // only allow one block at a time
-    resp->maxRecordSize = 1;
+    uint8_t maxRecordSize = 1;
 
-    *dataLen = sizeof(GetAllocInfoResp);
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(allocUnitsLSB, allocUnitsMSB, allocUnitSizeLSB,
+                                 allocUnitSizeMSB, allocUnitFreeLSB,
+                                 allocUnitFreeMSB, allocUnitLargestFreeLSB,
+                                 allocUnitLargestFreeMSB, maxRecordSize);
 }
 
-ipmi_ret_t ipmiStorageReserveSDR(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                 ipmi_request_t request,
-                                 ipmi_response_t response,
-                                 ipmi_data_len_t dataLen,
-                                 ipmi_context_t context)
+/** @brief implements the reserve SDR command
+ *  @returns ipmi completion code plus response data
+ *   - reservationIdLsb
+ *   - reservationIdMsb
+ */
+ipmi::RspType<uint8_t, uint8_t> ipmiStorageReserveSDR()
 {
-    printCommand(+netfn, +cmd);
+    constexpr uint8_t reservationIdLsbMask = 0xFF;
+    constexpr uint8_t reservationIdMsbMask = 8;
 
-    if (*dataLen)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    *dataLen = 0; // default to 0 in case of an error
     sdrReservationID++;
     if (sdrReservationID == 0)
     {
         sdrReservationID++;
     }
-    *dataLen = 2;
-    auto resp = static_cast<uint8_t *>(response);
-    resp[0] = sdrReservationID & 0xFF;
-    resp[1] = sdrReservationID >> 8;
+    uint8_t reservationIdLsb = sdrReservationID & reservationIdLsbMask;
+    uint8_t reservationIdMsb = sdrReservationID >> reservationIdMsbMask;
 
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(reservationIdLsb, reservationIdMsb);
 }
 
 ipmi::RspType<uint16_t,            // next record ID
@@ -1466,22 +1474,22 @@ void registerSensorFunctions()
         nullptr, ipmiStorageGetSDRRepositoryInfo, PRIVILEGE_USER);
 
     // <Get SDR Allocation Info>
-    ipmiPrintAndRegister(NETFUN_STORAGE,
-                         static_cast<ipmi_cmd_t>(
-                             IPMINetfnStorageCmds::ipmiCmdGetSDRAllocationInfo),
-                         nullptr, ipmiStorageGetSDRAllocationInfo,
-                         PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, NETFUN_STORAGE,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnStorageCmds::ipmiCmdGetSDRAllocationInfo),
+        ipmi::Privilege::User, ipmiStorageGetSDRAllocationInfo);
 
     // <Reserve SDR Repo>
-    ipmiPrintAndRegister(NETFUN_SENSOR,
-                         static_cast<ipmi_cmd_t>(
-                             IPMINetfnSensorCmds::ipmiCmdReserveDeviceSDRRepo),
-                         nullptr, ipmiStorageReserveSDR, PRIVILEGE_USER);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_SENSOR,
+                          static_cast<ipmi::Cmd>(
+                              IPMINetfnSensorCmds::ipmiCmdReserveDeviceSDRRepo),
+                          ipmi::Privilege::User, ipmiStorageReserveSDR);
 
-    ipmiPrintAndRegister(
-        NETFUN_STORAGE,
-        static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdReserveSDR),
-        nullptr, ipmiStorageReserveSDR, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, NETFUN_STORAGE,
+        static_cast<ipmi::Cmd>(IPMINetfnStorageCmds::ipmiCmdReserveSDR),
+        ipmi::Privilege::User, ipmiStorageReserveSDR);
 
     // <Get Sdr>
     ipmi::registerHandler(
