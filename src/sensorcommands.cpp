@@ -1329,6 +1329,15 @@ ipmi::RspType<uint16_t,            // next record ID
     std::replace(name.begin(), name.end(), '_', ' ');
     if (name.size() > FULL_RECORD_ID_STR_MAX_LENGTH)
     {
+        // try to not truncate by replacing common words
+        constexpr std::array<std::pair<const char *, const char *>, 2>
+            replaceWords = {std::make_pair("Output", "Out"),
+                            std::make_pair("Input", "In")};
+        for (const auto &[find, replace] : replaceWords)
+        {
+            boost::replace_all(name, find, replace);
+        }
+
         name.resize(FULL_RECORD_ID_STR_MAX_LENGTH);
     }
     record.body.id_string_info = name.size();
