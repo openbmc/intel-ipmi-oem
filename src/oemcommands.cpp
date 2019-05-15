@@ -1818,6 +1818,78 @@ ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
     return ipmi::responseSuccess(prodId);
 }
 
+ipmi_ret_t ipmiOEMGetNmiSource(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                               ipmi_request_t request, ipmi_response_t response,
+                               ipmi_data_len_t dataLen, ipmi_context_t context)
+{
+    GetOEMNMISourceRes* resp = reinterpret_cast<GetOEMNMISourceRes*>(response);
+
+    if (*dataLen != 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "oem_get_NMI_source: invalid input len!");
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    phosphor::logging::log<phosphor::logging::level::DEBUG>("GET NMI Source");
+    *dataLen = 0;
+
+    uint8_t state = 0;
+
+    try
+    {
+        std::string service =
+            getService(dbus, oemNmiSourceIntf, oemNmiSourceObjPath);
+        Value variant = getDbusProperty(dbus, service, oemNmiSourceObjPath,
+                                        oemNmiSourceIntf,
+                                        oemNmiBmcSourceObjPathProp);
+        resp->BMCSource = sdbusplus::message::variant_ns::get<uint8_t>(variant);
+    }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+	*dataLen = sizeof(GetOEMNMISourceRes);
+
+    return IPMI_CC_OK;
+}
+
+ipmi_ret_t ipmiOEMSetNmiSource(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                        ipmi_request_t request,
+                                        ipmi_response_t response,
+                                        ipmi_data_len_t dataLen,
+                                        ipmi_context_t context)
+{
+    uint8_t* req = reinterpret_cast<uint8_t*>(request);
+
+    if (*dataLen != sizeof(uint8_t))
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    try
+    {
+        // keep NMI signal source
+        std::string service =
+            getService(dbus, oemNmiSourceIntf, oemNmiSourceObjPath);
+        setDbusProperty(dbus, service, oemNmiSourceObjPath,
+                        oemNmiSourceIntf, oemNmiBmcSourceObjPathProp, *req);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
+
+    *dataLen = 0;
+
+    return IPMI_CC_OK;
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -1938,6 +2010,16 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
         ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
+
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetNmiStatus),
+        NULL, ipmiOEMGetNmiSource, PRIVILEGE_USER);
+
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetNmiStatus),
+        NULL, ipmiOEMSetNmiSource, PRIVILEGE_USER);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
