@@ -23,7 +23,6 @@ externalproject_add (
 externalproject_add (sdbusplus-project PREFIX
                      ${CMAKE_BINARY_DIR}/sdbusplus-project DEPENDS Boost
                      GIT_REPOSITORY https://github.com/openbmc/sdbusplus.git
-                     GIT_TAG f0dd3b5a3c6c54b4f38844b573e3f157f8064088
                      SOURCE_DIR ${CMAKE_BINARY_DIR}/sdbusplus-src BINARY_DIR
                      ${CMAKE_BINARY_DIR}/sdbusplus-build CONFIGURE_COMMAND cd
                      ${CMAKE_BINARY_DIR}/sdbusplus-src && ./bootstrap.sh clean
