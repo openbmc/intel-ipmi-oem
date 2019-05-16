@@ -135,38 +135,44 @@ ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_RESPONSE_ERROR;
 }
 
-ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                ipmi_request_t request,
-                                ipmi_response_t response,
-                                ipmi_data_len_t dataLen, ipmi_context_t context)
+/** @brief implements the Set System GUID command
+ * @ param node1 to node6 -  Each 8-bit node size
+ * @ param clock1 to clock2 - Each 8-bit clock size
+ * @ param timeHigh1 to timeHigh2 - Each 8-bit TimeHigh Size
+ * @ param timeMid1 to timeMid2 - Each 8-bit TimeMid Size
+ * @ param timeLow1 to timeLow4 - Each 8-bit TimeLow Size
+ * @ param safeBufferLength - Buffer Length
+ * @ param buf - buffer to copy Data in snprintf
+ * @ param guid - String Value
+ * @ param objpath - Object Path
+ *
+ *  @returns IPMI completion code
+ */
+
+ipmi::RspType<> ipmiOEMSetSystemGUID(
+    uint8_t node1, uint8_t node2, uint8_t node3, uint8_t node4, uint8_t node5,
+    uint8_t node6, uint8_t clock1, uint8_t clock2, uint8_t timeHigh1,
+    uint8_t timeHigh2, uint8_t timeMid1, uint8_t timeMid2, uint8_t timeLow1,
+    uint8_t timeLow2, uint8_t timeLow3, uint8_t timeLow4)
 {
     static constexpr size_t safeBufferLength = 50;
     char buf[safeBufferLength] = {0};
-    GUIDData* Data = reinterpret_cast<GUIDData*>(request);
-
-    if (*dataLen != sizeof(GUIDData)) // 16bytes
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *dataLen = 0;
-
     snprintf(
         buf, safeBufferLength,
         "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-        Data->timeLow4, Data->timeLow3, Data->timeLow2, Data->timeLow1,
-        Data->timeMid2, Data->timeMid1, Data->timeHigh2, Data->timeHigh1,
-        Data->clock2, Data->clock1, Data->node6, Data->node5, Data->node4,
-        Data->node3, Data->node2, Data->node1);
+        timeLow4, timeLow3, timeLow2, timeLow1, timeMid2, timeMid1, timeHigh2,
+        timeHigh1, clock2, clock1, node6, node5, node4, node3, node2, node1);
+
     // UUID is in RFC4122 format. Ex: 61a39523-78f2-11e5-9862-e6402cfc3223
+
     std::string guid = buf;
 
     std::string objpath = "/xyz/openbmc_project/control/host0/systemGUID";
     std::string intf = "xyz.openbmc_project.Common.UUID";
     std::string service = getService(dbus, intf, objpath);
     setDbusProperty(dbus, service, objpath, intf, "UUID", guid);
-    return IPMI_CC_OK;
+
+    return ipmi::responseSuccess();
 }
 
 ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1834,11 +1840,12 @@ static void registerOEMFunctions(void)
             IPMINetfnIntelOEMGeneralCmd::cmdGetChassisIdentifier),
         NULL, ipmiOEMGetChassisIdentifier,
         PRIVILEGE_USER); // get chassis identifier
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetSystemGUID),
-        NULL, ipmiOEMSetSystemGUID,
-        PRIVILEGE_ADMIN); // set system guid
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetSystemGUID),
+        ipmi::Privilege::Admin, ipmiOEMSetSystemGUID); // set system guid
+
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetBIOSID),
