@@ -399,38 +399,34 @@ ipmi_ret_t ipmiStorageWriteFRUData(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiStorageGetFRUInvAreaInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                        ipmi_request_t request,
-                                        ipmi_response_t response,
-                                        ipmi_data_len_t dataLen,
-                                        ipmi_context_t context)
+/** @brief implements the get FRU inventory area info command
+ *  @param fruDeviceId  - FRU Device ID
+ *
+ *  @returns IPMI completion code plus response data
+ *   - inventorySize - Number of possible allocation units
+ *   - accessType    - Allocation unit size in bytes.
+ */
+ipmi::RspType<uint16_t, // inventorySize
+              uint8_t>  // accessType
+    ipmiStorageGetFruInvAreaInfo(uint8_t fruDeviceId)
 {
-    if (*dataLen != 1)
+    if (fruDeviceId == 0xFF)
     {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::responseInvalidFieldRequest();
     }
-    *dataLen = 0; // default to 0 in case of an error
 
-    uint8_t reqDev = *(static_cast<uint8_t*>(request));
-    if (reqDev == 0xFF)
-    {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
-    }
-    ipmi_ret_t status = replaceCacheFru(reqDev);
+    ipmi::Cc status = replaceCacheFru(fruDeviceId);
 
     if (status != IPMI_CC_OK)
     {
-        return status;
+        return ipmi::responseSuccess();
     }
 
-    GetFRUAreaResp* respPtr = static_cast<GetFRUAreaResp*>(response);
-    respPtr->inventorySizeLSB = fruCache.size() & 0xFF;
-    respPtr->inventorySizeMSB = fruCache.size() >> 8;
-    respPtr->accessType = static_cast<uint8_t>(GetFRUAreaAccessType::byte);
+    uint16_t inventorySize = static_cast<uint16_t>(fruCache.size());
+    constexpr uint8_t accessType =
+        static_cast<uint8_t>(GetFRUAreaAccessType::byte);
 
-    *dataLen = sizeof(GetFRUAreaResp);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(inventorySize, accessType);
 }
 
 ipmi_ret_t getFruSdrCount(size_t& count)
@@ -1048,11 +1044,10 @@ ipmi::RspType<> ipmiStorageSetSELTime(uint32_t selTime)
 void registerStorageFunctions()
 {
     // <Get FRU Inventory Area Info>
-    ipmiPrintAndRegister(
-        NETFUN_STORAGE,
-        static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdGetFRUInvAreaInfo),
-        NULL, ipmiStorageGetFRUInvAreaInfo, PRIVILEGE_OPERATOR);
-
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnStorage,
+                          ipmi::storage::cmdGetFruInventoryAreaInfo,
+                          ipmi::Privilege::Operator,
+                          ipmiStorageGetFruInvAreaInfo);
     // <READ FRU Data>
     ipmiPrintAndRegister(
         NETFUN_STORAGE,
