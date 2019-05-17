@@ -149,7 +149,6 @@ enum class SensorUnits : uint8_t
 
 enum class IPMINetfnStorageCmds : ipmi_cmd_t
 {
-    ipmiCmdGetFRUInvAreaInfo = 0x10,
     ipmiCmdReadFRUData = 0x11,
     ipmiCmdWriteFRUData = 0x12,
     ipmiCmdGetRepositoryInfo = 0x20,
