@@ -68,19 +68,19 @@ enum class SdrRepositoryInfoOps : uint8_t
 };
 
 #pragma pack(push, 1)
-struct GetFRUAreaReq
+struct GetAllocInfoResp
 {
-    uint8_t fruDeviceID;
-    uint16_t fruInventoryOffset;
-    uint8_t countToRead;
+    uint8_t allocUnitsLSB;
+    uint8_t allocUnitsMSB;
+    uint8_t allocUnitSizeLSB;
+    uint8_t allocUnitSizeMSB;
+    uint8_t allocUnitFreeLSB;
+    uint8_t allocUnitFreeMSB;
+    uint8_t allocUnitLargestFreeLSB;
+    uint8_t allocUnitLargestFreeMSB;
+    uint8_t maxRecordSize;
 };
 
-struct WriteFRUDataReq
-{
-    uint8_t fruDeviceID;
-    uint16_t fruInventoryOffset;
-    uint8_t data[];
-};
 #pragma pack(pop)
 
 enum class GetFRUAreaAccessType : uint8_t
@@ -101,8 +101,6 @@ enum class SensorUnits : uint8_t
 
 enum class IPMINetfnStorageCmds : ipmi_cmd_t
 {
-    ipmiCmdReadFRUData = 0x11,
-    ipmiCmdWriteFRUData = 0x12,
     ipmiCmdGetRepositoryInfo = 0x20,
     ipmiCmdGetSDRAllocationInfo = 0x21,
     ipmiCmdReserveSDR = 0x22,
