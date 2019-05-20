@@ -81,19 +81,6 @@ struct GetAllocInfoResp
     uint8_t maxRecordSize;
 };
 
-struct GetFRUAreaReq
-{
-    uint8_t fruDeviceID;
-    uint16_t fruInventoryOffset;
-    uint8_t countToRead;
-};
-
-struct WriteFRUDataReq
-{
-    uint8_t fruDeviceID;
-    uint16_t fruInventoryOffset;
-    uint8_t data[];
-};
 #pragma pack(pop)
 
 enum class GetFRUAreaAccessType : uint8_t
@@ -114,8 +101,6 @@ enum class SensorUnits : uint8_t
 
 enum class IPMINetfnStorageCmds : ipmi_cmd_t
 {
-    ipmiCmdReadFRUData = 0x11,
-    ipmiCmdWriteFRUData = 0x12,
     ipmiCmdGetRepositoryInfo = 0x20,
     ipmiCmdGetSDRAllocationInfo = 0x21,
     ipmiCmdReserveSDR = 0x22,
