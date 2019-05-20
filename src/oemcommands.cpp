@@ -135,44 +135,38 @@ ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_RESPONSE_ERROR;
 }
 
-/** @brief implements the Set System GUID command
- * @ param node1 to node6 -  Each 8-bit node size
- * @ param clock1 to clock2 - Each 8-bit clock size
- * @ param timeHigh1 to timeHigh2 - Each 8-bit TimeHigh Size
- * @ param timeMid1 to timeMid2 - Each 8-bit TimeMid Size
- * @ param timeLow1 to timeLow4 - Each 8-bit TimeLow Size
- * @ param safeBufferLength - Buffer Length
- * @ param buf - buffer to copy Data in snprintf
- * @ param guid - String Value
- * @ param objpath - Object Path
- *
- *  @returns IPMI completion code
- */
-
-ipmi::RspType<> ipmiOEMSetSystemGUID(
-    uint8_t node1, uint8_t node2, uint8_t node3, uint8_t node4, uint8_t node5,
-    uint8_t node6, uint8_t clock1, uint8_t clock2, uint8_t timeHigh1,
-    uint8_t timeHigh2, uint8_t timeMid1, uint8_t timeMid2, uint8_t timeLow1,
-    uint8_t timeLow2, uint8_t timeLow3, uint8_t timeLow4)
+ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                                ipmi_request_t request,
+                                ipmi_response_t response,
+                                ipmi_data_len_t dataLen, ipmi_context_t context)
 {
     static constexpr size_t safeBufferLength = 50;
     char buf[safeBufferLength] = {0};
+    GUIDData* Data = reinterpret_cast<GUIDData*>(request);
+
+    if (*dataLen != sizeof(GUIDData)) // 16bytes
+    {
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    *dataLen = 0;
+
     snprintf(
         buf, safeBufferLength,
         "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-        timeLow4, timeLow3, timeLow2, timeLow1, timeMid2, timeMid1, timeHigh2,
-        timeHigh1, clock2, clock1, node6, node5, node4, node3, node2, node1);
-
+        Data->timeLow4, Data->timeLow3, Data->timeLow2, Data->timeLow1,
+        Data->timeMid2, Data->timeMid1, Data->timeHigh2, Data->timeHigh1,
+        Data->clock2, Data->clock1, Data->node6, Data->node5, Data->node4,
+        Data->node3, Data->node2, Data->node1);
     // UUID is in RFC4122 format. Ex: 61a39523-78f2-11e5-9862-e6402cfc3223
-
     std::string guid = buf;
 
     std::string objpath = "/xyz/openbmc_project/control/host0/systemGUID";
     std::string intf = "xyz.openbmc_project.Common.UUID";
     std::string service = getService(dbus, intf, objpath);
     setDbusProperty(dbus, service, objpath, intf, "UUID", guid);
-
-    return ipmi::responseSuccess();
+    return IPMI_CC_OK;
 }
 
 ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -289,35 +283,21 @@ ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     *res = 0; // Byte1=Count of SlotPosition/FruID records.
     return IPMI_CC_OK;
 }
-
-ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                       ipmi_request_t request,
-                                       ipmi_response_t response,
-                                       ipmi_data_len_t dataLen,
-                                       ipmi_context_t context)
+ipmi::RspType<uint8_t ,uint8_t> ipmiOEMGetPowerRestoreDelay()
 {
-    GetPowerRestoreDelayRes* resp =
-        reinterpret_cast<GetPowerRestoreDelayRes*>(response);
 
-    if (*dataLen != 0)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    std::string service =
+        uint8_t byteMSB;
+        uint8_t byteLSB;
+     std::string service =
         getService(dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
     Value variant =
         getDbusProperty(dbus, service, powerRestoreDelayObjPath,
                         powerRestoreDelayIntf, powerRestoreDelayProp);
 
     uint16_t delay = sdbusplus::message::variant_ns::get<uint16_t>(variant);
-    resp->byteLSB = delay;
-    resp->byteMSB = delay >> 8;
-
-    *dataLen = sizeof(GetPowerRestoreDelayRes);
-
-    return IPMI_CC_OK;
+    byteLSB = delay;
+    byteMSB = delay >> 8;
+   return ipmi::responseSuccess(byteMSB,byteLSB);
 }
 
 static uint8_t bcdToDec(uint8_t val)
@@ -417,30 +397,16 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
     return ipmi::responseSuccess();
 }
 
-ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                       ipmi_request_t request,
-                                       ipmi_response_t response,
-                                       ipmi_data_len_t dataLen,
-                                       ipmi_context_t context)
+ipmi::RspType<> ipmiOEMSetPowerRestoreDelay(uint8_t byteMSB , uint8_t byteLSB)
 {
-    SetPowerRestoreDelayReq* data =
-        reinterpret_cast<SetPowerRestoreDelayReq*>(request);
     uint16_t delay = 0;
-
-    if (*dataLen != sizeof(SetPowerRestoreDelayReq))
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    delay = data->byteMSB;
-    delay = (delay << 8) | data->byteLSB;
+    delay = byteMSB;
+    delay = (delay << 8) | byteLSB;
     std::string service =
         getService(dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
     setDbusProperty(dbus, service, powerRestoreDelayObjPath,
                     powerRestoreDelayIntf, powerRestoreDelayProp, delay);
-    *dataLen = 0;
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess();
 }
 
 ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -793,53 +759,6 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
     }
 
     return ipmi::response(ipmi::ccCommandNotAvailable);
-}
-
-/** @brief implementes setting password for special user
- *  @param[in] specialUserIndex
- *  @param[in] userPassword - new password in 20 bytes
- *  @returns ipmi completion code.
- */
-ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
-                                              uint8_t specialUserIndex,
-                                              std::vector<uint8_t> userPassword)
-{
-    ChannelInfo chInfo;
-    try
-    {
-        getChannelInfo(ctx->channel, chInfo);
-    }
-    catch (sdbusplus::exception_t& e)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMSetSpecialUserPassword: Failed to get Channel Info",
-            phosphor::logging::entry("MSG: %s", e.description()));
-        return ipmi::responseUnspecifiedError();
-    }
-    if (chInfo.mediumType !=
-        static_cast<uint8_t>(EChannelMediumType::systemInterface))
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMSetSpecialUserPassword: Error - supported only in KCS "
-            "interface");
-        return ipmi::responseCommandNotAvailable();
-    }
-    if (specialUserIndex != 0)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMSetSpecialUserPassword: Invalid user account");
-        return ipmi::responseParmOutOfRange();
-    }
-    constexpr uint8_t minPasswordSizeRequired = 6;
-    if (userPassword.size() < minPasswordSizeRequired ||
-        userPassword.size() > ipmi::maxIpmi20PasswordSize)
-    {
-        return ipmi::responseReqDataLenInvalid();
-    }
-    std::string passwd;
-    passwd.assign(reinterpret_cast<const char*>(userPassword.data()),
-                  userPassword.size());
-    return ipmi::response(ipmiSetSpecialUserPassword("root", passwd));
 }
 
 namespace ledAction
@@ -1255,18 +1174,8 @@ static boost::container::flat_map<std::string, PropertyMap> getPidConfigs()
         {
             continue; // should be impossible
         }
-
-        try
-        {
-            ret.emplace(path, getAllDbusProperties(dbus, objects[0].first, path,
-                                                   pidConfigurationIface));
-        }
-        catch (sdbusplus::exception_t& e)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "getPidConfigs: can't get DbusProperties!",
-                phosphor::logging::entry("ERR=%s", e.what()));
-        }
+        ret.emplace(path, getAllDbusProperties(dbus, objects[0].first, path,
+                                               pidConfigurationIface));
     }
     return ret;
 }
@@ -1608,222 +1517,6 @@ ipmi::RspType<
     }
 }
 
-ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
-                                          uint8_t faultState,
-                                          uint8_t faultGroup,
-                                          std::array<uint8_t, 8>& ledStateData)
-{
-    static constexpr const char* objpath = "/xyz/openbmc_project/EntityManager";
-    static constexpr const char* intf = "xyz.openbmc_project.EntityManager";
-    constexpr auto maxFaultType = static_cast<size_t>(RemoteFaultType::max);
-    static const std::array<std::string, maxFaultType> faultNames = {
-        "faultFan",       "faultTemp",     "faultPower",
-        "faultDriveSlot", "faultSoftware", "faultMemory"};
-    static constexpr const char* sysGpioPath = "/sys/class/gpio/gpio";
-    static constexpr const char* postfixValue = "/value";
-
-    constexpr uint8_t maxFaultSource = 0x4;
-    constexpr uint8_t skipLEDs = 0xFF;
-    constexpr uint8_t pinSize = 64;
-    constexpr uint8_t groupSize = 16;
-
-    std::vector<uint16_t> ledFaultPins(pinSize, 0xFFFF);
-    uint64_t resFIndex = 0;
-    std::string resFType;
-    std::string service;
-    ObjectValueTree valueTree;
-
-    // Validate the source, fault type
-    if ((sourceId >= maxFaultSource) ||
-        (faultType >= static_cast<int8_t>(RemoteFaultType::max)) ||
-        (faultState >= static_cast<int8_t>(RemoteFaultState::maxFaultState)) ||
-        (faultGroup >= static_cast<int8_t>(DimmFaultType::maxFaultGroup)))
-    {
-        return ipmi::responseParmOutOfRange();
-    }
-
-    try
-    {
-        service = getService(dbus, intf, objpath);
-        valueTree = getManagedObjects(dbus, service, "/");
-    }
-    catch (const std::exception& e)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "No object implements interface",
-            phosphor::logging::entry("SERVICE=%s", service.c_str()),
-            phosphor::logging::entry("INTF=%s", intf));
-        return ipmi::responseResponseError();
-    }
-
-    if (valueTree.empty())
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "No object implements interface",
-            phosphor::logging::entry("INTF=%s", intf));
-        return ipmi::responseResponseError();
-    }
-
-    for (const auto& item : valueTree)
-    {
-        // find LedFault configuration
-        auto interface =
-            item.second.find("xyz.openbmc_project.Configuration.LedFault");
-        if (interface == item.second.end())
-        {
-            continue;
-        }
-
-        // find matched fault type: faultMemmory / faultFan
-        // find LedGpioPins/FaultIndex configuration
-        auto propertyFaultType = interface->second.find("FaultType");
-        auto propertyFIndex = interface->second.find("FaultIndex");
-        auto ledIndex = interface->second.find("LedGpioPins");
-
-        if (propertyFaultType == interface->second.end() ||
-            propertyFIndex == interface->second.end() ||
-            ledIndex == interface->second.end())
-        {
-            continue;
-        }
-
-        try
-        {
-            Value valIndex = propertyFIndex->second;
-            resFIndex = std::get<uint64_t>(valIndex);
-
-            Value valFType = propertyFaultType->second;
-            resFType = std::get<std::string>(valFType);
-        }
-        catch (const std::bad_variant_access& e)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-            return ipmi::responseResponseError();
-        }
-        // find the matched requested fault type: faultMemmory or faultFan
-        if (resFType != faultNames[faultType])
-        {
-            continue;
-        }
-
-        // read LedGpioPins data
-        std::vector<uint64_t> ledgpios;
-        std::variant<std::vector<uint64_t>> message;
-
-        auto method = dbus.new_method_call(
-            service.c_str(), (std::string(item.first)).c_str(),
-            "org.freedesktop.DBus.Properties", "Get");
-
-        method.append("xyz.openbmc_project.Configuration.LedFault",
-                      "LedGpioPins");
-
-        try
-        {
-            auto reply = dbus.call(method);
-            reply.read(message);
-            ledgpios = std::get<std::vector<uint64_t>>(message);
-        }
-        catch (std::exception& e)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-            return ipmi::responseResponseError();
-        }
-
-        // Check the size to be sure it will never overflow on groupSize
-        if (ledgpios.size() > groupSize)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "Fault gpio Pins out of range!");
-            return ipmi::responseParmOutOfRange();
-        }
-        // Store data, according to command data bit index order
-        for (int i = 0; i < ledgpios.size(); i++)
-        {
-            ledFaultPins[i + groupSize * resFIndex] = ledgpios[i];
-        }
-    }
-
-    switch (RemoteFaultType(faultType))
-    {
-        case (RemoteFaultType::fan):
-        case (RemoteFaultType::memory):
-        {
-            if (faultGroup == skipLEDs)
-            {
-                return ipmi::responseSuccess();
-            }
-
-            uint64_t ledState = 0;
-            // calculate led state bit filed count, each byte has 8bits
-            // the maximum bits will be 8 * 8 bits
-            constexpr uint8_t size = sizeof(ledStateData) * 8;
-            for (int i = 0; i < sizeof(ledStateData); i++)
-            {
-                ledState = (uint64_t)(ledState << 8);
-                ledState = (uint64_t)(ledState | (uint64_t)ledStateData[i]);
-            }
-
-            std::bitset<size> ledStateBits(ledState);
-            std::string gpioValue;
-            for (int i = 0; i < size; i++)
-            { // skip invalid value
-                if (ledFaultPins[i] == 0xFFFF)
-                {
-                    continue;
-                }
-
-                std::string device = sysGpioPath +
-                                     std::to_string(ledFaultPins[i]) +
-                                     postfixValue;
-                std::fstream gpioFile;
-
-                gpioFile.open(device, std::ios::out);
-
-                if (!gpioFile.good())
-                {
-                    phosphor::logging::log<phosphor::logging::level::ERR>(
-                        "Not Find Led Gpio Device!",
-                        phosphor::logging::entry("DEVICE=%s", device.c_str()));
-                    return ipmi::responseResponseError();
-                }
-                gpioFile << std::to_string(
-                    static_cast<uint8_t>(ledStateBits[i]));
-                gpioFile.close();
-            }
-            break;
-        }
-        default:
-        {
-            // now only support two fault types
-            return ipmi::responseParmOutOfRange();
-        }
-    }
-
-    return ipmi::responseSuccess();
-}
-
-ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
-{
-    uint8_t prodId = 0;
-    try
-    {
-        const DbusObjectInfo& object = getDbusObject(
-            dbus, "xyz.openbmc_project.Inventory.Item.Board",
-            "/xyz/openbmc_project/inventory/system/board/", "Baseboard");
-        const Value& propValue = getDbusProperty(
-            dbus, object.second, object.first,
-            "xyz.openbmc_project.Inventory.Item.Board", "ProductId");
-        prodId = static_cast<uint8_t>(std::get<uint64_t>(propValue));
-    }
-    catch (std::exception& e)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMReadBoardProductId: Product ID read failed!",
-            phosphor::logging::entry("ERR=%s", e.what()));
-    }
-    return ipmi::responseSuccess(prodId);
-}
-
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -1840,12 +1533,11 @@ static void registerOEMFunctions(void)
             IPMINetfnIntelOEMGeneralCmd::cmdGetChassisIdentifier),
         NULL, ipmiOEMGetChassisIdentifier,
         PRIVILEGE_USER); // get chassis identifier
-
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetSystemGUID),
-        ipmi::Privilege::Admin, ipmiOEMSetSystemGUID); // set system guid
-
+    ipmiPrintAndRegister(
+        netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetSystemGUID),
+        NULL, ipmiOEMSetSystemGUID,
+        PRIVILEGE_ADMIN); // set system guid
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetBIOSID),
@@ -1865,30 +1557,21 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSendEmbeddedFWUpdStatus),
         ipmi::Privilege::Operator, ipmiOEMSendEmbeddedFwUpdStatus);
-
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetPowerRestoreDelay),
-        NULL, ipmiOEMSetPowerRestoreDelay, PRIVILEGE_OPERATOR);
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
+        ipmi::Privilege::Operator,ipmiOEMSetPowerRestoreDelay);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetPowerRestoreDelay),
-        NULL, ipmiOEMGetPowerRestoreDelay, PRIVILEGE_USER);
-
+        ipmi::Privilege::User,ipmiOEMGetPowerRestoreDelay);
     ipmi::registerHandler(
         ipmi::prioOpenBmcBase, ipmi::netFnOemOne,
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetOEMUser2Activation),
         ipmi::Privilege::Callback, ipmiOEMSetUser2Activation);
-
-    ipmi::registerHandler(
-        ipmi::prioOpenBmcBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetSpecialUserPassword),
-        ipmi::Privilege::Callback, ipmiOEMSetSpecialUserPassword);
-
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(
@@ -1940,12 +1623,6 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetFscParameter),
         ipmi::Privilege::User, ipmiOEMGetFscParameter);
 
-    ipmi::registerHandler(
-        ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
-        ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
-
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetLEDStatus),
@@ -1955,11 +1632,6 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMPlatformCmd::cmdCfgHostSerialPortSpeed),
         NULL, ipmiOEMCfgHostSerialPortSpeed, PRIVILEGE_ADMIN);
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetFaultIndication),
-        ipmi::Privilege::Operator, ipmiOEMSetFaultIndication);
     return;
 }
 
