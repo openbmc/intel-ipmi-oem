@@ -81,13 +81,6 @@ struct GetAllocInfoResp
     uint8_t maxRecordSize;
 };
 
-struct GetFRUAreaReq
-{
-    uint8_t fruDeviceID;
-    uint16_t fruInventoryOffset;
-    uint8_t countToRead;
-};
-
 struct GetFRUAreaResp
 {
     uint8_t inventorySizeLSB;
@@ -95,11 +88,32 @@ struct GetFRUAreaResp
     uint8_t accessType;
 };
 
-struct WriteFRUDataReq
+struct AddSELRequest
 {
-    uint8_t fruDeviceID;
-    uint16_t fruInventoryOffset;
-    uint8_t data[];
+    uint16_t recordID;
+    uint8_t recordType;
+    union
+    {
+        struct
+        {
+            uint32_t timestamp;
+            uint16_t generatorID;
+            uint8_t eventMsgRevision;
+            uint8_t sensorType;
+            uint8_t sensorNum;
+            uint8_t eventType;
+            uint8_t eventData[intel_oem::ipmi::sel::systemEventSize];
+        } system;
+        struct
+        {
+            uint32_t timestamp;
+            uint8_t eventData[intel_oem::ipmi::sel::oemTsEventSize];
+        } oemTs;
+        struct
+        {
+            uint8_t eventData[intel_oem::ipmi::sel::oemEventSize];
+        } oem;
+    } record;
 };
 #pragma pack(pop)
 
@@ -122,8 +136,6 @@ enum class SensorUnits : uint8_t
 enum class IPMINetfnStorageCmds : ipmi_cmd_t
 {
     ipmiCmdGetFRUInvAreaInfo = 0x10,
-    ipmiCmdReadFRUData = 0x11,
-    ipmiCmdWriteFRUData = 0x12,
     ipmiCmdGetRepositoryInfo = 0x20,
     ipmiCmdGetSDRAllocationInfo = 0x21,
     ipmiCmdReserveSDR = 0x22,
