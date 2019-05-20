@@ -97,6 +97,7 @@ add_library (
 )
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
+target_link_libraries (zinteloemcmds stdc++fs)
 target_link_libraries (zinteloemcmds ipmid)
 target_link_libraries (zinteloemcmds sdbusplus)
 target_link_libraries (zinteloemcmds phosphor_logging)

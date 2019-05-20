@@ -25,6 +25,7 @@
 #include <boost/process/io.hpp>
 #include <com/intel/Control/OCOTShutdownPolicy/server.hpp>
 #include <commandutils.hpp>
+#include <filesystem>
 #include <iostream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
@@ -39,6 +40,13 @@
 namespace ipmi
 {
 static void registerOEMFunctions() __attribute__((constructor));
+
+namespace netfn::intel
+{
+constexpr NetFn oemGeneral = netFnOemOne;
+constexpr Cmd cmdRestoreConfiguration = 0x02;
+} // namespace netfn::intel
+
 sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection()); // from ipmid/api.h
 static constexpr size_t maxFRUStringLength = 0x3F;
 
@@ -1867,6 +1875,53 @@ ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
     return ipmi::responseSuccess(prodId);
 }
 
+ipmi::RspType<uint8_t /* restore status */>
+    ipmiRestoreConfiguration(const std::array<uint8_t, 3>& clr, uint8_t cmd)
+{
+    static constexpr std::array<uint8_t, 3> expClr = {'C', 'L', 'R'};
+
+    if (clr != expClr)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+    constexpr uint8_t cmdStatus = 0;
+    constexpr uint8_t cmdDefaultRestore = 0xaa;
+    constexpr uint8_t cmdFullRestore = 0xbb;
+    constexpr uint8_t cmdFormat = 0xcc;
+
+    constexpr const char* restoreOpFname = "/tmp/.rwfs/.restore_op";
+
+    switch (cmd)
+    {
+        case cmdStatus:
+            break;
+        case cmdDefaultRestore:
+        case cmdFullRestore:
+        case cmdFormat:
+        {
+            // write file to rwfs root
+            int value = (cmd - 1) & 0x03; // map aa, bb, cc => 1, 2, 3
+            std::ofstream restoreFile(restoreOpFname);
+            if (!restoreFile)
+            {
+                return ipmi::responseUnspecifiedError();
+            }
+            restoreFile << value << "\n";
+            break;
+        }
+        default:
+            return ipmi::responseInvalidFieldRequest();
+    }
+
+    constexpr uint8_t restorePending = 0;
+    constexpr uint8_t restoreComplete = 1;
+
+    uint8_t restoreStatus = std::filesystem::exists(restoreOpFname)
+                                ? restorePending
+                                : restoreComplete;
+    return ipmi::responseSuccess(restoreStatus);
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -2002,7 +2057,10 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetFaultIndication),
         ipmi::Privilege::Operator, ipmiOEMSetFaultIndication);
-    return;
+
+    registerHandler(prioOemBase, netfn::intel::oemGeneral,
+                    netfn::intel::cmdRestoreConfiguration, Privilege::Admin,
+                    ipmiRestoreConfiguration);
 }
 
 } // namespace ipmi
