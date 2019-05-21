@@ -531,25 +531,10 @@ ipmi_ret_t ipmiOEMSetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                    ipmi_request_t request,
-                                    ipmi_response_t response,
-                                    ipmi_data_len_t dataLen,
-                                    ipmi_context_t context)
+ipmi::RspType<uint8_t, uint8_t> ipmiOEMGetShutdownPolicy()
 {
-    GetOEMShutdownPolicyRes* resp =
-        reinterpret_cast<GetOEMShutdownPolicyRes*>(response);
-
-    if (*dataLen != 0)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "oem_get_shutdown_policy: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *dataLen = 0;
-
+    uint8_t policy;
+    uint8_t policySupport;
     try
     {
         std::string service =
@@ -557,19 +542,17 @@ ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         Value variant = getDbusProperty(dbus, service, oemShutdownPolicyObjPath,
                                         oemShutdownPolicyIntf,
                                         oemShutdownPolicyObjPathProp);
-        resp->policy = sdbusplus::message::variant_ns::get<uint8_t>(variant);
+        policy = sdbusplus::message::variant_ns::get<uint8_t>(variant);
         // TODO needs to check if it is multi-node products,
         // policy is only supported on node 3/4
-        resp->policySupport = shutdownPolicySupported;
+        policySupport = shutdownPolicySupported;
     }
     catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.description());
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
-
-    *dataLen = sizeof(GetOEMShutdownPolicyRes);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(policy, policySupport);
 }
 
 ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1907,11 +1890,11 @@ static void registerOEMFunctions(void)
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdSetShutdownPolicy),
                          NULL, ipmiOEMSetShutdownPolicy, PRIVILEGE_ADMIN);
-    ipmiPrintAndRegister(netfnIntcOEMGeneral,
-                         static_cast<ipmi_cmd_t>(
-                             IPMINetfnIntelOEMGeneralCmd::cmdGetShutdownPolicy),
-                         NULL, ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
-
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetShutdownPolicy),
+        ipmi::Privilege::Admin, ipmiOEMGetShutdownPolicy);
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetFanConfig),
