@@ -284,21 +284,10 @@ ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                       ipmi_request_t request,
-                                       ipmi_response_t response,
-                                       ipmi_data_len_t dataLen,
-                                       ipmi_context_t context)
+ipmi::RspType<uint8_t, uint8_t> ipmiOEMGetPowerRestoreDelay()
 {
-    GetPowerRestoreDelayRes* resp =
-        reinterpret_cast<GetPowerRestoreDelayRes*>(response);
-
-    if (*dataLen != 0)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
+    uint8_t byteMSB;
+    uint8_t byteLSB;
     std::string service =
         getService(dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
     Value variant =
@@ -306,12 +295,9 @@ ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                         powerRestoreDelayIntf, powerRestoreDelayProp);
 
     uint16_t delay = sdbusplus::message::variant_ns::get<uint16_t>(variant);
-    resp->byteLSB = delay;
-    resp->byteMSB = delay >> 8;
-
-    *dataLen = sizeof(GetPowerRestoreDelayRes);
-
-    return IPMI_CC_OK;
+    byteLSB = delay;
+    byteMSB = delay >> 8;
+    return ipmi::responseSuccess(byteMSB, byteLSB);
 }
 
 static uint8_t bcdToDec(uint8_t val)
@@ -422,30 +408,16 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
     return ipmi::responseSuccess();
 }
 
-ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                       ipmi_request_t request,
-                                       ipmi_response_t response,
-                                       ipmi_data_len_t dataLen,
-                                       ipmi_context_t context)
+ipmi::RspType<> ipmiOEMSetPowerRestoreDelay(uint8_t byteMSB, uint8_t byteLSB)
 {
-    SetPowerRestoreDelayReq* data =
-        reinterpret_cast<SetPowerRestoreDelayReq*>(request);
     uint16_t delay = 0;
-
-    if (*dataLen != sizeof(SetPowerRestoreDelayReq))
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    delay = data->byteMSB;
-    delay = (delay << 8) | data->byteLSB;
+    delay = byteMSB;
+    delay = (delay << 8) | byteLSB;
     std::string service =
         getService(dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
     setDbusProperty(dbus, service, powerRestoreDelayObjPath,
                     powerRestoreDelayIntf, powerRestoreDelayProp, delay);
-    *dataLen = 0;
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess();
 }
 
 ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1870,17 +1842,16 @@ static void registerOEMFunctions(void)
             IPMINetfnIntelOEMGeneralCmd::cmdSendEmbeddedFWUpdStatus),
         ipmi::Privilege::Operator, ipmiOEMSendEmbeddedFwUpdStatus);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetPowerRestoreDelay),
-        NULL, ipmiOEMSetPowerRestoreDelay, PRIVILEGE_OPERATOR);
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
+        ipmi::Privilege::Operator, ipmiOEMSetPowerRestoreDelay);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetPowerRestoreDelay),
-        NULL, ipmiOEMGetPowerRestoreDelay, PRIVILEGE_USER);
-
+        ipmi::Privilege::User, ipmiOEMGetPowerRestoreDelay);
     ipmi::registerHandler(
         ipmi::prioOpenBmcBase, ipmi::netFnOemOne,
         static_cast<ipmi::Cmd>(
