@@ -34,6 +34,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <xyz/openbmc_project/Control/PowerSupplyRedundancy/server.hpp>
 
 namespace ipmi
 {
@@ -1613,6 +1614,441 @@ ipmi::RspType<
     }
 }
 
+int setCRConfig(const std::string& property,
+                const std::variant<bool, uint8_t, uint32_t,
+                                   std::vector<uint8_t>, std::string>& value,
+                std::chrono::microseconds timeout = ipmi::IPMI_DBUS_TIMEOUT)
+{
+    auto method = dbus.new_method_call(
+        "xyz.openbmc_project.Settings",
+        "/xyz/openbmc_project/control/power_supply_redundancy",
+        "org.freedesktop.DBus.Properties", "Set");
+    method.append("xyz.openbmc_project.Control.PowerSupplyRedundancy", property,
+                  value);
+    try
+    {
+        dbus.call(method, timeout.count());
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to set dbus property to cold redundancy");
+        return -1;
+    }
+    return 0;
+}
+
+int getCRConfig(const std::string& property,
+                std::variant<bool, uint8_t, uint32_t, std::vector<uint8_t>,
+                             std::string>& value,
+                std::chrono::microseconds timeout = ipmi::IPMI_DBUS_TIMEOUT)
+{
+    auto method = dbus.new_method_call(
+        "xyz.openbmc_project.Settings",
+        "/xyz/openbmc_project/control/power_supply_redundancy",
+        "org.freedesktop.DBus.Properties", "Get");
+    method.append("xyz.openbmc_project.Control.PowerSupplyRedundancy",
+                  property);
+    try
+    {
+        auto reply = dbus.call(method, timeout.count());
+        reply.read(value);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to get dbus property to cold redundancy");
+        return -1;
+    }
+    return 0;
+}
+
+uint8_t getPSUNumber(void)
+{
+    ipmi::Value num;
+    try
+    {
+        num = ipmi::getDbusProperty(
+            dbus, "xyz.openbmc_project.PSURedundancy",
+            "/xyz/openbmc_project/control/power_supply_redundancy",
+            "xyz.openbmc_project.Control.PowerSupplyRedundancy", "PSUNumber");
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to get PSUNumber property from dbus interface");
+        return 0;
+    }
+    uint8_t* pNum = std::get_if<uint8_t>(&num);
+    if (!pNum)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Error to get PSU Number");
+        return 0;
+    }
+    return *pNum;
+}
+
+bool validateCRAlgo(std::vector<uint8_t>& conf, uint8_t num)
+{
+    std::set<uint8_t> confSet;
+    for (uint8_t i = 0; i < num; i++)
+    {
+        if (conf[i] > num)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "PSU Ranking is larger than current PSU number");
+            return false;
+        }
+        confSet.emplace(conf[i]);
+    }
+
+    if (confSet.size() != num)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "duplicate PSU Ranking");
+        return false;
+    }
+    return true;
+}
+
+enum class crParameter
+{
+    crStatus = 0,
+    crFeature = 1,
+    rotationFeature = 2,
+    rotationAlgo = 3,
+    rotationPeriod = 4,
+    numOfPSU = 5
+};
+
+static const constexpr uint32_t oneDay = 0x15180;
+static const constexpr uint32_t oneMonth = 0xf53700;
+static const constexpr uint8_t userSpecific = 0x01;
+static const constexpr uint8_t crSetCompleted = 0;
+ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(uint8_t parameter, uint8_t param1,
+                                          std::optional<uint8_t> param2,
+                                          std::optional<uint8_t> param3,
+                                          std::optional<uint8_t> param4,
+                                          std::optional<uint8_t> param5)
+{
+    switch (parameter)
+    {
+        case static_cast<uint8_t>(crParameter::crFeature):
+        {
+            // ColdRedundancy Enable can only be true or flase
+            if (param1 > 1)
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            if (setCRConfig("ColdRedundancyEnabled", static_cast<bool>(param1)))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to set ColdRedundancyEnabled property");
+                return ipmi::responseResponseError();
+            }
+            break;
+        }
+        case static_cast<uint8_t>(crParameter::rotationFeature):
+        {
+            // Rotation Enable can only be true or false
+            if (param1 > 1)
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            if (setCRConfig("RotationEnabled", static_cast<bool>(param1)))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to set RotationEnabled property");
+                return ipmi::responseResponseError();
+            }
+            break;
+        }
+        case static_cast<uint8_t>(crParameter::rotationAlgo):
+        {
+            // Rotation Algorithm can only be 0-BMC Specific or 1-User Specific
+            std::string algoName;
+            switch (param1)
+            {
+                case 0:
+                    algoName = "xyz.openbmc_project.Control."
+                               "PowerSupplyRedundancy.Algo.bmcSpecific";
+                    break;
+                case 1:
+                    algoName = "xyz.openbmc_project.Control."
+                               "PowerSupplyRedundancy.Algo.userSpecific";
+                    break;
+                default:
+                    return ipmi::responseInvalidFieldRequest();
+            }
+            if (setCRConfig("RotationAlgorithm", algoName))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to set RotationAlgorithm property");
+                return ipmi::responseResponseError();
+            }
+
+            uint8_t numberOfPSU = getPSUNumber();
+            if (!numberOfPSU)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Cannot get correct PSU Number");
+                return ipmi::responseResponseError();
+            }
+            std::vector<uint8_t> rankOrder;
+            if (param2)
+            {
+                rankOrder.emplace_back(*param2);
+            }
+            if (param3)
+            {
+                rankOrder.emplace_back(*param3);
+            }
+            if (param4)
+            {
+                rankOrder.emplace_back(*param4);
+            }
+            if (param5)
+            {
+                rankOrder.emplace_back(*param5);
+            }
+
+            if (param1 == userSpecific)
+            {
+                if (rankOrder.size() < numberOfPSU)
+                {
+                    return ipmi::responseReqDataLenInvalid();
+                }
+
+                if (!validateCRAlgo(rankOrder, numberOfPSU))
+                {
+                    return ipmi::responseInvalidFieldRequest();
+                }
+            }
+            else
+            {
+                if (rankOrder.size() > 0)
+                {
+                    return ipmi::responseReqDataLenInvalid();
+                }
+                for (uint8_t i = 1; i <= numberOfPSU; i++)
+                {
+                    rankOrder.emplace_back(i);
+                }
+            }
+            if (setCRConfig("RotationRankOrder", rankOrder))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to set RotationRankOrder property");
+                return ipmi::responseResponseError();
+            }
+            break;
+        }
+        case static_cast<uint8_t>(crParameter::rotationPeriod):
+        {
+            // Minimum Rotation period is  One day (86400 seconds) and Max
+            // Rotation Period is 6 month (0xf53700 seconds)
+            if (!param2 || !param3 || !param4)
+            {
+                return ipmi::responseReqDataLenInvalid();
+            }
+            uint32_t period =
+                param1 + (*param2 << 8) + (*param3 << 16) + (*param4 << 24);
+            if ((period < oneDay) || (period > oneMonth))
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            if (setCRConfig("PeriodOfRotation", period))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to set PeriodOfRotation property");
+                return ipmi::responseResponseError();
+            }
+            break;
+        }
+        default:
+        {
+            return ipmi::response(ccParameterNotSupported);
+        }
+    }
+
+    // TODO Halfwidth needs to set SetInProgress
+    if (setCRConfig("ColdRedundancyStatus",
+                    std::string("xyz.openbmc_project.Control."
+                                "PowerSupplyRedundancy.Status.completed")))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to set Cold Redundancy Status");
+        return ipmi::responseResponseError();
+    }
+    return ipmi::responseSuccess(crSetCompleted);
+}
+
+ipmi::RspType<std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>,
+                           std::vector<uint8_t>>>
+    ipmiOEMGetCRConfig(uint8_t parameter)
+{
+    std::variant<bool, uint8_t, uint32_t, std::vector<uint8_t>, std::string>
+        value;
+    switch (parameter)
+    {
+        case static_cast<uint8_t>(crParameter::crStatus):
+        {
+            if (getCRConfig("ColdRedundancyStatus", value))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "failed to set ColdRedundancyStatus property");
+                return ipmi::responseResponseError();
+            }
+            std::string* pStatus = std::get_if<std::string>(&value);
+            if (!pStatus)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Error to get ColdRedundancyStatus property");
+            }
+            namespace server = sdbusplus::xyz::openbmc_project::Control::server;
+            auto status =
+                server::PowerSupplyRedundancy::convertStatusFromString(
+                    *pStatus);
+            switch (status)
+            {
+                case server::PowerSupplyRedundancy::Status::inProgress:
+                    return ipmi::responseSuccess(static_cast<uint8_t>(0));
+
+                case server::PowerSupplyRedundancy::Status::completed:
+                    return ipmi::responseSuccess(static_cast<uint8_t>(1));
+                default:
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "Error to get valid status");
+                    return ipmi::responseResponseError();
+            }
+        }
+        case static_cast<uint8_t>(crParameter::crFeature):
+        {
+            if (getCRConfig("ColdRedundancyEnabled", value))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "failed to get ColdRedundancyEnable property");
+                return ipmi::responseResponseError();
+            }
+            bool* pResponse = std::get_if<bool>(&value);
+            if (!pResponse)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Error to get ColdRedundancyEnable property");
+            }
+
+            return ipmi::responseSuccess(static_cast<uint8_t>(*pResponse));
+        }
+        case static_cast<uint8_t>(crParameter::rotationFeature):
+        {
+            if (getCRConfig("RotationEnabled", value))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "failed to get RotationEnabled property");
+                return ipmi::responseResponseError();
+            }
+            bool* pResponse = std::get_if<bool>(&value);
+            if (!pResponse)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Error to get RotationEnabled property");
+            }
+            return ipmi::responseSuccess(static_cast<uint8_t>(*pResponse));
+        }
+        case static_cast<uint8_t>(crParameter::rotationAlgo):
+        {
+            if (getCRConfig("RotationAlgorithm", value))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "failed to get RotationAlgorithm property");
+                return ipmi::responseResponseError();
+            }
+
+            std::string* pAlgo = std::get_if<std::string>(&value);
+            if (!pAlgo)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Error to get RotationAlgorithm property");
+                return ipmi::responseResponseError();
+            }
+            std::array<uint8_t, 5> response;
+            namespace server = sdbusplus::xyz::openbmc_project::Control::server;
+            auto algo =
+                server::PowerSupplyRedundancy::convertAlgoFromString(*pAlgo);
+            switch (algo)
+            {
+                case server::PowerSupplyRedundancy::Algo::bmcSpecific:
+                    response[0] = 0;
+                    break;
+                case server::PowerSupplyRedundancy::Algo::userSpecific:
+                    response[0] = 1;
+                    break;
+                default:
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "Error to get valid algo");
+                    return ipmi::responseResponseError();
+            }
+
+            if (getCRConfig("RotationRankOrder", value))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "failed to get RotationRankOrder property");
+                return ipmi::responseResponseError();
+            }
+            std::vector<uint8_t>* pResponse =
+                std::get_if<std::vector<uint8_t>>(&value);
+            if (!pResponse)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Error to get RotationRankOrder property");
+                return ipmi::responseResponseError();
+            }
+            if (pResponse->size() + 1 > response.size())
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Incorrect size of RotationAlgorithm property");
+                return ipmi::responseResponseError();
+            }
+            std::copy(pResponse->begin(), pResponse->end(),
+                      response.begin() + 1);
+            return ipmi::responseSuccess(*pResponse);
+        }
+        case static_cast<uint32_t>(crParameter::rotationPeriod):
+        {
+            if (getCRConfig("PeriodOfRotation", value))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "failed to set rotationenabled property");
+                return ipmi::responseResponseError();
+            }
+            uint32_t* pResponse = std::get_if<uint32_t>(&value);
+            if (!pResponse)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Error to get RotationAlgorithm property");
+                return ipmi::responseResponseError();
+            }
+            return ipmi::responseSuccess(*pResponse);
+        }
+        case static_cast<uint8_t>(crParameter::numOfPSU):
+        {
+            uint8_t numberOfPSU = getPSUNumber();
+            if (!numberOfPSU)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Cannot get correct PSU Number");
+                return ipmi::responseResponseError();
+            }
+            return ipmi::responseSuccess(numberOfPSU);
+        }
+        default:
+        {
+            return ipmi::response(ccParameterNotSupported);
+        }
+    }
+}
+
 ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
                                           uint8_t faultState,
                                           uint8_t faultGroup,
@@ -1964,6 +2400,16 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetFaultIndication),
         ipmi::Privilege::Operator, ipmiOEMSetFaultIndication);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetColdRedundancyConfig),
+        ipmi::Privilege::User, ipmiOEMSetCRConfig);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetColdRedundancyConfig),
+        ipmi::Privilege::User, ipmiOEMGetCRConfig);
     return;
 }
 
