@@ -19,6 +19,7 @@ add_definitions (-DBOOST_NO_RTTI)
 add_definitions (-DBOOST_NO_TYPEID)
 add_definitions (-DBOOST_ASIO_DISABLE_THREADS)
 add_definitions (-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
+add_definitions (-Wno-psabi)
 
 if (NOT YOCTO)
     configure_file (CMakeLists.txt.in 3rdparty/CMakeLists.txt)
@@ -79,9 +80,17 @@ endif ()
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+#
+# import OpenSSL (crypto)
+find_package (OpenSSL REQUIRED)
+include_directories (${OPENSSL_INCLUDE_DIR})
+
 add_library (
     zinteloemcmds SHARED src/oemcommands.cpp src/sensorcommands.cpp
     src/storagecommands.cpp src/multinodecommands.cpp src/firmware-update.cpp
+    src/smbioshandler.cpp src/smbiosmdrv2handler.cpp
+    src/manufacturingcommands.cpp src/bmccontrolservices.cpp
+    src/bridgingcommands.cpp
 )
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
@@ -91,5 +100,6 @@ target_link_libraries (zinteloemcmds phosphor_logging)
 target_link_libraries (zinteloemcmds intel_dbus)
 target_link_libraries (zinteloemcmds -luserlayer)
 target_link_libraries (zinteloemcmds -lchannellayer)
+target_link_libraries (zinteloemcmds ${OPENSSL_CRYPTO_LIBRARY})
 
 install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
