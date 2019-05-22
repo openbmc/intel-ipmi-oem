@@ -364,8 +364,8 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
     auto &valueVariant = sensorObject->second["Value"];
     double reading = variant_ns::visit(VariantToDoubleVisitor(), valueVariant);
 
-    double max;
-    double min;
+    double max = 0;
+    double min = 0;
     getSensorMaxMin(sensorMap, max, min);
 
     int16_t mValue = 0;
@@ -1263,11 +1263,11 @@ ipmi::RspType<uint16_t,            // next record ID
         min = variant_ns::visit(VariantToDoubleVisitor(), minObject->second);
     }
 
-    int16_t mValue;
-    int8_t rExp;
-    int16_t bValue;
-    int8_t bExp;
-    bool bSigned;
+    int16_t mValue = 0;
+    int8_t rExp = 0;
+    int16_t bValue = 0;
+    int8_t bExp = 0;
+    bool bSigned = false;
 
     if (!getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned))
     {
