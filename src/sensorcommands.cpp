@@ -38,7 +38,6 @@ using ManagedObjectType =
              std::map<std::string, std::map<std::string, DbusVariant>>>;
 
 using SensorMap = std::map<std::string, std::map<std::string, DbusVariant>>;
-namespace variant_ns = sdbusplus::message::variant_ns;
 
 static constexpr int sensorListUpdatePeriod = 10;
 static constexpr int sensorMapUpdatePeriod = 2;
@@ -163,11 +162,11 @@ static void getSensorMaxMin(const SensorMap &sensorMap, double &max,
 
         if (maxMap != sensorObject->second.end())
         {
-            max = variant_ns::visit(VariantToDoubleVisitor(), maxMap->second);
+            max = std::visit(VariantToDoubleVisitor(), maxMap->second);
         }
         if (minMap != sensorObject->second.end())
         {
-            min = variant_ns::visit(VariantToDoubleVisitor(), minMap->second);
+            min = std::visit(VariantToDoubleVisitor(), minMap->second);
         }
     }
     if (critical != sensorMap.end())
@@ -176,14 +175,12 @@ static void getSensorMaxMin(const SensorMap &sensorMap, double &max,
         auto upper = critical->second.find("CriticalHigh");
         if (lower != critical->second.end())
         {
-            double value =
-                variant_ns::visit(VariantToDoubleVisitor(), lower->second);
+            double value = std::visit(VariantToDoubleVisitor(), lower->second);
             min = std::min(value, min);
         }
         if (upper != critical->second.end())
         {
-            double value =
-                variant_ns::visit(VariantToDoubleVisitor(), upper->second);
+            double value = std::visit(VariantToDoubleVisitor(), upper->second);
             max = std::max(value, max);
         }
     }
@@ -194,14 +191,12 @@ static void getSensorMaxMin(const SensorMap &sensorMap, double &max,
         auto upper = warning->second.find("WarningHigh");
         if (lower != warning->second.end())
         {
-            double value =
-                variant_ns::visit(VariantToDoubleVisitor(), lower->second);
+            double value = std::visit(VariantToDoubleVisitor(), lower->second);
             min = std::min(value, min);
         }
         if (upper != warning->second.end())
         {
-            double value =
-                variant_ns::visit(VariantToDoubleVisitor(), upper->second);
+            double value = std::visit(VariantToDoubleVisitor(), upper->second);
             max = std::max(value, max);
         }
     }
@@ -346,7 +341,7 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
         return ipmi::responseResponseError();
     }
     auto &valueVariant = sensorObject->second["Value"];
-    double reading = variant_ns::visit(VariantToDoubleVisitor(), valueVariant);
+    double reading = std::visit(VariantToDoubleVisitor(), valueVariant);
 
     double max = 0;
     double min = 0;
@@ -628,15 +623,15 @@ IPMIThresholds getIPMIThresholds(const SensorMap &sensorMap)
             if (warningHigh != warningMap.end())
             {
 
-                double value = variant_ns::visit(VariantToDoubleVisitor(),
-                                                 warningHigh->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), warningHigh->second);
                 resp.warningHigh = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
             if (warningLow != warningMap.end())
             {
-                double value = variant_ns::visit(VariantToDoubleVisitor(),
-                                                 warningLow->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), warningLow->second);
                 resp.warningLow = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
@@ -650,15 +645,15 @@ IPMIThresholds getIPMIThresholds(const SensorMap &sensorMap)
 
             if (criticalHigh != criticalMap.end())
             {
-                double value = variant_ns::visit(VariantToDoubleVisitor(),
-                                                 criticalHigh->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), criticalHigh->second);
                 resp.criticalHigh = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
             if (criticalLow != criticalMap.end())
             {
-                double value = variant_ns::visit(VariantToDoubleVisitor(),
-                                                 criticalLow->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), criticalLow->second);
                 resp.criticalLow = scaleIPMIValueFromDouble(
                     value, mValue, rExp, bValue, bExp, bSigned);
             }
@@ -935,13 +930,11 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
             if (warningHigh != warningMap.end())
             {
-                warningHighAlarm = sdbusplus::message::variant_ns::get<bool>(
-                    warningHigh->second);
+                warningHighAlarm = std::get<bool>(warningHigh->second);
             }
             if (warningLow != warningMap.end())
             {
-                warningLowAlarm = sdbusplus::message::variant_ns::get<bool>(
-                    warningLow->second);
+                warningLowAlarm = std::get<bool>(warningLow->second);
             }
             if (warningHighAlarm)
             {
@@ -964,13 +957,11 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
             if (criticalHigh != criticalMap.end())
             {
-                criticalHighAlarm = sdbusplus::message::variant_ns::get<bool>(
-                    criticalHigh->second);
+                criticalHighAlarm = std::get<bool>(criticalHigh->second);
             }
             if (criticalLow != criticalMap.end())
             {
-                criticalLowAlarm = sdbusplus::message::variant_ns::get<bool>(
-                    criticalLow->second);
+                criticalLowAlarm = std::get<bool>(criticalLow->second);
             }
             if (criticalHighAlarm)
             {
@@ -1239,12 +1230,12 @@ ipmi::RspType<uint16_t,            // next record ID
     double min = -127;
     if (maxObject != sensorObject->second.end())
     {
-        max = variant_ns::visit(VariantToDoubleVisitor(), maxObject->second);
+        max = std::visit(VariantToDoubleVisitor(), maxObject->second);
     }
 
     if (minObject != sensorObject->second.end())
     {
-        min = variant_ns::visit(VariantToDoubleVisitor(), minObject->second);
+        min = std::visit(VariantToDoubleVisitor(), minObject->second);
     }
 
     int16_t mValue = 0;

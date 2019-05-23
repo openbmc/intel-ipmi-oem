@@ -88,8 +88,7 @@ int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
         try
         {
             Value variant = property->second;
-            std::string& result =
-                sdbusplus::message::variant_ns::get<std::string>(variant);
+            std::string& result = std::get<std::string>(variant);
             if (result.size() > maxFRUStringLength)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -99,7 +98,7 @@ int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
             serial = result;
             return 0;
         }
-        catch (sdbusplus::message::variant_ns::bad_variant_access& e)
+        catch (std::bad_variant_access& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
             return -1;
@@ -236,8 +235,7 @@ ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             {
                 Value variant = getDbusProperty(dbus, service, biosObjPath,
                                                 biosIntf, biosProp);
-                std::string& idString =
-                    sdbusplus::message::variant_ns::get<std::string>(variant);
+                std::string& idString = std::get<std::string>(variant);
                 if (req->offset >= idString.size())
                 {
                     return IPMI_CC_PARM_OUT_OF_RANGE;
@@ -256,7 +254,7 @@ ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 res->resDatalen = length;
                 *dataLen = res->resDatalen + 1;
             }
-            catch (sdbusplus::message::variant_ns::bad_variant_access& e)
+            catch (std::bad_variant_access& e)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
                 return IPMI_CC_UNSPECIFIED_ERROR;
@@ -314,7 +312,7 @@ ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         getDbusProperty(dbus, service, powerRestoreDelayObjPath,
                         powerRestoreDelayIntf, powerRestoreDelayProp);
 
-    uint16_t delay = sdbusplus::message::variant_ns::get<uint16_t>(variant);
+    uint16_t delay = std::get<uint16_t>(variant);
     resp->byteLSB = delay;
     resp->byteMSB = delay >> 8;
 
@@ -476,7 +474,7 @@ ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         getService(dbus, processorErrConfigIntf, processorErrConfigObjPath);
     Value variant = getDbusProperty(dbus, service, processorErrConfigObjPath,
                                     processorErrConfigIntf, "ResetCfg");
-    resp->resetCfg = sdbusplus::message::variant_ns::get<uint8_t>(variant);
+    resp->resetCfg = std::get<uint8_t>(variant);
 
     std::vector<uint8_t> caterrStatus;
     sdbusplus::message::variant<std::vector<uint8_t>> message;
@@ -491,8 +489,7 @@ ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     try
     {
         reply.read(message);
-        caterrStatus =
-            sdbusplus::message::variant_ns::get<std::vector<uint8_t>>(message);
+        caterrStatus = std::get<std::vector<uint8_t>>(message);
     }
     catch (sdbusplus::exception_t&)
     {
@@ -679,7 +676,7 @@ static bool isDHCPEnabled(uint8_t Channel)
             getDbusObject(dbus, networkIPIntf, networkRoot, ethIP);
         auto value = getDbusProperty(dbus, networkService, ethernetObj.first,
                                      networkIPIntf, "Origin");
-        if (sdbusplus::message::variant_ns::get<std::string>(value) ==
+        if (std::get<std::string>(value) ==
             "xyz.openbmc_project.Network.IP.AddressOrigin.DHCP")
         {
             return true;
@@ -715,8 +712,7 @@ static bool isDHCPIPv6Enabled(uint8_t Channel)
             getDbusObject(dbus, networkIPIntf, networkRoot, ethIP);
         auto properties = getAllDbusProperties(dbus, objectInfo.second,
                                                objectInfo.first, networkIPIntf);
-        if (sdbusplus::message::variant_ns::get<std::string>(
-                properties["Origin"]) ==
+        if (std::get<std::string>(properties["Origin"]) ==
             "xyz.openbmc_project.Network.IP.AddressOrigin.DHCP")
         {
             return true;
@@ -914,8 +910,7 @@ int8_t getLEDState(sdbusplus::bus::bus& bus, const std::string& intf,
         std::string service = getService(bus, intf, objPath);
         Value stateValue =
             getDbusProperty(bus, service, objPath, intf, "State");
-        std::string strState =
-            sdbusplus::message::variant_ns::get<std::string>(stateValue);
+        std::string strState = std::get<std::string>(stateValue);
         state = ledAction::actionDbusToIpmi.at(
             sdbusplus::xyz::openbmc_project::Led::server::Physical::
                 convertActionFromString(strState));

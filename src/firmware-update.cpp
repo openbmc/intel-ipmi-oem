@@ -165,8 +165,7 @@ class fw_update_status_cache
             auto value = t.second;
             if (key == "state")
             {
-                auto state =
-                    sdbusplus::message::variant_ns::get<std::string>(value);
+                auto state = std::get<std::string>(value);
                 if (DEBUG)
                     std::cerr << ", state=" << state;
                 if (state == "INIT")
@@ -193,19 +192,19 @@ class fw_update_status_cache
             }
             else if (key == "percent")
             {
-                _percent = sdbusplus::message::variant_ns::get<int32_t>(value);
+                _percent = std::get<int32_t>(value);
                 if (DEBUG)
                     std::cerr << ", pct=" << (int)_percent;
             }
             else if (key == "msg")
             {
-                _msg = sdbusplus::message::variant_ns::get<std::string>(value);
+                _msg = std::get<std::string>(value);
                 if (DEBUG)
                     std::cerr << ", msg='" << _msg << '\'';
             }
             else if (key == "Progress")
             {
-                _percent = sdbusplus::message::variant_ns::get<uint8_t>(value);
+                _percent = std::get<uint8_t>(value);
                 ;
                 if (_percent == 100)
                     _state = FW_STATE_READY;
@@ -405,7 +404,7 @@ static ipmi_ret_t ipmi_firmware_exit_fw_update_mode(
 
             ipmi::DbusVariant retval;
             reply.read(retval);
-            if (sdbusplus::message::variant_ns::get<int>(retval) != 0)
+            if (std::get<int>(retval) != 0)
                 rc = IPMI_CC_INVALID_FIELD_REQUEST;
         }
         catch (sdbusplus::exception::SdBusError &e)
@@ -587,11 +586,10 @@ static void activate_image(const char *obj_path)
     auto method_call = _bus.new_method_call(
         "xyz.openbmc_project.Software.BMC.Updater", obj_path,
         "org.freedesktop.DBus.Properties", "Set");
-    method_call.append("xyz.openbmc_project.Software.Activation",
-                       "RequestedActivation",
-                       sdbusplus::message::variant<std::string>(
-                           "xyz.openbmc_project.Software.Activation."
-                           "RequestedActivations.Active"));
+    method_call.append(
+        "xyz.openbmc_project.Software.Activation", "RequestedActivation",
+        std::variant<std::string>("xyz.openbmc_project.Software.Activation."
+                                  "RequestedActivations.Active"));
 
     try
     {
@@ -629,8 +627,7 @@ static void post_transfer_complete_handler(
 
         std::vector<std::pair<
             std::string,
-            std::vector<std::pair<std::string,
-                                  sdbusplus::message::variant<std::string>>>>>
+            std::vector<std::pair<std::string, std::variant<std::string>>>>>
             interfaces_properties;
 
         sdbusplus::message::object_path obj_path;
@@ -1116,8 +1113,7 @@ static ipmi_ret_t ipmi_firmware_get_fw_version_info(
             auto value = t.second;
             if (key == "version")
             {
-                auto strver =
-                    sdbusplus::message::variant_ns::get<std::string>(value);
+                auto strver = std::get<std::string>(value);
                 std::stringstream ss;
                 ss << std::hex << strver;
                 uint32_t t;
@@ -1131,13 +1127,11 @@ static ipmi_ret_t ipmi_firmware_get_fw_version_info(
             }
             else if (key == "build_time")
             {
-                build_time =
-                    sdbusplus::message::variant_ns::get<int32_t>(value);
+                build_time = std::get<int32_t>(value);
             }
             else if (key == "update_time")
             {
-                update_time =
-                    sdbusplus::message::variant_ns::get<int32_t>(value);
+                update_time = std::get<int32_t>(value);
             }
         }
 
@@ -1227,7 +1221,7 @@ static ipmi_ret_t ipmi_firmware_get_fw_security_revision(
         }
 
         info->id_tag = id_tag;
-        info->sec_rev = sdbusplus::message::variant_ns::get<int>(sec_rev);
+        info->sec_rev = std::get<int>(sec_rev);
         count++;
         info++;
     }
@@ -1346,13 +1340,11 @@ static ipmi_ret_t ipmi_firmware_get_fw_execution_context(
                 auto value = t.second;
                 if (key == "active_partition")
                 {
-                    active_img =
-                        sdbusplus::message::variant_ns::get<int>(value);
+                    active_img = std::get<int>(value);
                 }
                 else if (key == "safe_mode")
                 {
-                    safe_mode =
-                        sdbusplus::message::variant_ns::get<bool>(value);
+                    safe_mode = std::get<bool>(value);
                 }
             }
         }
@@ -1579,16 +1571,15 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_info(
             auto value = t.second;
             if (key == "certificate_subject")
             {
-                subject =
-                    sdbusplus::message::variant_ns::get<std::string>(value);
+                subject = std::get<std::string>(value);
             }
             else if (key == "cetificate_serial")
             {
-                serial = sdbusplus::message::variant_ns::get<uint64_t>(value);
+                serial = std::get<uint64_t>(value);
             }
             else if (key == "certificate")
             {
-                cert = sdbusplus::message::variant_ns::get<std::string>(value);
+                cert = std::get<std::string>(value);
             }
         }
     }
@@ -1656,7 +1647,7 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_data(
         std::cerr << "SDBus Error: " << e.what();
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    auto cert_data = sdbusplus::message::variant_ns::get<std::string>(cert);
+    auto cert_data = std::get<std::string>(cert);
 
     if (cert_data_req->offset >= cert_data.size())
     {

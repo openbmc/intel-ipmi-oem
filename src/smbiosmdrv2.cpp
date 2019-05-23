@@ -217,8 +217,7 @@ ipmi_ret_t cmd_mdr2_get_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             "Error getting DirEnries");
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    if (requestData->dirIndex >
-        sdbusplus::message::variant_ns::get<uint8_t>(value))
+    if (requestData->dirIndex > std::get<uint8_t>(value))
     {
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }

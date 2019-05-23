@@ -198,10 +198,8 @@ ipmi_ret_t replaceCacheFru(uint8_t devId)
             continue;
         }
 
-        uint8_t fruBus =
-            sdbusplus::message::variant_ns::get<uint32_t>(busFind->second);
-        uint8_t fruAddr =
-            sdbusplus::message::variant_ns::get<uint32_t>(addrFind->second);
+        uint8_t fruBus = std::get<uint32_t>(busFind->second);
+        uint8_t fruAddr = std::get<uint32_t>(addrFind->second);
 
         uint8_t fruHash = 0;
         if (fruBus != 0 || fruAddr != 0)
@@ -494,13 +492,11 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
                          {
                              return false;
                          }
-                         if (sdbusplus::message::variant_ns::get<uint32_t>(
-                                 findBus->second) != bus)
+                         if (std::get<uint32_t>(findBus->second) != bus)
                          {
                              return false;
                          }
-                         if (sdbusplus::message::variant_ns::get<uint32_t>(
-                                 findAddress->second) != address)
+                         if (std::get<uint32_t>(findAddress->second) != address)
                          {
                              return false;
                          }
@@ -515,13 +511,11 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     auto findBoardName = fruData->find("PRODUCT_PRODUCT_NAME");
     if (findProductName != fruData->end())
     {
-        name = sdbusplus::message::variant_ns::get<std::string>(
-            findProductName->second);
+        name = std::get<std::string>(findProductName->second);
     }
     else if (findBoardName != fruData->end())
     {
-        name = sdbusplus::message::variant_ns::get<std::string>(
-            findBoardName->second);
+        name = std::get<std::string>(findBoardName->second);
     }
     else
     {

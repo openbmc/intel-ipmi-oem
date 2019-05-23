@@ -162,8 +162,7 @@ ipmi_ret_t cmd_region_complete(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         phosphor::logging::log<level::ERR>("Error getting lockPolicy");
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    if (regionLockUnlocked ==
-        sdbusplus::message::variant_ns::get<uint8_t>(value))
+    if (regionLockUnlocked == std::get<uint8_t>(value))
     {
         return IPMI_CC_PARAMETER_NOT_SUPPORT_IN_PRESENT_STATE;
     }
@@ -173,8 +172,7 @@ ipmi_ret_t cmd_region_complete(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         phosphor::logging::log<level::ERR>("Error getting sessionId");
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    if (requestData->sessionId !=
-        sdbusplus::message::variant_ns::get<uint8_t>(value))
+    if (requestData->sessionId != std::get<uint8_t>(value))
     {
         return IPMI_CC_OEM_SET_IN_PROCESS;
     }
@@ -243,7 +241,7 @@ ipmi_ret_t cmd_region_read(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
     if (requestData->offset + requestData->length >
-        sdbusplus::message::variant_ns::get<uint16_t>(regUsedVal))
+        std::get<uint16_t>(regUsedVal))
     {
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
@@ -253,8 +251,7 @@ ipmi_ret_t cmd_region_read(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         phosphor::logging::log<level::ERR>("Error getting lockPolicy");
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    if (regionLockUnlocked !=
-        sdbusplus::message::variant_ns::get<uint8_t>(lockPolicyVal))
+    if (regionLockUnlocked != std::get<uint8_t>(lockPolicyVal))
     {
         return IPMI_CC_PARAMETER_NOT_SUPPORT_IN_PRESENT_STATE;
     }
@@ -332,8 +329,7 @@ ipmi_ret_t cmd_region_write(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         phosphor::logging::log<level::ERR>("Error getting lockPolicy");
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    if (regionLockUnlocked ==
-        sdbusplus::message::variant_ns::get<uint8_t>(value))
+    if (regionLockUnlocked == std::get<uint8_t>(value))
     {
         return IPMI_CC_PARAMETER_NOT_SUPPORT_IN_PRESENT_STATE;
     }
@@ -343,8 +339,7 @@ ipmi_ret_t cmd_region_write(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         phosphor::logging::log<level::ERR>("Error getting sessionId");
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    if (requestData->sessionId !=
-        sdbusplus::message::variant_ns::get<uint8_t>(value))
+    if (requestData->sessionId != std::get<uint8_t>(value))
     {
         return IPMI_CC_OEM_SET_IN_PROCESS;
     }
@@ -426,22 +421,19 @@ ipmi_ret_t cmd_region_lock(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     }
     if (requestData->lockPolicy == regionLockUnlocked)
     {
-        if (regionLockUnlocked ==
-            sdbusplus::message::variant_ns::get<uint8_t>(value))
+        if (regionLockUnlocked == std::get<uint8_t>(value))
         {
             return IPMI_CC_PARAMETER_NOT_SUPPORT_IN_PRESENT_STATE;
         }
     }
-    if (regionLockUnlocked !=
-        sdbusplus::message::variant_ns::get<uint8_t>(value))
+    if (regionLockUnlocked != std::get<uint8_t>(value))
     {
         if (0 > sdplus_mdrv1_get_property("SessionId", value, service))
         {
             phosphor::logging::log<level::ERR>("Error getting sessionId");
             return IPMI_CC_UNSPECIFIED_ERROR;
         }
-        if (requestData->sessionId !=
-            sdbusplus::message::variant_ns::get<uint8_t>(value))
+        if (requestData->sessionId != std::get<uint8_t>(value))
         {
             if (requestData->lockPolicy != regionLockStrict)
             {
