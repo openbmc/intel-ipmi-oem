@@ -14,10 +14,9 @@
 // limitations under the License.
 */
 
-#include <ipmid/api.h>
-
 #include <bridgingcommands.hpp>
 #include <cstring>
+#include <ipmid/api.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/bus/match.hpp>
@@ -178,10 +177,6 @@ void IpmbRequest::prepareRequest(sdbusplus::message::message &mesg)
     mesg.append(ipmbMeChannelNum, netFn, rqLun, cmd, data);
 }
 
-Bridging::Bridging() : dbus(ipmid_get_sd_bus_connection())
-{
-}
-
 ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
                                               ipmi_response_t response,
                                               ipmi_data_len_t dataLen)
@@ -234,10 +229,11 @@ ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
     // send request to IPMB
     try
     {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         auto mesg =
-            dbus.new_method_call(ipmbBus, ipmbObj, ipmbIntf, "sendRequest");
+            dbus->new_method_call(ipmbBus, ipmbObj, ipmbIntf, "sendRequest");
         ipmbRequest.prepareRequest(mesg);
-        auto ret = dbus.call(mesg);
+        auto ret = dbus->call(mesg);
         ret.read(ipmbResponse);
     }
     catch (sdbusplus::exception::SdBusError &e)

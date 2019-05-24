@@ -14,6 +14,7 @@
 // limitations under the License.
 */
 #pragma once
+#include <ipmid/api.hpp>
 #include <sdbusplus/message.hpp>
 #include <sdbusplus/server/interface.hpp>
 
@@ -311,7 +312,7 @@ typedef struct
 class Bridging
 {
   public:
-    Bridging();
+    Bridging() = default;
 
     ipmi_return_codes sendMessageHandler(ipmi_request_t request,
                                          ipmi_response_t response,
@@ -339,7 +340,6 @@ class Bridging
 
   private:
     std::vector<IpmbResponse> responseQueue;
-    sdbusplus::bus::bus dbus;
 
     ipmi_return_codes handleIpmbChannel(sSendMessageReq *sendMsgReq,
                                         ipmi_response_t response,

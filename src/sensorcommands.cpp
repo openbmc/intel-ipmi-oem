@@ -69,10 +69,9 @@ const static boost::container::flat_map<const char *, SensorUnits, CmpStr>
                  {"power", SensorUnits::watts}}};
 
 void registerSensorFunctions() __attribute__((constructor));
-static sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection());
 
 static sdbusplus::bus::match::match sensorAdded(
-    dbus,
+    *getSdBus(),
     "type='signal',member='InterfacesAdded',arg0path='/xyz/openbmc_project/"
     "sensors/'",
     [](sdbusplus::message::message &m) {
@@ -83,7 +82,7 @@ static sdbusplus::bus::match::match sensorAdded(
     });
 
 static sdbusplus::bus::match::match sensorRemoved(
-    dbus,
+    *getSdBus(),
     "type='signal',member='InterfacesRemoved',arg0path='/xyz/openbmc_project/"
     "sensors/'",
     [](sdbusplus::message::message &m) {
@@ -100,7 +99,7 @@ static boost::container::flat_map<
     thresholdDeassertMap;
 
 static sdbusplus::bus::match::match thresholdChanged(
-    dbus,
+    *getSdBus(),
     "type='signal',member='PropertiesChanged',interface='org.freedesktop.DBus."
     "Properties',arg0namespace='xyz.openbmc_project.Sensor.Threshold'",
     [](sdbusplus::message::message &m) {
@@ -223,14 +222,15 @@ static bool getSensorMap(std::string sensorConnection, std::string sensorPath,
     {
         updateTimeMap[sensorConnection] = now;
 
-        auto managedObj = dbus.new_method_call(
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        auto managedObj = dbus->new_method_call(
             sensorConnection.c_str(), "/", "org.freedesktop.DBus.ObjectManager",
             "GetManagedObjects");
 
         ManagedObjectType managedObjects;
         try
         {
-            auto reply = dbus.call(managedObj);
+            auto reply = dbus->call(managedObj);
             reply.read(managedObjects);
         }
         catch (sdbusplus::exception_t &)
@@ -571,9 +571,9 @@ ipmi_ret_t ipmiSenSetSensorThresholds(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         double valueToSet = ((mValue * std::get<thresholdValue>(property)) +
                              (bValue * std::pow(10, bExp))) *
                             std::pow(10, rExp);
-        setDbusProperty(dbus, connection, path, std::get<interface>(property),
-                        std::get<propertyName>(property),
-                        ipmi::Value(valueToSet));
+        setDbusProperty(
+            *getSdBus(), connection, path, std::get<interface>(property),
+            std::get<propertyName>(property), ipmi::Value(valueToSet));
     }
 
     return IPMI_CC_OK;

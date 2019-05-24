@@ -112,17 +112,17 @@ std::unique_ptr<phosphor::Timer> cacheTimer = nullptr;
 boost::container::flat_map<uint8_t, std::pair<uint8_t, uint8_t>> deviceHashes;
 
 void registerStorageFunctions() __attribute__((constructor));
-static sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection());
 
 bool writeFru()
 {
-    sdbusplus::message::message writeFru = dbus.new_method_call(
+    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+    sdbusplus::message::message writeFru = dbus->new_method_call(
         fruDeviceServiceName, "/xyz/openbmc_project/FruDevice",
         "xyz.openbmc_project.FruDeviceManager", "WriteFru");
     writeFru.append(cacheBus, cacheAddr, fruCache);
     try
     {
-        sdbusplus::message::message writeFruResp = dbus.call(writeFru);
+        sdbusplus::message::message writeFruResp = dbus->call(writeFru);
     }
     catch (sdbusplus::exception_t&)
     {
@@ -158,13 +158,14 @@ ipmi_ret_t replaceCacheFru(uint8_t devId)
         writeFru();
     }
 
-    sdbusplus::message::message getObjects = dbus.new_method_call(
+    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+    sdbusplus::message::message getObjects = dbus->new_method_call(
         fruDeviceServiceName, "/", "org.freedesktop.DBus.ObjectManager",
         "GetManagedObjects");
     ManagedObjectType frus;
     try
     {
-        sdbusplus::message::message resp = dbus.call(getObjects);
+        sdbusplus::message::message resp = dbus->call(getObjects);
         resp.read(frus);
     }
     catch (sdbusplus::exception_t&)
@@ -237,7 +238,7 @@ ipmi_ret_t replaceCacheFru(uint8_t devId)
     }
 
     fruCache.clear();
-    sdbusplus::message::message getRawFru = dbus.new_method_call(
+    sdbusplus::message::message getRawFru = dbus->new_method_call(
         fruDeviceServiceName, "/xyz/openbmc_project/FruDevice",
         "xyz.openbmc_project.FruDeviceManager", "GetRawFru");
     cacheBus = deviceFind->second.first;
@@ -245,7 +246,7 @@ ipmi_ret_t replaceCacheFru(uint8_t devId)
     getRawFru.append(cacheBus, cacheAddr);
     try
     {
-        sdbusplus::message::message getRawResp = dbus.call(getRawFru);
+        sdbusplus::message::message getRawResp = dbus->call(getRawFru);
         getRawResp.read(fruCache);
     }
     catch (sdbusplus::exception_t&)
@@ -461,12 +462,13 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
 
     ManagedObjectType frus;
 
-    sdbusplus::message::message getObjects = dbus.new_method_call(
+    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+    sdbusplus::message::message getObjects = dbus->new_method_call(
         fruDeviceServiceName, "/", "org.freedesktop.DBus.ObjectManager",
         "GetManagedObjects");
     try
     {
-        sdbusplus::message::message resp = dbus.call(getObjects);
+        sdbusplus::message::message resp = dbus->call(getObjects);
         resp.read(frus);
     }
     catch (sdbusplus::exception_t&)
@@ -990,13 +992,14 @@ ipmi::RspType<uint8_t> ipmiStorageClearSEL(ipmi::Context::ptr ctx,
     }
 
     // Reload rsyslog so it knows to start new log files
-    sdbusplus::message::message rsyslogReload = dbus.new_method_call(
+    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+    sdbusplus::message::message rsyslogReload = dbus->new_method_call(
         "org.freedesktop.systemd1", "/org/freedesktop/systemd1",
         "org.freedesktop.systemd1.Manager", "ReloadUnit");
     rsyslogReload.append("rsyslog.service", "replace");
     try
     {
-        sdbusplus::message::message reloadResponse = dbus.call(rsyslogReload);
+        sdbusplus::message::message reloadResponse = dbus->call(rsyslogReload);
     }
     catch (sdbusplus::exception_t& e)
     {

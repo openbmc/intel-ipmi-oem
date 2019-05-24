@@ -14,15 +14,13 @@
 // limitations under the License.
 */
 
-#include <ipmid/api.h>
-
 #include <commandutils.hpp>
 #include <cstdint>
 #include <iostream>
+#include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/elog-errors.hpp>
 #include <phosphor-logging/log.hpp>
-#include <sdbusplus/bus.hpp>
 #include <smbioshandler.hpp>
 #include <string>
 #include <vector>
@@ -38,7 +36,6 @@ constexpr const char* MDRV1_PATH = "/xyz/openbmc_project/Smbios/MDR_V1";
 constexpr const char* MDRV1_INTERFACE = "xyz.openbmc_project.Smbios.MDR_V1";
 
 static void register_netfn_smbios_functions() __attribute__((constructor));
-static sdbusplus::bus::bus bus(ipmid_get_sd_bus_connection());
 
 ipmi_ret_t cmd_region_status(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                              ipmi_request_t request, ipmi_response_t response,
@@ -62,12 +59,13 @@ ipmi_ret_t cmd_region_status(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    std::string service = ipmi::getService(bus, MDRV1_INTERFACE, MDRV1_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV1_INTERFACE, MDRV1_PATH);
 
-    auto method = bus.new_method_call(service.c_str(), MDRV1_PATH,
-                                      MDRV1_INTERFACE, "RegionStatus");
+    auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
+                                       MDRV1_INTERFACE, "RegionStatus");
     method.append(regionId);
-    auto reply = bus.call(method);
+    auto reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<level::ERR>(
@@ -94,10 +92,11 @@ int sdplus_mdrv1_get_property(
     const std::string& name,
     sdbusplus::message::variant<uint8_t, uint16_t>& value, std::string& service)
 {
-    auto method = bus.new_method_call(service.c_str(), MDRV1_PATH,
-                                      DBUS_PROPERTIES, "Get");
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
+                                       DBUS_PROPERTIES, "Get");
     method.append(MDRV1_INTERFACE, name);
-    auto reply = bus.call(method);
+    auto reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<level::ERR>(
@@ -111,11 +110,12 @@ int sdplus_mdrv1_get_property(
 
 static int set_regionId(uint8_t regionId, std::string& service)
 {
-    auto method = bus.new_method_call(service.c_str(), MDRV1_PATH,
-                                      DBUS_PROPERTIES, "Set");
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
+                                       DBUS_PROPERTIES, "Set");
     sdbusplus::message::variant<uint8_t> value{regionId};
     method.append(MDRV1_INTERFACE, "RegionId", value);
-    auto region = bus.call(method);
+    auto region = bus->call(method);
     if (region.is_method_error())
     {
         phosphor::logging::log<level::ERR>(
@@ -149,7 +149,8 @@ ipmi_ret_t cmd_region_complete(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    std::string service = ipmi::getService(bus, MDRV1_INTERFACE, MDRV1_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV1_INTERFACE, MDRV1_PATH);
 
     if (set_regionId(regionId, service) < 0)
     {
@@ -177,12 +178,12 @@ ipmi_ret_t cmd_region_complete(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_OEM_SET_IN_PROCESS;
     }
 
-    auto method = bus.new_method_call(service.c_str(), MDRV1_PATH,
-                                      MDRV1_INTERFACE, "RegionComplete");
+    auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
+                                       MDRV1_INTERFACE, "RegionComplete");
 
     method.append(regionId);
 
-    auto reply = bus.call(method);
+    auto reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<level::ERR>(
@@ -227,7 +228,8 @@ ipmi_ret_t cmd_region_read(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    std::string service = ipmi::getService(bus, MDRV1_INTERFACE, MDRV1_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV1_INTERFACE, MDRV1_PATH);
     // TODO to make sure the interface can get correct LockPolicy even
     // regionId changed by another task.
     if (set_regionId(regionId, service) < 0)
@@ -256,12 +258,12 @@ ipmi_ret_t cmd_region_read(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARAMETER_NOT_SUPPORT_IN_PRESENT_STATE;
     }
 
-    auto method = bus.new_method_call(service.c_str(), MDRV1_PATH,
-                                      MDRV1_INTERFACE, "RegionRead");
+    auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
+                                       MDRV1_INTERFACE, "RegionRead");
 
     method.append(regionId, requestData->length, requestData->offset);
 
-    auto reply = bus.call(method);
+    auto reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<level::ERR>(
@@ -316,7 +318,8 @@ ipmi_ret_t cmd_region_write(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    std::string service = ipmi::getService(bus, MDRV1_INTERFACE, MDRV1_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV1_INTERFACE, MDRV1_PATH);
 
     if (set_regionId(regionId, service) < 0)
     {
@@ -352,12 +355,12 @@ ipmi_ret_t cmd_region_write(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         writeData.push_back(tmp[index]);
     }
 
-    auto method = bus.new_method_call(service.c_str(), MDRV1_PATH,
-                                      MDRV1_INTERFACE, "RegionWrite");
+    auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
+                                       MDRV1_INTERFACE, "RegionWrite");
 
     method.append(writeData);
 
-    auto reply = bus.call(method);
+    auto reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<level::ERR>(
@@ -406,7 +409,8 @@ ipmi_ret_t cmd_region_lock(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    std::string service = ipmi::getService(bus, MDRV1_INTERFACE, MDRV1_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV1_INTERFACE, MDRV1_PATH);
 
     if (set_regionId(regionId, service) < 0)
     {
@@ -441,13 +445,13 @@ ipmi_ret_t cmd_region_lock(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             }
         }
     }
-    auto method = bus.new_method_call(service.c_str(), MDRV1_PATH,
-                                      MDRV1_INTERFACE, "RegionLock");
+    auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
+                                       MDRV1_INTERFACE, "RegionLock");
 
     method.append(requestData->sessionId, regionId, requestData->lockPolicy,
                   requestData->msTimeout);
 
-    auto reply = bus.call(method);
+    auto reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<level::ERR>(

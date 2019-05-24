@@ -15,15 +15,14 @@
 */
 
 #include <errno.h>
-#include <ipmid/api.h>
 
 #include <commandutils.hpp>
 #include <cstdint>
+#include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-ipmi-host/ipmid.hpp>
 #include <phosphor-logging/elog-errors.hpp>
 #include <phosphor-logging/log.hpp>
-#include <sdbusplus/bus.hpp>
 #include <smbiosmdrv2.hpp>
 #include <string>
 #include <vector>
@@ -36,7 +35,6 @@ constexpr const int LAST_AGENT_INDEX = -1;
 constexpr const uint16_t LAST_AGENT_ID = 0xFFFF;
 
 static void register_netfn_smbiosmdrv2_functions() __attribute__((constructor));
-static sdbusplus::bus::bus bus(ipmid_get_sd_bus_connection());
 
 int gentLookup(const uint16_t& agentId, const std::string& service)
 {
@@ -47,10 +45,11 @@ int gentLookup(const uint16_t& agentId, const std::string& service)
         return LAST_AGENT_INDEX;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "AgentLookup");
     method.append(agentId);
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -65,11 +64,12 @@ int gentLookup(const uint16_t& agentId, const std::string& service)
 int findLockHandle(const uint16_t& lockHandle, const std::string& service)
 {
     int idIndex = -1;
-    sdbusplus::message::message method = bus.new_method_call(
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "FindLockHandle");
     method.append(lockHandle);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -87,10 +87,11 @@ int sdplusMdrv2GetProperty(const std::string& name,
                            sdbusplus::message::variant<uint8_t>& value,
                            const std::string& service)
 {
-    sdbusplus::message::message method = bus.new_method_call(
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, DBUS_PROPERTIES, "Get");
     method.append(MDRV2_INTERFACE, name);
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -106,7 +107,8 @@ int findDataId(const uint8_t* dataInfo, const size_t& len,
                const std::string& service)
 {
     int idIndex = -1;
-    sdbusplus::message::message method = bus.new_method_call(
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "FindIdIndex");
     std::vector<uint8_t> info;
     for (int index = 0; index < len; index++)
@@ -115,7 +117,7 @@ int findDataId(const uint8_t* dataInfo, const size_t& len,
     }
     method.append(info);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -147,7 +149,8 @@ ipmi_ret_t cmd_mdr2_agent_status(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *data_len = 0;
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -158,10 +161,10 @@ ipmi_ret_t cmd_mdr2_agent_status(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "AgentStatus");
     method.append(requestData->dirVersion);
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -199,7 +202,8 @@ ipmi_ret_t cmd_mdr2_get_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *data_len = 0;
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -222,12 +226,12 @@ ipmi_ret_t cmd_mdr2_get_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "GetDir");
 
     method.append(requestData->dirIndex);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -282,7 +286,8 @@ ipmi_ret_t cmd_mdr2_get_data_info(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *data_len = 0;
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -304,12 +309,12 @@ ipmi_ret_t cmd_mdr2_get_data_info(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "GetDataInfo");
 
     method.append(idIndex);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -349,7 +354,8 @@ ipmi_ret_t cmd_mdr2_lock_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *data_len = 0;
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -371,12 +377,12 @@ ipmi_ret_t cmd_mdr2_lock_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "LockData");
 
     method.append((uint8_t)idIndex, requestData->timeout);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         if (reply.get_errno() == EBUSY)
@@ -426,7 +432,8 @@ ipmi_ret_t cmd_mdr2_unlock_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *data_len = 0;
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -446,11 +453,11 @@ ipmi_ret_t cmd_mdr2_unlock_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "UnLockData");
     method.append((uint8_t)idIndex);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         if (reply.get_errno() == EBUSY)
@@ -498,7 +505,8 @@ ipmi_ret_t cmd_mdr2_get_data_block(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *data_len = 0;
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -518,12 +526,12 @@ ipmi_ret_t cmd_mdr2_get_data_block(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "GetDataBlock");
     method.append((uint8_t)idIndex, requestData->xferOffset,
                   requestData->xferLength);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -594,7 +602,8 @@ ipmi_ret_t cmd_mdr2_send_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *data_len = 0;
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -612,7 +621,7 @@ ipmi_ret_t cmd_mdr2_send_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_STORGE_LEAK;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "SendDir");
     method.append(requestData->dirVersion, requestData->dirIndex,
                   requestData->returnedEntries, requestData->remainingEntries);
@@ -624,7 +633,7 @@ ipmi_ret_t cmd_mdr2_send_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     }
     method.append(idVector);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -661,7 +670,8 @@ ipmi_ret_t cmd_mdr2_data_info_offer(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *data_len = 0;
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -672,10 +682,10 @@ ipmi_ret_t cmd_mdr2_data_info_offer(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "GetDataOffer");
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         if (reply.get_errno() == EBUSY)
@@ -729,7 +739,8 @@ ipmi_ret_t cmd_mdr2_send_data_info(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -751,14 +762,14 @@ ipmi_ret_t cmd_mdr2_send_data_info(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "SendDataInfo");
 
     method.append((uint8_t)idIndex, requestData->validFlag,
                   requestData->dataLength, requestData->dataVersion,
                   requestData->timeStamp);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -813,7 +824,8 @@ ipmi_ret_t cmd_mdr2_data_start(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -835,7 +847,7 @@ ipmi_ret_t cmd_mdr2_data_start(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "DataStart");
 
     for (uint8_t infoIndex = 0; infoIndex < sizeof(DataIdStruct); infoIndex++)
@@ -846,7 +858,7 @@ ipmi_ret_t cmd_mdr2_data_start(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                   requestData->xferAddress, requestData->xferLength,
                   requestData->timeout);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         int errNumber = reply.get_errno();
@@ -902,7 +914,8 @@ ipmi_ret_t cmd_mdr2_data_done(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *data_len = 0;
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -922,11 +935,11 @@ ipmi_ret_t cmd_mdr2_data_done(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "DataDone");
     method.append((uint8_t)idIndex);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         if (reply.get_errno() == EBUSY)
@@ -971,7 +984,8 @@ ipmi_ret_t cmd_mdr2_send_data_block(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     *data_len = 0;
 
-    std::string service = ipmi::getService(bus, MDRV2_INTERFACE, MDRV2_PATH);
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    std::string service = ipmi::getService(*bus, MDRV2_INTERFACE, MDRV2_PATH);
 
     int agentIndex = agentLookup(requestData->agentId, service);
     if (agentIndex == -1)
@@ -991,12 +1005,12 @@ ipmi_ret_t cmd_mdr2_send_data_block(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_PARM_OUT_OF_RANGE;
     }
 
-    sdbusplus::message::message method = bus.new_method_call(
+    sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), MDRV2_PATH, MDRV2_INTERFACE, "SendDataBlock");
     method.append((uint8_t)idIndex, requestData->xferOffset,
                   requestData->xferLength, requestData->checksum);
 
-    sdbusplus::message::message reply = bus.call(method);
+    sdbusplus::message::message reply = bus->call(method);
     if (reply.is_method_error())
     {
         int errNumber = reply.get_errno();
