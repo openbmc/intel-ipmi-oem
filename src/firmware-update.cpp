@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <ipmid/api.hpp>
 #include <map>
 #include <random>
 #include <sdbusplus/bus.hpp>
@@ -30,6 +31,8 @@ static void register_netfn_firmware_functions() __attribute__((constructor));
 // oem return code for firmware update control
 constexpr ipmi_ret_t IPMI_CC_REQ_INVALID_PHASE = 0xd5;
 constexpr ipmi_ret_t IPMI_CC_USB_ATTACH_FAIL = 0x80;
+
+static sdbusplus::bus::bus _bus(ipmid_get_sd_bus_connection());
 
 static constexpr bool DEBUG = false;
 
@@ -80,10 +83,10 @@ class fw_update_status_cache
         FW_STATE_ERROR = 0x0f,
         FW_STATE_AC_CYCLE_REQUIRED = 0x83,
     };
-    fw_update_status_cache() : _bus(getSdBus())
+    fw_update_status_cache()
     {
         _match = std::make_shared<sdbusplus::bus::match::match>(
-            *_bus,
+            _bus,
             sdbusplus::bus::match::rules::propertiesChanged(
                 FW_UPDATE_SERVER_PATH, FW_UPDATE_INTERFACE),
             [&](sdbusplus::message::message &msg) {
@@ -129,7 +132,7 @@ class fw_update_status_cache
         _state = FW_STATE_WRITE;
         _percent = 0;
         _match = std::make_shared<sdbusplus::bus::match::match>(
-            *_bus,
+            _bus,
             sdbusplus::bus::match::rules::propertiesChanged(
                 _software_obj_path,
                 "xyz.openbmc_project.Software.ActivationProgress"),
@@ -163,7 +166,8 @@ class fw_update_status_cache
             auto value = t.second;
             if (key == "state")
             {
-                auto state = std::get<std::string>(value);
+                auto state =
+                    sdbusplus::message::variant_ns::get<std::string>(value);
                 if (DEBUG)
                     std::cerr << ", state=" << state;
                 if (state == "INIT")
@@ -190,19 +194,19 @@ class fw_update_status_cache
             }
             else if (key == "percent")
             {
-                _percent = std::get<int32_t>(value);
+                _percent = sdbusplus::message::variant_ns::get<int32_t>(value);
                 if (DEBUG)
                     std::cerr << ", pct=" << (int)_percent;
             }
             else if (key == "msg")
             {
-                _msg = std::get<std::string>(value);
+                _msg = sdbusplus::message::variant_ns::get<std::string>(value);
                 if (DEBUG)
                     std::cerr << ", msg='" << _msg << '\'';
             }
             else if (key == "Progress")
             {
-                _percent = std::get<uint8_t>(value);
+                _percent = sdbusplus::message::variant_ns::get<uint8_t>(value);
                 ;
                 if (_percent == 100)
                     _state = FW_STATE_READY;
@@ -220,7 +224,7 @@ class fw_update_status_cache
     void _initial_fetch()
     {
 #ifndef UPDATER_ENABLED
-        auto method = _bus->new_method_call(
+        auto method = _bus.new_method_call(
             FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
             "org.freedesktop.DBus.Properties", "GetAll");
         method.append(FW_UPDATE_INTERFACE);
@@ -228,7 +232,7 @@ class fw_update_status_cache
             std::cerr << "fetch fw status via dbus...\n";
         try
         {
-            auto reply = _bus->call(method);
+            auto reply = _bus.call(method);
 
             std::map<std::string, ipmi::DbusVariant> properties;
             reply.read(properties);
@@ -243,7 +247,6 @@ class fw_update_status_cache
 #endif
     }
 
-    std::shared_ptr<sdbusplus::asio::connection> _bus;
     std::shared_ptr<sdbusplus::bus::match::match> _match;
     uint8_t _state = 0;
     uint8_t _percent = 0;
@@ -361,60 +364,57 @@ static ipmi_ret_t ipmi_firmware_enter_fw_transfer_mode(
     return IPMI_CC_OK;
 }
 
-static ipmi_ret_t ipmi_firmware_exit_fw_update_mode(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+/** @brief implements exit firmware update mode command
+ *  @param None
+ *
+ *  @returns IPMI completion code
+ */
+ipmi::RspType<> ipmiFirmwareExitFwUpdateMode()
 {
-    if (DEBUG)
-        std::cerr << "Exit FW update mode\n";
-    *data_len = 0;
 
-    ipmi_ret_t rc = IPMI_CC_OK;
+    if (DEBUG)
+        std::cerr << "Exit FW update mode \n";
+
     switch (fw_update_status.state())
     {
         case fw_update_status_cache::FW_STATE_INIT:
         case fw_update_status_cache::FW_STATE_IDLE:
-            rc = IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
             break;
         case fw_update_status_cache::FW_STATE_DOWNLOAD:
             unlink(FIRMWARE_BUFFER_FILE);
         case fw_update_status_cache::FW_STATE_VERIFY:
             break;
         case fw_update_status_cache::FW_STATE_WRITE:
-            rc = IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
             break;
         case fw_update_status_cache::FW_STATE_READY:
         case fw_update_status_cache::FW_STATE_ERROR:
             unlink(FIRMWARE_BUFFER_FILE);
             break;
         case fw_update_status_cache::FW_STATE_AC_CYCLE_REQUIRED:
-            rc = IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
             break;
     }
-    if (rc == IPMI_CC_OK)
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    // attempt to reset the state machine -- this may fail
+    auto method =
+        bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
+                             "org.freedesktop.DBus.Properties", "Abort");
+    try
     {
-        std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-        // attempt to reset the state machine -- this may fail
-        auto method = bus->new_method_call(
-            FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
-            "org.freedesktop.DBus.Properties", "Abort");
-        try
-        {
-            auto reply = bus->call(method);
-
-            ipmi::DbusVariant retval;
-            reply.read(retval);
-            if (std::get<int>(retval) != 0)
-                rc = IPMI_CC_INVALID_FIELD_REQUEST;
-        }
-        catch (sdbusplus::exception::SdBusError &e)
-        {
-            std::cerr << "SDBus Error: " << e.what() << "\n";
-            return IPMI_CC_UNSPECIFIED_ERROR;
-        }
+        auto reply = bus->call(method);
+        ipmi::DbusVariant retval;
+        reply.read(retval);
+        if (std::get<int>(retval) != 0)
+            return ipmi::responseInvalidFieldRequest();
     }
-
-    return rc;
+    catch (sdbusplus::exception::SdBusError &e)
+    {
+        std::cerr << "SDBus Error: " << e.what() << "\n";
+        return ipmi::responseUnspecifiedError();
+    }
+    return ipmi::responseSuccess();
 }
 
 static void post_transfer_complete_handler(
@@ -435,16 +435,15 @@ static bool request_start_firmware_update(const std::string &uri)
         uri, "/tmp/images/" +
                  boost::uuids::to_string(boost::uuids::random_generator()()));
 #else
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     auto method =
-        bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
+        _bus.new_method_call(FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
                              FW_UPDATE_INTERFACE, "start");
     if (DEBUG)
         std::cerr << "fwupdate1.start: " << uri << '\n';
     method.append(uri);
     try
     {
-        auto reply = bus->call(method);
+        auto reply = _bus.call(method);
 
         uint32_t retval;
         reply.read(retval);
@@ -467,13 +466,12 @@ static bool request_start_firmware_update(const std::string &uri)
 
 static bool request_abort_firmware_update()
 {
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     auto method =
-        bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
+        _bus.new_method_call(FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
                              FW_UPDATE_INTERFACE, "abort");
     try
     {
-        auto reply = bus->call(method);
+        auto reply = _bus.call(method);
 
         unlink(FIRMWARE_BUFFER_FILE);
         uint32_t retval;
@@ -585,18 +583,18 @@ static void activate_image(const char *obj_path)
         std::cerr << "activateImage()...\n";
         std::cerr << "obj_path = " << obj_path << "\n";
     }
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-    auto method_call = bus->new_method_call(
+    auto method_call = _bus.new_method_call(
         "xyz.openbmc_project.Software.BMC.Updater", obj_path,
         "org.freedesktop.DBus.Properties", "Set");
-    method_call.append(
-        "xyz.openbmc_project.Software.Activation", "RequestedActivation",
-        std::variant<std::string>("xyz.openbmc_project.Software.Activation."
-                                  "RequestedActivations.Active"));
+    method_call.append("xyz.openbmc_project.Software.Activation",
+                       "RequestedActivation",
+                       sdbusplus::message::variant<std::string>(
+                           "xyz.openbmc_project.Software.Activation."
+                           "RequestedActivations.Active"));
 
     try
     {
-        auto method_call_reply = bus->call(method_call);
+        auto method_call_reply = _bus.call(method_call);
     }
     catch (sdbusplus::exception::SdBusError &e)
     {
@@ -630,7 +628,8 @@ static void post_transfer_complete_handler(
 
         std::vector<std::pair<
             std::string,
-            std::vector<std::pair<std::string, std::variant<std::string>>>>>
+            std::vector<std::pair<std::string,
+                                  sdbusplus::message::variant<std::string>>>>>
             interfaces_properties;
 
         sdbusplus::message::object_path obj_path;
@@ -687,7 +686,7 @@ static void post_transfer_complete_handler(
 
     // Adding matcher
     fw_update_matcher = std::make_unique<sdbusplus::bus::match::match>(
-        *getSdBus(),
+        _bus,
         "interface='org.freedesktop.DBus.ObjectManager',type='signal',"
         "member='InterfacesAdded',path='/xyz/openbmc_project/software'",
         callback);
@@ -1086,15 +1085,14 @@ static ipmi_ret_t ipmi_firmware_get_fw_version_info(
                 continue; // skip for now
                 break;
         }
-        std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
         auto method =
-            bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, fw_path,
+            _bus.new_method_call(FW_UPDATE_SERVER_DBUS_NAME, fw_path,
                                  "org.freedesktop.DBus.Properties", "GetAll");
         method.append(FW_UPDATE_INFO_INTERFACE);
         std::vector<std::pair<std::string, ipmi::DbusVariant>> properties;
         try
         {
-            auto reply = bus->call(method);
+            auto reply = _bus.call(method);
 
             if (reply.is_method_error())
                 continue;
@@ -1117,7 +1115,8 @@ static ipmi_ret_t ipmi_firmware_get_fw_version_info(
             auto value = t.second;
             if (key == "version")
             {
-                auto strver = std::get<std::string>(value);
+                auto strver =
+                    sdbusplus::message::variant_ns::get<std::string>(value);
                 std::stringstream ss;
                 ss << std::hex << strver;
                 uint32_t t;
@@ -1131,11 +1130,13 @@ static ipmi_ret_t ipmi_firmware_get_fw_version_info(
             }
             else if (key == "build_time")
             {
-                build_time = std::get<int32_t>(value);
+                build_time =
+                    sdbusplus::message::variant_ns::get<int32_t>(value);
             }
             else if (key == "update_time")
             {
-                update_time = std::get<int32_t>(value);
+                update_time =
+                    sdbusplus::message::variant_ns::get<int32_t>(value);
             }
         }
 
@@ -1187,7 +1188,6 @@ static ipmi_ret_t ipmi_firmware_get_fw_security_revision(
     auto info =
         reinterpret_cast<struct fw_security_revision_info *>(ret_count + 1);
 
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     for (uint8_t id_tag = 1; id_tag < 6; id_tag++)
     {
         const char *fw_path;
@@ -1206,13 +1206,13 @@ static ipmi_ret_t ipmi_firmware_get_fw_security_revision(
                 break;
         }
         auto method =
-            bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, fw_path,
+            _bus.new_method_call(FW_UPDATE_SERVER_DBUS_NAME, fw_path,
                                  "org.freedesktop.DBus.Properties", "GetAll");
         method.append(FW_UPDATE_INFO_INTERFACE, "security_version");
         ipmi::DbusVariant sec_rev;
         try
         {
-            auto reply = bus->call(method);
+            auto reply = _bus.call(method);
 
             if (reply.is_method_error())
                 continue;
@@ -1226,7 +1226,7 @@ static ipmi_ret_t ipmi_firmware_get_fw_security_revision(
         }
 
         info->id_tag = id_tag;
-        info->sec_rev = std::get<int>(sec_rev);
+        info->sec_rev = sdbusplus::message::variant_ns::get<int>(sec_rev);
         count++;
         info++;
     }
@@ -1323,9 +1323,8 @@ static ipmi_ret_t ipmi_firmware_get_fw_execution_context(
     //          1 - primary, 2 - secondary
 
     auto info = reinterpret_cast<struct fw_execution_context *>(response);
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     auto method =
-        bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
+        _bus.new_method_call(FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
                              "org.freedesktop.DBus.Properties", "GetAll");
     method.append(FW_UPDATE_SECURITY_INTERFACE);
     int active_img;
@@ -1333,7 +1332,7 @@ static ipmi_ret_t ipmi_firmware_get_fw_execution_context(
     std::string cert;
     try
     {
-        auto reply = bus->call(method);
+        auto reply = _bus.call(method);
 
         if (!reply.is_method_error())
         {
@@ -1346,11 +1345,13 @@ static ipmi_ret_t ipmi_firmware_get_fw_execution_context(
                 auto value = t.second;
                 if (key == "active_partition")
                 {
-                    active_img = std::get<int>(value);
+                    active_img =
+                        sdbusplus::message::variant_ns::get<int>(value);
                 }
                 else if (key == "safe_mode")
                 {
-                    safe_mode = std::get<bool>(value);
+                    safe_mode =
+                        sdbusplus::message::variant_ns::get<bool>(value);
                 }
             }
         }
@@ -1423,14 +1424,13 @@ bool fw_update_set_dbus_property(const std::string &path,
                                  const std::string &name,
                                  ipmi::DbusVariant value)
 {
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     auto method =
-        bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, path.c_str(),
+        _bus.new_method_call(FW_UPDATE_SERVER_DBUS_NAME, path.c_str(),
                              "org.freedesktop.DBus.Properties", "Set");
     method.append(iface, name, value);
     try
     {
-        auto reply = bus->call(method);
+        auto reply = _bus.call(method);
         auto err = reply.is_method_error();
         if (err)
             if (DEBUG)
@@ -1558,8 +1558,7 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_info(
     // Byte 12-N - subject data
 
     auto cert_info = reinterpret_cast<struct fw_cert_info *>(response);
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-    auto method = bus->new_method_call(
+    auto method = _bus.new_method_call(
         FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_INFO_PATH,
         "org.freedesktop.DBus.Properties", "GetAll");
     method.append(FW_UPDATE_SECURITY_INTERFACE);
@@ -1568,7 +1567,7 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_info(
     std::string cert;
     try
     {
-        auto reply = bus->call(method);
+        auto reply = _bus.call(method);
 
         std::vector<std::pair<std::string, ipmi::DbusVariant>> properties;
         reply.read(properties);
@@ -1579,15 +1578,16 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_info(
             auto value = t.second;
             if (key == "certificate_subject")
             {
-                subject = std::get<std::string>(value);
+                subject =
+                    sdbusplus::message::variant_ns::get<std::string>(value);
             }
             else if (key == "cetificate_serial")
             {
-                serial = std::get<uint64_t>(value);
+                serial = sdbusplus::message::variant_ns::get<uint64_t>(value);
             }
             else if (key == "certificate")
             {
-                cert = std::get<std::string>(value);
+                cert = sdbusplus::message::variant_ns::get<std::string>(value);
             }
         }
     }
@@ -1640,15 +1640,14 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_data(
         return IPMI_CC_REQ_DATA_LEN_INVALID;
 
     auto cert_data_req = reinterpret_cast<struct fw_cert_data_req *>(request);
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-    auto method = bus->new_method_call(
+    auto method = _bus.new_method_call(
         FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_INFO_PATH,
         "org.freedesktop.DBus.Properties", "Get");
     method.append(FW_UPDATE_SECURITY_INTERFACE, "certificate");
     ipmi::DbusVariant cert;
     try
     {
-        auto reply = bus->call(method);
+        auto reply = _bus.call(method);
         reply.read(cert);
     }
     catch (sdbusplus::exception::SdBusError &e)
@@ -1656,7 +1655,7 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_data(
         std::cerr << "SDBus Error: " << e.what();
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    auto cert_data = std::get<std::string>(cert);
+    auto cert_data = sdbusplus::message::variant_ns::get<std::string>(cert);
 
     if (cert_data_req->offset >= cert_data.size())
     {
@@ -1834,9 +1833,9 @@ static void register_netfn_firmware_functions()
                            PRIVILEGE_ADMIN);
 
     // exit firmware update mode
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_EXIT_FW_UPDATE_MODE,
-                           NULL, ipmi_firmware_exit_fw_update_mode,
-                           PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_EXIT_FW_UPDATE_MODE,
+                          ipmi::Privilege::Admin, ipmiFirmwareExitFwUpdateMode);
 
     // firmware control mechanism (set filename, usb, etc.)
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_UPDATE_CONTROL, NULL,
