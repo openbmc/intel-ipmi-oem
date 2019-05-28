@@ -350,20 +350,23 @@ static ipmi_ret_t ipmi_firmware_enter_fw_transfer_mode(
     return IPMI_CC_OK;
 }
 
-static ipmi_ret_t ipmi_firmware_exit_fw_update_mode(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+/** @brief implements exit firmware update mode command
+ *  @param None
+ *
+ *  @returns IPMI completion code
+ */
+ipmi::RspType<> ipmiFirmwareExitFwUpdateMode()
 {
-    if (DEBUG)
-        std::cerr << "Exit FW update mode\n";
-    *data_len = 0;
 
-    ipmi_ret_t rc = IPMI_CC_OK;
+    if (DEBUG)
+    {
+        std::cerr << "Exit FW update mode \n";
+    }
     switch (fw_update_status.state())
     {
         case fw_update_status_cache::FW_STATE_INIT:
         case fw_update_status_cache::FW_STATE_IDLE:
-            rc = IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
             break;
         case fw_update_status_cache::FW_STATE_DOWNLOAD:
         case fw_update_status_cache::FW_STATE_VERIFY:
@@ -374,15 +377,11 @@ static ipmi_ret_t ipmi_firmware_exit_fw_update_mode(
         case fw_update_status_cache::FW_STATE_ERROR:
             break;
         case fw_update_status_cache::FW_STATE_AC_CYCLE_REQUIRED:
-            rc = IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
             break;
     }
-    if (rc == IPMI_CC_OK)
-    {
-        fw_update_status.firmwareUpdateAbortState();
-    }
-
-    return rc;
+    fw_update_status.firmwareUpdateAbortState();
+    return ipmi::responseSuccess();
 }
 
 static void post_transfer_complete_handler(
@@ -1700,9 +1699,9 @@ static void register_netfn_firmware_functions()
                            PRIVILEGE_ADMIN);
 
     // exit firmware update mode
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_EXIT_FW_UPDATE_MODE,
-                           NULL, ipmi_firmware_exit_fw_update_mode,
-                           PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_EXIT_FW_UPDATE_MODE,
+                          ipmi::Privilege::Admin, ipmiFirmwareExitFwUpdateMode);
 
     // firmware control mechanism (set filename, usb, etc.)
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_UPDATE_CONTROL, NULL,
