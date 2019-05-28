@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <ipmid/api.hpp>
 #include <map>
 #include <random>
 #include <sdbusplus/bus.hpp>
@@ -24,6 +25,7 @@
 #include <sdbusplus/server/object.hpp>
 #include <sdbusplus/timer.hpp>
 #include <sstream>
+#include <variantvisitors.hpp>
 
 static void register_netfn_firmware_functions() __attribute__((constructor));
 
@@ -363,59 +365,53 @@ static ipmi_ret_t ipmi_firmware_enter_fw_transfer_mode(
     return IPMI_CC_OK;
 }
 
-static ipmi_ret_t ipmi_firmware_exit_fw_update_mode(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+/** @brief implements exit firmware update mode command
+ *  @param None
+ *
+ *  @returns IPMI completion code
+ */
+ipmi::RspType<> ipmiFirmwareExitFwUpdateMode()
 {
-    if (DEBUG)
-        std::cerr << "Exit FW update mode\n";
-    *data_len = 0;
 
-    ipmi_ret_t rc = IPMI_CC_OK;
     switch (fw_update_status.state())
     {
         case fw_update_status_cache::FW_STATE_INIT:
         case fw_update_status_cache::FW_STATE_IDLE:
-            rc = IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
             break;
         case fw_update_status_cache::FW_STATE_DOWNLOAD:
             unlink(FIRMWARE_BUFFER_FILE);
         case fw_update_status_cache::FW_STATE_VERIFY:
             break;
         case fw_update_status_cache::FW_STATE_WRITE:
-            rc = IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
             break;
         case fw_update_status_cache::FW_STATE_READY:
         case fw_update_status_cache::FW_STATE_ERROR:
             unlink(FIRMWARE_BUFFER_FILE);
             break;
         case fw_update_status_cache::FW_STATE_AC_CYCLE_REQUIRED:
-            rc = IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
             break;
     }
-    if (rc == IPMI_CC_OK)
+    // attempt to reset the state machine -- this may fail
+    auto method =
+        _bus.new_method_call(FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
+                             "org.freedesktop.DBus.Properties", "Abort");
+    try
     {
-        // attempt to reset the state machine -- this may fail
-        auto method = _bus.new_method_call(
-            FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_PATH,
-            "org.freedesktop.DBus.Properties", "Abort");
-        try
-        {
-            auto reply = _bus.call(method);
+        auto reply = _bus.call(method);
 
-            ipmi::DbusVariant retval;
-            reply.read(retval);
-            if (sdbusplus::message::variant_ns::get<int>(retval) != 0)
-                rc = IPMI_CC_INVALID_FIELD_REQUEST;
-        }
-        catch (sdbusplus::exception::SdBusError &e)
-        {
-            std::cerr << "SDBus Error: " << e.what() << "\n";
-            return IPMI_CC_UNSPECIFIED_ERROR;
-        }
+        ipmi::DbusVariant retval;
+        reply.read(retval);
+        if (sdbusplus::message::variant_ns::get<int>(retval) != 0)
+            return ipmi::responseInvalidFieldRequest();
     }
-
-    return rc;
+    catch (sdbusplus::exception::SdBusError &e)
+    {
+        std::cerr << "SDBus Error: " << e.what() << "\n";
+        return ipmi::responseUnspecifiedError();
+    }
 }
 
 static void post_transfer_complete_handler(
@@ -1834,9 +1830,9 @@ static void register_netfn_firmware_functions()
                            PRIVILEGE_ADMIN);
 
     // exit firmware update mode
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_EXIT_FW_UPDATE_MODE,
-                           NULL, ipmi_firmware_exit_fw_update_mode,
-                           PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_EXIT_FW_UPDATE_MODE,
+                          ipmi::Privilege::Admin, ipmiFirmwareExitFwUpdateMode);
 
     // firmware control mechanism (set filename, usb, etc.)
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_UPDATE_CONTROL, NULL,
