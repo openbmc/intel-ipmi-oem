@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <ipmid/api.hpp>
 #include <map>
 #include <random>
 #include <sdbusplus/bus.hpp>
@@ -262,36 +263,37 @@ static constexpr int FW_RANDOM_NUMBER_LENGTH = 8;
 static constexpr auto FW_RANDOM_NUMBER_TTL = std::chrono::seconds(30);
 static uint8_t fw_random_number[FW_RANDOM_NUMBER_LENGTH];
 
-static ipmi_ret_t ipmi_firmware_get_fw_random_number(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+/** @brief implements get firmwre random number command
+ *  @param - None
+ *
+ *  @returns IPMI completion code plus response data
+ *  fwRandomNumber - random number
+ */
+ipmi::RspType<std::array<uint8_t, FW_RANDOM_NUMBER_LENGTH> // random number
+              >
+    ipmiFirmwareGetFwRandomNumber()
 {
+
+    constexpr uint8_t fwRandomMaxValue = 255;
     std::random_device rd;
     std::default_random_engine gen(rd());
-    std::uniform_int_distribution<> dist{0, 255};
-
-    if (*data_len != 0)
+    std::uniform_int_distribution<> dist{0, fwRandomMaxValue};
+    fw_random_number_timestamp = std::chrono::steady_clock::now();
+    std::array<uint8_t, FW_RANDOM_NUMBER_LENGTH> fwRandomNumber;
+    for (auto i : fwRandomNumber)
     {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        fwRandomNumber[i] = dist(gen);
+    }
+    if (DEBUG)
+    {
+        std::cerr << "FW Rand Num: 0x" << std::hex << fwRandomNumber[0] << " 0x"
+                  << fwRandomNumber[1] << " 0x" << fwRandomNumber[2] << " 0x"
+                  << fwRandomNumber[3] << " 0x" << fwRandomNumber[4] << " 0x"
+                  << fwRandomNumber[5] << " 0x" << fwRandomNumber[6] << " 0x"
+                  << fwRandomNumber[7] << '\n';
     }
 
-    fw_random_number_timestamp = std::chrono::steady_clock::now();
-
-    uint8_t *msg_reply = static_cast<uint8_t *>(response);
-    for (int i = 0; i < FW_RANDOM_NUMBER_LENGTH; i++)
-        fw_random_number[i] = msg_reply[i] = dist(gen);
-
-    if (DEBUG)
-        std::cerr << "FW Rand Num: 0x" << std::hex << (int)msg_reply[0] << " 0x"
-                  << (int)msg_reply[1] << " 0x" << (int)msg_reply[2] << " 0x"
-                  << (int)msg_reply[3] << " 0x" << (int)msg_reply[4] << " 0x"
-                  << (int)msg_reply[5] << " 0x" << (int)msg_reply[6] << " 0x"
-                  << (int)msg_reply[7] << '\n';
-
-    *data_len = FW_RANDOM_NUMBER_LENGTH;
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(fwRandomNumber);
 }
 
 static ipmi_ret_t ipmi_firmware_enter_fw_transfer_mode(
@@ -1824,9 +1826,9 @@ static void register_netfn_firmware_functions()
                            PRIVILEGE_ADMIN);
 
     // generate bmc fw update random number (for enter fw tranfer mode)
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_UPDATE_RAND_NUM,
-                           NULL, ipmi_firmware_get_fw_random_number,
-                           PRIVILEGE_ADMIN);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_UPDATE_RAND_NUM,
+        ipmi::Privilege::Admin, ipmiFirmwareGetFwRandomNumber);
 
     // enter firmware update mode
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_SET_FW_UPDATE_MODE,
