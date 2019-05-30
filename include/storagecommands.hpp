@@ -130,6 +130,18 @@ enum class IPMINetfnStorageCmds : ipmi_cmd_t
     ipmiCmdGetSDR = 0x23,
 };
 
+// AddSELRequest
+enum addSelRequestdata
+{
+    reqOemEventData = 0,
+    reqOemTsEventLastData = 4,
+    reqGeneratorIdLsb = 4,
+    reqGeneratorIdMsb = 5,
+    reqSensorNum = 8,
+    reqEventType = 9,
+    reqSystemEventData = 10,
+};
+
 #pragma pack(push, 1)
 struct FRUHeader
 {
