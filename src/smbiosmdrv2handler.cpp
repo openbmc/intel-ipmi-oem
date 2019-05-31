@@ -1184,35 +1184,31 @@ ipmi_ret_t cmd_mdr2_unlock_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t cmd_mdr2_data_start(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                               ipmi_request_t request, ipmi_response_t response,
-                               ipmi_data_len_t data_len, ipmi_context_t context)
+/**
+@brief This command is executed after POST BIOS to get the session info.
+
+@param - agentId, dataInfo, dataLength, xferAddress, xferLength, timeout.
+
+@return xferStartAck and session on success.
+**/
+ipmi::RspType<uint8_t, uint16_t>
+    cmd_mdr2_data_start(uint16_t agentId, std::array<uint8_t, 16> dataInfo,
+                        uint32_t dataLength, uint32_t xferAddress,
+                        uint32_t xferLength, uint16_t timeout)
 {
-    auto requestData = reinterpret_cast<const MDRiiDataStartRequest *>(request);
-    auto responseData = reinterpret_cast<MDRiiDataStartResponse *>(response);
-    std::vector<uint8_t> idVector;
     uint16_t session = 0;
 
-    if (*data_len != sizeof(MDRiiDataStartRequest))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *data_len = 0;
-
-    if (requestData->dataLength > smbiosTableStorageSize)
+    if (dataLength > smbiosTableStorageSize)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Requested data length is out of SMBIOS Table storage size.");
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
-
-    if ((requestData->xferLength + requestData->xferAddress) > mdriiSMSize)
+    if ((xferLength + xferAddress) > mdriiSMSize)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Invalid data address and size");
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
     std::string service = ipmi::getService(bus, mdrv2Interface, mdrv2Path);
@@ -1222,41 +1218,38 @@ ipmi_ret_t cmd_mdr2_data_start(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         mdrv2 = std::make_unique<MDRV2>();
     }
 
-    int agentIndex = mdrv2->agentLookup(requestData->agentId);
+    int agentIndex = mdrv2->agentLookup(agentId);
     if (agentIndex == -1)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Unknown agent id",
-            phosphor::logging::entry("ID=%x", requestData->agentId));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+            "Unknown agent id", phosphor::logging::entry("ID=%x", agentId));
+        return ipmi::responseParmOutOfRange();
     }
 
-    int idIndex =
-        mdrv2->findDataId(requestData->dataSetInfo.dataInfo,
-                          sizeof(requestData->dataSetInfo.dataInfo), service);
+    int idIndex = mdrv2->findDataId(&dataInfo[0], sizeof(dataInfo), service);
 
     if ((idIndex < 0) || (idIndex >= maxDirEntries))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Invalid Data ID", phosphor::logging::entry("IDINDEX=%x", idIndex));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
-    if (mdrv2->smbiosTryLock(1, idIndex, &session, requestData->timeout))
+    if (mdrv2->smbiosTryLock(1, idIndex, &session, timeout))
     {
         try
         {
-            mdrv2->area = std::make_unique<SharedMemoryArea>(
-                requestData->xferAddress, requestData->xferLength);
+            mdrv2->area =
+                std::make_unique<SharedMemoryArea>(xferAddress, xferLength);
         }
         catch (const std::system_error &e)
         {
             mdrv2->smbiosUnlock(idIndex);
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "Unable to access share memory");
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return ipmi::responseUnspecifiedError();
         }
-        mdrv2->smbiosDir.dir[idIndex].common.size = requestData->dataLength;
+        mdrv2->smbiosDir.dir[idIndex].common.size = dataLength;
         mdrv2->smbiosDir.dir[idIndex].lockHandle = session;
         if (-1 ==
             mdrv2->syncDirCommonData(
@@ -1264,65 +1257,59 @@ ipmi_ret_t cmd_mdr2_data_start(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "Unable to sync data to service");
-            return IPMI_CC_RESPONSE_ERROR;
+            return ipmi::responseResponseError();
         }
     }
     else
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Canot lock smbios");
-        return IPMI_CC_UNSPECIFIED_ERROR;
-    }
+        i
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Canot lock smbios");
+            return ipmi::responseUnspecifiedError();
+        }
 
-    responseData->sessionHandle = session;
-    responseData->xferStartAck = 1;
+    static constexpr uint8_t xferStartAck = 1;
 
-    *data_len = sizeof(MDRiiDataStartResponse);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(xferStartAck, session);
 }
 
-ipmi_ret_t cmd_mdr2_data_done(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                              ipmi_request_t request, ipmi_response_t response,
-                              ipmi_data_len_t data_len, ipmi_context_t context)
+/**
+@brief This command is executed to close the session.
+
+@param - agentId, lockHandle.
+
+@return completion code on success.
+**/
+ipmi::RspType<> cmd_mdr2_data_done(uint16_t agentId, uint16_t lockHandle)
 {
-    auto requestData = reinterpret_cast<const MDRiiDataDoneRequest *>(request);
-
-    if (*data_len != sizeof(MDRiiDataDoneRequest))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *data_len = 0;
 
     if (mdrv2 == nullptr)
     {
         mdrv2 = std::make_unique<MDRV2>();
     }
 
-    int agentIndex = mdrv2->agentLookup(requestData->agentId);
+    int agentIndex = mdrv2->agentLookup(agentId);
     if (agentIndex == -1)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Unknown agent id",
-            phosphor::logging::entry("ID=%x", requestData->agentId));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+            "Unknown agent id", phosphor::logging::entry("ID=%x", agentId));
+        return ipmi::responseParmOutOfRange();
     }
 
-    int idIndex = mdrv2->findLockHandle(requestData->lockHandle);
+    int idIndex = mdrv2->findLockHandle(lockHandle);
 
     if ((idIndex < 0) || (idIndex >= maxDirEntries))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Invalid Data ID", phosphor::logging::entry("IDINDEX=%x", idIndex));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
     if (!mdrv2->smbiosUnlock(idIndex))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Send data done failed - cannot unlock idIndex");
-        return IPMI_CC_DESTINATION_UNAVAILABLE;
+        return ipmi::responseDestinationUnavailable();
     }
 
     mdrv2->area.reset(nullptr);
@@ -1346,9 +1333,8 @@ ipmi_ret_t cmd_mdr2_data_done(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "MDR2 Store data to flash failed");
-        return IPMI_CC_DESTINATION_UNAVAILABLE;
+        return ipmi::responseDestinationUnavailable();
     }
-
     bool status = false;
     std::string service = ipmi::getService(bus, mdrv2Interface, mdrv2Path);
     sdbusplus::message::message method = bus.new_method_call(
@@ -1365,17 +1351,17 @@ ipmi_ret_t cmd_mdr2_data_done(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             "Error Sync data with service",
             phosphor::logging::entry("SERVICE=%s", service.c_str()),
             phosphor::logging::entry("PATH=%s", mdrv2Path));
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
     }
 
     if (!status)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Sync data with service failure");
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
 
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess();
 }
 
 static void register_netfn_smbiosmdrv2_functions(void)
@@ -1433,12 +1419,12 @@ static void register_netfn_smbiosmdrv2_functions(void)
                            NULL, cmd_mdr2_unlock_data, PRIVILEGE_OPERATOR);
 
     // <Send MDRII Data Start>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_DATA_START, NULL,
-                           cmd_mdr2_data_start, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
+                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_DATA_START,
+                          ipmi::Privilege::Operator, cmd_mdr2_data_start);
 
     // <Send MDRII Data Done>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_DATA_DONE, NULL,
-                           cmd_mdr2_data_done, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
+                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_DATA_DONE,
+                          ipmi::Privilege::Operator, cmd_mdr2_data_done);
 }
