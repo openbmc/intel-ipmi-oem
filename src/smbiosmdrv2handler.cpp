@@ -16,7 +16,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <ipmid/api.h>
 #include <limits.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -25,6 +24,7 @@
 #include <commandutils.hpp>
 #include <cstdint>
 #include <fstream>
+#include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
@@ -217,57 +217,53 @@ uint32_t MDRV2::calcChecksum32(uint8_t *buf, uint32_t len)
     return sum;
 }
 
-ipmi_ret_t cmd_mdr2_agent_status(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                 ipmi_request_t request,
-                                 ipmi_response_t response,
-                                 ipmi_data_len_t data_len,
-                                 ipmi_context_t context)
+/** @brief implements mdr2 agent status command
+ *  @param agentId
+ *  @param dirVersion
+ *
+ *  @returns IPMI completion code plus response data
+ *  - mdrVersion
+ *  - agentVersion
+ *  - dirVersion
+ *  - dirEntries
+ *  - dataRequest
+ */
+ipmi::RspType<uint8_t, uint8_t, uint8_t, uint8_t, uint8_t>
+    mdr2AgentStatus(uint16_t agentId, uint8_t dirVersion)
 {
-    auto requestData = reinterpret_cast<const MDRiiGetAgentStatus *>(request);
-    auto responseData = reinterpret_cast<MDRiiAgentStatusResponse *>(response);
-
-    if (*data_len != sizeof(MDRiiGetAgentStatus))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *data_len = 0;
-
     if (mdrv2 == nullptr)
     {
         mdrv2 = std::make_unique<MDRV2>();
     }
 
-    int agentIndex = mdrv2->agentLookup(requestData->agentId);
+    int agentIndex = mdrv2->agentLookup(agentId);
     if (agentIndex == -1)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Unknown agent id",
-            phosphor::logging::entry("ID=%x", requestData->agentId));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+            "Unknown agent id", phosphor::logging::entry("ID=%x", agentId));
+        return ipmi::responseParmOutOfRange();
     }
 
-    responseData->mdrVersion = mdr2Version;
-    responseData->agentVersion = smbiosAgentVersion;
-    responseData->dirVersion = mdrv2->smbiosDir.dirVersion;
-    responseData->dirEntries = mdrv2->smbiosDir.dirEntries;
+    constexpr uint8_t mdrVersion = mdr2Version;
+    constexpr uint8_t agentVersion = smbiosAgentVersion;
+    uint8_t dirVersionResp = mdrv2->smbiosDir.dirVersion;
+    uint8_t dirEntries = mdrv2->smbiosDir.dirEntries;
+    uint8_t dataRequest;
 
-    if (mdrv2->smbiosDir.remoteDirVersion != requestData->dirVersion)
+    if (mdrv2->smbiosDir.remoteDirVersion != dirVersion)
     {
-        mdrv2->smbiosDir.remoteDirVersion = requestData->dirVersion;
-        responseData->dataRequest =
+        mdrv2->smbiosDir.remoteDirVersion = dirVersion;
+        dataRequest =
             static_cast<uint8_t>(DirDataRequestEnum::dirDataRequested);
     }
     else
     {
-        responseData->dataRequest =
+        dataRequest =
             static_cast<uint8_t>(DirDataRequestEnum::dirDataNotRequested);
     }
 
-    *data_len = sizeof(MDRiiAgentStatusResponse);
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(mdrVersion, agentVersion, dirVersionResp,
+                                 dirEntries, dataRequest);
 }
 
 ipmi_ret_t cmd_mdr2_get_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -522,25 +518,14 @@ ipmi_ret_t cmd_mdr2_get_data_info(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-// Offer a agent ID to get the "Data Set ID"
-ipmi_ret_t cmd_mdr2_data_info_offer(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                    ipmi_request_t request,
-                                    ipmi_response_t response,
-                                    ipmi_data_len_t data_len,
-                                    ipmi_context_t context)
+/** @brief implements mdr2 data info offer command
+ *  @param agentId - Offer a agent ID to get the "Data Set ID"
+ *
+ *  @returns IPMI completion code plus response data
+ *  - dataInfo
+ */
+ipmi::RspType<std::vector<uint8_t>> mdr2DataInfoOffer(uint16_t agentId)
 {
-    auto requestData = reinterpret_cast<const MDRiiOfferDataInfo *>(request);
-    auto dataOut = reinterpret_cast<uint8_t *>(response);
-    std::vector<uint8_t> dataInfo;
-
-    if (*data_len != sizeof(MDRiiOfferDataInfo))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *data_len = 0;
-
     std::string service = ipmi::getService(bus, mdrv2Interface, mdrv2Path);
 
     if (mdrv2 == nullptr)
@@ -548,18 +533,18 @@ ipmi_ret_t cmd_mdr2_data_info_offer(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         mdrv2 = std::make_unique<MDRV2>();
     }
 
-    int agentIndex = mdrv2->agentLookup(requestData->agentId);
+    int agentIndex = mdrv2->agentLookup(agentId);
     if (agentIndex == -1)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Unknown agent id",
-            phosphor::logging::entry("ID=%x", requestData->agentId));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+            "Unknown agent id", phosphor::logging::entry("ID=%x", agentId));
+        return ipmi::responseParmOutOfRange();
     }
 
     sdbusplus::message::message method = bus.new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "GetDataOffer");
 
+    std::vector<uint8_t> dataInfo;
     try
     {
         sdbusplus::message::message reply = bus.call(method);
@@ -572,7 +557,7 @@ ipmi_ret_t cmd_mdr2_data_info_offer(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Send data info offer failed - not available to update data "
             "into agent at present");
-        return IPMI_CC_PARAMETER_NOT_SUPPORT_IN_PRESENT_STATE;
+        return ipmi::responseCommandNotAvailable();
     }
     catch (sdbusplus::exception_t &)
     {
@@ -580,19 +565,17 @@ ipmi_ret_t cmd_mdr2_data_info_offer(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             "Error send data info offer",
             phosphor::logging::entry("SERVICE=%s", service.c_str()),
             phosphor::logging::entry("PATH=%s", mdrv2Path));
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
     }
 
     if (dataInfo.size() != sizeof(MDRiiOfferDataInfoResponse))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error send data info offer, return length invalid");
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
 
-    *data_len = dataInfo.size();
-    std::copy(dataInfo.begin(), dataInfo.end(), dataOut);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(dataInfo);
 }
 
 ipmi_ret_t cmd_mdr2_send_data_info(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1382,9 +1365,9 @@ static void register_netfn_smbiosmdrv2_functions(void)
 {
     // MDR V2 Command
     // <Get MDRII Status Command>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_AGENT_STATUS,
-                           NULL, cmd_mdr2_agent_status, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
+                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_AGENT_STATUS,
+                          ipmi::Privilege::Operator, mdr2AgentStatus);
 
     // <Get MDRII Directory Command>
     ipmi_register_callback(NETFUN_INTEL_APP_OEM,
@@ -1402,10 +1385,10 @@ static void register_netfn_smbiosmdrv2_functions(void)
                            NULL, cmd_mdr2_get_data_info, PRIVILEGE_OPERATOR);
 
     // <Send MDRII Info Offer>
-    ipmi_register_callback(
-        NETFUN_INTEL_APP_OEM,
-        IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_SEND_DATA_INFO_OFFER, NULL,
-        cmd_mdr2_data_info_offer, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
+        IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_SEND_DATA_INFO_OFFER,
+        ipmi::Privilege::Operator, mdr2DataInfoOffer);
 
     // <Send MDRII Data Info>
     ipmi_register_callback(NETFUN_INTEL_APP_OEM,
