@@ -138,23 +138,6 @@ struct Mdr2DirStruct
 static constexpr const size_t syncDirCommonSize = 3;
 
 // ====================== MDR II Pull Command Structures ======================
-// MDR II Pull Agent status inquiry command
-struct MDRiiGetAgentStatus
-{
-    uint16_t agentId;
-    uint8_t dirVersion;
-};
-
-// MDR II status inquiry response
-struct MDRiiAgentStatusResponse
-{
-    uint8_t mdrVersion;
-    uint8_t agentVersion;
-    uint8_t dirVersion;
-    uint8_t dirEntries;
-    uint8_t dataRequest;
-};
-
 struct MDRiiGetDirRequest
 {
     uint16_t agentId;
@@ -215,11 +198,6 @@ struct MDRiiSendDirRequest
     uint8_t returnedEntries;
     uint8_t remainingEntries;
     Mdr2DirEntry data[1]; // place holder for N directory entries
-};
-
-struct MDRiiOfferDataInfo
-{
-    uint16_t agentId;
 };
 
 // MDR II Client send data set info offer response
