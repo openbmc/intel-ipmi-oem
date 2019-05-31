@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <ipmid/api.hpp>
 #include <map>
 #include <random>
 #include <sdbusplus/bus.hpp>
@@ -1254,47 +1255,34 @@ enum
     CHANNEL_USB_MASS_STORAGE,
 } channel_transfer_type;
 
-static ipmi_ret_t ipmi_firmware_max_transfer_size(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+static constexpr uint8_t channelListSize = 2;
+/** @brief implements Maximum Firmware Transfer size command
+ *  @parameter
+ *   -  none
+ *  @returns IPMI completion code plus response data
+ *   - count - channel count
+ *   - channelList - channel list information
+ */
+ipmi::RspType<uint8_t, // channel count
+              std::array<std::tuple<uint8_t, uint32_t>,
+                         channelListSize> // channel
+                                          // list
+              >
+    ipmiFirmwareMaxTransferSize()
 {
+    constexpr uint8_t KCSMaxBufSize = 128;
+    constexpr uint32_t RMCPPLUSMaxBufSize = 50 * 1024;
     if (DEBUG)
         std::cerr << "Get FW max transfer size\n";
-
     // Byte 1 - Count (N) Number of devices data is being returned for.
     // Byte 2 - ID Tag 00 – reserved 01 – kcs 02 – rmcp+,
     //                 03 – usb data, 04 – usb mass storage
     // Byte 3-6 - transfer size (little endian)
     // Bytes - 7:(5xN) - Repeat of 2 through 6
-
-    uint8_t count = 0;
-    auto ret_count = reinterpret_cast<uint8_t *>(response);
-    auto info = reinterpret_cast<struct fw_channel_size *>(ret_count + 1);
-
-    info->channel_id = CHANNEL_KCS;
-    info->channel_size = 128;
-    info++;
-    count++;
-
-    info->channel_id = CHANNEL_RMCP_PLUS;
-    info->channel_size = 50 * 1024;
-    info++;
-    count++;
-
-    /*
-    info->channel_id = CHANNEL_USB_MASS_STORAGE;
-    info->channel_size = 128;
-    info++;
-    count++;
-    */
-
-    *ret_count = count;
-
-    // Status code.
-    ipmi_ret_t rc = IPMI_CC_OK;
-    *data_len = sizeof(count) + count * sizeof(*info);
-
-    return rc;
+    static constexpr std::array<std::tuple<uint8_t, uint32_t>, channelListSize>
+        channelList = {{{CHANNEL_KCS, KCSMaxBufSize},
+                        {CHANNEL_RMCP_PLUS, RMCPPLUSMaxBufSize}}};
+    return ipmi::responseSuccess(channelListSize, channelList);
 }
 
 enum
@@ -1804,9 +1792,9 @@ static void register_netfn_firmware_functions()
                            PRIVILEGE_ADMIN);
 
     // get channel information (max transfer sizes)
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_UPD_CHAN_INFO,
-                           NULL, ipmi_firmware_max_transfer_size,
-                           PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_GET_FW_UPD_CHAN_INFO,
+                          ipmi::Privilege::Admin, ipmiFirmwareMaxTransferSize);
 
     // get bmc execution context
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_BMC_EXEC_CTX, NULL,
