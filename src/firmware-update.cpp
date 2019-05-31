@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <ipmid/api.hpp>
 #include <map>
 #include <random>
 #include <sdbusplus/bus.hpp>
@@ -1377,37 +1378,33 @@ static ipmi_ret_t ipmi_firmware_get_fw_execution_context(
     return rc;
 }
 
-struct fw_update_status_response
-{
-    uint8_t status;
-    uint8_t percent;
-    uint8_t check;
-} __attribute__((packed));
+/** @brief implements firmware get status command
+ *  @parameter
+ *   -  none
+ *  @returns IPMI completion code plus response data
+ *   - status     -  processing status
+ *   - percentage -  percentage completion
+ *   - check      -  channel integrity check status
+ **/
+ipmi::RspType<uint8_t, // status
+              uint8_t, // percentage
+              uint8_t  // check
+              >
+    ipmiFrmwareGetStatus()
 
-static ipmi_ret_t ipmi_firmware_get_status(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                           ipmi_request_t request,
-                                           ipmi_response_t response,
-                                           ipmi_data_len_t data_len,
-                                           ipmi_context_t context)
 {
     if (DEBUG)
         std::cerr << "Get FW update status\n";
-
     // Byte 1 - status (0=init, 1=idle, 2=download, 3=validate, 4=write,
     //                  5=ready, f=error, 83=ac cycle required)
     // Byte 2 - percent
     // Byte 3 - integrity check status (0=none, 1=req, 2=sha2ok, e2=sha2fail)
-
-    auto fw_status =
-        reinterpret_cast<struct fw_update_status_response *>(response);
-
-    fw_status->status = fw_update_status.state();
-    fw_status->percent = fw_update_status.percent();
-    fw_status->check = xfer_hash_check ? xfer_hash_check->status() : 0;
+    uint8_t status = fw_update_status.state();
+    uint8_t percent = fw_update_status.percent();
+    uint8_t check = xfer_hash_check ? xfer_hash_check->status() : 0;
 
     // Status code.
-    *data_len = sizeof(*fw_status);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(status, percent, check);
 }
 
 static constexpr uint8_t FW_UPDATE_OPTIONS_NO_DOWNREV = (1 << 0);
@@ -1843,9 +1840,9 @@ static void register_netfn_firmware_functions()
                            ipmi_firmware_control, PRIVILEGE_ADMIN);
 
     // get firmware update status
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_STATUS, NULL,
-                           ipmi_firmware_get_status, PRIVILEGE_ADMIN);
-
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_GET_STATUS, ipmi::Privilege::Admin,
+                          ipmiFrmwareGetStatus);
     // set firmware update options (no downgrade, etc.)
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_SET_FW_UPDATE_OPTIONS,
                            NULL, ipmi_firmware_update_options, PRIVILEGE_ADMIN);
