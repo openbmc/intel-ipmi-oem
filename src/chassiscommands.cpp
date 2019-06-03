@@ -39,6 +39,14 @@ const static constexpr char *ledIDBlinkObj =
 const static constexpr char *ledInterface = "xyz.openbmc_project.Led.Group";
 const static constexpr char *ledProp = "Asserted";
 
+const static constexpr char *hostPOHInterface =
+    "xyz.openbmc_project.State.PowerOnHours";
+const static constexpr char *hostPOHObjPath =
+    "/xyz/openbmc_project/control/host0/powerOnHours";
+const static constexpr char *hostPOHProp = "POHCounter";
+
+constexpr uint8_t pohMinutesPerCount = 1;
+
 constexpr size_t defaultIdentifyTimeOut = 15;
 
 std::unique_ptr<phosphor::Timer> identifyTimer
@@ -217,6 +225,35 @@ ipmi::RspType<> ipmiChassisIdentify(std::optional<uint8_t> interval,
     return ipmi::responseSuccess();
 }
 
+uint32_t getPOHCounter()
+{
+    auto bus = getSdBus();
+    bool asserted = false;
+    std::string service = {};
+
+    service = getService(*bus, hostPOHInterface, hostPOHObjPath);
+
+    ipmi::Value property = getDbusProperty(*bus, service, hostPOHObjPath,
+                                           hostPOHInterface, hostPOHProp);
+    return std::get<uint32_t>(property);
+}
+
+ipmi::RspType<uint8_t, // Minutes per count
+              uint32_t // Counter reading
+              >
+    ipmiGetPOHCounter()
+{
+    try
+    {
+        return ipmi::responseSuccess(pohMinutesPerCount, getPOHCounter());
+    }
+    catch (std::exception &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseUnspecifiedError();
+    }
+}
+
 static void registerChassisFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -228,6 +265,12 @@ static void registerChassisFunctions(void)
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnChassis,
                           ipmi::chassis::cmdChassisIdentify,
                           ipmi::Privilege::Operator, ipmiChassisIdentify);
+
+    // <Get POH Counter>
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnChassis,
+                          ipmi::chassis::cmdGetPohCounter,
+                          ipmi::Privilege::User, ipmiGetPOHCounter);
+
     return;
 }
 
