@@ -35,7 +35,8 @@ namespace ipmi
 
 // TODO: Service names may change. Worth to consider dynamic detection.
 static constexpr const char* fanService = "xyz.openbmc_project.FanSensor";
-static constexpr const char* gpioService = "xyz.openbmc_project.Gpio";
+static constexpr const char* buttonService =
+    "xyz.openbmc_project.Chassis.Buttons";
 static constexpr const char* ledServicePrefix =
     "xyz.openbmc_project.LED.Controller.";
 
@@ -47,15 +48,13 @@ static constexpr const char* fanTachPathPrefix =
     "/xyz/openbmc_project/sensors/fan_tach/Fan_";
 
 static constexpr const char* fanIntf = "xyz.openbmc_project.Sensor.Value";
-static constexpr const char* gpioIntf = "xyz.openbmc_project.Control.Gpio";
+static constexpr const char* buttonIntf = "xyz.openbmc_project.Chassis.Buttons";
 static constexpr const char* ledIntf = "xyz.openbmc_project.Led.Physical";
 
 static constexpr const char* busPropertyIntf =
     "org.freedesktop.DBus.Properties";
 static constexpr const char* ledStateStr =
     "xyz.openbmc_project.Led.Physical.Action."; // Comes with postfix Off/On
-static constexpr const char* smGetSignalPathPrefix =
-    "/xyz/openbmc_project/control/gpio/";
 
 /** @enum MtmLvl
 .*
@@ -87,7 +86,7 @@ enum class SmSignalGet : uint8_t
     smPowerButton = 0,
     smResetButton = 1,
     smSleepButton,
-    smNmiButton = 3,
+    smNMIButton = 3,
     smChassisIntrusion = 4,
     smPowerGood,
     smPowerRequestGet,
@@ -101,9 +100,6 @@ enum class SmSignalGet : uint8_t
     smSignalReserved,
     smFanTachometerGet = 0xf,
     smNcsiDiag = 0x10,
-    smFpLcpLeftButton = 0x11,
-    smFpLcpRightButton,
-    smFpLcpEnterButton,
     smGetSignalMax
 };
 
@@ -135,20 +131,6 @@ struct SetSmSignalReq
     uint8_t Instance;
     SmActionSet Action;
     uint8_t Value;
-};
-
-struct GetSmSignalReq
-{
-    SmSignalGet Signal;
-    uint8_t Instance;
-    SmActionGet Action;
-};
-
-struct GetSmSignalRsp
-{
-    uint8_t SigVal;
-    uint8_t SigVal1;
-    uint8_t SigVal2;
 };
 
 class LedProperty
@@ -245,23 +227,15 @@ class Manufacturing
         }
     }
 
-    int8_t getProperty(const char* service, std::string path,
-                       const char* interface, std::string propertyName,
+    int8_t getProperty(std::string service, std::string path,
+                       std::string interface, std::string propertyName,
                        ipmi::Value* value);
-    int8_t setProperty(const char* service, std::string path,
-                       const char* interface, std::string propertyName,
+    int8_t setProperty(std::string service, std::string path,
+                       std::string interface, std::string propertyName,
                        ipmi::Value value);
     int8_t disablePidControlService(const bool disable);
 
     void revertTimerHandler();
-
-    std::tuple<uint8_t, ipmi_ret_t, uint8_t> proccessSignal(SmSignalGet signal,
-                                                            SmActionGet action);
-
-    std::string getGpioPathForSmSignal(uint8_t gpioInstane)
-    {
-        return smGetSignalPathPrefix + gpioPaths[gpioInstane];
-    }
 
     MtmLvl getAccessLvl(void)
     {
@@ -269,7 +243,7 @@ class Manufacturing
         if (mtmMode != MtmLvl::mtmExpired)
         {
             ipmi::Value mode;
-            if (getProperty("xyz.openbmc_project.SpeciaMode",
+            if (getProperty("xyz.openbmc_project.SpecialMode",
                             "/xyz/openbmc_project/security/specialMode",
                             "xyz.openbmc_project.Security.SpecialMode",
                             "SpecialMode", &mode) != 0)
@@ -282,7 +256,6 @@ class Manufacturing
         return mtmMode;
     }
 
-    std::vector<SmSignalGet> revertSmSignalGetVector;
     bool revertFanPWM = false;
     bool revertLedCallback = false;
     phosphor::Timer revertTimer;
