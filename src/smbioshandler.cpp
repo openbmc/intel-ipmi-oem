@@ -37,26 +37,18 @@ constexpr const char* MDRV1_INTERFACE = "xyz.openbmc_project.Smbios.MDR_V1";
 
 static void register_netfn_smbios_functions() __attribute__((constructor));
 
-ipmi_ret_t cmd_region_status(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                             ipmi_request_t request, ipmi_response_t response,
-                             ipmi_data_len_t data_len, ipmi_context_t context)
+/** @brief implements BMC region status command
+ *  @param regionId - data Region
+ *
+ *  @returns IPMI completion code plus response data
+ *   - dataOut -  MDRState
+ */
+ipmi::RspType<std::vector<uint8_t>> bmcRegionStatus(uint8_t regionId)
 {
-    auto requestData = reinterpret_cast<const RegionStatusRequest*>(request);
-    std::vector<uint8_t> status;
-
-    if (*data_len != sizeof(RegionStatusRequest))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    uint8_t regionId = requestData->regionId - 1;
-    *data_len = 0;
-
-    if (regionId >= maxMDRId)
+    if ((regionId >= maxMDRId) || (regionId == 0))
     {
         phosphor::logging::log<level::ERR>("Invalid region");
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
@@ -64,7 +56,10 @@ ipmi_ret_t cmd_region_status(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
                                        MDRV1_INTERFACE, "RegionStatus");
-    method.append(regionId);
+
+    uint8_t regionIdLocal = regionId - 1;
+
+    method.append(regionIdLocal);
     auto reply = bus->call(method);
     if (reply.is_method_error())
     {
@@ -72,20 +67,19 @@ ipmi_ret_t cmd_region_status(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             "Error get region status",
             phosphor::logging::entry("SERVICE=%s", service.c_str()),
             phosphor::logging::entry("PATH=%s", MDRV1_PATH));
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
-    reply.read(status);
+    std::vector<uint8_t> dataOut;
+    reply.read(dataOut);
 
-    if (status.size() != sizeof(MDRState))
+    if (dataOut.size() != sizeof(MDRState))
     {
         phosphor::logging::log<level::ERR>(
             "Error get region status, return length invalid");
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
-    *data_len = static_cast<size_t>(status.size());
-    auto dataOut = reinterpret_cast<uint8_t*>(response);
-    std::copy(&status[0], &status[*data_len], dataOut);
-    return IPMI_CC_OK;
+
+    return ipmi::responseSuccess(dataOut);
 }
 
 int sdplus_mdrv1_get_property(
@@ -202,66 +196,67 @@ ipmi_ret_t cmd_region_complete(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t cmd_region_read(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                           ipmi_request_t request, ipmi_response_t response,
-                           ipmi_data_len_t data_len, ipmi_context_t context)
+/** @brief implements BMC region read command
+ *  @parameter
+ *   - regionId - data Region
+ *   - length  - data Length to Read
+ *   - offset  - Offset to read
+ *
+ *  @returns IPMI completion code plus response data
+ *   - response
+ */
+ipmi::RspType<std::vector<uint8_t>>
+    bmcRegionRead(uint8_t regionId, uint8_t length, uint16_t offset)
 {
-    auto requestData = reinterpret_cast<const RegionReadRequest*>(request);
-    auto responseData = reinterpret_cast<RegionReadResponse*>(response);
-    sdbusplus::message::variant<uint8_t, uint16_t> regUsedVal;
-    sdbusplus::message::variant<uint8_t, uint16_t> lockPolicyVal;
-    std::vector<uint8_t> res;
+    std::variant<uint8_t, uint16_t> regUsedVal;
+    std::variant<uint8_t, uint16_t> lockPolicyVal;
 
-    if (*data_len < sizeof(RegionReadRequest))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    uint8_t regionId = requestData->regionId - 1;
-
-    *data_len = 0;
-
-    if (regionId >= maxMDRId)
+    if ((regionId >= maxMDRId) || (regionId == 0))
     {
         phosphor::logging::log<level::ERR>("Invalid region");
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     std::string service = ipmi::getService(*bus, MDRV1_INTERFACE, MDRV1_PATH);
+    uint8_t regionIdLocal = regionId - 1;
+
+    if (regionIdLocal == 0)
+    {
+        phosphor::logging::log<level::ERR>("Invalid region");
+        return ipmi::responseParmOutOfRange();
+    }
     // TODO to make sure the interface can get correct LockPolicy even
     // regionId changed by another task.
-    if (set_regionId(regionId, service) < 0)
+    if (set_regionId(regionIdLocal, service) < 0)
     {
         phosphor::logging::log<level::ERR>("Error setting regionId");
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
     if (0 > sdplus_mdrv1_get_property("RegionUsed", regUsedVal, service))
     {
         phosphor::logging::log<level::ERR>("Error getting regionUsed");
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
-    if (requestData->offset + requestData->length >
-        std::get<uint16_t>(regUsedVal))
+    if (offset + length > std::get<uint16_t>(regUsedVal))
     {
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::responseReqDataLenInvalid();
     }
 
     if (0 > sdplus_mdrv1_get_property("LockPolicy", lockPolicyVal, service))
     {
         phosphor::logging::log<level::ERR>("Error getting lockPolicy");
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
     if (regionLockUnlocked != std::get<uint8_t>(lockPolicyVal))
     {
-        return IPMI_CC_PARAMETER_NOT_SUPPORT_IN_PRESENT_STATE;
+        return ipmi::responseCommandNotAvailable();
     }
 
     auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
                                        MDRV1_INTERFACE, "RegionRead");
 
-    method.append(regionId, requestData->length, requestData->offset);
+    method.append(regionIdLocal, length, offset);
 
     auto reply = bus->call(method);
     if (reply.is_method_error())
@@ -270,24 +265,28 @@ ipmi_ret_t cmd_region_read(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             "Error read region data",
             phosphor::logging::entry("SERVICE=%s", service.c_str()),
             phosphor::logging::entry("PATH=%s", MDRV1_PATH));
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
+    std::vector<uint8_t> res;
     reply.read(res);
 
-    *data_len = responseData->length = res[0];
-    responseData->updateCount = res[1];
-
-    if ((*data_len == 0) || (*data_len >= 254))
+    if (res.size() < 2)
     {
         phosphor::logging::log<level::ERR>(
             "Data length send from service is invalid");
-        *data_len = 0;
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
+    }
+    uint8_t responseLength = res[0];
+    uint8_t updateCount = res[1];
+
+    if ((responseLength == 0) || (responseLength >= 254))
+    {
+        phosphor::logging::log<level::ERR>(
+            "Data length send from service is invalid");
+        return ipmi::responseResponseError();
     }
 
-    *data_len += 2 * sizeof(uint8_t);
-    std::copy(&res[2], &res[*data_len], responseData->data);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(res);
 }
 
 ipmi_ret_t cmd_region_write(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -471,9 +470,9 @@ static void register_netfn_smbios_functions(void)
 {
     // MDR V1 Command
     // <Get MDR Status Command>
-    ipmi_register_callback(ipmi::intel::netFnApp,
-                           ipmi::intel::app::cmdMdrStatus, NULL,
-                           cmd_region_status, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrStatus,
+                          ipmi::Privilege::Operator, bmcRegionStatus);
 
     // <Update Complete Status Command>
     ipmi_register_callback(ipmi::intel::netFnApp,
@@ -481,8 +480,9 @@ static void register_netfn_smbios_functions(void)
                            cmd_region_complete, PRIVILEGE_OPERATOR);
 
     // <Read MDR Command>
-    ipmi_register_callback(ipmi::intel::netFnApp, ipmi::intel::app::cmdMdrRead,
-                           NULL, cmd_region_read, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrRead,
+                          ipmi::Privilege::Operator, bmcRegionRead);
 
     // <Write MDR Command>
     ipmi_register_callback(ipmi::intel::netFnApp, ipmi::intel::app::cmdMdrWrite,
