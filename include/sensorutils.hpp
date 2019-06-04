@@ -17,7 +17,6 @@
 #pragma once
 #include <cmath>
 #include <iostream>
-#include <phosphor-logging/log.hpp>
 
 namespace ipmi
 {
@@ -37,8 +36,7 @@ static inline bool getSensorAttributes(const double max, const double min,
     double bDouble;
     if (max <= min)
     {
-        phosphor::logging::log<phosphor::logging::level::DEBUG>(
-            "getSensorAttributes: Max must be greater than min");
+        std::cerr << "getSensorAttributes: Max must be greater than min\n";
         return false;
     }
 
@@ -62,9 +60,8 @@ static inline bool getSensorAttributes(const double max, const double min,
     {
         if (rExp >= maxInt4)
         {
-            phosphor::logging::log<phosphor::logging::level::DEBUG>(
-                "rExp Too big, Max and Min range too far",
-                phosphor::logging::entry("REXP=%d", rExp));
+            std::cerr << "rExp Too big, Max and Min range too far REXP=" << rExp
+                      << "\n";
             return false;
         }
         mDouble /= 10;
@@ -76,8 +73,7 @@ static inline bool getSensorAttributes(const double max, const double min,
     {
         if (rExp <= minInt4)
         {
-            phosphor::logging::log<phosphor::logging::level::DEBUG>(
-                "rExp Too Small, Max and Min range too close");
+            std::cerr << "rExp Too Small, Max and Min range too close\n";
             return false;
         }
         // check to see if we reached the limit of where we can adjust back the
@@ -86,9 +82,8 @@ static inline bool getSensorAttributes(const double max, const double min,
         {
             if (mDouble < 1.0)
             {
-                phosphor::logging::log<phosphor::logging::level::DEBUG>(
-                    "Could not find mValue and B value with enough "
-                    "precision.");
+                std::cerr << "Could not find mValue and B value with enough "
+                             "precision.\n";
                 return false;
             }
             break;
@@ -110,8 +105,8 @@ static inline bool getSensorAttributes(const double max, const double min,
     {
         if (bExp >= maxInt4)
         {
-            phosphor::logging::log<phosphor::logging::level::DEBUG>(
-                "bExp Too Big, Max and Min range need to be adjusted");
+            std::cerr
+                << "bExp Too Big, Max and Min range need to be adjusted\n";
             return false;
         }
         bDouble /= 10;
@@ -123,8 +118,8 @@ static inline bool getSensorAttributes(const double max, const double min,
     {
         if (bExp <= minInt4)
         {
-            phosphor::logging::log<phosphor::logging::level::DEBUG>(
-                "bExp Too Small, Max and Min range need to be adjusted");
+            std::cerr
+                << "bExp Too Small, Max and Min range need to be adjusted\n";
             return false;
         }
         bDouble *= 10;

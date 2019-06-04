@@ -77,7 +77,7 @@ if (NOT YOCTO)
     add_test (NAME test_sensorcommands COMMAND runSensorTests)
     target_link_libraries (
         runSensorTests ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
-        phosphor_logging sdbusplus -lsystemd
+        sdbusplus -lsystemd
     )
 endif ()
 
