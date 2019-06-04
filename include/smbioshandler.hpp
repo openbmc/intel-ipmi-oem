@@ -50,34 +50,10 @@ typedef struct
     uint8_t CRC8;
 } __attribute__((packed)) MDRState;
 
-struct RegionStatusRequest
-{
-    uint8_t regionId;
-} __attribute__((packed));
-
-struct RegionStatusResponse
-{
-    MDRState State;
-} __attribute__((packed));
-
 struct RegionCompleteRequest
 {
     uint8_t sessionId;
     uint8_t regionId;
-} __attribute__((packed));
-
-struct RegionReadRequest
-{
-    uint8_t regionId;
-    uint8_t length;
-    uint16_t offset;
-} __attribute__((packed));
-
-struct RegionReadResponse
-{
-    uint8_t length;
-    uint8_t updateCount;
-    uint8_t data[msgPayloadSize];
 } __attribute__((packed));
 
 struct RegionWriteRequest
