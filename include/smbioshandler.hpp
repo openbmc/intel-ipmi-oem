@@ -60,12 +60,6 @@ struct RegionStatusResponse
     MDRState State;
 } __attribute__((packed));
 
-struct RegionCompleteRequest
-{
-    uint8_t sessionId;
-    uint8_t regionId;
-} __attribute__((packed));
-
 struct RegionReadRequest
 {
     uint8_t regionId;
@@ -78,23 +72,6 @@ struct RegionReadResponse
     uint8_t length;
     uint8_t updateCount;
     uint8_t data[msgPayloadSize];
-} __attribute__((packed));
-
-struct RegionWriteRequest
-{
-    uint8_t sessionId;
-    uint8_t regionId;
-    uint8_t length;
-    uint16_t offset;
-    uint8_t data[msgPayloadSize];
-} __attribute__((packed));
-
-struct RegionLockRequest
-{
-    uint8_t sessionId;
-    uint8_t regionId;
-    uint8_t lockPolicy;
-    uint16_t msTimeout;
 } __attribute__((packed));
 
 constexpr size_t maxMDRId = 5;
