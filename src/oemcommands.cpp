@@ -284,7 +284,6 @@ ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     *res = 0; // Byte1=Count of SlotPosition/FruID records.
     return IPMI_CC_OK;
 }
-
 ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                        ipmi_request_t request,
                                        ipmi_response_t response,
@@ -448,28 +447,17 @@ ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     return IPMI_CC_OK;
 }
+ipmi::RspType<uint8_t, uint8_t, std::vector<uint8_t>, uint8_t>
+    ipmiOEMGetProcessorErrConfig()
 
-ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                        ipmi_request_t request,
-                                        ipmi_response_t response,
-                                        ipmi_data_len_t dataLen,
-                                        ipmi_context_t context)
 {
-    GetProcessorErrConfigRes* resp =
-        reinterpret_cast<GetProcessorErrConfigRes*>(response);
-
-    if (*dataLen != 0)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
 
     std::string service =
         getService(dbus, processorErrConfigIntf, processorErrConfigObjPath);
     Value variant = getDbusProperty(dbus, service, processorErrConfigObjPath,
                                     processorErrConfigIntf, "ResetCfg");
-    resp->resetCfg = sdbusplus::message::variant_ns::get<uint8_t>(variant);
 
+    uint8_t resetCfg = sdbusplus::message::variant_ns::get<uint8_t>(variant);
     std::vector<uint8_t> caterrStatus;
     sdbusplus::message::variant<std::vector<uint8_t>> message;
 
@@ -493,43 +481,30 @@ ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             phosphor::logging::entry("PRORPERTY=CATERRStatus"),
             phosphor::logging::entry("PATH=%s", processorErrConfigObjPath),
             phosphor::logging::entry("INTERFACE=%s", processorErrConfigIntf));
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::response(ipmi::ccUnspecifiedError);
     }
 
     size_t len =
         maxCPUNum <= caterrStatus.size() ? maxCPUNum : caterrStatus.size();
     caterrStatus.resize(len);
-    std::copy(caterrStatus.begin(), caterrStatus.end(), resp->caterrStatus);
-    *dataLen = sizeof(GetProcessorErrConfigRes);
-
-    return IPMI_CC_OK;
+    uint8_t b; // reserved
+    return ipmi::responseSuccess(resetCfg, b, caterrStatus, maxCPUNum);
 }
 
-ipmi_ret_t ipmiOEMSetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                        ipmi_request_t request,
-                                        ipmi_response_t response,
-                                        ipmi_data_len_t dataLen,
-                                        ipmi_context_t context)
-{
-    SetProcessorErrConfigReq* req =
-        reinterpret_cast<SetProcessorErrConfigReq*>(request);
+ipmi::RspType<> ipmiOEMSetProcessorErrConfig(uint8_t resetCfg, uint8_t reserved,
+                                             uint8_t resetErrorOccurrenceCounts)
 
-    if (*dataLen != sizeof(SetProcessorErrConfigReq))
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
+{
+
     std::string service =
         getService(dbus, processorErrConfigIntf, processorErrConfigObjPath);
     setDbusProperty(dbus, service, processorErrConfigObjPath,
-                    processorErrConfigIntf, "ResetCfg", req->resetCfg);
+                    processorErrConfigIntf, "ResetCfg", resetCfg);
 
     setDbusProperty(dbus, service, processorErrConfigObjPath,
                     processorErrConfigIntf, "ResetErrorOccurrenceCounts",
-                    req->resetErrorOccurrenceCounts);
-    *dataLen = 0;
-
-    return IPMI_CC_OK;
+                    resetErrorOccurrenceCounts);
+    return ipmi::responseSuccess();
 }
 
 ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1888,14 +1863,17 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetSystemGUID),
         NULL, ipmiOEMSetSystemGUID,
         PRIVILEGE_ADMIN); // set system guid
+
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetBIOSID),
         NULL, ipmiOEMSetBIOSID, PRIVILEGE_ADMIN);
+
     ipmiPrintAndRegister(netfnIntcOEMGeneral,
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdGetOEMDeviceInfo),
                          NULL, ipmiOEMGetDeviceInfo, PRIVILEGE_USER);
+
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(
@@ -1930,17 +1908,16 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetSpecialUserPassword),
         ipmi::Privilege::Callback, ipmiOEMSetSpecialUserPassword);
-
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetProcessorErrConfig),
-        NULL, ipmiOEMGetProcessorErrConfig, PRIVILEGE_USER);
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
+        ipmi::Privilege::User, ipmiOEMGetProcessorErrConfig);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetProcessorErrConfig),
-        NULL, ipmiOEMSetProcessorErrConfig, PRIVILEGE_ADMIN);
+        ipmi::Privilege::Admin, ipmiOEMSetProcessorErrConfig);
     ipmiPrintAndRegister(netfnIntcOEMGeneral,
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdSetShutdownPolicy),
