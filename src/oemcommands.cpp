@@ -177,27 +177,25 @@ ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     setDbusProperty(dbus, service, objpath, intf, "UUID", guid);
     return IPMI_CC_OK;
 }
+/*
+ * @brief implements to the set BIOS ID command
+ * @param biosIDLength - Bios Id Length of 8-bit unsigned integer
+ * @param biosId - Character Vector to Receive biosId from User Input
+ *
+ * */
 
-ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                            ipmi_request_t request, ipmi_response_t response,
-                            ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi::RspType<uint8_t> ipmiOEMSetBIOSID(uint8_t biosIDLength,
+                                        std::vector<char> biosId)
 {
-    DeviceInfo* data = reinterpret_cast<DeviceInfo*>(request);
 
-    if ((*dataLen < 2) || (*dataLen != (1 + data->biosIDLength)))
+    if (biosIDLength != biosId.size())
     {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::responseReqDataLenInvalid();
     }
-    std::string idString((char*)data->biosId, data->biosIDLength);
-
+    std::string idString(biosId.begin(), biosId.end());
     std::string service = getService(dbus, biosIntf, biosObjPath);
     setDbusProperty(dbus, service, biosObjPath, biosIntf, biosProp, idString);
-    uint8_t* bytesWritten = static_cast<uint8_t*>(response);
-    *bytesWritten =
-        data->biosIDLength; // how many bytes are written into storage
-    *dataLen = 1;
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(biosIDLength);
 }
 
 ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -274,23 +272,10 @@ ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                            ipmi_request_t request, ipmi_response_t response,
-                            ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi::RspType<uint8_t> ipmiOEMGetAICFRU()
 {
-    if (*dataLen != 0)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *dataLen = 1;
-    uint8_t* res = reinterpret_cast<uint8_t*>(response);
-    // temporary fix. We don't support AIC FRU now. Just tell BIOS that no
-    // AIC is available so that BIOS will not timeout repeatly which leads to
-    // slow booting.
-    *res = 0; // Byte1=Count of SlotPosition/FruID records.
-    return IPMI_CC_OK;
+    ipmi::Cc compcode = 0x00;
+    return ipmi::responseSuccess(compcode);
 }
 
 ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1943,19 +1928,19 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetSystemGUID),
         NULL, ipmiOEMSetSystemGUID,
         PRIVILEGE_ADMIN); // set system guid
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetBIOSID),
-        NULL, ipmiOEMSetBIOSID, PRIVILEGE_ADMIN);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetBIOSID),
+        ipmi::Privilege::Admin, ipmiOEMSetBIOSID);
     ipmiPrintAndRegister(netfnIntcOEMGeneral,
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdGetOEMDeviceInfo),
                          NULL, ipmiOEMGetDeviceInfo, PRIVILEGE_USER);
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetAICSlotFRUIDSlotPosRecords),
-        NULL, ipmiOEMGetAICFRU, PRIVILEGE_USER);
+        ipmi::Privilege::User, ipmiOEMGetAICFRU);
 
     ipmi::registerHandler(
         ipmi::prioOpenBmcBase, ipmi::netFnOemOne,
