@@ -531,7 +531,6 @@ ipmi_ret_t ipmiOEMSetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     return IPMI_CC_OK;
 }
-
 ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                     ipmi_request_t request,
                                     ipmi_response_t response,
@@ -1120,44 +1119,37 @@ bool getFanProfileInterface(
     return true;
 }
 
-ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                               ipmi_request_t request, ipmi_response_t response,
-                               ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi::RspType<> ipmiOEMSetFanConfig(uint8_t selectedProfile, uint8_t flags,
+                                    uint8_t DIMMgroupID,
+                                    std::vector<uint8_t> dimmPresenceMap
+
+)
 {
-
-    if (*dataLen < 2 || *dataLen > 7)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMSetFanConfig: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
     // todo: tell bios to only send first 2 bytes
+    phosphor::logging::log<phosphor::logging::level::ERR>("Nitin");
 
-    SetFanConfigReq* req = reinterpret_cast<SetFanConfigReq*>(request);
     boost::container::flat_map<
         std::string, std::variant<std::vector<std::string>, std::string>>
         profileData;
+
     if (!getFanProfileInterface(dbus, profileData))
     {
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::response(ipmi::ccUnspecifiedError);
     }
 
     std::vector<std::string>* supported =
         std::get_if<std::vector<std::string>>(&profileData["Supported"]);
     if (supported == nullptr)
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::responseInvalidFieldRequest();
     }
     std::string mode;
-    if (req->flags &
+    if (flags &
         (1 << static_cast<uint8_t>(setFanProfileFlags::setPerfAcousMode)))
     {
         bool performanceMode =
-            (req->flags & (1 << static_cast<uint8_t>(
-                               setFanProfileFlags::performAcousSelect))) > 0;
-
+            (flags & (1 << static_cast<uint8_t>(
+                          setFanProfileFlags::performAcousSelect))) > 0;
         if (performanceMode)
         {
 
@@ -1169,7 +1161,6 @@ ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         }
         else
         {
-
             if (std::find(supported->begin(), supported->end(), "Acoustic") !=
                 supported->end())
             {
@@ -1178,32 +1169,24 @@ ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         }
         if (mode.empty())
         {
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
         }
         setDbusProperty(dbus, settingsBusName, thermalModePath,
                         thermalModeInterface, "Current", mode);
     }
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess();
 }
+ipmi::RspType<uint8_t, uint8_t, uint8_t, uint8_t, std::array<uint8_t, 4>
 
-ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                               ipmi_request_t request, ipmi_response_t response,
-                               ipmi_data_len_t dataLen, ipmi_context_t context)
+              >
+    ipmiOEMGetFanConfig(uint8_t DIMMgroupID)
 {
 
-    if (*dataLen > 1)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMGetFanConfig: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    // todo: talk to bios about needing less information
-
-    GetFanConfigResp* resp = reinterpret_cast<GetFanConfigResp*>(response);
-    *dataLen = sizeof(GetFanConfigResp);
+    uint8_t supportMask;
+    uint8_t profileSupport;
+    uint8_t fanControlProfileEnable;
+    uint8_t flags;
+    std::array<uint8_t, 4> dimmPresenceMap;
 
     boost::container::flat_map<
         std::string, std::variant<std::vector<std::string>, std::string>>
@@ -1211,7 +1194,7 @@ ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     if (!getFanProfileInterface(dbus, profileData))
     {
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::response(ipmi::ccUnspecifiedError);
     }
 
     std::string* current = std::get_if<std::string>(&profileData["Current"]);
@@ -1220,16 +1203,18 @@ ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMGetFanConfig: can't get current mode!");
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::response(ipmi::ccUnspecifiedError);
     }
     bool performance = (*current == "Performance");
 
     if (performance)
     {
-        resp->flags |= 1 << 2;
+        flags |= 1 << 2;
     }
 
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(supportMask, profileSupport,
+                                 fanControlProfileEnable, flags,
+                                 dimmPresenceMap);
 }
 
 constexpr const char* cfmLimitSettingPath =
@@ -1888,10 +1873,12 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetSystemGUID),
         NULL, ipmiOEMSetSystemGUID,
         PRIVILEGE_ADMIN); // set system guid
+
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetBIOSID),
         NULL, ipmiOEMSetBIOSID, PRIVILEGE_ADMIN);
+
     ipmiPrintAndRegister(netfnIntcOEMGeneral,
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdGetOEMDeviceInfo),
@@ -1901,7 +1888,6 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetAICSlotFRUIDSlotPosRecords),
         NULL, ipmiOEMGetAICFRU, PRIVILEGE_USER);
-
     ipmi::registerHandler(
         ipmi::prioOpenBmcBase, ipmi::netFnOemOne,
         static_cast<ipmi::Cmd>(
@@ -1936,11 +1922,13 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetProcessorErrConfig),
         NULL, ipmiOEMGetProcessorErrConfig, PRIVILEGE_USER);
+
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetProcessorErrConfig),
         NULL, ipmiOEMSetProcessorErrConfig, PRIVILEGE_ADMIN);
+
     ipmiPrintAndRegister(netfnIntcOEMGeneral,
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdSetShutdownPolicy),
@@ -1950,15 +1938,15 @@ static void registerOEMFunctions(void)
                              IPMINetfnIntelOEMGeneralCmd::cmdGetShutdownPolicy),
                          NULL, ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetFanConfig),
-        NULL, ipmiOEMSetFanConfig, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetFanConfig),
+        ipmi::Privilege::User, ipmiOEMSetFanConfig);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetFanConfig),
-        NULL, ipmiOEMGetFanConfig, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetFanConfig),
+        ipmi::Privilege::User, ipmiOEMGetFanConfig);
 
     ipmi::registerHandler(
         ipmi::prioOemBase, netfnIntcOEMGeneral,
