@@ -218,16 +218,6 @@ struct MDRiiSendDataInfoRequest
         timeStamp; // More info on the identity of this particular set of data
 };
 
-// MDR II Push Agent send data block command
-struct MDRiiSendDataBlockRequest
-{
-    uint16_t agentId;
-    uint16_t lockHandle;
-    uint32_t xferOffset;
-    uint32_t xferLength;
-    uint32_t checksum;
-};
-
 // MDR II Pull Agent lock data set command
 struct MDRiiLockDataRequest
 {
