@@ -16,47 +16,50 @@
 
 #include "oemcommands.hpp"
 
-#include <openssl/hmac.h>
-
+#include <boost/algorithm/string.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
-#include <sdbusplus/bus.hpp>
+#include <variant>
 
 void register_netfn_bmc_control_functions() __attribute__((constructor));
 
-enum ipmi_bmc_control_services_return_codes
-{
-    ipmiCCBmcControlInvalidBitMask = 0xCC,
-    ipmiCCBmcControlPasswdInvalid = 0xCD,
-    ipmiCCBmcControlInvalidChannel = 0xD4,
+static const std::unordered_map<uint8_t, std::string> bmcServices = {
+    {3, "/xyz/openbmc_project/control/service/phosphor_2dipmi_2dnet"},
+    {5, "/xyz/openbmc_project/control/service/bmcweb"},
+    {6, "/xyz/openbmc_project/control/service/obmc_2dconsole"},
+    {15, "/xyz/openbmc_project/control/service/start_2dipkvm"},
 };
 
-// TODO: Add other services, once they are supported
-static const std::unordered_map<uint8_t, std::string> bmcServices = {
-    {3, "netipmid"},
-    {5, "web"},
-    {6, "ssh"},
-};
+static constexpr uint16_t maskBit15 = 0xF000;
+
+using IntfName = std::string;
+using PropName = std::string;
+using PropValue = std::variant<bool, int16_t>;
+using PropMap = std::unordered_map<PropName, PropValue>;
+using IntfMap = std::unordered_map<IntfName, PropMap>;
+using ObjectValueTree =
+    std::unordered_map<sdbusplus::message::object_path, IntfMap>;
 
 static constexpr const char* objectManagerIntf =
     "org.freedesktop.DBus.ObjectManager";
+static constexpr const char* dBusPropIntf = "org.freedesktop.DBus.Properties";
 static constexpr const char* serviceConfigBasePath =
     "/xyz/openbmc_project/control/service";
 static constexpr const char* serviceConfigAttrIntf =
     "xyz.openbmc_project.Control.Service.Attributes";
-static constexpr const char* serviceStateProperty = "State";
-static std::string disableServiceValue = "disabled";
+static constexpr const char* getMgdObjMethod = "GetManagedObjects";
+static constexpr const char* propMasked = "Masked";
 
-static ipmi_ret_t disableBmcServices(const std::string& objName)
+std::string getServiceConfigMgrName()
 {
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     static std::string serviceCfgMgr{};
     if (serviceCfgMgr.empty())
     {
         try
         {
-            serviceCfgMgr = ipmi::getService(*dbus, objectManagerIntf,
+            auto sdbusp = getSdBus();
+            serviceCfgMgr = ipmi::getService(*sdbusp, objectManagerIntf,
                                              serviceConfigBasePath);
         }
         catch (const sdbusplus::exception::SdBusError& e)
@@ -64,90 +67,141 @@ static ipmi_ret_t disableBmcServices(const std::string& objName)
             serviceCfgMgr.clear();
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "Error: In fetching disabling service manager name");
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return serviceCfgMgr;
         }
     }
-    auto path = std::string(serviceConfigBasePath) + "/" + objName;
-    try
+    return serviceCfgMgr;
+}
+
+static inline void checkAndThrowError(boost::system::error_code& ec,
+                                      const std::string& msg)
+{
+    if (ec)
     {
-        ipmi::setDbusProperty(*dbus, serviceCfgMgr, path, serviceConfigAttrIntf,
-                              serviceStateProperty,
-                              ipmi::Value(disableServiceValue));
-        phosphor::logging::log<phosphor::logging::level::INFO>(
-            "Disabling service",
-            phosphor::logging::entry("PATH=%s", path.c_str()),
-            phosphor::logging::entry("MGR_NAME=%s", serviceCfgMgr.c_str()));
-        return IPMI_CC_OK;
+        std::string msgToLog = ec.message() + (msg.empty() ? "" : " - " + msg);
+        phosphor::logging::log<phosphor::logging::level::ERR>(msgToLog.c_str());
+        throw sdbusplus::exception::SdBusError(-EIO, msgToLog.c_str());
     }
-    catch (const sdbusplus::exception_t&)
+    return;
+}
+
+static inline bool getEnabledValue(const IntfMap& intfMap)
+{
+    for (const auto& intf : intfMap)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Error: Disabling service",
-            phosphor::logging::entry("PATH=%s", path.c_str()),
-            phosphor::logging::entry("MGR_NAME=%s", serviceCfgMgr.c_str()));
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        if (intf.first == serviceConfigAttrIntf)
+        {
+            auto it = intf.second.find(propMasked);
+            if (it == intf.second.end())
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Error: in getting Masked property value");
+                throw sdbusplus::exception::SdBusError(
+                    -EIO, "ERROR in reading Masked property value");
+            }
+            // return !Masked value
+            return !std::get<bool>(it->second);
+        }
     }
 }
 
-static constexpr size_t controlPasswdSize = 32;
-
-ipmi::RspType<> bmcIntelControlServices(
-    ipmi::Context::ptr ctx,
-    const std::array<uint8_t, controlPasswdSize>& passwd, uint8_t stdServices,
-    uint8_t oemServices)
+ipmi::RspType<> setBmcControlServices(boost::asio::yield_context yield,
+                                      uint8_t state, uint16_t serviceValue)
 {
-    // Execute this command only in KCS interface
-    if (ctx->channel != interfaceKCS)
+    constexpr uint16_t servicesRsvdMask = 0x3F97;
+    if ((state != 0 && state != 1) || (serviceValue & servicesRsvdMask) ||
+        !serviceValue)
     {
-        return ipmi::response(ipmiCCBmcControlInvalidChannel);
+        return ipmi::responseInvalidFieldRequest();
     }
-
-    static std::string hashData("Intel 0penBMC");
-    static std::vector<uint8_t> hashedValue = {
-        0x89, 0x6A, 0xAB, 0x7D, 0xB0, 0x5A, 0x2D, 0x92, 0x41, 0xAD, 0x92,
-        0xEE, 0xD4, 0x82, 0xDE, 0x62, 0x66, 0x16, 0xC1, 0x08, 0xFD, 0x23,
-        0xC6, 0xD8, 0x75, 0xB3, 0x52, 0x53, 0x31, 0x3C, 0x7F, 0x69};
-    std::vector<uint8_t> hashedOutput(EVP_MAX_MD_SIZE, 0);
-    unsigned int outputLen = 0;
-    HMAC(EVP_sha256(), passwd.data(), passwd.size(),
-         reinterpret_cast<const uint8_t*>(hashData.c_str()), hashData.length(),
-         &hashedOutput[0], &outputLen);
-    hashedOutput.resize(outputLen);
-
-    if (hashedOutput != hashedValue)
+    try
     {
-        return ipmi::response(ipmiCCBmcControlPasswdInvalid);
-    }
+        auto sdbusp = getSdBus();
+        boost::system::error_code ec;
+        auto objectMap = sdbusp->yield_method_call<ObjectValueTree>(
+            yield, ec, getServiceConfigMgrName().c_str(), serviceConfigBasePath,
+            objectManagerIntf, getMgdObjMethod);
+        checkAndThrowError(ec, "GetMangagedObjects for service cfg failed");
 
-    if (stdServices == 0 && oemServices == 0)
-    {
-        return ipmi::response(ipmiCCBmcControlInvalidBitMask);
-    }
-
-    ipmi_ret_t retVal = IPMI_CC_OK;
-    for (size_t bitIndex = 0; bitIndex < 8; ++bitIndex)
-    {
-        if (stdServices & (1 << bitIndex))
+        for (const auto& services : bmcServices)
         {
-            auto it = bmcServices.find(bitIndex);
-            if (it == bmcServices.end())
+            if (!(serviceValue & (1 << services.first)))
             {
-                return ipmi::response(ipmiCCBmcControlInvalidBitMask);
+                continue;
             }
-            retVal = disableBmcServices(it->second);
-            if (retVal != IPMI_CC_OK)
+            for (const auto& obj : objectMap)
             {
-                return ipmi::response(retVal);
+                if (boost::algorithm::starts_with(obj.first.str,
+                                                  services.second))
+                {
+                    if (state != getEnabledValue(obj.second))
+                    {
+                        ec.clear();
+                        sdbusp->yield_method_call<>(
+                            yield, ec, getServiceConfigMgrName().c_str(),
+                            obj.first.str, dBusPropIntf, "Set",
+                            serviceConfigAttrIntf, propMasked,
+                            std::variant<bool>(!state));
+                        checkAndThrowError(ec, "Set Masked property failed");
+                        // Multiple instances may be present, so continue
+                    }
+                }
             }
         }
     }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
     return ipmi::responseSuccess();
+}
+
+ipmi::RspType<uint16_t> getBmcControlServices(boost::asio::yield_context yield)
+{
+    uint16_t serviceValue = 0;
+    try
+    {
+        auto sdbusp = getSdBus();
+        boost::system::error_code ec;
+        auto objectMap = sdbusp->yield_method_call<ObjectValueTree>(
+            yield, ec, getServiceConfigMgrName().c_str(), serviceConfigBasePath,
+            objectManagerIntf, getMgdObjMethod);
+        checkAndThrowError(ec, "GetMangagedObjects for service cfg failed");
+
+        for (const auto& services : bmcServices)
+        {
+            for (const auto& obj : objectMap)
+            {
+                if (boost::algorithm::starts_with(obj.first.str,
+                                                  services.second))
+                {
+                    serviceValue |= getEnabledValue(obj.second)
+                                    << services.first;
+                    break;
+                }
+            }
+        }
+    }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+    // Bit 14 should match bit 15 as single service maintains Video & USB
+    // redirection
+    serviceValue |= (serviceValue & maskBit15) >> 1;
+    return ipmi::responseSuccess(serviceValue);
 }
 
 void register_netfn_bmc_control_functions()
 {
     ipmi::registerHandler(ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
                           static_cast<ipmi_cmd_t>(
-                              IPMINetFnIntelOemGeneralCmds::BmcControlServices),
-                          ipmi::Privilege::User, bmcIntelControlServices);
+                              IPMINetFnIntelOemGeneralCmds::controlBmcServices),
+                          ipmi::Privilege::Admin, setBmcControlServices);
+
+    ipmi::registerHandler(
+        ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
+        static_cast<ipmi_cmd_t>(
+            IPMINetFnIntelOemGeneralCmds::getBmcServiceStatus),
+        ipmi::Privilege::User, getBmcControlServices);
 }
