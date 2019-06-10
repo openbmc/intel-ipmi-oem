@@ -21,19 +21,14 @@ add_definitions (-DBOOST_ASIO_DISABLE_THREADS)
 add_definitions (-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 add_definitions (-Wno-psabi)
 
-if (NOT YOCTO)
-    # headers that can't be built without yocto
+if (NOT YOCTO) # headers that can't be built without yocto
     include_directories (non-yocto)
 
     configure_file (CMakeLists.txt.in 3rdparty/CMakeLists.txt)
-    execute_process (
-        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty
-    )
-    execute_process (
-        COMMAND ${CMAKE_COMMAND} --build .
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty
-    )
+    execute_process (COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty)
+    execute_process (COMMAND ${CMAKE_COMMAND} --build .
+                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty)
 
     set (CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/prefix ${CMAKE_PREFIX_PATH})
     include_directories (${CMAKE_BINARY_DIR}/prefix/include)
@@ -75,10 +70,8 @@ if (NOT YOCTO)
 
     add_executable (runSensorTests ${SENSOR_TEST_SRC})
     add_test (NAME test_sensorcommands COMMAND runSensorTests)
-    target_link_libraries (
-        runSensorTests ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
-        sdbusplus -lsystemd
-    )
+    target_link_libraries (runSensorTests ${GTEST_BOTH_LIBRARIES}
+                           ${CMAKE_THREAD_LIBS_INIT} sdbusplus -lsystemd)
 endif ()
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -88,14 +81,13 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 find_package (OpenSSL REQUIRED)
 include_directories (${OPENSSL_INCLUDE_DIR})
 
-add_library (
-    zinteloemcmds SHARED src/oemcommands.cpp src/sensorcommands.cpp
-    src/storagecommands.cpp src/multinodecommands.cpp src/firmware-update.cpp src/appcommands.cpp
-    src/smbioshandler.cpp src/smbiosmdrv2handler.cpp
-    src/manufacturingcommands.cpp src/bmccontrolservices.cpp
-    src/bridgingcommands.cpp src/ipmi_to_redfish_hooks.cpp
-    src/chassiscommands.cpp
-)
+add_library (zinteloemcmds
+             SHARED src/oemcommands.cpp src/sensorcommands.cpp
+             src/storagecommands.cpp src/multinodecommands.cpp
+             src/firmware-update.cpp src/appcommands.cpp src/smbioshandler.cpp
+             src/smbiosmdrv2handler.cpp src/manufacturingcommands.cpp
+             src/bmccontrolservices.cpp src/bridgingcommands.cpp
+             src/ipmi_to_redfish_hooks.cpp src/chassiscommands.cpp)
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
 target_link_libraries (zinteloemcmds stdc++fs)
