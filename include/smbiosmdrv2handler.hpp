@@ -217,17 +217,6 @@ struct MDRiiSendDirRequest
     Mdr2DirEntry data[1]; // place holder for N directory entries
 };
 
-struct MDRiiOfferDataInfo
-{
-    uint16_t agentId;
-};
-
-// MDR II Client send data set info offer response
-struct MDRiiOfferDataInfoResponse
-{
-    DataIdStruct dataSetInfo;
-};
-
 // MDR II Push Agent send data set info command
 struct MDRiiSendDataInfoRequest
 {
@@ -238,16 +227,6 @@ struct MDRiiSendDataInfoRequest
     uint32_t dataVersion; // Roughly equivalent to the "file name"
     uint32_t
         timeStamp; // More info on the identity of this particular set of data
-};
-
-// MDR II Push Agent send data block command
-struct MDRiiSendDataBlockRequest
-{
-    uint16_t agentId;
-    uint16_t lockHandle;
-    uint32_t xferOffset;
-    uint32_t xferLength;
-    uint32_t checksum;
 };
 
 // MDR II Pull Agent lock data set command
