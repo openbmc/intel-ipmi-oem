@@ -682,26 +682,20 @@ ipmi_ret_t cmd_mdr2_send_data_info(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t cmd_mdr2_get_data_block(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                   ipmi_request_t request,
-                                   ipmi_response_t response,
-                                   ipmi_data_len_t data_len,
-                                   ipmi_context_t context)
+/**
+@brief This command is MDR related get data block command.
+
+@param - agentId, lockHandle, xferOffset, xferLength.
+
+@return xferLength, checksum and data on success.
+**/
+ipmi::RspType<uint32_t, uint32_t, std::vector<uint8_t>>
+    cmd_mdr2_get_data_block(uint16_t agentId, uint16_t lockHandle,
+                            uint32_t xferOffset, uint32_t xferLength)
 {
-    auto requestData =
-        reinterpret_cast<const MDRiiGetDataBlockRequest *>(request);
-    auto responseData = reinterpret_cast<MDRiiGetDataBlockResponse *>(response);
     std::tuple<uint8_t, uint32_t, uint32_t, std::vector<uint8_t>> res;
     std::vector<uint8_t> resData;
     uint8_t status = 1;
-
-    if (*data_len != sizeof(MDRiiGetDataBlockRequest))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *data_len = 0;
 
     std::string service = ipmi::getService(bus, mdrv2Interface, mdrv2Path);
 
@@ -710,113 +704,93 @@ ipmi_ret_t cmd_mdr2_get_data_block(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         mdrv2 = std::make_unique<MDRV2>();
     }
 
-    int agentIndex = mdrv2->agentLookup(requestData->agentId);
+    int agentIndex = mdrv2->agentLookup(agentId);
     if (agentIndex == -1)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Unknown agent id",
-            phosphor::logging::entry("ID=%x", requestData->agentId));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+            "Unknown agent id", phosphor::logging::entry("ID=%x", agentId));
+        return ipmi::responseParmOutOfRange();
     }
 
-    int idIndex = mdrv2->findLockHandle(requestData->lockHandle);
+    int idIndex = mdrv2->findLockHandle(lockHandle);
 
     if ((idIndex < 0) || (idIndex >= maxDirEntries))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Invalid Data ID", phosphor::logging::entry("IDINDEX=%x", idIndex));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
-    if (requestData->xferOffset >= mdrv2->smbiosDir.dir[idIndex].common.size)
+    if (xferOffset >= mdrv2->smbiosDir.dir[idIndex].common.size)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Offset is outside of range.");
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
-    size_t outSize =
-        (requestData->xferLength > mdrv2->smbiosDir.dir[idIndex].xferSize)
-            ? mdrv2->smbiosDir.dir[idIndex].xferSize
-            : requestData->xferLength;
-    if (outSize > UINT_MAX - requestData->xferOffset)
+    size_t outSize = (xferLength > mdrv2->smbiosDir.dir[idIndex].xferSize)
+                         ? mdrv2->smbiosDir.dir[idIndex].xferSize
+                         : xferLength;
+    if (outSize > UINT_MAX - xferOffset)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Out size and offset are out of range");
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
-    if ((requestData->xferOffset + outSize) >
-        mdrv2->smbiosDir.dir[idIndex].common.size)
+    if ((xferOffset + outSize) > mdrv2->smbiosDir.dir[idIndex].common.size)
     {
-        outSize =
-            mdrv2->smbiosDir.dir[idIndex].common.size - requestData->xferOffset;
+        outSize = mdrv2->smbiosDir.dir[idIndex].common.size - xferOffset;
     }
 
-    responseData->xferLength = outSize;
-    if (responseData->xferLength > requestData->xferLength)
+    uint32_t respXferLength;
+    uint32_t checksum;
+    std::vector<uint8_t> data;
+
+    respXferLength = outSize;
+    if (respXferLength > xferLength)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Get data block unexpected error.");
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
 
-    if ((requestData->xferOffset + outSize) >
+    if ((xferOffset + outSize) >
         UINT_MAX -
             reinterpret_cast<size_t>(mdrv2->smbiosDir.dir[idIndex].dataStorage))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Input data to calculate checksum is out of range");
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
     uint32_t u32Checksum = mdrv2->calcChecksum32(
-        mdrv2->smbiosDir.dir[idIndex].dataStorage + requestData->xferOffset,
-        outSize);
+        mdrv2->smbiosDir.dir[idIndex].dataStorage + xferOffset, outSize);
     if (u32Checksum == invalidChecksum)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Get data block failed - invalid checksum");
-        return IPMI_CC_OEM_INVALID_CHECKSUM;
+        return ipmi::response(IPMI_CC_OEM_INVALID_CHECKSUM);
     }
-    responseData->checksum = u32Checksum;
+    checksum = u32Checksum;
 
-    *data_len = sizeof(responseData->xferLength) +
-                sizeof(responseData->checksum) + outSize;
+    std::copy(&mdrv2->smbiosDir.dir[idIndex].dataStorage[xferOffset],
+              &mdrv2->smbiosDir.dir[idIndex].dataStorage[xferOffset + outSize],
+              data.begin());
 
-    if (*data_len > MAX_IPMI_BUFFER) // length + completion code should no more
-                                     // than MAX_IPMI_BUFFER
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Data length send from service is invalid");
-        *data_len = 0;
-        return IPMI_CC_RESPONSE_ERROR;
-    }
-
-    std::copy(
-        &mdrv2->smbiosDir.dir[idIndex].dataStorage[requestData->xferOffset],
-        &mdrv2->smbiosDir.dir[idIndex]
-             .dataStorage[requestData->xferOffset + outSize],
-        responseData->data);
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(respXferLength, checksum, data);
 }
 
-ipmi_ret_t cmd_mdr2_send_data_block(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                    ipmi_request_t request,
-                                    ipmi_response_t response,
-                                    ipmi_data_len_t data_len,
-                                    ipmi_context_t context)
+/**
+@brief This command is MDR related send data block command.
+
+@param - agentId, lockHandle, xferOffset, xferLength, checksum
+
+@return completion code on success.
+**/
+ipmi::RspType<> cmd_mdr2_send_data_block(uint16_t agentId, uint16_t lockHandle,
+                                         uint32_t xferOffset,
+                                         uint32_t xferLength, uint32_t checksum)
 {
-    auto requestData =
-        reinterpret_cast<const MDRiiSendDataBlockRequest *>(request);
-
-    if (*data_len != sizeof(MDRiiSendDataBlockRequest))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *data_len = 0;
 
     std::string service = ipmi::getService(bus, mdrv2Interface, mdrv2Path);
 
@@ -825,81 +799,77 @@ ipmi_ret_t cmd_mdr2_send_data_block(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         mdrv2 = std::make_unique<MDRV2>();
     }
 
-    int agentIndex = mdrv2->agentLookup(requestData->agentId);
+    int agentIndex = mdrv2->agentLookup(agentId);
     if (agentIndex == -1)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Unknown agent id",
-            phosphor::logging::entry("ID=%x", requestData->agentId));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+            "Unknown agent id", phosphor::logging::entry("ID=%x", agentId));
+        return ipmi::responseParmOutOfRange();
     }
 
-    int idIndex = mdrv2->findLockHandle(requestData->lockHandle);
+    int idIndex = mdrv2->findLockHandle(lockHandle);
 
     if ((idIndex < 0) || (idIndex >= maxDirEntries))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Invalid Data ID", phosphor::logging::entry("IDINDEX=%x", idIndex));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
     if (mdrv2->smbiosIsUpdating(idIndex))
     {
-        if (requestData->xferOffset > UINT_MAX - requestData->xferLength)
+        if (xferOffset > UINT_MAX - xferLength)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "Offset and length are out of range");
-            return IPMI_CC_PARM_OUT_OF_RANGE;
+            return ipmi::responseParmOutOfRange();
         }
-        if (((requestData->xferOffset + requestData->xferLength) >
+        if (((xferOffset + xferLength) >
              mdrv2->smbiosDir.dir[idIndex].maxDataSize) ||
-            ((requestData->xferOffset + requestData->xferLength) >
+            ((xferOffset + xferLength) >
              mdrv2->smbiosDir.dir[idIndex].common.dataSetSize))
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "Send data block Invalid offset/length");
-            return IPMI_CC_REQUEST_DATA_FIELD_LENGTH_LIMIT_EXCEEDED;
+            return ipmi::responseReqDataLenExceeded();
         }
         if (reinterpret_cast<size_t>(
                 mdrv2->smbiosDir.dir[idIndex].dataStorage) >
-            UINT_MAX - requestData->xferOffset)
+            UINT_MAX - xferOffset)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "Offset is out of range");
-            return IPMI_CC_PARM_OUT_OF_RANGE;
+            return ipmi::responseParmOutOfRange();
         }
         uint8_t *destAddr =
-            mdrv2->smbiosDir.dir[idIndex].dataStorage + requestData->xferOffset;
+            mdrv2->smbiosDir.dir[idIndex].dataStorage + xferOffset;
         uint8_t *sourceAddr = reinterpret_cast<uint8_t *>(mdrv2->area->vPtr);
-        uint32_t calcChecksum =
-            mdrv2->calcChecksum32(sourceAddr, requestData->xferLength);
-        if (calcChecksum != requestData->checksum)
+        uint32_t calcChecksum = mdrv2->calcChecksum32(sourceAddr, xferLength);
+        if (calcChecksum != checksum)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "Send data block Invalid checksum");
-            return IPMI_CC_OEM_INVALID_CHECKSUM;
+            return ipmi::response(IPMI_CC_OEM_INVALID_CHECKSUM);
         }
         else
         {
-            if (reinterpret_cast<size_t>(sourceAddr) >
-                UINT_MAX - requestData->xferLength)
+            if (reinterpret_cast<size_t>(sourceAddr) > UINT_MAX - xferLength)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "Length is out of range");
-                return IPMI_CC_PARM_OUT_OF_RANGE;
+                return ipmi::responseParmOutOfRange();
             }
-            std::copy(sourceAddr, sourceAddr + requestData->xferLength,
-                      destAddr);
+            std::copy(sourceAddr, sourceAddr + xferLength, destAddr);
         }
     }
     else
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Send data block failed, other data is updating");
-        return IPMI_CC_DESTINATION_UNAVAILABLE;
+        return ipmi::responseDestinationUnavailable();
     }
 
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess();
 }
 
 bool MDRV2::storeDatatoFlash(MDRSMBIOSHeader *mdrHdr, uint8_t *data)
@@ -1413,14 +1383,14 @@ static void register_netfn_smbiosmdrv2_functions(void)
                            NULL, cmd_mdr2_send_data_info, PRIVILEGE_OPERATOR);
 
     // <Get MDRII Data Block Command>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_GET_DATA_BLOCK,
-                           NULL, cmd_mdr2_get_data_block, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
+                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_GET_DATA_BLOCK,
+                          ipmi::Privilege::Operator, cmd_mdr2_get_data_block);
 
     // <Send MDRII Data Block>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_SEND_DATA_BLOCK,
-                           NULL, cmd_mdr2_send_data_block, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
+                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_SEND_DATA_BLOCK,
+                          ipmi::Privilege::Operator, cmd_mdr2_send_data_block);
 
     // <Lock MDRII Data Command>
     ipmi_register_callback(NETFUN_INTEL_APP_OEM,
