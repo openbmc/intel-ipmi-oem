@@ -155,23 +155,6 @@ struct MDRiiGetDataInfoResponse
     uint32_t timeStamp;
 };
 
-// MDR II Pull Agent get data block command
-struct MDRiiGetDataBlockRequest
-{
-    uint16_t agentId;
-    uint16_t lockHandle;
-    uint32_t xferOffset;
-    uint32_t xferLength;
-};
-
-// MDR II Pull Agent get data block response
-struct MDRiiGetDataBlockResponse
-{
-    uint32_t xferLength;
-    uint32_t checksum;
-    uint8_t data[msgPayloadSize];
-};
-
 // ====================== MDR II Push Command Structures ======================
 // MDR II Push Agent send dir info command
 struct MDRiiSendDirRequest
