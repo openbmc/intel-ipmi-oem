@@ -1135,9 +1135,9 @@ namespace ledAction
 {
 using namespace sdbusplus::xyz::openbmc_project::Led::server;
 std::map<Physical::Action, uint8_t> actionDbusToIpmi = {
-    {Physical::Action::Off, 0x00},
-    {Physical::Action::On, 0x10},
-    {Physical::Action::Blink, 0x01}};
+    {Physical::Action::Off, 0},
+    {Physical::Action::On, 2},
+    {Physical::Action::Blink, 1}};
 
 std::map<uint8_t, std::string> offsetObjPath = {
     {2, statusAmberObjPath}, {4, statusGreenObjPath}, {6, identifyLEDObjPath}};
@@ -1165,48 +1165,24 @@ int8_t getLEDState(sdbusplus::bus::bus& bus, const std::string& intf,
     return 0;
 }
 
-ipmi_ret_t ipmiOEMGetLEDStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                               ipmi_request_t request, ipmi_response_t response,
-                               ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi::RspType<uint8_t> ipmiOEMGetLEDStatus()
 {
-    uint8_t* resp = reinterpret_cast<uint8_t*>(response);
-    // LED Status
-    //[1:0] = Reserved
-    //[3:2] = Status(Amber)
-    //[5:4] = Status(Green)
-    //[7:6] = System Identify
-    // Status definitions:
-    // 00b = Off
-    // 01b = Blink
-    // 10b = On
-    // 11b = invalid
-    if (*dataLen != 0)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "oem_get_led_status: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
+    uint8_t ledstate = 0;
     phosphor::logging::log<phosphor::logging::level::DEBUG>("GET led status");
-    *resp = 0;
-    *dataLen = 0;
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     for (auto it = ledAction::offsetObjPath.begin();
          it != ledAction::offsetObjPath.end(); ++it)
     {
         uint8_t state = 0;
-        if (-1 == getLEDState(*dbus, ledIntf, it->second, state))
+        if (getLEDState(*dbus, ledIntf, it->second, state) == -1)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "oem_get_led_status: fail to get ID LED status!");
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return ipmi::responseUnspecifiedError();
         }
-        *resp |= state << it->first;
+        ledstate |= state << it->first;
     }
-
-    *dataLen = sizeof(*resp);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(ledstate);
 }
 
 ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -3489,8 +3465,9 @@ static void registerOEMFunctions(void)
                     intel::general::cmdSetSecurityMode, Privilege::Admin,
                     ipmiSetSecurityMode);
 
-    ipmiPrintAndRegister(intel::netFnGeneral, intel::general::cmdGetLEDStatus,
-                         NULL, ipmiOEMGetLEDStatus, PRIVILEGE_ADMIN);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetLEDStatus, Privilege::Admin,
+                    ipmiOEMGetLEDStatus);
 
     ipmiPrintAndRegister(ipmi::intel::netFnPlatform,
                          ipmi::intel::platform::cmdCfgHostSerialPortSpeed, NULL,
