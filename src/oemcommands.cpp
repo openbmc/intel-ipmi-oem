@@ -1088,48 +1088,25 @@ int8_t getLEDState(sdbusplus::bus::bus& bus, const std::string& intf,
     return 0;
 }
 
-ipmi_ret_t ipmiOEMGetLEDStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                               ipmi_request_t request, ipmi_response_t response,
-                               ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi::RspType<uint8_t> ipmiOEMGetLEDStatus()
 {
-    uint8_t* resp = reinterpret_cast<uint8_t*>(response);
-    // LED Status
-    //[1:0] = Reserved
-    //[3:2] = Status(Amber)
-    //[5:4] = Status(Green)
-    //[7:6] = System Identify
-    // Status definitions:
-    // 00b = Off
-    // 01b = Blink
-    // 10b = On
-    // 11b = invalid
-    if (*dataLen != 0)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "oem_get_led_status: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
+    uint8_t ledstate = 0;
+    uint8_t state = 0;
     phosphor::logging::log<phosphor::logging::level::DEBUG>("GET led status");
-    *resp = 0;
-    *dataLen = 0;
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     for (auto it = ledAction::offsetObjPath.begin();
          it != ledAction::offsetObjPath.end(); ++it)
     {
-        uint8_t state = 0;
-        if (-1 == getLEDState(*dbus, ledIntf, it->second, state))
+        state = 0;
+        if (getLEDState(*dbus, ledIntf, it->second, state) == -1)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "oem_get_led_status: fail to get ID LED status!");
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return ipmi::responseUnspecifiedError();
         }
-        *resp |= state << it->first;
+        ledstate |= state << it->first;
     }
-
-    *dataLen = sizeof(*resp);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(ledstate);
 }
 
 ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -3326,10 +3303,10 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetSecurityMode),
         Privilege::Admin, ipmiSetSecurityMode);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetLEDStatus),
-        NULL, ipmiOEMGetLEDStatus, PRIVILEGE_ADMIN);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetLEDStatus),
+        ipmi::Privilege::Admin, ipmiOEMGetLEDStatus);
     ipmiPrintAndRegister(
         netfnIntcOEMPlatform,
         static_cast<ipmi_cmd_t>(
