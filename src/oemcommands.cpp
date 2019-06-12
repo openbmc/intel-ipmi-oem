@@ -23,6 +23,7 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/process/child.hpp>
 #include <boost/process/io.hpp>
+#include <com/intel/Control/NMISource/server.hpp>
 #include <com/intel/Control/OCOTShutdownPolicy/server.hpp>
 #include <commandutils.hpp>
 #include <iostream>
@@ -1867,6 +1868,145 @@ ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
     return ipmi::responseSuccess(prodId);
 }
 
+ipmi::RspType<uint8_t> ipmiOEMGetNmiSource(void)
+{
+    GetOemNmiSourceRes resp;
+
+    try
+    {
+        std::string service =
+            getService(dbus, oemNmiSourceIntf, oemNmiSourceObjPath);
+        Value variant =
+            getDbusProperty(dbus, service, oemNmiSourceObjPath,
+                            oemNmiSourceIntf, oemNmiBmcSourceObjPathProp);
+
+        switch (sdbusplus::com::intel::Control::server::NMISource::
+                    convertBMCSourceSignalFromString(
+                        std::get<std::string>(variant)))
+        {
+            case sdbusplus::com::intel::Control::server::NMISource::
+                BMCSourceSignal::None:
+                resp.bmcSource = 0;
+                break;
+            case sdbusplus::com::intel::Control::server::NMISource::
+                BMCSourceSignal::FpBtn:
+                resp.bmcSource = 1;
+                break;
+            case sdbusplus::com::intel::Control::server::NMISource::
+                BMCSourceSignal::WdPreTimeout:
+                resp.bmcSource = 2;
+                break;
+            case sdbusplus::com::intel::Control::server::NMISource::
+                BMCSourceSignal::PefMatch:
+                resp.bmcSource = 3;
+                break;
+            case sdbusplus::com::intel::Control::server::NMISource::
+                BMCSourceSignal::ChassisCmd:
+                resp.bmcSource = 4;
+                break;
+            case sdbusplus::com::intel::Control::server::NMISource::
+                BMCSourceSignal::MemoryError:
+                resp.bmcSource = 5;
+                break;
+            case sdbusplus::com::intel::Control::server::NMISource::
+                BMCSourceSignal::PciSerrPerr:
+                resp.bmcSource = 6;
+                break;
+            case sdbusplus::com::intel::Control::server::NMISource::
+                BMCSourceSignal::SouthbridgeNmi:
+                resp.bmcSource = 7;
+                break;
+            case sdbusplus::com::intel::Control::server::NMISource::
+                BMCSourceSignal::ChipsetNmi:
+                resp.bmcSource = 8;
+                break;
+            default:
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "NMI source: invalid property!",
+                    phosphor::logging::entry(
+                        "PROP=%s", std::get<std::string>(variant).c_str()));
+                return ipmi::responseResponseError();
+        }
+    }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess(resp.bmcSource);
+}
+
+ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
+{
+    sdbusplus::com::intel::Control::server::NMISource::BMCSourceSignal
+        bmcSourceSignal = sdbusplus::com::intel::Control::server::NMISource::
+            BMCSourceSignal::None;
+
+    switch (sourceId)
+    {
+        case 0:
+            bmcSourceSignal = sdbusplus::com::intel::Control::server::
+                NMISource::BMCSourceSignal::None;
+            break;
+        case 1:
+            bmcSourceSignal = sdbusplus::com::intel::Control::server::
+                NMISource::BMCSourceSignal::FpBtn;
+            break;
+        case 2:
+            bmcSourceSignal = sdbusplus::com::intel::Control::server::
+                NMISource::BMCSourceSignal::WdPreTimeout;
+            break;
+        case 3:
+            bmcSourceSignal = sdbusplus::com::intel::Control::server::
+                NMISource::BMCSourceSignal::PefMatch;
+            break;
+        case 4:
+            bmcSourceSignal = sdbusplus::com::intel::Control::server::
+                NMISource::BMCSourceSignal::ChassisCmd;
+            break;
+        case 5:
+            bmcSourceSignal = sdbusplus::com::intel::Control::server::
+                NMISource::BMCSourceSignal::MemoryError;
+            break;
+        case 6:
+            bmcSourceSignal = sdbusplus::com::intel::Control::server::
+                NMISource::BMCSourceSignal::PciSerrPerr;
+            break;
+        case 7:
+            bmcSourceSignal = sdbusplus::com::intel::Control::server::
+                NMISource::BMCSourceSignal::SouthbridgeNmi;
+            break;
+        case 8:
+            bmcSourceSignal = sdbusplus::com::intel::Control::server::
+                NMISource::BMCSourceSignal::ChipsetNmi;
+            break;
+        default:
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "NMI source: invalid property!");
+            return ipmi::responseResponseError();
+    }
+
+    try
+    {
+        // keep NMI signal source
+        std::string service =
+            getService(dbus, oemNmiSourceIntf, oemNmiSourceObjPath);
+        setDbusProperty(
+            dbus, service, oemNmiSourceObjPath, oemNmiSourceIntf,
+            oemNmiBmcSourceObjPathProp,
+            sdbusplus::com::intel::Control::server::convertForMessage(
+                bmcSourceSignal));
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -1987,6 +2127,16 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
         ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetNmiStatus),
+        ipmi::Privilege::User, ipmiOEMGetNmiSource);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetNmiStatus),
+        ipmi::Privilege::Operator, ipmiOEMSetNmiSource);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
