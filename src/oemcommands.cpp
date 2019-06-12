@@ -927,81 +927,53 @@ int8_t getLEDState(sdbusplus::bus::bus& bus, const std::string& intf,
     }
     return 0;
 }
+/*@ param ledstate - 8-bit unsigned integer to be used with iterator
+ *@ param state - 8-bit unsigned integer to know the led state
+ *@ returns completion code with 1 byte led status
+ */
 
-ipmi_ret_t ipmiOEMGetLEDStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                               ipmi_request_t request, ipmi_response_t response,
-                               ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi::RspType<uint8_t> ipmiOEMGetLEDStatus()
 {
-    uint8_t* resp = reinterpret_cast<uint8_t*>(response);
-    // LED Status
-    //[1:0] = Reserved
-    //[3:2] = Status(Amber)
-    //[5:4] = Status(Green)
-    //[7:6] = System Identify
-    // Status definitions:
-    // 00b = Off
-    // 01b = Blink
-    // 10b = On
-    // 11b = invalid
-    if (*dataLen != 0)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "oem_get_led_status: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
+    uint8_t ledstate = 0;
+    uint8_t state = 0;
     phosphor::logging::log<phosphor::logging::level::DEBUG>("GET led status");
-    *resp = 0;
-    *dataLen = 0;
     for (auto it = ledAction::offsetObjPath.begin();
          it != ledAction::offsetObjPath.end(); ++it)
     {
-        uint8_t state = 0;
-        if (-1 == getLEDState(dbus, ledIntf, it->second, state))
+        state = 0;
+        if (getLEDState(dbus, ledIntf, it->second, state) == -1)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "oem_get_led_status: fail to get ID LED status!");
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return ipmi::responseUnspecifiedError();
         }
-        *resp |= state << it->first;
+        ledstate |= state << it->first;
     }
-
-    *dataLen = sizeof(*resp);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(state);
 }
 
-ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                         ipmi_request_t request,
-                                         ipmi_response_t response,
-                                         ipmi_data_len_t dataLen,
-                                         ipmi_context_t context)
+/*
+ *@ param command - 8-bit unsigned integer to be used with serial port config
+ *command
+ *@ param parameter - 8-bit unsigned integer to know the parameter passed as
+ *request
+ *@ param myrsp - 8-bit unsigned integer to send the response of serial config
+ *command
+ *@ Using ipmi APIs and Error codes
+ *@ returns completion code of 1 byte
+ *
+ */
+
+ipmi::RspType<uint8_t> ipmiOEMCfgHostSerialPortSpeed(uint8_t command,
+                                                     uint8_t parameter)
 {
-    CfgHostSerialReq* req = reinterpret_cast<CfgHostSerialReq*>(request);
-    uint8_t* resp = reinterpret_cast<uint8_t*>(response);
+    phosphor::logging::log<phosphor::logging::level::ERR>("Nitin");
+    uint8_t myrsp = 0x00;
 
-    if (*dataLen == 0)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "CfgHostSerial: invalid input len!",
-            phosphor::logging::entry("LEN=%d", *dataLen));
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    switch (req->command)
+    switch (command)
     {
         case getHostSerialCfgCmd:
         {
-            if (*dataLen != 1)
-            {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "CfgHostSerial: invalid input len!");
-                *dataLen = 0;
-                return IPMI_CC_REQ_DATA_LEN_INVALID;
-            }
-
-            *dataLen = 0;
-
             boost::process::ipstream is;
             std::vector<std::string> data;
             std::string line;
@@ -1019,8 +991,8 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "CfgHostSerial:: error on execute",
                     phosphor::logging::entry("EXECUTE=%s", fwSetEnvCmd));
+                myrsp = 0x00;
                 // Using the default value
-                *resp = 0;
             }
             else
             {
@@ -1028,7 +1000,7 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "CfgHostSerial:: error on read env");
-                    return IPMI_CC_UNSPECIFIED_ERROR;
+                    return ipmi::response(ipmi::ccUnspecifiedError);
                 }
                 try
                 {
@@ -1037,67 +1009,53 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                     {
                         throw std::out_of_range("Out of range");
                     }
-                    *resp = static_cast<uint8_t>(tmp);
+                    myrsp = static_cast<uint8_t>(tmp);
                 }
                 catch (const std::invalid_argument& e)
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "invalid config ",
                         phosphor::logging::entry("ERR=%s", e.what()));
-                    return IPMI_CC_UNSPECIFIED_ERROR;
+                    return ipmi::response(ipmi::ccUnspecifiedError);
                 }
                 catch (const std::out_of_range& e)
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "out_of_range config ",
                         phosphor::logging::entry("ERR=%s", e.what()));
-                    return IPMI_CC_UNSPECIFIED_ERROR;
+                    return ipmi::response(ipmi::ccUnspecifiedError);
                 }
             }
-
-            *dataLen = 1;
             break;
         }
         case setHostSerialCfgCmd:
         {
-            if (*dataLen != sizeof(CfgHostSerialReq))
-            {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "CfgHostSerial: invalid input len!");
-                *dataLen = 0;
-                return IPMI_CC_REQ_DATA_LEN_INVALID;
-            }
-
-            *dataLen = 0;
-
-            if (req->parameter > HostSerialCfgParamMax)
+            if (parameter > HostSerialCfgParamMax)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "CfgHostSerial: invalid input!");
-                return IPMI_CC_INVALID_FIELD_REQUEST;
+
+                return ipmi::responseInvalidFieldRequest();
             }
 
             boost::process::child c1(fwSetEnvCmd, fwHostSerailCfgEnvName,
-                                     std::to_string(req->parameter));
-
+                                     std::to_string(parameter));
             c1.wait();
             if (c1.exit_code())
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "CfgHostSerial:: error on execute",
                     phosphor::logging::entry("EXECUTE=%s", fwGetEnvCmd));
-                return IPMI_CC_UNSPECIFIED_ERROR;
+                return ipmi::response(ipmi::ccUnspecifiedError);
             }
             break;
         }
         default:
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "CfgHostSerial: invalid input!");
-            *dataLen = 0;
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
     }
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(myrsp);
 }
 
 constexpr const char* thermalModeInterface =
@@ -2043,15 +2001,17 @@ static void registerOEMFunctions(void)
             IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
         ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetLEDStatus),
-        NULL, ipmiOEMGetLEDStatus, PRIVILEGE_ADMIN);
-    ipmiPrintAndRegister(
-        netfnIntcOEMPlatform,
-        static_cast<ipmi_cmd_t>(
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetLEDStatus),
+        ipmi::Privilege::Admin, ipmiOEMGetLEDStatus);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMPlatform,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMPlatformCmd::cmdCfgHostSerialPortSpeed),
-        NULL, ipmiOEMCfgHostSerialPortSpeed, PRIVILEGE_ADMIN);
+        ipmi::Privilege::Admin, ipmiOEMCfgHostSerialPortSpeed);
+
     ipmi::registerHandler(
         ipmi::prioOemBase, netfnIntcOEMGeneral,
         static_cast<ipmi::Cmd>(
