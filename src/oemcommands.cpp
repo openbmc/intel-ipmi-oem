@@ -23,6 +23,7 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/process/child.hpp>
 #include <boost/process/io.hpp>
+#include <com/intel/Control/NMISource/server.hpp>
 #include <com/intel/Control/OCOTShutdownPolicy/server.hpp>
 #include <commandutils.hpp>
 #include <iostream>
@@ -47,6 +48,57 @@ static constexpr auto ethernetIntf =
 static constexpr auto networkIPIntf = "xyz.openbmc_project.Network.IP";
 static constexpr auto networkService = "xyz.openbmc_project.Network";
 static constexpr auto networkRoot = "/xyz/openbmc_project/network";
+
+std::map<uint8_t,
+         sdbusplus::com::intel::Control::server::NMISource::BMCSourceSignal>
+    nmiSourceToDbus = {{0, sdbusplus::com::intel::Control::server::NMISource::
+                               BMCSourceSignal::None},
+                       {1, sdbusplus::com::intel::Control::server::NMISource::
+                               BMCSourceSignal::FpBtn},
+                       {2, sdbusplus::com::intel::Control::server::NMISource::
+                               BMCSourceSignal::WdPreTimeout},
+                       {3, sdbusplus::com::intel::Control::server::NMISource::
+                               BMCSourceSignal::PefMatch},
+                       {4, sdbusplus::com::intel::Control::server::NMISource::
+                               BMCSourceSignal::ChassisCmd},
+                       {5, sdbusplus::com::intel::Control::server::NMISource::
+                               BMCSourceSignal::MemoryError},
+                       {6, sdbusplus::com::intel::Control::server::NMISource::
+                               BMCSourceSignal::PciSerrPerr},
+                       {7, sdbusplus::com::intel::Control::server::NMISource::
+                               BMCSourceSignal::SouthbridgeNmi},
+                       {8, sdbusplus::com::intel::Control::server::NMISource::
+                               BMCSourceSignal::ChipsetNmi}};
+
+std::map<sdbusplus::com::intel::Control::server::NMISource::BMCSourceSignal,
+         uint8_t>
+    dbusToNmiSource = {{sdbusplus::com::intel::Control::server::NMISource::
+                            BMCSourceSignal::None,
+                        0},
+                       {sdbusplus::com::intel::Control::server::NMISource::
+                            BMCSourceSignal::FpBtn,
+                        1},
+                       {sdbusplus::com::intel::Control::server::NMISource::
+                            BMCSourceSignal::WdPreTimeout,
+                        2},
+                       {sdbusplus::com::intel::Control::server::NMISource::
+                            BMCSourceSignal::PefMatch,
+                        3},
+                       {sdbusplus::com::intel::Control::server::NMISource::
+                            BMCSourceSignal::ChassisCmd,
+                        4},
+                       {sdbusplus::com::intel::Control::server::NMISource::
+                            BMCSourceSignal::MemoryError,
+                        5},
+                       {sdbusplus::com::intel::Control::server::NMISource::
+                            BMCSourceSignal::PciSerrPerr,
+                        6},
+                       {sdbusplus::com::intel::Control::server::NMISource::
+                            BMCSourceSignal::SouthbridgeNmi,
+                        7},
+                       {sdbusplus::com::intel::Control::server::NMISource::
+                            BMCSourceSignal::ChipsetNmi,
+                        8}};
 
 // return code: 0 successful
 int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
@@ -1867,6 +1919,82 @@ ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
     return ipmi::responseSuccess(prodId);
 }
 
+ipmi::RspType<uint8_t> ipmiOEMGetNmiSource(void)
+{
+    GetOemNmiSourceRes resp;
+
+    try
+    {
+        std::string service =
+            getService(dbus, oemNmiSourceIntf, oemNmiSourceObjPath);
+        Value variant =
+            getDbusProperty(dbus, service, oemNmiSourceObjPath,
+                            oemNmiSourceIntf, oemNmiBmcSourceObjPathProp);
+
+        auto sourceItr = dbusToNmiSource.find(
+            sdbusplus::com::intel::Control::server::NMISource::
+                convertBMCSourceSignalFromString(
+                    std::get<std::string>(variant)));
+        if (dbusToNmiSource.end() != sourceItr)
+        {
+            resp.bmcSource = sourceItr->second;
+        }
+        else
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "NMI source: invalid property!",
+                phosphor::logging::entry(
+                    "PROP=%s", std::get<std::string>(variant).c_str()));
+            return ipmi::responseResponseError();
+        }
+    }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess(resp.bmcSource);
+}
+
+ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
+{
+    sdbusplus::com::intel::Control::server::NMISource::BMCSourceSignal
+        bmcSourceSignal = sdbusplus::com::intel::Control::server::NMISource::
+            BMCSourceSignal::None;
+
+    auto sourceItr = nmiSourceToDbus.find(sourceId);
+    if (nmiSourceToDbus.end() != sourceItr)
+    {
+        bmcSourceSignal = sourceItr->second;
+    }
+    else
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "NMI source: invalid property!");
+        return ipmi::responseResponseError();
+    }
+
+    try
+    {
+        // keep NMI signal source
+        std::string service =
+            getService(dbus, oemNmiSourceIntf, oemNmiSourceObjPath);
+        setDbusProperty(
+            dbus, service, oemNmiSourceObjPath, oemNmiSourceIntf,
+            oemNmiBmcSourceObjPathProp,
+            sdbusplus::com::intel::Control::server::convertForMessage(
+                bmcSourceSignal));
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -1987,6 +2115,16 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
         ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetNmiStatus),
+        ipmi::Privilege::User, ipmiOEMGetNmiSource);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetNmiStatus),
+        ipmi::Privilege::Operator, ipmiOEMSetNmiSource);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
