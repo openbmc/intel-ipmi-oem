@@ -25,7 +25,6 @@
 #include <boost/process/io.hpp>
 #include <com/intel/Control/OCOTShutdownPolicy/server.hpp>
 #include <commandutils.hpp>
-#include <filesystem>
 #include <iostream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
@@ -40,13 +39,7 @@
 namespace ipmi
 {
 static void registerOEMFunctions() __attribute__((constructor));
-
-namespace netfn::intel
-{
-constexpr NetFn oemGeneral = netFnOemOne;
-constexpr Cmd cmdRestoreConfiguration = 0x02;
-} // namespace netfn::intel
-
+sdbusplus::bus::bus dbus(ipmid_get_sd_bus_connection()); // from ipmid/api.h
 static constexpr size_t maxFRUStringLength = 0x3F;
 
 static constexpr auto ethernetIntf =
@@ -87,7 +80,8 @@ int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
         try
         {
             Value variant = property->second;
-            std::string& result = std::get<std::string>(variant);
+            std::string& result =
+                sdbusplus::message::variant_ns::get<std::string>(variant);
             if (result.size() > maxFRUStringLength)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -97,7 +91,7 @@ int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
             serial = result;
             return 0;
         }
-        catch (std::bad_variant_access& e)
+        catch (sdbusplus::message::variant_ns::bad_variant_access& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
             return -1;
@@ -130,8 +124,7 @@ ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         *dataLen = 0;
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    if (getChassisSerialNumber(*dbus, serial) == 0)
+    if (getChassisSerialNumber(dbus, serial) == 0)
     {
         *dataLen = serial.size(); // length will never exceed response length
                                   // as it is checked in getChassisSerialNumber
@@ -172,9 +165,8 @@ ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     std::string objpath = "/xyz/openbmc_project/control/host0/systemGUID";
     std::string intf = "xyz.openbmc_project.Common.UUID";
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    std::string service = getService(*dbus, intf, objpath);
-    setDbusProperty(*dbus, service, objpath, intf, "UUID", guid);
+    std::string service = getService(dbus, intf, objpath);
+    setDbusProperty(dbus, service, objpath, intf, "UUID", guid);
     return IPMI_CC_OK;
 }
 
@@ -191,9 +183,8 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     }
     std::string idString((char*)data->biosId, data->biosIDLength);
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    std::string service = getService(*dbus, biosIntf, biosObjPath);
-    setDbusProperty(*dbus, service, biosObjPath, biosIntf, biosProp, idString);
+    std::string service = getService(dbus, biosIntf, biosObjPath);
+    setDbusProperty(dbus, service, biosObjPath, biosIntf, biosProp, idString);
     uint8_t* bytesWritten = static_cast<uint8_t*>(response);
     *bytesWritten =
         data->biosIDLength; // how many bytes are written into storage
@@ -232,13 +223,13 @@ ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 return IPMI_CC_REQ_DATA_LEN_INVALID;
             }
 
-            std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-            std::string service = getService(*dbus, biosIntf, biosObjPath);
+            std::string service = getService(dbus, biosIntf, biosObjPath);
             try
             {
-                Value variant = getDbusProperty(*dbus, service, biosObjPath,
+                Value variant = getDbusProperty(dbus, service, biosObjPath,
                                                 biosIntf, biosProp);
-                std::string& idString = std::get<std::string>(variant);
+                std::string& idString =
+                    sdbusplus::message::variant_ns::get<std::string>(variant);
                 if (req->offset >= idString.size())
                 {
                     return IPMI_CC_PARM_OUT_OF_RANGE;
@@ -257,7 +248,7 @@ ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 res->resDatalen = length;
                 *dataLen = res->resDatalen + 1;
             }
-            catch (std::bad_variant_access& e)
+            catch (sdbusplus::message::variant_ns::bad_variant_access& e)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
                 return IPMI_CC_UNSPECIFIED_ERROR;
@@ -309,14 +300,13 @@ ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     std::string service =
-        getService(*dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
+        getService(dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
     Value variant =
-        getDbusProperty(*dbus, service, powerRestoreDelayObjPath,
+        getDbusProperty(dbus, service, powerRestoreDelayObjPath,
                         powerRestoreDelayIntf, powerRestoreDelayProp);
 
-    uint16_t delay = std::get<uint16_t>(variant);
+    uint16_t delay = sdbusplus::message::variant_ns::get<uint16_t>(variant);
     resp->byteLSB = delay;
     resp->byteMSB = delay >> 8;
 
@@ -450,10 +440,9 @@ ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     }
     delay = data->byteMSB;
     delay = (delay << 8) | data->byteLSB;
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     std::string service =
-        getService(*dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
-    setDbusProperty(*dbus, service, powerRestoreDelayObjPath,
+        getService(dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
+    setDbusProperty(dbus, service, powerRestoreDelayObjPath,
                     powerRestoreDelayIntf, powerRestoreDelayProp, delay);
     *dataLen = 0;
 
@@ -475,27 +464,27 @@ ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     std::string service =
-        getService(*dbus, processorErrConfigIntf, processorErrConfigObjPath);
-    Value variant = getDbusProperty(*dbus, service, processorErrConfigObjPath,
+        getService(dbus, processorErrConfigIntf, processorErrConfigObjPath);
+    Value variant = getDbusProperty(dbus, service, processorErrConfigObjPath,
                                     processorErrConfigIntf, "ResetCfg");
-    resp->resetCfg = std::get<uint8_t>(variant);
+    resp->resetCfg = sdbusplus::message::variant_ns::get<uint8_t>(variant);
 
     std::vector<uint8_t> caterrStatus;
     sdbusplus::message::variant<std::vector<uint8_t>> message;
 
     auto method =
-        dbus->new_method_call(service.c_str(), processorErrConfigObjPath,
-                              "org.freedesktop.DBus.Properties", "Get");
+        dbus.new_method_call(service.c_str(), processorErrConfigObjPath,
+                             "org.freedesktop.DBus.Properties", "Get");
 
     method.append(processorErrConfigIntf, "CATERRStatus");
-    auto reply = dbus->call(method);
+    auto reply = dbus.call(method);
 
     try
     {
         reply.read(message);
-        caterrStatus = std::get<std::vector<uint8_t>>(message);
+        caterrStatus =
+            sdbusplus::message::variant_ns::get<std::vector<uint8_t>>(message);
     }
     catch (sdbusplus::exception_t&)
     {
@@ -530,13 +519,12 @@ ipmi_ret_t ipmiOEMSetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         *dataLen = 0;
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     std::string service =
-        getService(*dbus, processorErrConfigIntf, processorErrConfigObjPath);
-    setDbusProperty(*dbus, service, processorErrConfigObjPath,
+        getService(dbus, processorErrConfigIntf, processorErrConfigObjPath);
+    setDbusProperty(dbus, service, processorErrConfigObjPath,
                     processorErrConfigIntf, "ResetCfg", req->resetCfg);
 
-    setDbusProperty(*dbus, service, processorErrConfigObjPath,
+    setDbusProperty(dbus, service, processorErrConfigObjPath,
                     processorErrConfigIntf, "ResetErrorOccurrenceCounts",
                     req->resetErrorOccurrenceCounts);
     *dataLen = 0;
@@ -565,12 +553,11 @@ ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     try
     {
-        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         std::string service =
-            getService(*dbus, oemShutdownPolicyIntf, oemShutdownPolicyObjPath);
-        Value variant = getDbusProperty(
-            *dbus, service, oemShutdownPolicyObjPath, oemShutdownPolicyIntf,
-            oemShutdownPolicyObjPathProp);
+            getService(dbus, oemShutdownPolicyIntf, oemShutdownPolicyObjPath);
+        Value variant = getDbusProperty(dbus, service, oemShutdownPolicyObjPath,
+                                        oemShutdownPolicyIntf,
+                                        oemShutdownPolicyObjPathProp);
 
         if (sdbusplus::com::intel::Control::server::OCOTShutdownPolicy::
                 convertPolicyFromString(std::get<std::string>(variant)) ==
@@ -650,11 +637,10 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     try
     {
-        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         std::string service =
-            getService(*dbus, oemShutdownPolicyIntf, oemShutdownPolicyObjPath);
+            getService(dbus, oemShutdownPolicyIntf, oemShutdownPolicyObjPath);
         setDbusProperty(
-            *dbus, service, oemShutdownPolicyObjPath, oemShutdownPolicyIntf,
+            dbus, service, oemShutdownPolicyObjPath, oemShutdownPolicyIntf,
             oemShutdownPolicyObjPathProp,
             sdbusplus::com::intel::Control::server::convertForMessage(policy));
     }
@@ -681,12 +667,11 @@ static bool isDHCPEnabled(uint8_t Channel)
             return false;
         }
         auto ethIP = ethdevice + "/ipv4";
-        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         auto ethernetObj =
-            getDbusObject(*dbus, networkIPIntf, networkRoot, ethIP);
-        auto value = getDbusProperty(*dbus, networkService, ethernetObj.first,
+            getDbusObject(dbus, networkIPIntf, networkRoot, ethIP);
+        auto value = getDbusProperty(dbus, networkService, ethernetObj.first,
                                      networkIPIntf, "Origin");
-        if (std::get<std::string>(value) ==
+        if (sdbusplus::message::variant_ns::get<std::string>(value) ==
             "xyz.openbmc_project.Network.IP.AddressOrigin.DHCP")
         {
             return true;
@@ -718,12 +703,12 @@ static bool isDHCPIPv6Enabled(uint8_t Channel)
             return false;
         }
         auto ethIP = ethdevice + "/ipv6";
-        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         auto objectInfo =
-            getDbusObject(*dbus, networkIPIntf, networkRoot, ethIP);
-        auto properties = getAllDbusProperties(*dbus, objectInfo.second,
+            getDbusObject(dbus, networkIPIntf, networkRoot, ethIP);
+        auto properties = getAllDbusProperties(dbus, objectInfo.second,
                                                objectInfo.first, networkIPIntf);
-        if (std::get<std::string>(properties["Origin"]) ==
+        if (sdbusplus::message::variant_ns::get<std::string>(
+                properties["Origin"]) ==
             "xyz.openbmc_project.Network.IP.AddressOrigin.DHCP")
         {
             return true;
@@ -921,7 +906,8 @@ int8_t getLEDState(sdbusplus::bus::bus& bus, const std::string& intf,
         std::string service = getService(bus, intf, objPath);
         Value stateValue =
             getDbusProperty(bus, service, objPath, intf, "State");
-        std::string strState = std::get<std::string>(stateValue);
+        std::string strState =
+            sdbusplus::message::variant_ns::get<std::string>(stateValue);
         state = ledAction::actionDbusToIpmi.at(
             sdbusplus::xyz::openbmc_project::Led::server::Physical::
                 convertActionFromString(strState));
@@ -934,81 +920,52 @@ int8_t getLEDState(sdbusplus::bus::bus& bus, const std::string& intf,
     return 0;
 }
 
-ipmi_ret_t ipmiOEMGetLEDStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                               ipmi_request_t request, ipmi_response_t response,
-                               ipmi_data_len_t dataLen, ipmi_context_t context)
-{
-    uint8_t* resp = reinterpret_cast<uint8_t*>(response);
-    // LED Status
-    //[1:0] = Reserved
-    //[3:2] = Status(Amber)
-    //[5:4] = Status(Green)
-    //[7:6] = System Identify
-    // Status definitions:
-    // 00b = Off
-    // 01b = Blink
-    // 10b = On
-    // 11b = invalid
-    if (*dataLen != 0)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "oem_get_led_status: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
+/*@ param ledstate - 8-bit unsigned integer to know the led state
+ *@ param state - 8-bit unsigned integer to be used with iterator
+ *@ returns completion code with 1 byte led status
+ */
 
+ipmi::RspType<uint8_t> ipmiOEMGetLEDStatus()
+{
+    uint8_t ledstate = 0;
+    uint8_t state = 0;
     phosphor::logging::log<phosphor::logging::level::DEBUG>("GET led status");
-    *resp = 0;
-    *dataLen = 0;
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+
     for (auto it = ledAction::offsetObjPath.begin();
          it != ledAction::offsetObjPath.end(); ++it)
     {
-        uint8_t state = 0;
-        if (-1 == getLEDState(*dbus, ledIntf, it->second, state))
+        state = 0;
+        if (getLEDState(dbus, ledIntf, it->second, state) == -1)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "oem_get_led_status: fail to get ID LED status!");
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return ipmi::responseUnspecifiedError();
         }
-        *resp |= state << it->first;
+        ledstate |= state << it->first;
     }
-
-    *dataLen = sizeof(*resp);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(ledstate);
 }
 
-ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                         ipmi_request_t request,
-                                         ipmi_response_t response,
-                                         ipmi_data_len_t dataLen,
-                                         ipmi_context_t context)
+/*
+ *@ param command - 8-bit unsigned integer to be used with serial port config
+ *command
+ *@ param parameter - 8-bit unsigned integer to know the parameter passed as
+ *request
+ *@ param resp - 8-bit unsigned integer to send the response of serial config
+ *command
+ *@ Using ipmi APIs and Error codes
+ *@ returns completion code of 1 byte
+ *
+ */
+ipmi::RspType<uint8_t> ipmiOEMCfgHostSerialPortSpeed(uint8_t command,
+                                                     uint8_t parameter)
 {
-    CfgHostSerialReq* req = reinterpret_cast<CfgHostSerialReq*>(request);
-    uint8_t* resp = reinterpret_cast<uint8_t*>(response);
+    uint8_t resp = 0x00;
 
-    if (*dataLen == 0)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "CfgHostSerial: invalid input len!",
-            phosphor::logging::entry("LEN=%d", *dataLen));
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    switch (req->command)
+    switch (command)
     {
         case getHostSerialCfgCmd:
         {
-            if (*dataLen != 1)
-            {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "CfgHostSerial: invalid input len!");
-                *dataLen = 0;
-                return IPMI_CC_REQ_DATA_LEN_INVALID;
-            }
-
-            *dataLen = 0;
-
             boost::process::ipstream is;
             std::vector<std::string> data;
             std::string line;
@@ -1026,8 +983,8 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "CfgHostSerial:: error on execute",
                     phosphor::logging::entry("EXECUTE=%s", fwSetEnvCmd));
+                resp = 0x00;
                 // Using the default value
-                *resp = 0;
             }
             else
             {
@@ -1035,7 +992,7 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "CfgHostSerial:: error on read env");
-                    return IPMI_CC_UNSPECIFIED_ERROR;
+                    return ipmi::response(ipmi::ccUnspecifiedError);
                 }
                 try
                 {
@@ -1044,67 +1001,53 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                     {
                         throw std::out_of_range("Out of range");
                     }
-                    *resp = static_cast<uint8_t>(tmp);
+                    resp = static_cast<uint8_t>(tmp);
                 }
                 catch (const std::invalid_argument& e)
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "invalid config ",
                         phosphor::logging::entry("ERR=%s", e.what()));
-                    return IPMI_CC_UNSPECIFIED_ERROR;
+                    return ipmi::response(ipmi::ccUnspecifiedError);
                 }
                 catch (const std::out_of_range& e)
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "out_of_range config ",
                         phosphor::logging::entry("ERR=%s", e.what()));
-                    return IPMI_CC_UNSPECIFIED_ERROR;
+                    return ipmi::response(ipmi::ccUnspecifiedError);
                 }
             }
-
-            *dataLen = 1;
             break;
         }
         case setHostSerialCfgCmd:
         {
-            if (*dataLen != sizeof(CfgHostSerialReq))
-            {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "CfgHostSerial: invalid input len!");
-                *dataLen = 0;
-                return IPMI_CC_REQ_DATA_LEN_INVALID;
-            }
-
-            *dataLen = 0;
-
-            if (req->parameter > HostSerialCfgParamMax)
+            if (parameter > HostSerialCfgParamMax)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "CfgHostSerial: invalid input!");
-                return IPMI_CC_INVALID_FIELD_REQUEST;
+
+                return ipmi::responseInvalidFieldRequest();
             }
 
             boost::process::child c1(fwSetEnvCmd, fwHostSerailCfgEnvName,
-                                     std::to_string(req->parameter));
-
+                                     std::to_string(parameter));
             c1.wait();
             if (c1.exit_code())
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "CfgHostSerial:: error on execute",
                     phosphor::logging::entry("EXECUTE=%s", fwGetEnvCmd));
-                return IPMI_CC_UNSPECIFIED_ERROR;
+                return ipmi::response(ipmi::ccUnspecifiedError);
             }
             break;
         }
         default:
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "CfgHostSerial: invalid input!");
-            *dataLen = 0;
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
     }
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(resp);
 }
 
 constexpr const char* thermalModeInterface =
@@ -1154,8 +1097,7 @@ ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     boost::container::flat_map<
         std::string, std::variant<std::vector<std::string>, std::string>>
         profileData;
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    if (!getFanProfileInterface(*dbus, profileData))
+    if (!getFanProfileInterface(dbus, profileData))
     {
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
@@ -1196,7 +1138,7 @@ ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         {
             return IPMI_CC_INVALID_FIELD_REQUEST;
         }
-        setDbusProperty(*dbus, settingsBusName, thermalModePath,
+        setDbusProperty(dbus, settingsBusName, thermalModePath,
                         thermalModeInterface, "Current", mode);
     }
 
@@ -1225,8 +1167,7 @@ ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         std::string, std::variant<std::vector<std::string>, std::string>>
         profileData;
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    if (!getFanProfileInterface(*dbus, profileData))
+    if (!getFanProfileInterface(dbus, profileData))
     {
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
@@ -1258,18 +1199,18 @@ constexpr const char* pidConfigurationIface =
 
 static std::string getExitAirConfigPath()
 {
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+
     auto method =
-        dbus->new_method_call("xyz.openbmc_project.ObjectMapper",
-                              "/xyz/openbmc_project/object_mapper",
-                              "xyz.openbmc_project.ObjectMapper", "GetSubTree");
+        dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
+                             "/xyz/openbmc_project/object_mapper",
+                             "xyz.openbmc_project.ObjectMapper", "GetSubTree");
 
     method.append("/", 0, std::array<const char*, 1>{pidConfigurationIface});
     std::string path;
     GetSubTreeType resp;
     try
     {
-        auto reply = dbus->call(method);
+        auto reply = dbus.call(method);
         reply.read(resp);
     }
     catch (sdbusplus::exception_t&)
@@ -1291,18 +1232,17 @@ static std::string getExitAirConfigPath()
 static boost::container::flat_map<std::string, PropertyMap> getPidConfigs()
 {
     boost::container::flat_map<std::string, PropertyMap> ret;
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     auto method =
-        dbus->new_method_call("xyz.openbmc_project.ObjectMapper",
-                              "/xyz/openbmc_project/object_mapper",
-                              "xyz.openbmc_project.ObjectMapper", "GetSubTree");
+        dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
+                             "/xyz/openbmc_project/object_mapper",
+                             "xyz.openbmc_project.ObjectMapper", "GetSubTree");
 
     method.append("/", 0, std::array<const char*, 1>{pidConfigurationIface});
     GetSubTreeType resp;
 
     try
     {
-        auto reply = dbus->call(method);
+        auto reply = dbus.call(method);
         reply.read(resp);
     }
     catch (sdbusplus::exception_t&)
@@ -1319,9 +1259,8 @@ static boost::container::flat_map<std::string, PropertyMap> getPidConfigs()
 
         try
         {
-            ret.emplace(path,
-                        getAllDbusProperties(*dbus, objects[0].first, path,
-                                             pidConfigurationIface));
+            ret.emplace(path, getAllDbusProperties(dbus, objects[0].first, path,
+                                                   pidConfigurationIface));
         }
         catch (sdbusplus::exception_t& e)
         {
@@ -1389,7 +1328,6 @@ ipmi::RspType<> ipmiOEMSetFanSpeedOffset(uint8_t offset)
         return ipmi::responseResponseError();
     }
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     bool found = false;
     for (const auto& [path, pid] : data)
     {
@@ -1414,7 +1352,7 @@ ipmi::RspType<> ipmiOEMSetFanSpeedOffset(uint8_t offset)
                     "configurations");
                 return ipmi::responseResponseError();
             }
-            ipmi::setDbusProperty(*dbus, "xyz.openbmc_project.EntityManager",
+            ipmi::setDbusProperty(dbus, "xyz.openbmc_project.EntityManager",
                                   path, pidConfigurationIface, "OutLimitMin",
                                   static_cast<double>(offset));
             found = true;
@@ -1435,13 +1373,12 @@ ipmi::RspType<> ipmiOEMSetFscParameter(uint8_t command, uint8_t param1,
 {
     constexpr const size_t disableLimiting = 0x0;
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     if (command == static_cast<uint8_t>(setFscParamFlags::tcontrol))
     {
         if (param1 == legacyExitAirSensorNumber)
         {
             std::string path = getExitAirConfigPath();
-            ipmi::setDbusProperty(*dbus, "xyz.openbmc_project.EntityManager",
+            ipmi::setDbusProperty(dbus, "xyz.openbmc_project.EntityManager",
                                   path, pidConfigurationIface, "SetPoint",
                                   static_cast<double>(param2));
             return ipmi::responseSuccess();
@@ -1463,7 +1400,7 @@ ipmi::RspType<> ipmiOEMSetFscParameter(uint8_t command, uint8_t param1,
 
         try
         {
-            ipmi::setDbusProperty(*dbus, settingsBusName, cfmLimitSettingPath,
+            ipmi::setDbusProperty(dbus, settingsBusName, cfmLimitSettingPath,
                                   cfmLimitIface, "Limit",
                                   static_cast<double>(cfm));
         }
@@ -1506,7 +1443,7 @@ ipmi::RspType<> ipmiOEMSetFscParameter(uint8_t command, uint8_t param1,
                 if (requestedDomainMask & (1 << count))
                 {
                     ipmi::setDbusProperty(
-                        *dbus, "xyz.openbmc_project.EntityManager", path,
+                        dbus, "xyz.openbmc_project.EntityManager", path,
                         pidConfigurationIface, "OutLimitMax",
                         static_cast<double>(param2));
                 }
@@ -1531,7 +1468,6 @@ ipmi::RspType<
 {
     constexpr uint8_t legacyDefaultExitAirLimit = -128;
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     if (command == static_cast<uint8_t>(setFscParamFlags::tcontrol))
     {
         if (!param)
@@ -1547,9 +1483,9 @@ ipmi::RspType<
         std::string path = getExitAirConfigPath();
         if (path.size())
         {
-            Value val = ipmi::getDbusProperty(
-                *dbus, "xyz.openbmc_project.EntityManager", path,
-                pidConfigurationIface, "SetPoint");
+            Value val =
+                ipmi::getDbusProperty(dbus, "xyz.openbmc_project.EntityManager",
+                                      path, pidConfigurationIface, "SetPoint");
             setpoint = std::floor(std::get<double>(val) + 0.5);
         }
 
@@ -1638,11 +1574,11 @@ ipmi::RspType<
         Value cfmMaximum;
         try
         {
-            cfmLimit = ipmi::getDbusProperty(*dbus, settingsBusName,
+            cfmLimit = ipmi::getDbusProperty(dbus, settingsBusName,
                                              cfmLimitSettingPath, cfmLimitIface,
                                              "Limit");
             cfmMaximum = ipmi::getDbusProperty(
-                *dbus, "xyz.openbmc_project.ExitAirTempSensor",
+                dbus, "xyz.openbmc_project.ExitAirTempSensor",
                 "/xyz/openbmc_project/control/MaxCFM", cfmLimitIface, "Limit");
         }
         catch (sdbusplus::exception_t& e)
@@ -1707,11 +1643,10 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
         return ipmi::responseParmOutOfRange();
     }
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     try
     {
-        service = getService(*dbus, intf, objpath);
-        valueTree = getManagedObjects(*dbus, service, "/");
+        service = getService(dbus, intf, objpath);
+        valueTree = getManagedObjects(dbus, service, "/");
     }
     catch (const std::exception& e)
     {
@@ -1776,7 +1711,7 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
         std::vector<uint64_t> ledgpios;
         std::variant<std::vector<uint64_t>> message;
 
-        auto method = dbus->new_method_call(
+        auto method = dbus.new_method_call(
             service.c_str(), (std::string(item.first)).c_str(),
             "org.freedesktop.DBus.Properties", "Get");
 
@@ -1785,7 +1720,7 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
 
         try
         {
-            auto reply = dbus->call(method);
+            auto reply = dbus.call(method);
             reply.read(message);
             ledgpios = std::get<std::vector<uint64_t>>(message);
         }
@@ -1873,12 +1808,11 @@ ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
     uint8_t prodId = 0;
     try
     {
-        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         const DbusObjectInfo& object = getDbusObject(
-            *dbus, "xyz.openbmc_project.Inventory.Item.Board",
+            dbus, "xyz.openbmc_project.Inventory.Item.Board",
             "/xyz/openbmc_project/inventory/system/board/", "Baseboard");
         const Value& propValue = getDbusProperty(
-            *dbus, object.second, object.first,
+            dbus, object.second, object.first,
             "xyz.openbmc_project.Inventory.Item.Board", "ProductId");
         prodId = static_cast<uint8_t>(std::get<uint64_t>(propValue));
     }
@@ -1889,53 +1823,6 @@ ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
             phosphor::logging::entry("ERR=%s", e.what()));
     }
     return ipmi::responseSuccess(prodId);
-}
-
-ipmi::RspType<uint8_t /* restore status */>
-    ipmiRestoreConfiguration(const std::array<uint8_t, 3>& clr, uint8_t cmd)
-{
-    static constexpr std::array<uint8_t, 3> expClr = {'C', 'L', 'R'};
-
-    if (clr != expClr)
-    {
-        return ipmi::responseInvalidFieldRequest();
-    }
-    constexpr uint8_t cmdStatus = 0;
-    constexpr uint8_t cmdDefaultRestore = 0xaa;
-    constexpr uint8_t cmdFullRestore = 0xbb;
-    constexpr uint8_t cmdFormat = 0xcc;
-
-    constexpr const char* restoreOpFname = "/tmp/.rwfs/.restore_op";
-
-    switch (cmd)
-    {
-        case cmdStatus:
-            break;
-        case cmdDefaultRestore:
-        case cmdFullRestore:
-        case cmdFormat:
-        {
-            // write file to rwfs root
-            int value = (cmd - 1) & 0x03; // map aa, bb, cc => 1, 2, 3
-            std::ofstream restoreFile(restoreOpFname);
-            if (!restoreFile)
-            {
-                return ipmi::responseUnspecifiedError();
-            }
-            restoreFile << value << "\n";
-            break;
-        }
-        default:
-            return ipmi::responseInvalidFieldRequest();
-    }
-
-    constexpr uint8_t restorePending = 0;
-    constexpr uint8_t restoreComplete = 1;
-
-    uint8_t restoreStatus = std::filesystem::exists(restoreOpFname)
-                                ? restorePending
-                                : restoreComplete;
-    return ipmi::responseSuccess(restoreStatus);
 }
 
 static void registerOEMFunctions(void)
@@ -2059,24 +1946,23 @@ static void registerOEMFunctions(void)
             IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
         ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetLEDStatus),
-        NULL, ipmiOEMGetLEDStatus, PRIVILEGE_ADMIN);
-    ipmiPrintAndRegister(
-        netfnIntcOEMPlatform,
-        static_cast<ipmi_cmd_t>(
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetLEDStatus),
+        ipmi::Privilege::Admin, ipmiOEMGetLEDStatus);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMPlatform,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMPlatformCmd::cmdCfgHostSerialPortSpeed),
-        NULL, ipmiOEMCfgHostSerialPortSpeed, PRIVILEGE_ADMIN);
+        ipmi::Privilege::Admin, ipmiOEMCfgHostSerialPortSpeed);
+
     ipmi::registerHandler(
         ipmi::prioOemBase, netfnIntcOEMGeneral,
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetFaultIndication),
         ipmi::Privilege::Operator, ipmiOEMSetFaultIndication);
-
-    registerHandler(prioOemBase, netfn::intel::oemGeneral,
-                    netfn::intel::cmdRestoreConfiguration, Privilege::Admin,
-                    ipmiRestoreConfiguration);
+    return;
 }
 
 } // namespace ipmi
