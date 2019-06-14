@@ -121,7 +121,7 @@ inline static bool getSensorNumMap(std::shared_ptr<SensorNumMap>& sensorNumMap)
 
     sensorNumMapPtr = std::make_shared<SensorNumMap>();
 
-    uint8_t sensorNum = 1;
+    uint8_t sensorNum = 0;
     for (const auto& sensor : *sensorTree)
     {
         sensorNumMapPtr->insert(
