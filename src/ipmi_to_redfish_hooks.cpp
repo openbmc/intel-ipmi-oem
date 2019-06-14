@@ -523,8 +523,7 @@ static bool biosSMIMessageHook(const SELData& selData,
                             messageID += ".PCIeFatalUnexpectedCompletion";
                             break;
                         case 0x0d:
-                            messageID +=
-                                ".PCIeFatalReceivedERR_NONFATALMessage";
+                            messageID += ".PCIeFatalReceivedErrNonFatalMessage";
                             break;
                         case 0x0e:
                             messageID += ".PCIeFatalUncorrectableInternal";
