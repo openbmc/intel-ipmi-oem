@@ -14,6 +14,7 @@
 // limitations under the License.
 */
 #pragma once
+#include <ipmid/api.hpp>
 #include <sdbusplus/message.hpp>
 #include <sdbusplus/server/interface.hpp>
 
@@ -313,6 +314,8 @@ class Bridging
   public:
     Bridging();
 
+    std::vector<IpmbResponse> getResponseQueue();
+
     ipmi_return_codes sendMessageHandler(ipmi_request_t request,
                                          ipmi_response_t response,
                                          ipmi_data_len_t dataLen);
@@ -320,15 +323,6 @@ class Bridging
     ipmi_return_codes getMessageHandler(ipmi_request_t request,
                                         ipmi_response_t response,
                                         ipmi_data_len_t dataLen);
-
-    ipmi_return_codes clearMessageFlagsHandler(ipmi_request_t request,
-                                               ipmi_response_t response,
-                                               ipmi_data_len_t dataLen);
-
-    ipmi_return_codes getMessageFlagsHandler(ipmi_request_t request,
-                                             ipmi_response_t response,
-                                             ipmi_data_len_t dataLen);
-
     enum IpmiAppBridgingCmds
     {
         ipmiCmdClearMessageFlags = 0x30,
