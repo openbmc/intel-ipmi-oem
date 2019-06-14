@@ -1012,6 +1012,18 @@ ipmi::RspType<uint8_t> ipmiStorageClearSEL(ipmi::Context::ptr ctx,
     return ipmi::responseSuccess(ipmi::sel::eraseComplete);
 }
 
+ipmi::RspType<uint32_t> ipmiStorageGetSELTime()
+{
+    struct timespec selTime = {};
+
+    if (clock_gettime(CLOCK_REALTIME, &selTime) < 0)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+
+    return ipmi::responseSuccess(selTime.tv_sec);
+}
+
 ipmi::RspType<> ipmiStorageSetSELTime(uint32_t selTime)
 {
     // Set SEL Time is not supported
@@ -1057,6 +1069,11 @@ void registerStorageFunctions()
     ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnStorage,
                           ipmi::storage::cmdClearSel, ipmi::Privilege::Operator,
                           ipmiStorageClearSEL);
+
+    // <Get SEL Time>
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnStorage,
+                          ipmi::storage::cmdGetSelTime,
+                          ipmi::Privilege::Operator, ipmiStorageGetSELTime);
 
     // <Set SEL Time>
     ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnStorage,
