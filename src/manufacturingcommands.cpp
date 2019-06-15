@@ -14,6 +14,7 @@
 // limitations under the License.
 */
 
+#include <boost/container/flat_map.hpp>
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
 #include <oemcommands.hpp>
@@ -233,8 +234,8 @@ int8_t Manufacturing::disablePidControlService(const bool disable)
 ipmi::RspType<uint8_t,                // Signal value
               std::optional<uint16_t> // Fan tach value
               >
-    appMTMGetSignal(uint8_t signalTypeByte, uint8_t instance,
-                    uint8_t actionByte)
+    appMTMGetSignal(boost::asio::yield_context yield, uint8_t signalTypeByte,
+                    uint8_t instance, uint8_t actionByte)
 {
     if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
     {
@@ -249,7 +250,7 @@ ipmi::RspType<uint8_t,                // Signal value
         case SmSignalGet::smFanPwmGet:
         {
             ipmi::Value reply;
-            std::string fullPath = fanPwmPath + std::to_string(instance);
+            std::string fullPath = fanPwmPath + std::to_string(instance + 1);
             if (mtm.getProperty(fanService, fullPath, fanIntf, "Value",
                                 &reply) < 0)
             {
@@ -265,31 +266,31 @@ ipmi::RspType<uint8_t,                // Signal value
         }
         break;
         case SmSignalGet::smFanTachometerGet:
-
         {
-            // Full path calculation pattern:
-            // Instance 1 path is
-            // /xyz/openbmc_project/sensors/fan_tach/Fan_1a Instance 2 path
-            // is /xyz/openbmc_project/sensors/fan_tach/Fan_1b Instance 3
-            // path is /xyz/openbmc_project/sensors/fan_tach/Fan_2a
-            // and so on...
-            std::string fullPath = fanTachPathPrefix;
-            std::string fanAb = (instance % 2) == 0 ? "b" : "a";
-            if (0 == instance)
+            auto sdbusp = getSdBus();
+            boost::system::error_code ec;
+            using objFlatMap = boost::container::flat_map<
+                std::string, boost::container::flat_map<
+                                 std::string, std::vector<std::string>>>;
+
+            auto flatMap = sdbusp->yield_method_call<objFlatMap>(
+                yield, ec, "xyz.openbmc_project.ObjectMapper",
+                "/xyz/openbmc_project/object_mapper",
+                "xyz.openbmc_project.ObjectMapper", "GetSubTree",
+                fanTachBasePath, 0, std::array<const char*, 1>{fanIntf});
+            if (ec)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to query fan tach sub tree objects");
+                return ipmi::responseUnspecifiedError();
+            }
+            if (instance >= flatMap.size())
             {
                 return ipmi::responseInvalidFieldRequest();
             }
-            else if (0 == instance / 2)
-            {
-                fullPath += std::string("1") + fanAb;
-            }
-            else
-            {
-                fullPath += std::to_string(instance / 2) + fanAb;
-            }
-
+            auto itr = flatMap.nth(instance);
             ipmi::Value reply;
-            if (mtm.getProperty(fanService, fullPath, fanIntf, "Value",
+            if (mtm.getProperty(fanService, itr->first, fanIntf, "Value",
                                 &reply) < 0)
             {
                 return ipmi::responseInvalidFieldRequest();
