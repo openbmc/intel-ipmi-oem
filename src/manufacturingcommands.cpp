@@ -279,14 +279,7 @@ ipmi::RspType<uint8_t,                // Signal value
             {
                 return ipmi::responseInvalidFieldRequest();
             }
-            else if (0 == instance / 2)
-            {
-                fullPath += std::string("1") + fanAb;
-            }
-            else
-            {
-                fullPath += std::to_string(instance / 2) + fanAb;
-            }
+            fullPath += std::to_string(std::round(instance / 2)) + fanAb;
 
             ipmi::Value reply;
             if (mtm.getProperty(fanService, fullPath, fanIntf, "Value",
