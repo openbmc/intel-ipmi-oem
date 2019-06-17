@@ -42,6 +42,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
     cmdGetLEDStatus = 0xB0,
+    cmdGetNmiStatus = 0xE5,
+    cmdSetNmiStatus = 0xED,
 };
 
 enum class IPMINetfnIntelOEMPlatformCmd
@@ -435,4 +437,22 @@ enum class IPMINetFnIntelOemGeneralCmds
     SetSmSignal = 0x15,
     BmcControlServices = 0xC0,
     SetSensorOverride = 0xEE,
+};
+
+struct GetOemNmiSourceRes
+{
+    uint8_t bmcSource;
+};
+
+enum class NmiSource : uint8_t
+{
+    none = 0,
+    fpBtn = 1,
+    wdPreTimeout = 2,
+    pefMatch = 3,
+    chassisCmd = 4,
+    memoryError = 5,
+    pciSerrPerr = 6,
+    southbridgeNmi = 7,
+    chipsetNmi = 8,
 };
