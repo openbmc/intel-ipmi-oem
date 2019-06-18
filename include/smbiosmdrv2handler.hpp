@@ -154,23 +154,6 @@ struct MDRiiGetDirResponse
     uint8_t data[1];
 };
 
-struct MDRiiGetDataInfoRequest
-{
-    uint16_t agentId;
-    DataIdStruct dataSetInfo;
-};
-
-// MDR II data set information inquiry response
-struct MDRiiGetDataInfoResponse
-{
-    uint8_t mdrVersion;
-    DataIdStruct dataSetId;
-    uint8_t validFlag;
-    uint32_t dataLength;
-    uint32_t dataVersion;
-    uint32_t timeStamp;
-};
-
 // MDR II Pull Agent get data block command
 struct MDRiiGetDataBlockRequest
 {
@@ -204,18 +187,6 @@ struct MDRiiSendDirRequest
 struct MDRiiOfferDataInfoResponse
 {
     DataIdStruct dataSetInfo;
-};
-
-// MDR II Push Agent send data set info command
-struct MDRiiSendDataInfoRequest
-{
-    uint16_t agentId;
-    DataIdStruct dataSetInfo;
-    uint8_t validFlag;
-    uint32_t dataLength;
-    uint32_t dataVersion; // Roughly equivalent to the "file name"
-    uint32_t
-        timeStamp; // More info on the identity of this particular set of data
 };
 
 // MDR II Push Agent send data block command
