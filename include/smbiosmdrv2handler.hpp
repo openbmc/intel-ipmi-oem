@@ -154,12 +154,6 @@ struct MDRiiGetDirResponse
     uint8_t data[1];
 };
 
-struct MDRiiGetDataInfoRequest
-{
-    uint16_t agentId;
-    DataIdStruct dataSetInfo;
-};
-
 // MDR II data set information inquiry response
 struct MDRiiGetDataInfoResponse
 {
