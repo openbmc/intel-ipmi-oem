@@ -154,23 +154,6 @@ struct MDRiiGetDirResponse
     uint8_t data[1];
 };
 
-struct MDRiiGetDataInfoRequest
-{
-    uint16_t agentId;
-    DataIdStruct dataSetInfo;
-};
-
-// MDR II data set information inquiry response
-struct MDRiiGetDataInfoResponse
-{
-    uint8_t mdrVersion;
-    DataIdStruct dataSetId;
-    uint8_t validFlag;
-    uint32_t dataLength;
-    uint32_t dataVersion;
-    uint32_t timeStamp;
-};
-
 // MDR II Pull Agent get data block command
 struct MDRiiGetDataBlockRequest
 {
