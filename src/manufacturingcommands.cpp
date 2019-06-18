@@ -331,41 +331,48 @@ std::tuple<uint8_t, ipmi_ret_t, uint8_t>
     return std::make_tuple(dataLen, retCode, value);
 }
 
-ipmi_ret_t ipmi_app_mtm_get_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                   ipmi_request_t request,
-                                   ipmi_response_t response,
-                                   ipmi_data_len_t data_len,
-                                   ipmi_context_t context)
+/*
+ *
+ * @param SigVal - 8-bit Unsigned Integer for Signal Values
+ * @param SigVal1 - 8-bit Unsigned Ineger for Signal Values1
+ * @param SigVal2 - 8-bit Unsigned Integer for Signal Values2
+ * @param myrsp_size - 8-bit Unsigned Integer for size of Response Structure
+ * @param ret - 8-bit integer for Return value
+ * @Response is of 3 Byte
+ * @Request is of 3 Byte
+ *
+ * */
+
+ipmi::RspType<uint8_t, uint8_t, uint8_t>
+    ipmi_app_mtm_get_signal(SmSignalGet Signal, uint8_t Instance,
+                            SmActionGet Action)
 {
+    uint8_t SigVal;
+    uint8_t SigVal1;
+    uint8_t SigVal2;
+
+    uint8_t myrsp_size = 3;
     ipmi_ret_t retCode = IPMI_CC_OK;
+
     int8_t ret = 0;
-    GetSmSignalReq* pReq = NULL;
-    GetSmSignalRsp* pRsp = NULL;
-
-    pReq = static_cast<GetSmSignalReq*>(request);
-    pRsp = static_cast<GetSmSignalRsp*>(response);
-
     ipmi::Value reply;
 
-    if ((*data_len == sizeof(*pReq)) &&
-        (mtm.getAccessLvl() >= MtmLvl::mtmAvailable))
+    if (mtm.getAccessLvl() >= MtmLvl::mtmAvailable)
     {
-        switch (pReq->Signal)
+        switch (Signal)
         {
             case SmSignalGet::smFanPwmGet:
             {
-                std::string fullPath =
-                    fanPwmPath + std::to_string(pReq->Instance);
+
+                std::string fullPath = fanPwmPath + std::to_string(Instance);
                 ret = mtm.getProperty(fanService, fullPath, fanIntf, "Value",
                                       &reply);
                 if (ret < 0)
                 {
-                    *data_len = 0;
-                    retCode = IPMI_CC_INVALID_FIELD_REQUEST;
+                    return ipmi::responseInvalidFieldRequest();
                     break;
                 }
-                *data_len = 1;
-                pRsp->SigVal = std::get<double>(reply);
+                SigVal = std::get<double>(reply);
             }
             break;
             case SmSignalGet::smFanTachometerGet:
@@ -377,39 +384,36 @@ ipmi_ret_t ipmi_app_mtm_get_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 // path is /xyz/openbmc_project/sensors/fan_tach/Fan_2a
                 // and so on...
                 std::string fullPath = fanTachPathPrefix;
-                std::string fanAb = (pReq->Instance % 2) == 0 ? "b" : "a";
-                if (0 == pReq->Instance)
+                std::string fanAb = (Instance % 2) == 0 ? "b" : "a";
+                if (0 == Instance)
                 {
-                    *data_len = 0;
-                    retCode = IPMI_CC_INVALID_FIELD_REQUEST;
+                    return ipmi::responseInvalidFieldRequest();
                     break;
                 }
-                else if (0 == pReq->Instance / 2)
+                else if (0 == Instance / 2)
                 {
                     fullPath += std::string("1") + fanAb;
                 }
                 else
                 {
-                    fullPath += std::to_string(pReq->Instance / 2) + fanAb;
+                    fullPath += std::to_string(Instance / 2) + fanAb;
                 }
 
                 ret = mtm.getProperty(fanService, fullPath, fanIntf, "Value",
                                       &reply);
                 if (ret < 0)
                 {
-                    *data_len = 0;
-                    retCode = IPMI_CC_INVALID_FIELD_REQUEST;
+                    return ipmi::responseInvalidFieldRequest();
                     break;
                 }
 
                 uint16_t value = std::get<double>(reply);
-                *data_len = sizeof(*pRsp);
-
-                pRsp->SigVal = FAN_PRESENT | FAN_SENSOR_PRESENT;
-                pRsp->SigVal1 = value & 0x00FF;
-                pRsp->SigVal2 = (value >> 8) & 0xFF;
+                SigVal = FAN_PRESENT | FAN_SENSOR_PRESENT;
+                SigVal1 = value & 0x00FF;
+                SigVal2 = (value >> 8) & 0xFF;
             }
             break;
+
             case SmSignalGet::smResetButton:      // gpio32
             case SmSignalGet::smPowerButton:      // gpio34
             case SmSignalGet::smFpLcpEnterButton: // gpio51
@@ -417,34 +421,41 @@ ipmi_ret_t ipmi_app_mtm_get_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             case SmSignalGet::smFpLcpRightButton: // gpio53
             case SmSignalGet::smNmiButton:        // gpio217
             case SmSignalGet::smIdentifyButton:   // gpio218
-                std::tie(*data_len, retCode, pRsp->SigVal) =
-                    mtm.proccessSignal(pReq->Signal, pReq->Action);
-                *data_len = sizeof(pRsp->SigVal);
+                std::tie(myrsp_size, retCode, SigVal) =
+                    mtm.proccessSignal(Signal, Action);
                 break;
+
             default:
-                *data_len = 0;
-                retCode = IPMI_CC_INVALID_FIELD_REQUEST;
+                return ipmi::responseInvalidFieldRequest();
                 break;
         }
     }
     else
     {
-        *data_len = 0;
-        retCode = IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::responseReqDataLenInvalid();
     }
-
-    return retCode;
+    return ipmi::responseSuccess(SigVal, SigVal1, SigVal2);
 }
 
-ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                   ipmi_request_t request,
-                                   ipmi_response_t response,
-                                   ipmi_data_len_t data_len,
-                                   ipmi_context_t context)
+/*
+ *
+ * @param Signal - 8-bit Unsigned integer for enum Signal code
+ * @param Instance - 8-bit Unsigned Ineger for Instance
+ * @param Action - 8-bit Unsigned Integer for enum  Action code
+ * @param Value - 8-bit Unsigned Integer for Value
+ * @param ret - 8-bit integer for Return value
+ * @param retCode - 8-bit Return code for errors and Success
+ * @Response is Completion Code
+ * @Request is of 4 Byte
+ *
+ * */
+
+ipmi::RspType<> ipmi_app_mtm_set_signal(SmSignalSet Signal, uint8_t Instance,
+                                        SmActionSet Action, uint8_t Value)
 {
+
     uint8_t ret = 0;
     ipmi_ret_t retCode = IPMI_CC_OK;
-    SetSmSignalReq* pReq = static_cast<SetSmSignalReq*>(request);
     std::string ledName;
     ///////////////////  Signal to led configuration ////////////////
     //        {SM_SYSTEM_READY_LED, STAT_GRN_LED},    GPIOS4  gpio148
@@ -452,23 +463,20 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     //        {SM_IDENTIFY_LED, IDENTIFY_LED},        GPIOS6  gpio150
     //        {SM_SPEAKER, SPEAKER},                  GPIOAB0 gpio216
     /////////////////////////////////////////////////////////////////
-    if ((*data_len == sizeof(*pReq)) &&
-        (mtm.getAccessLvl() >= MtmLvl::mtmAvailable))
+    if (mtm.getAccessLvl() >= MtmLvl::mtmAvailable)
     {
-        switch (pReq->Signal)
+        switch (Signal)
         {
             case SmSignalSet::smPowerFaultLed:
             case SmSignalSet::smSystemReadyLed:
             case SmSignalSet::smIdentifyLed:
-                switch (pReq->Action)
+                switch (Action)
                 {
                     case SmActionSet::forceDeasserted:
                     {
                         phosphor::logging::log<phosphor::logging::level::INFO>(
                             "case SmActionSet::forceDeasserted");
-
-                        retCode =
-                            ledStoreAndSet(pReq->Signal, std::string("Off"));
+                        retCode = ledStoreAndSet(Signal, std::string("Off"));
                         if (retCode != IPMI_CC_OK)
                         {
                             break;
@@ -481,14 +489,13 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                         phosphor::logging::log<phosphor::logging::level::INFO>(
                             "case SmActionSet::forceAsserted");
 
-                        retCode =
-                            ledStoreAndSet(pReq->Signal, std::string("On"));
+                        retCode = ledStoreAndSet(Signal, std::string("On"));
                         if (retCode != IPMI_CC_OK)
                         {
                             break;
                         }
                         mtm.revertTimer.start(revertTimeOut);
-                        if (SmSignalSet::smPowerFaultLed == pReq->Signal)
+                        if (SmSignalSet::smPowerFaultLed == Signal)
                         {
                             // Deassert "system ready"
                             retCode =
@@ -499,7 +506,7 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                 break;
                             }
                         }
-                        else if (SmSignalSet::smSystemReadyLed == pReq->Signal)
+                        else if (SmSignalSet::smSystemReadyLed == Signal)
                         {
                             // Deassert "fault led"
                             retCode =
@@ -516,7 +523,7 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                     {
                         phosphor::logging::log<phosphor::logging::level::INFO>(
                             "case SmActionSet::revert");
-                        retCode = ledRevert(pReq->Signal);
+                        retCode = ledRevert(Signal);
                         if (retCode != IPMI_CC_OK)
                         {
                             break;
@@ -525,22 +532,21 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                     break;
                     default:
                     {
-                        retCode = IPMI_CC_INVALID_FIELD_REQUEST;
+                        return ipmi::responseInvalidFieldRequest();
                     }
                     break;
                 }
                 break;
             case SmSignalSet::smFanPowerSpeed:
             {
-                if (((pReq->Action == SmActionSet::forceAsserted) &&
-                     (*data_len != sizeof(*pReq)) && (pReq->Value > 100)) ||
-                    pReq->Instance == 0)
+                if (((Action == SmActionSet::forceAsserted) && (Value > 100)) ||
+                    Instance == 0)
                 {
-                    retCode = IPMI_CC_INVALID_FIELD_REQUEST;
+                    return ipmi::responseInvalidFieldRequest();
                     break;
                 }
                 uint8_t pwmValue = 0;
-                switch (pReq->Action)
+                switch (Action)
                 {
                     case SmActionSet::revert:
                     {
@@ -549,7 +555,7 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                             ret = mtm.disablePidControlService(false);
                             if (ret < 0)
                             {
-                                retCode = IPMI_CC_UNSPECIFIED_ERROR;
+                                return ipmi::response(ipmi::ccUnspecifiedError);
                                 break;
                             }
                             mtm.revertFanPWM = false;
@@ -558,7 +564,7 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                     break;
                     case SmActionSet::forceAsserted:
                     {
-                        pwmValue = pReq->Value;
+                        pwmValue = Value;
                     } // fall-through
                     case SmActionSet::forceDeasserted:
                     {
@@ -567,27 +573,27 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                             ret = mtm.disablePidControlService(true);
                             if (ret < 0)
                             {
-                                retCode = IPMI_CC_UNSPECIFIED_ERROR;
+                                return ipmi::response(ipmi::ccUnspecifiedError);
                                 break;
                             }
                             mtm.revertFanPWM = true;
                         }
                         mtm.revertTimer.start(revertTimeOut);
                         std::string fanPwmInstancePath =
-                            fanPwmPath + std::to_string(pReq->Instance);
+                            fanPwmPath + std::to_string(Instance);
 
                         ret = mtm.setProperty(
                             fanService, fanPwmInstancePath.c_str(), fanIntf,
                             "Value", static_cast<double>(pwmValue));
                         if (ret < 0)
                         {
-                            retCode = IPMI_CC_UNSPECIFIED_ERROR;
+                            return ipmi::response(ipmi::ccUnspecifiedError);
                         }
                     }
                     break;
                     default:
                     {
-                        retCode = IPMI_CC_INVALID_FIELD_REQUEST;
+                        return ipmi::responseInvalidFieldRequest();
                     }
                     break;
                 }
@@ -595,18 +601,17 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             break;
             default:
             {
-                retCode = IPMI_CC_INVALID_FIELD_REQUEST;
+                return ipmi::responseInvalidFieldRequest();
             }
             break;
         }
     }
     else
     {
+        return ipmi::responseIllegalCommand();
         retCode = IPMI_CC_ILLEGAL_COMMAND;
     }
-
-    *data_len = 0; // Only CC is return for SetSmSignal cmd
-    return retCode;
+    return ipmi::responseSuccess();
 }
 
 } // namespace ipmi
@@ -614,15 +619,14 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 void register_mtm_commands() __attribute__((constructor));
 void register_mtm_commands()
 {
-    ipmi_register_callback(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetFnIntelOemGeneralCmds::GetSmSignal),
-        NULL, ipmi::ipmi_app_mtm_get_signal, PRIVILEGE_USER);
-
-    ipmi_register_callback(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetFnIntelOemGeneralCmds::SetSmSignal),
-        NULL, ipmi::ipmi_app_mtm_set_signal, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetFnIntelOemGeneralCmds::GetSmSignal),
+        ipmi::Privilege::User, ipmi::ipmi_app_mtm_get_signal);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetFnIntelOemGeneralCmds::SetSmSignal),
+        ipmi::Privilege::User, ipmi::ipmi_app_mtm_set_signal);
 
     return;
 }
