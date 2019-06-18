@@ -38,7 +38,7 @@ constexpr const uint16_t LAST_AGENT_ID = 0xFFFF;
 static void register_netfn_smbiosmdrv2_functions() __attribute__((constructor));
 static sdbusplus::bus::bus bus(ipmid_get_sd_bus_connection());
 
-int agentLookup(const uint16_t& agentId, const std::string& service)
+int gentLookup(const uint16_t& agentId, const std::string& service)
 {
     int agentIndex = -1;
 
