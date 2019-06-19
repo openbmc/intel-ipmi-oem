@@ -361,57 +361,40 @@ ipmi_ret_t cmd_mdr2_get_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t cmd_mdr2_send_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                             ipmi_request_t request, ipmi_response_t response,
-                             ipmi_data_len_t data_len, ipmi_context_t context)
+ipmi::RspType<bool> mdr2SendDir(uint16_t agentId, uint8_t dirVersion,
+                                uint8_t dirIndex, uint8_t returnedEntries,
+                                uint8_t remainingEntries,
+                                std::array<uint8_t, 16> dataInfo, uint32_t size,
+                                uint32_t dataSetSize, uint32_t dataVersion,
+                                uint32_t timestamp)
 {
-    auto requestData = reinterpret_cast<const MDRiiSendDirRequest *>(request);
-    std::vector<uint8_t> idVector;
-    bool teminate = false;
-
-    if (*data_len != sizeof(MDRiiSendDirRequest))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *data_len = 0;
-
     std::string service = ipmi::getService(bus, mdrv2Interface, mdrv2Path);
-
     if (mdrv2 == nullptr)
     {
         mdrv2 = std::make_unique<MDRV2>();
     }
 
-    int agentIndex = mdrv2->agentLookup(requestData->agentId);
+    int agentIndex = mdrv2->agentLookup(agentId);
     if (agentIndex == -1)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Unknown agent id",
-            phosphor::logging::entry("ID=%x", requestData->agentId));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+            "Unknown agent id", phosphor::logging::entry("ID=%x", agentId));
+        return ipmi::responseParmOutOfRange();
     }
 
-    if ((requestData->dirIndex + requestData->returnedEntries) > maxDirEntries)
+    if ((dirIndex + returnedEntries) > maxDirEntries)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Too many directory entries");
-        return IPMI_CC_STORGE_LEAK;
+        return ipmi::response(IPMI_CC_STORGE_LEAK);
     }
 
     sdbusplus::message::message method = bus.new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "SendDirectoryInformation");
-    method.append(requestData->dirVersion, requestData->dirIndex,
-                  requestData->returnedEntries, requestData->remainingEntries);
-    uint8_t *reqPoint;
-    for (int index = 0; index < requestData->returnedEntries; index++)
-    {
-        reqPoint = (uint8_t *)&(requestData->data[index]);
-        std::copy(reqPoint, sizeof(Mdr2DirEntry) + reqPoint, idVector.data());
-    }
-    method.append(idVector);
+    method.append(dirVersion, dirIndex, returnedEntries, remainingEntries,
+                  dataInfo, size, dataSetSize, dataVersion, timestamp);
 
+    bool teminate = false;
     try
     {
         sdbusplus::message::message reply = bus.call(method);
@@ -422,7 +405,7 @@ ipmi_ret_t cmd_mdr2_send_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error send dir - Invalid parameter");
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
     catch (sdbusplus::exception_t &)
     {
@@ -430,15 +413,20 @@ ipmi_ret_t cmd_mdr2_send_dir(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             "Error send dir",
             phosphor::logging::entry("SERVICE=%s", service.c_str()),
             phosphor::logging::entry("PATH=%s", mdrv2Path));
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
     }
 
-    *data_len = 1;
+    bool response = false;
     if (teminate == false)
-        *(static_cast<uint8_t *>(response)) = 0;
+    {
+        response = 0;
+    }
     else
-        *(static_cast<uint8_t *>(response)) = 1;
-    return IPMI_CC_OK;
+    {
+        response = 1;
+    }
+
+    return ipmi::responseSuccess(response);
 }
 
 ipmi_ret_t cmd_mdr2_get_data_info(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1360,9 +1348,9 @@ static void register_netfn_smbiosmdrv2_functions(void)
                            cmd_mdr2_get_dir, PRIVILEGE_OPERATOR);
 
     // <Send MDRII Directory Command>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_SEND_DIR, NULL,
-                           cmd_mdr2_send_dir, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
+                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_SEND_DIR,
+                          ipmi::Privilege::Operator, mdr2SendDir);
 
     // <Get MDRII Data Info Command>
     ipmi_register_callback(NETFUN_INTEL_APP_OEM,
