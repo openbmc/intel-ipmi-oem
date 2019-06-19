@@ -189,17 +189,6 @@ struct MDRiiGetDataBlockResponse
 };
 
 // ====================== MDR II Push Command Structures ======================
-// MDR II Push Agent send dir info command
-struct MDRiiSendDirRequest
-{
-    uint16_t agentId;
-    uint8_t dirVersion;
-    uint8_t dirIndex;
-    uint8_t returnedEntries;
-    uint8_t remainingEntries;
-    Mdr2DirEntry data[1]; // place holder for N directory entries
-};
-
 // MDR II Client send data set info offer response
 struct MDRiiOfferDataInfoResponse
 {
