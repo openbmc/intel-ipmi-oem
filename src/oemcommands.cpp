@@ -36,6 +36,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <xyz/openbmc_project/Control/Security/RestrictionMode/server.hpp>
 
 namespace ipmi
 {
@@ -55,6 +56,27 @@ static constexpr auto ethernetIntf =
 static constexpr auto networkIPIntf = "xyz.openbmc_project.Network.IP";
 static constexpr auto networkService = "xyz.openbmc_project.Network";
 static constexpr auto networkRoot = "/xyz/openbmc_project/network";
+
+static constexpr const char* restricionModeService =
+    "xyz.openbmc_project.RestrictionMode.Manager";
+static constexpr const char* restricionModeBasePath =
+    "/xyz/openbmc_project/control/security/restriction_mode";
+static constexpr const char* restricionModeIntf =
+    "xyz.openbmc_project.Control.Security.RestrictionMode";
+static constexpr const char* restricionModeProperty = "RestrictionMode";
+
+static constexpr const char* specialModeService =
+    "xyz.openbmc_project.SpecialMode";
+static constexpr const char* specialModeBasePath =
+    "/xyz/openbmc_project/security/specialMode";
+static constexpr const char* specialModeIntf =
+    "xyz.openbmc_project.Security.SpecialMode";
+static constexpr const char* specialModeProperty = "SpecialMode";
+
+static constexpr const char* dBusPropertyIntf =
+    "org.freedesktop.DBus.Properties";
+static constexpr const char* dBusPropertyGetMethod = "Get";
+static constexpr const char* dBusPropertySetMethod = "Set";
 
 // return code: 0 successful
 int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
@@ -1875,6 +1897,134 @@ ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
     return ipmi::responseSuccess(prodId);
 }
 
+/** @brief implements the get security mode command
+ *  @param yield - yield context
+ *
+ *  @returns IPMI completion code with following data
+ *   - restriction mode value - As specified in
+ * xyz.openbmc_project.Control.Security.RestrictionMode.interface.yaml
+ *   - special mode value - As specified in
+ * xyz.openbmc_project.Control.Security.SpecialMode.interface.yaml
+ */
+ipmi::RspType<uint8_t, uint8_t>
+    ipmiGetSecurityMode(boost::asio::yield_context yield)
+{
+    using namespace sdbusplus::xyz::openbmc_project::Control::Security::server;
+    uint8_t restrictionModeValue = 0;
+    uint8_t specialModeValue = 0;
+
+    auto sdbusp = getSdBus();
+    boost::system::error_code ec;
+    auto varRestrMode = sdbusp->yield_method_call<std::variant<std::string>>(
+        yield, ec, restricionModeService, restricionModeBasePath,
+        dBusPropertyIntf, dBusPropertyGetMethod, restricionModeIntf,
+        restricionModeProperty);
+    if (ec)
+    {
+        std::string msgToLog =
+            ec.message() + " - Failed to get RestrictionMode property";
+        phosphor::logging::log<phosphor::logging::level::ERR>(msgToLog.c_str());
+        return ipmi::responseUnspecifiedError();
+    }
+    restrictionModeValue =
+        static_cast<uint8_t>(RestrictionMode::convertModesFromString(
+            std::get<std::string>(varRestrMode)));
+    auto varSpecialMode = sdbusp->yield_method_call<std::variant<uint8_t>>(
+        yield, ec, specialModeService, specialModeBasePath, dBusPropertyIntf,
+        dBusPropertyGetMethod, specialModeIntf, specialModeProperty);
+    if (ec)
+    {
+        std::string msgToLog =
+            ec.message() + " - Failed to get SpecialMode property";
+        phosphor::logging::log<phosphor::logging::level::ERR>(msgToLog.c_str());
+        // fall through, let us not worry about SpecialMode property, which is
+        // not required in user scenario
+    }
+    else
+    {
+        specialModeValue = std::get<uint8_t>(varSpecialMode);
+    }
+    return ipmi::responseSuccess(restrictionModeValue, specialModeValue);
+}
+
+/** @brief implements the set security mode command
+ *  Command allows to upgrade the restriction mode and won't allow
+ *  to downgrade from system interface
+ *  @param ctx - ctx pointer
+ *  @param restrictionMode - restriction mode value to be set.
+ *
+ *  @returns IPMI completion code
+ */
+ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
+                                    uint8_t restrictionMode)
+{
+    using namespace sdbusplus::xyz::openbmc_project::Control::Security::server;
+
+    ChannelInfo chInfo;
+    if (getChannelInfo(ctx->channel, chInfo) != ccSuccess)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiSetSecurityMode: Failed to get Channel Info",
+            phosphor::logging::entry("CHANNEL=%d", ctx->channel));
+        return ipmi::responseUnspecifiedError();
+    }
+    if (restrictionMode <
+            static_cast<uint8_t>(RestrictionMode::Modes::Provisioning) ||
+        restrictionMode > static_cast<uint8_t>(
+                              RestrictionMode::Modes::ProvisionedHostDisabled))
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    auto sdbusp = getSdBus();
+    boost::system::error_code ec;
+    auto varRestrMode = sdbusp->yield_method_call<std::variant<std::string>>(
+        *ctx->yield, ec, restricionModeService, restricionModeBasePath,
+        dBusPropertyIntf, dBusPropertyGetMethod, restricionModeIntf,
+        restricionModeProperty);
+    if (ec)
+    {
+        std::string msgToLog =
+            ec.message() + " - Failed to get RestrictionMode property";
+        phosphor::logging::log<phosphor::logging::level::ERR>(msgToLog.c_str());
+        return ipmi::responseUnspecifiedError();
+    }
+    uint8_t currentRestrictionMode =
+        static_cast<uint8_t>(RestrictionMode::convertModesFromString(
+            std::get<std::string>(varRestrMode)));
+
+    if (chInfo.mediumType ==
+            static_cast<uint8_t>(EChannelMediumType::systemInterface) &&
+        currentRestrictionMode > restrictionMode)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiSetSecurityMode - Downgrading security mode not supported "
+            "through system interface",
+            phosphor::logging::entry("CUR_MODE=%d", currentRestrictionMode),
+            phosphor::logging::entry("REQ_MODE=%d", restrictionMode));
+        return ipmi::responseCommandNotAvailable();
+    }
+
+    ec.clear();
+    sdbusp->yield_method_call<>(
+        *ctx->yield, ec, restricionModeService, restricionModeBasePath,
+        dBusPropertyIntf, dBusPropertySetMethod, restricionModeIntf,
+        restricionModeProperty,
+        static_cast<std::variant<std::string>>(
+            sdbusplus::xyz::openbmc_project::Control::Security::server::
+                convertForMessage(
+                    static_cast<RestrictionMode::Modes>(restrictionMode))));
+
+    if (ec)
+    {
+        std::string msgToLog =
+            ec.message() + " - Failed to set RestrictionMode property";
+        phosphor::logging::log<phosphor::logging::level::ERR>(msgToLog.c_str());
+        return ipmi::responseUnspecifiedError();
+    }
+    return ipmi::responseSuccess();
+}
+
 ipmi::RspType<uint8_t /* restore status */>
     ipmiRestoreConfiguration(const std::array<uint8_t, 3>& clr, uint8_t cmd)
 {
@@ -2042,6 +2192,16 @@ static void registerOEMFunctions(void)
         static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
         ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
+
+    ipmi::registerHandler(
+        prioOemBase, netfn::intel::oemGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetSecurityMode),
+        Privilege::User, ipmiGetSecurityMode);
+
+    ipmi::registerHandler(
+        prioOemBase, netfn::intel::oemGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetSecurityMode),
+        Privilege::Admin, ipmiSetSecurityMode);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
