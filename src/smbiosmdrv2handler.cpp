@@ -36,6 +36,7 @@
 #include <xyz/openbmc_project/Smbios/MDR_V2/error.hpp>
 
 std::unique_ptr<MDRV2> mdrv2 = nullptr;
+static constexpr size_t dataInfoSize = 16;
 
 namespace variant_ns = sdbusplus::message::variant_ns;
 
@@ -1051,67 +1052,67 @@ void MDRV2::timeoutHandler()
     mdrv2->area.reset(nullptr);
 }
 
-ipmi_ret_t cmd_mdr2_lock_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                              ipmi_request_t request, ipmi_response_t response,
-                              ipmi_data_len_t data_len, ipmi_context_t context)
+/** @brief implements mdr2 lock data command
+ *  @param agentId
+ *  @param dataInfo
+ *  @param timeout
+ *
+ *  @returns IPMI completion code plus response data
+ *  - mdrVersion
+ *  - lockHandle
+ *  - dataLength
+ *  - xferAddress
+ *  - xferLength
+ */
+ipmi::RspType<uint8_t,  // mdrVersion
+              uint16_t, // lockHandle
+              uint32_t, // dataLength
+              uint32_t, // xferAddress
+              uint32_t  // xferLength
+              >
+    mdr2LockData(uint16_t agentId, std::array<uint8_t, dataInfoSize> dataInfo,
+                 uint16_t timeout)
 {
-    auto requestData = reinterpret_cast<const MDRiiLockDataRequest *>(request);
-    auto responseData = reinterpret_cast<MDRiiLockDataResponse *>(response);
-    uint16_t session = 0;
-
-    std::tuple<bool, uint8_t, uint16_t, uint32_t, uint32_t, uint32_t> res;
-
-    if (*data_len < sizeof(MDRiiLockDataRequest))
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    *data_len = 0;
-
     if (mdrv2 == nullptr)
     {
         mdrv2 = std::make_unique<MDRV2>();
     }
 
-    int agentIndex = mdrv2->agentLookup(requestData->agentId);
+    int agentIndex = mdrv2->agentLookup(agentId);
     if (agentIndex == -1)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Unknown agent id",
-            phosphor::logging::entry("ID=%x", requestData->agentId));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+            "Unknown agent id", phosphor::logging::entry("ID=%x", agentId));
+        return ipmi::responseParmOutOfRange();
     }
 
     std::string service = ipmi::getService(bus, mdrv2Interface, mdrv2Path);
 
-    int idIndex =
-        mdrv2->findDataId(requestData->dataSetInfo.dataInfo,
-                          sizeof(requestData->dataSetInfo.dataInfo), service);
+    int idIndex = mdrv2->findDataId(dataInfo.data(), sizeof(dataInfo), service);
 
     if ((idIndex < 0) || (idIndex >= maxDirEntries))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Invalid Data ID", phosphor::logging::entry("IDINDEX=%x", idIndex));
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
-    if (!mdrv2->smbiosTryLock(0, idIndex, &session, requestData->timeout))
+    uint16_t session = 0;
+    if (!mdrv2->smbiosTryLock(0, idIndex, &session, timeout))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Lock Data failed - cannot lock idIndex");
-        return IPMI_CC_PARAMETER_NOT_SUPPORT_IN_PRESENT_STATE;
+        return ipmi::responseCommandNotAvailable();
     }
 
-    *data_len = sizeof(MDRiiLockDataResponse);
+    constexpr uint8_t mdrVersion = mdr2Version;
+    uint16_t lockHandle = session;
+    uint32_t dataLength = mdrv2->smbiosDir.dir[idIndex].common.size;
+    uint32_t xferAddress = mdrv2->smbiosDir.dir[idIndex].xferBuff;
+    uint32_t xferLength = mdrv2->smbiosDir.dir[idIndex].xferSize;
 
-    responseData->mdrVersion = mdr2Version;
-    responseData->lockHandle = session;
-    responseData->dataLength = mdrv2->smbiosDir.dir[idIndex].common.size;
-    responseData->xferAddress = mdrv2->smbiosDir.dir[idIndex].xferBuff;
-    responseData->xferLength = mdrv2->smbiosDir.dir[idIndex].xferSize;
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(mdrVersion, lockHandle, dataLength,
+                                 xferAddress, xferLength);
 }
 
 ipmi_ret_t cmd_mdr2_unlock_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -1391,9 +1392,9 @@ static void register_netfn_smbiosmdrv2_functions(void)
                            NULL, cmd_mdr2_send_data_block, PRIVILEGE_OPERATOR);
 
     // <Lock MDRII Data Command>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_LOCK_DATA, NULL,
-                           cmd_mdr2_lock_data, PRIVILEGE_OPERATOR);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
+                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_LOCK_DATA,
+                          ipmi::Privilege::Operator, mdr2LockData);
 
     // <Unlock MDRII Data Command>
     ipmi_register_callback(NETFUN_INTEL_APP_OEM,

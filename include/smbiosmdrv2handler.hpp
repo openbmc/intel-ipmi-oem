@@ -228,24 +228,6 @@ struct MDRiiSendDataBlockRequest
     uint32_t checksum;
 };
 
-// MDR II Pull Agent lock data set command
-struct MDRiiLockDataRequest
-{
-    uint16_t agentId;
-    DataIdStruct dataSetInfo;
-    uint16_t timeout;
-};
-
-// MDR II Pull Agent lock data set response
-struct MDRiiLockDataResponse
-{
-    uint8_t mdrVersion;
-    uint16_t lockHandle;
-    uint32_t dataLength;
-    uint32_t xferAddress;
-    uint32_t xferLength;
-};
-
 // MDR II Pull Agent unlock data set command
 struct MDRiiUnlockDataRequest
 {
