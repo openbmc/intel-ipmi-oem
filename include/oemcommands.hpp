@@ -42,6 +42,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
     cmdGetLEDStatus = 0xB0,
+    cmdGetSecurityMode = 0xB3,
+    cmdSetSecurityMode = 0xB4,
 };
 
 enum class IPMINetfnIntelOEMPlatformCmd
