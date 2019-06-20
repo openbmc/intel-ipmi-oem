@@ -475,6 +475,98 @@ ipmi::RspType<bool,    // Power is on
         interruptButtonDisableAllow, sleepButtonDisableAllow);
 }
 
+static uint4_t getRestartCause(const std::string& cause)
+{
+    uint4_t restartCauseValue = 0;
+    if (cause == "xyz.openbmc_project.State.Host.RestartCause.Unknown")
+    {
+        restartCauseValue = 0x0;
+    }
+    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.IpmiCommand")
+    {
+        restartCauseValue = 0x1;
+    }
+    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.ResetButton")
+    {
+        restartCauseValue = 0x2;
+    }
+    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.PowerButton")
+    {
+        restartCauseValue = 0x3;
+    }
+    else if (cause ==
+             "xyz.openbmc_project.State.Host.RestartCause.WatchdogTimer")
+    {
+        restartCauseValue = 0x4;
+    }
+    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.OEM")
+    {
+        restartCauseValue = 0x5;
+    }
+    else if (cause ==
+             "xyz.openbmc_project.State.Host.RestartCause.PowerPolicyAlwaysOn")
+    {
+        restartCauseValue = 0x6;
+    }
+    else if (cause == "xyz.openbmc_project.State.Host.RestartCause."
+                      "PowerPolicyPreviousState")
+    {
+        restartCauseValue = 0x7;
+    }
+    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.PEFReset")
+    {
+        restartCauseValue = 0x8;
+    }
+    else if (cause ==
+             "xyz.openbmc_project.State.Host.RestartCause.PEFPowerCycle")
+    {
+        restartCauseValue = 0x9;
+    }
+    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.SoftReset")
+    {
+        restartCauseValue = 0xa;
+    }
+    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.RTCWakeup")
+    {
+        restartCauseValue = 0xb;
+    }
+    return restartCauseValue;
+}
+
+ipmi::RspType<uint4_t, // Restart Cause
+              uint4_t, // reserved
+              uint8_t  // channel number (not supported)
+              >
+    ipmiGetSystemRestartCause()
+{
+    constexpr const char* restartCausePath =
+        "/xyz/openbmc_project/control/host0/restart_cause";
+    constexpr const char* restartCauseIntf =
+        "xyz.openbmc_project.Common.RestartCause";
+    std::string restartCauseStr;
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
+
+    try
+    {
+        auto service =
+            ipmi::getService(*busp, restartCauseIntf, restartCausePath);
+
+        ipmi::Value result = ipmi::getDbusProperty(
+            *busp, service, restartCausePath, restartCauseIntf, "RestartCause");
+        restartCauseStr = std::get<std::string>(result);
+    }
+    catch (const std::exception& e)
+    {
+        log<level::ERR>("Failed to fetch RestartCause property",
+                        entry("ERROR=%s", e.what()),
+                        entry("PATH=%s", restartCausePath),
+                        entry("INTERFACE=%s", restartCauseIntf));
+        return ipmi::responseUnspecifiedError();
+    }
+
+    return ipmi::responseSuccess(getRestartCause(restartCauseStr), 0, 0);
+}
+
 ipmi::RspType<> ipmiSetFrontPanelButtonEnables(bool disablePowerButton,
                                                bool disableResetButton,
                                                bool disableInterruptButton,
@@ -520,6 +612,10 @@ static void registerChassisFunctions(void)
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnChassis,
                           ipmi::chassis::cmdGetChassisStatus,
                           ipmi::Privilege::User, ipmiGetChassisStatus);
+    // <Get System Restart Cause>
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnChassis,
+                          ipmi::chassis::cmdGetSystemRestartCause,
+                          ipmi::Privilege::User, ipmiGetSystemRestartCause);
     // <Set Front Panel Enables>
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnChassis,
                           ipmi::chassis::cmdSetFrontPanelButtonEnables,
