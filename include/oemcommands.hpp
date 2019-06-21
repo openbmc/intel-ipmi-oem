@@ -23,6 +23,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetOEMDeviceInfo = 0x27,
     cmdGetAICSlotFRUIDSlotPosRecords = 0x31,
     cmdSetSystemGUID = 0x41,
+    cmdControlHostReset = 0x42,
+    cmdGetHostResetStatus = 0x43,
     cmdSendEmbeddedFWUpdStatus = 0x44,
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,

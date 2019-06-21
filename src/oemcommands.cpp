@@ -328,6 +328,82 @@ static uint8_t bcdToDec(uint8_t val)
     return ((val / 16 * 10) + (val % 16));
 }
 
+static constexpr const char* oemSmiTimeoutIntf =
+    "xyz.openbmc_project.SmiTimeout.SMITimeout";
+static constexpr const char* oemSmiTimeoutObjPath =
+    "/xyz/openbmc_project/SmiTimeout/SMITimeout";
+static constexpr const char* oemSmiTimeoutObjPathProp = "SMITimeout";
+static constexpr const char* oemSmiEnabledObjPathProp = "Enabled";
+static constexpr const uint8_t validmask = 0x1;
+// 0x42 IPMI Cmd - CMD_DISABLE_BMC_RESET_ACT
+// commands to control enable/disable of SMI timeout feature
+// if enabled, BMC will reset system due to SMI timeout.
+// if disabled, BMC will just ignore SMI timeout
+ipmi::RspType<> ipmiOEMControlHostReset(uint8_t disableMask)
+{
+    try
+    {
+        bool enSmi = true;
+        if ((~validmask) & disableMask)
+        {
+            return ipmi::responseParmOutOfRange();
+        }
+        if (disableMask & validmask)
+        {
+            enSmi = false;
+        }
+        else
+        {
+            enSmi = true;
+        }
+        // set SMI timeout enable capability
+        auto pdbus = getSdBus();
+        std::string service =
+            getService(*pdbus, oemSmiTimeoutIntf, oemSmiTimeoutObjPath);
+        ipmi::setDbusProperty(*pdbus, service, oemSmiTimeoutObjPath,
+                              oemSmiTimeoutIntf, oemSmiEnabledObjPathProp,
+                              enSmi);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseUnspecifiedError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
+// 0x43 IPMI Cmd - CMD_GET_BMC_RESET_DISABLE
+// get current mask of SMI timeout switch
+ipmi::RspType<uint8_t> ipmiOEMGetHostResetStatus(void)
+{
+    uint8_t mask = 0;
+    try
+    {
+        auto pdbus = getSdBus();
+        std::string service =
+            getService(*pdbus, oemSmiTimeoutIntf, oemSmiTimeoutObjPath);
+        Value dbusValue =
+            ipmi::getDbusProperty(*pdbus, service, oemSmiTimeoutObjPath,
+                                  oemSmiTimeoutIntf, oemSmiEnabledObjPathProp);
+        if (std::get<bool>(dbusValue) == true)
+        {
+            mask = 0x0;
+        }
+        else
+        {
+            mask = validmask;
+        }
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseUnspecifiedError();
+    }
+
+    return ipmi::responseSuccess(mask);
+}
+
 // Allows an update utility or system BIOS to send the status of an embedded
 // firmware update attempt to the BMC. After received, BMC will create a logging
 // record.
@@ -2061,6 +2137,15 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, netfn::intel::oemGeneral,
                     netfn::intel::cmdRestoreConfiguration, Privilege::Admin,
                     ipmiRestoreConfiguration);
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
+                          static_cast<ipmi::Cmd>(
+                              IPMINetfnIntelOEMGeneralCmd::cmdControlHostReset),
+                          ipmi::Privilege::Callback, ipmiOEMControlHostReset);
+    ipmi::registerHandler(
+        ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetHostResetStatus),
+        ipmi::Privilege::Callback, ipmiOEMGetHostResetStatus);
 }
 
 } // namespace ipmi
