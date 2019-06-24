@@ -292,29 +292,26 @@ std::optional<bool> getPowerStatus()
  */
 bool getACFailStatus()
 {
-    constexpr const char* powerControlObj =
-        "/xyz/openbmc_project/Chassis/Control/Power0";
-    constexpr const char* powerControlIntf =
-        "xyz.openbmc_project.Chassis.Control.Power";
-    bool acFail = false;
+    constexpr const char* acBootObj =
+        "/xyz/openbmc_project/control/host0/ac_boot";
+    constexpr const char* acBootIntf = "xyz.openbmc_project.Common.ACBoot";
+    std::string acFail;
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     try
     {
-        auto service =
-            ipmi::getService(*bus, powerControlIntf, powerControlObj);
+        auto service = ipmi::getService(*bus, acBootIntf, acBootObj);
 
-        ipmi::Value variant = ipmi::getDbusProperty(
-            *bus, service, powerControlObj, powerControlIntf, "PFail");
-        acFail = std::get<bool>(variant);
+        ipmi::Value variant = ipmi::getDbusProperty(*bus, service, acBootObj,
+                                                    acBootIntf, "ACBoot");
+        acFail = std::get<std::string>(variant);
     }
     catch (const std::exception& e)
     {
-        log<level::ERR>("Failed to fetch PFail property",
-                        entry("ERROR=%s", e.what()),
-                        entry("PATH=%s", powerControlObj),
-                        entry("INTERFACE=%s", powerControlIntf));
+        log<level::ERR>(
+            "Failed to fetch ACBoot property", entry("ERROR=%s", e.what()),
+            entry("PATH=%s", acBootObj), entry("INTERFACE=%s", acBootIntf));
     }
-    return acFail;
+    return acFail == "True";
 }
 } // namespace power_policy
 
