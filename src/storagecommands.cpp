@@ -1033,13 +1033,13 @@ void registerStorageFunctions()
     ipmiPrintAndRegister(
         NETFUN_STORAGE,
         static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdGetFRUInvAreaInfo),
-        NULL, ipmiStorageGetFRUInvAreaInfo, PRIVILEGE_OPERATOR);
+        NULL, ipmiStorageGetFRUInvAreaInfo, PRIVILEGE_USER);
 
     // <READ FRU Data>
     ipmiPrintAndRegister(
         NETFUN_STORAGE,
         static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdReadFRUData), NULL,
-        ipmiStorageReadFRUData, PRIVILEGE_OPERATOR);
+        ipmiStorageReadFRUData, PRIVILEGE_USER);
 
     // <WRITE FRU Data>
     ipmiPrintAndRegister(
@@ -1049,13 +1049,13 @@ void registerStorageFunctions()
 
     // <Get SEL Info>
     ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnStorage,
-                          ipmi::storage::cmdGetSelInfo,
-                          ipmi::Privilege::Operator, ipmiStorageGetSELInfo);
+                          ipmi::storage::cmdGetSelInfo, ipmi::Privilege::User,
+                          ipmiStorageGetSELInfo);
 
     // <Get SEL Entry>
     ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnStorage,
-                          ipmi::storage::cmdGetSelEntry,
-                          ipmi::Privilege::Operator, ipmiStorageGetSELEntry);
+                          ipmi::storage::cmdGetSelEntry, ipmi::Privilege::User,
+                          ipmiStorageGetSELEntry);
 
     // <Add SEL Entry>
     ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnStorage,
@@ -1069,8 +1069,8 @@ void registerStorageFunctions()
 
     // <Get SEL Time>
     ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnStorage,
-                          ipmi::storage::cmdGetSelTime,
-                          ipmi::Privilege::Operator, ipmiStorageGetSELTime);
+                          ipmi::storage::cmdGetSelTime, ipmi::Privilege::User,
+                          ipmiStorageGetSELTime);
 
     // <Set SEL Time>
     ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnStorage,
