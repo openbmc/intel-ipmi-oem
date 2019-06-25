@@ -271,8 +271,77 @@ ipmi_ret_t ipmiSensorWildcardHandler(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_INVALID;
 }
 
+namespace meHealth
+{
+constexpr const char *busname = "xyz.openbmc_project.NodeManagerProxy";
+constexpr const char *path = "/xyz/openbmc_project/status/me";
+constexpr const char *interface = "xyz.openbmc_project.SetHealth";
+constexpr const char *method = "SetHealth";
+constexpr const char *critical = "critical";
+constexpr const char *warning = "warning";
+constexpr const char *ok = "ok";
+} // namespace meHealth
+
+static void setMeStatus(uint8_t eventData2, uint8_t eventData3, bool enable)
+{
+    constexpr const std::array<uint8_t, 10> critical = {
+        0x1, 0x2, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xD, 0xE};
+    constexpr const std::array<uint8_t, 5> warning = {0x3, 0xA, 0x13, 0x19,
+                                                      0x1A};
+
+    std::string state;
+    if (std::find(critical.begin(), critical.end(), eventData2) !=
+        critical.end())
+    {
+        state = meHealth::critical;
+    }
+    // special case 0x3 as we only care of a few states
+    else if (eventData2 == 0x3)
+    {
+        if (eventData3 <= 0x2)
+        {
+            state = meHealth::warning;
+        }
+        else
+        {
+            return;
+        }
+    }
+    else if (std::find(warning.begin(), warning.end(), eventData2) !=
+             warning.end())
+    {
+        state = meHealth::warning;
+    }
+    else
+    {
+        return;
+    }
+    if (!enable)
+    {
+        state = meHealth::ok;
+    }
+
+    auto setHealth =
+        dbus.new_method_call(meHealth::busname, meHealth::path,
+                             meHealth::interface, meHealth::method);
+    setHealth.append(std::to_string(static_cast<size_t>(eventData2)), state);
+    try
+    {
+        dbus.call(setHealth);
+    }
+    catch (sdbusplus::exception_t &)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to set ME Health");
+    }
+}
+
 ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload &p)
 {
+    constexpr const uint8_t meId = 0x2C;
+    constexpr const uint8_t meSensorNum = 0x17;
+    constexpr const uint8_t disabled = 0x80;
+
     uint8_t generatorID = 0;
     uint8_t evmRev = 0;
     uint8_t sensorType = 0;
@@ -312,6 +381,12 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload &p)
     intel_oem::ipmi::sel::checkRedfishHooks(
         generatorID, evmRev, sensorType, sensorNum, eventType, eventData1,
         eventData2.value_or(0xFF), eventData3.value_or(0xFF));
+
+    if (generatorID == meId && sensorNum == meSensorNum && eventData2 &&
+        eventData3)
+    {
+        setMeStatus(*eventData2, *eventData3, !(eventType & disabled));
+    }
 
     return ipmi::responseSuccess();
 }
