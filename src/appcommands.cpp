@@ -78,15 +78,16 @@ bool getCurrentBmcStateWithFallback(const bool fallbackAvailability)
         return fallbackAvailability;
     }
 }
+
 /**
- * @brief Returns the Version info from primary s/w object
+ * @brief Returns the Version info from primary software object
  *
  * Get the Version info from the active s/w object which is having high
  * "Priority" value(a smaller number is a higher priority) and "Purpose"
  * is "BMC" from the list of all s/w objects those are implementing
  * RedundancyPriority interface from the given softwareRoot path.
  *
- * @return On success returns the Version info from primary s/w object.
+ * @return On success returns the Version info from primary software object.
  *
  */
 std::string getActiveSoftwareVersionInfo()
@@ -154,7 +155,7 @@ std::string getActiveSoftwareVersionInfo()
 
     if (!objectFound)
     {
-        Log::log<Log::level::ERR>("Could not found an BMC software Object");
+        Log::log<Log::level::ERR>("Could not find an BMC software object");
     }
 
     return revision;
@@ -168,29 +169,27 @@ typedef struct
     uint32_t buildNo;
     std::string openbmcHash;
     std::string metaHash;
-    std::string buildType;
 } MetaRevision;
 
 // Support both 2 solutions:
 // 1.Current solution  2.7.0-dev-533-g14dc00e79-5e7d997
 //   openbmcTag  2.7.0-dev
 //   BuildNo     533
-//   openbmcHash g14dc00e79
+//   openbmcHash 14dc00e79
 //   MetaHasg    5e7d997
 //
-// 2.New solution  whtref-0.1-45-023125-a1295e-release
-//   IdStr        whtref
+// 2.New solution  wht-0.2-3-gab3500-38384ac
+//   IdStr        wht
 //   Major        0
-//   Minor        1
-//   buildNo      45
-//   openbmcHash  023125
-//   MetaHash     a1295e
-//   BuildType    release/CI/<devloperId>
+//   Minor        2
+//   buildNo      3
+//   MetaHash     ab3500
+//   openbmcHash  38384ac
 std::optional<MetaRevision> convertIntelVersion(std::string& s)
 {
     std::smatch results;
     MetaRevision rev;
-    std::regex pattern1("(\\d+?).(\\d+?).\\d+?-\\w*?-(\\d+?)-(\\w+?)-(\\w+?)");
+    std::regex pattern1("(\\d+?).(\\d+?).\\d+?-\\w*?-(\\d+?)-g(\\w+?)-(\\w+?)");
     constexpr size_t matchedPhosphor = 6;
     if (std::regex_match(s, results, pattern1))
     {
@@ -202,20 +201,18 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
             rev.buildNo = static_cast<uint32_t>(std::stoi(results[3]));
             rev.openbmcHash = results[4];
             rev.metaHash = results[5];
-            rev.buildType = "release";
             std::string versionString =
                 rev.platform + ":" + std::to_string(rev.major) + ":" +
                 std::to_string(rev.minor) + ":" + std::to_string(rev.buildNo) +
-                ":" + rev.openbmcHash + ":" + rev.metaHash + ":" +
-                rev.buildType;
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                versionString.c_str());
+                ":" + rev.openbmcHash + ":" + rev.metaHash;
+            Log::log<Log::level::INFO>(
+                "Get BMC version",
+                Log::entry("VERSION=%s", versionString.c_str()));
             return rev;
         }
     }
-    constexpr size_t matchedIntel = 8;
-    std::regex pattern2(
-        "(\\w+?)-(\\d+?).(\\d+?)-(\\d+?)-(\\w+?)-(\\w+?)-(\\w+?)");
+    constexpr size_t matchedIntel = 7;
+    std::regex pattern2("(\\w+?)-(\\d+?).(\\d+?)-(\\d+?)-g(\\w+?)-(\\w+?)");
     if (std::regex_match(s, results, pattern2))
     {
         if (results.size() == matchedIntel)
@@ -224,16 +221,15 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
             rev.major = static_cast<uint8_t>(std::stoi(results[2]));
             rev.minor = static_cast<uint8_t>(std::stoi(results[3]));
             rev.buildNo = static_cast<uint32_t>(std::stoi(results[4]));
-            rev.openbmcHash = results[5];
-            rev.metaHash = results[6];
-            rev.buildType = results[7];
+            rev.openbmcHash = results[6];
+            rev.metaHash = results[5];
             std::string versionString =
                 rev.platform + ":" + std::to_string(rev.major) + ":" +
                 std::to_string(rev.minor) + ":" + std::to_string(rev.buildNo) +
-                ":" + rev.openbmcHash + ":" + rev.metaHash + ":" +
-                rev.buildType;
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                versionString.c_str());
+                ":" + rev.openbmcHash + ":" + rev.metaHash;
+            Log::log<Log::level::INFO>(
+                "Get BMC version",
+                Log::entry("VERSION=%s", versionString.c_str()));
             return rev;
         }
     }
@@ -252,7 +248,6 @@ auto ipmiAppGetDeviceId() -> ipmi::RspType<uint8_t, // Device ID
                                            uint32_t  // AUX info
                                            >
 {
-    std::optional<MetaRevision> rev;
     static struct
     {
         uint8_t id;
@@ -272,6 +267,7 @@ auto ipmiAppGetDeviceId() -> ipmi::RspType<uint8_t, // Device ID
 
     if (!dev_id_initialized)
     {
+        std::optional<MetaRevision> rev;
         try
         {
             auto version = getActiveSoftwareVersionInfo();
@@ -279,7 +275,8 @@ auto ipmiAppGetDeviceId() -> ipmi::RspType<uint8_t, // Device ID
         }
         catch (const std::exception& e)
         {
-            Log::log<Log::level::ERR>(e.what());
+            Log::log<Log::level::ERR>("Failed to get active version info",
+                                      Log::entry("ERROR=%s", e.what()));
         }
 
         if (rev.has_value())
@@ -295,7 +292,19 @@ auto ipmiAppGetDeviceId() -> ipmi::RspType<uint8_t, // Device ID
 
             revision.minor = (revision.minor > 99 ? 99 : revision.minor);
             devId.fw[1] = revision.minor % 10 + (revision.minor / 10) * 16;
-            devId.aux = revision.buildNo;
+            try
+            {
+                uint32_t hash = std::stoul(revision.metaHash, 0, 16);
+                hash = ((hash & 0xff000000) >> 24) |
+                       ((hash & 0x00FF0000) >> 8) | ((hash & 0x0000FF00) << 8) |
+                       ((hash & 0xFF) << 24);
+                devId.aux = (revision.buildNo & 0xFF) + (hash & 0xFFFFFF00);
+            }
+            catch (const std::exception& e)
+            {
+                Log::log<Log::level::ERR>("Failed to convert git hash",
+                                          Log::entry("ERROR=%s", e.what()));
+            }
         }
 
         // IPMI Spec version 2.0
