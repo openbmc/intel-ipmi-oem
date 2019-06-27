@@ -1,4 +1,3 @@
-#include <ipmid/api.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <sys/mman.h>
@@ -30,6 +29,11 @@ static constexpr const char *secondaryFitImageStartAddr = "22480000";
 static uint8_t getActiveBootImage(void);
 static void register_netfn_firmware_functions() __attribute__((constructor));
 
+namespace ipmi::firmware
+{
+constexpr uint8_t cmdFirmwareWriteData = 0x2c;
+}
+
 // oem return code for firmware update control
 constexpr ipmi_ret_t IPMI_CC_REQ_INVALID_PHASE = 0xd5;
 constexpr ipmi_ret_t IPMI_CC_USB_ATTACH_FAIL = 0x80;
@@ -58,7 +62,7 @@ constexpr std::size_t operator""_MB(unsigned long long v)
 {
     return 1024u * 1024u * v;
 }
-static constexpr int FIRMWARE_BUFFER_MAX_SIZE = 32_MB;
+static constexpr size_t firmwareBufferMaxSize = 32_MB;
 
 static constexpr char FIRMWARE_BUFFER_FILE[] = "/tmp/fw-download.bin";
 static bool local_download_is_active(void)
@@ -761,9 +765,8 @@ static int usb_attach_device()
     {
         return 1;
     }
-    int ret =
-        executeCmd(USB_CTRL_PATH, "setup", FWUPDATE_USB_VOL_IMG,
-                   std::to_string(FIRMWARE_BUFFER_MAX_SIZE / 1_MB).c_str());
+    int ret = executeCmd(USB_CTRL_PATH, "setup", FWUPDATE_USB_VOL_IMG,
+                         std::to_string(firmwareBufferMaxSize / 1_MB).c_str());
     if (!ret)
     {
         ret = executeCmd(USB_CTRL_PATH, "insert", FWUPDATE_USB_DEV_NAME,
@@ -1544,40 +1547,35 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_data(
     return rc;
 }
 
-static ipmi_ret_t ipmi_firmware_write_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                           ipmi_request_t request,
-                                           ipmi_response_t response,
-                                           ipmi_data_len_t data_len,
-                                           ipmi_context_t context)
+static ipmi::RspType<uint16_t>
+    firmwareWriteData(const std::vector<uint8_t> &data)
 {
     if (DEBUG)
-        std::cerr << "write fw data (" << *data_len << " bytes)\n";
+        std::cerr << "write fw data (" << data.size() << " bytes)\n";
 
-    auto bytes_in = *data_len;
-    *data_len = 0;
     if (fw_update_status.state() != fw_update_status_cache::FW_STATE_DOWNLOAD)
-        return IPMI_CC_INVALID;
+        return ipmi::responseInvalidCommand();
 
     std::ofstream out(FIRMWARE_BUFFER_FILE,
                       std::ofstream::binary | std::ofstream::app);
     if (!out)
     {
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
-    if (out.tellp() > FIRMWARE_BUFFER_MAX_SIZE)
+    if ((static_cast<size_t>(out.tellp()) + data.size()) >
+        firmwareBufferMaxSize)
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::responseInvalidFieldRequest();
     }
-    auto data = reinterpret_cast<uint8_t *>(request);
-    out.write(reinterpret_cast<char *>(data), bytes_in);
+    out.write(reinterpret_cast<const char *>(data.data()), data.size());
     out.close();
     if (xfer_hash_check)
     {
-        xfer_hash_check->hash({data, data + bytes_in});
+        xfer_hash_check->hash(data);
     }
 
     // Status code.
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(static_cast<uint16_t>(data.size()));
 }
 
 static constexpr char NOT_IMPLEMENTED[] = "NOT IMPLEMENTED";
@@ -1639,7 +1637,6 @@ static constexpr ipmi_cmd_t IPMI_CMD_FW_EXIT_FW_UPDATE_MODE = 0x28;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_UPDATE_CONTROL = 0x29;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_STATUS = 0x2a;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_SET_FW_UPDATE_OPTIONS = 0x2b;
-static constexpr ipmi_cmd_t IPMI_CMD_FW_IMAGE_WRITE = 0x2c;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_TIMESTAMP = 0x2d;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_UPDATE_ERR_MSG = 0xe0;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_REMOTE_FW_INFO = 0xf0;
@@ -1717,8 +1714,9 @@ static void register_netfn_firmware_functions()
                            NULL, ipmi_firmware_update_options, PRIVILEGE_ADMIN);
 
     // write image data
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_IMAGE_WRITE, NULL,
-                           ipmi_firmware_write_data, PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnFirmware,
+                          ipmi::firmware::cmdFirmwareWriteData,
+                          ipmi::Privilege::Admin, firmwareWriteData);
 
     // get update timestamps
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_TIMESTAMP, NULL,
