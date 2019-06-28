@@ -480,88 +480,133 @@ ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiOEMGetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                        ipmi_request_t request,
-                                        ipmi_response_t response,
-                                        ipmi_data_len_t dataLen,
-                                        ipmi_context_t context)
+static bool cpuPresent(const std::string& cpuName)
 {
-    GetProcessorErrConfigRes* resp =
-        reinterpret_cast<GetProcessorErrConfigRes*>(response);
-
-    if (*dataLen != 0)
+    static constexpr const char* cpuPresencePathPrefix =
+        "/xyz/openbmc_project/inventory/system/chassis/motherboard/";
+    static constexpr const char* cpuPresenceIntf =
+        "xyz.openbmc_project.Inventory.Item";
+    std::string cpuPresencePath = cpuPresencePathPrefix + cpuName;
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
+    try
     {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        auto service =
+            ipmi::getService(*busp, cpuPresenceIntf, cpuPresencePath);
+
+        ipmi::Value result = ipmi::getDbusProperty(
+            *busp, service, cpuPresencePath, cpuPresenceIntf, "Present");
+        return std::get<bool>(result);
+    }
+    catch (const std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Cannot find processor presence",
+            phosphor::logging::entry("NAME=%s", cpuName.c_str()));
+        return false;
+    }
+}
+
+ipmi::RspType<bool,    // CATERR Reset Enabled
+              bool,    // ERR2 Reset Enabled
+              uint6_t, // reserved
+              uint8_t, // reserved, returns 0x3F
+              uint6_t, // CPU1 CATERR Count
+              uint2_t, // CPU1 Status
+              uint6_t, // CPU2 CATERR Count
+              uint2_t, // CPU2 Status
+              uint6_t, // CPU3 CATERR Count
+              uint2_t, // CPU3 Status
+              uint6_t, // CPU4 CATERR Count
+              uint2_t, // CPU4 Status
+              uint8_t  // Crashdump Count
+              >
+    ipmiOEMGetProcessorErrConfig()
+{
+    bool resetOnCATERR = false;
+    bool resetOnERR2 = false;
+    uint6_t cpu1CATERRCount = 0;
+    uint6_t cpu2CATERRCount = 0;
+    uint6_t cpu3CATERRCount = 0;
+    uint6_t cpu4CATERRCount = 0;
+    uint8_t crashdumpCount = 0;
+    uint2_t cpu1Status =
+        cpuPresent("CPU_1") ? CPUStatus::enabled : CPUStatus::notPresent;
+    uint2_t cpu2Status =
+        cpuPresent("CPU_2") ? CPUStatus::enabled : CPUStatus::notPresent;
+    uint2_t cpu3Status =
+        cpuPresent("CPU_3") ? CPUStatus::enabled : CPUStatus::notPresent;
+    uint2_t cpu4Status =
+        cpuPresent("CPU_4") ? CPUStatus::enabled : CPUStatus::notPresent;
+
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
+    try
+    {
+        auto service = ipmi::getService(*busp, processorErrConfigIntf,
+                                        processorErrConfigObjPath);
+
+        ipmi::PropertyMap result = ipmi::getAllDbusProperties(
+            *busp, service, processorErrConfigObjPath, processorErrConfigIntf);
+        resetOnCATERR = std::get<bool>(result.at("ResetOnCATERR"));
+        resetOnERR2 = std::get<bool>(result.at("ResetOnERR2"));
+        cpu1CATERRCount = std::get<uint8_t>(result.at("ErrorCountCPU1"));
+        cpu2CATERRCount = std::get<uint8_t>(result.at("ErrorCountCPU2"));
+        cpu3CATERRCount = std::get<uint8_t>(result.at("ErrorCountCPU3"));
+        cpu4CATERRCount = std::get<uint8_t>(result.at("ErrorCountCPU4"));
+        crashdumpCount = std::get<uint8_t>(result.at("CrashdumpCount"));
+    }
+    catch (const std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to fetch processor error config",
+            phosphor::logging::entry("ERROR=%s", e.what()));
+        return ipmi::responseUnspecifiedError();
     }
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    std::string service =
-        getService(*dbus, processorErrConfigIntf, processorErrConfigObjPath);
-    Value variant = getDbusProperty(*dbus, service, processorErrConfigObjPath,
-                                    processorErrConfigIntf, "ResetCfg");
-    resp->resetCfg = std::get<uint8_t>(variant);
+    return ipmi::responseSuccess(resetOnCATERR, resetOnERR2, 0, 0x3F,
+                                 cpu1CATERRCount, cpu1Status, cpu2CATERRCount,
+                                 cpu2Status, cpu3CATERRCount, cpu3Status,
+                                 cpu4CATERRCount, cpu4Status, crashdumpCount);
+}
 
-    std::vector<uint8_t> caterrStatus;
-    sdbusplus::message::variant<std::vector<uint8_t>> message;
-
-    auto method =
-        dbus->new_method_call(service.c_str(), processorErrConfigObjPath,
-                              "org.freedesktop.DBus.Properties", "Get");
-
-    method.append(processorErrConfigIntf, "CATERRStatus");
-    auto reply = dbus->call(method);
+ipmi::RspType<> ipmiOEMSetProcessorErrConfig(
+    bool resetOnCATERR, bool resetOnERR2, uint6_t reserved1, uint8_t reserved2,
+    std::optional<bool> clearCPUErrorCount,
+    std::optional<bool> clearCrashdumpCount, std::optional<uint6_t> reserved3)
+{
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
 
     try
     {
-        reply.read(message);
-        caterrStatus = std::get<std::vector<uint8_t>>(message);
+        auto service = ipmi::getService(*busp, processorErrConfigIntf,
+                                        processorErrConfigObjPath);
+        ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
+                              processorErrConfigIntf, "ResetOnCATERR",
+                              resetOnCATERR);
+        ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
+                              processorErrConfigIntf, "ResetOnERR2",
+                              resetOnERR2);
+        if (clearCPUErrorCount.value_or(false))
+        {
+            ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
+                                  processorErrConfigIntf, "ErrorCountCPU1", 0);
+            ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
+                                  processorErrConfigIntf, "ErrorCountCPU2", 0);
+        }
+        if (clearCrashdumpCount.value_or(false))
+        {
+            ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
+                                  processorErrConfigIntf, "CrashdumpCount", 0);
+        }
     }
-    catch (sdbusplus::exception_t&)
+    catch (std::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMGetProcessorErrConfig: error on dbus",
-            phosphor::logging::entry("PRORPERTY=CATERRStatus"),
-            phosphor::logging::entry("PATH=%s", processorErrConfigObjPath),
-            phosphor::logging::entry("INTERFACE=%s", processorErrConfigIntf));
-        return IPMI_CC_UNSPECIFIED_ERROR;
+            "Failed to set processor error config",
+            phosphor::logging::entry("EXCEPTION=%s", e.what()));
+        return ipmi::responseUnspecifiedError();
     }
 
-    size_t len =
-        maxCPUNum <= caterrStatus.size() ? maxCPUNum : caterrStatus.size();
-    caterrStatus.resize(len);
-    std::copy(caterrStatus.begin(), caterrStatus.end(), resp->caterrStatus);
-    *dataLen = sizeof(GetProcessorErrConfigRes);
-
-    return IPMI_CC_OK;
-}
-
-ipmi_ret_t ipmiOEMSetProcessorErrConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                        ipmi_request_t request,
-                                        ipmi_response_t response,
-                                        ipmi_data_len_t dataLen,
-                                        ipmi_context_t context)
-{
-    SetProcessorErrConfigReq* req =
-        reinterpret_cast<SetProcessorErrConfigReq*>(request);
-
-    if (*dataLen != sizeof(SetProcessorErrConfigReq))
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    std::string service =
-        getService(*dbus, processorErrConfigIntf, processorErrConfigObjPath);
-    setDbusProperty(*dbus, service, processorErrConfigObjPath,
-                    processorErrConfigIntf, "ResetCfg", req->resetCfg);
-
-    setDbusProperty(*dbus, service, processorErrConfigObjPath,
-                    processorErrConfigIntf, "ResetErrorOccurrenceCounts",
-                    req->resetErrorOccurrenceCounts);
-    *dataLen = 0;
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess();
 }
 
 ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -2135,16 +2180,19 @@ static void registerOEMFunctions(void)
             IPMINetfnIntelOEMGeneralCmd::cmdSetSpecialUserPassword),
         ipmi::Privilege::Callback, ipmiOEMSetSpecialUserPassword);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
+    // <Get Processor Error Config>
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdGetProcessorErrConfig),
-        NULL, ipmiOEMGetProcessorErrConfig, PRIVILEGE_USER);
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
+        ipmi::Privilege::User, ipmiOEMGetProcessorErrConfig);
+    // <Set Processor Error Config>
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
             IPMINetfnIntelOEMGeneralCmd::cmdSetProcessorErrConfig),
-        NULL, ipmiOEMSetProcessorErrConfig, PRIVILEGE_ADMIN);
+        ipmi::Privilege::Admin, ipmiOEMSetProcessorErrConfig);
+
     ipmiPrintAndRegister(netfnIntcOEMGeneral,
                          static_cast<ipmi_cmd_t>(
                              IPMINetfnIntelOEMGeneralCmd::cmdSetShutdownPolicy),
