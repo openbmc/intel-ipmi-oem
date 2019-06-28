@@ -195,6 +195,13 @@ enum class FWUpdateTarget : uint8_t
     targetOEMEWS = 0x4,
 };
 
+enum class CPUStatus
+{
+    disabled = 0x0,
+    enabled = 0x1,
+    notPresent = 0x3,
+};
+
 #pragma pack(push, 1)
 struct GUIDData
 {
@@ -245,46 +252,6 @@ struct GetOemDeviceInfoRes
 {
     uint8_t resDatalen;
     uint8_t data[maxBIOSIDLength];
-};
-
-struct SetProcessorErrConfigReq
-{
-    uint8_t resetCfg; // Reset Configuration
-                      //   [0]:   CATERR Reset Enabled
-                      //               0b: Disabled
-                      //               1b: Enabled
-                      //   [1]:   ERR2 Reset Enabled
-                      //               0b: Disabled
-                      //               1b: Enabled
-                      //   [7:2]: Reserved
-    uint8_t reserved; // Reserved
-    uint8_t
-        resetErrorOccurrenceCounts; // Reset Error Occurrence Counts
-                                    //[0]: Reset CPU Error Counts
-                                    //    0b: Keep CPU Error Counts
-                                    //    1b: Reset all CPU Error Counts to zero
-                                    //[7:1]: Reserved
-};
-
-struct GetProcessorErrConfigRes
-{
-    uint8_t resetCfg;             // Reset Configuration
-                                  //   [0]:   CATERR Reset Enabled
-                                  //               0b: Disabled
-                                  //               1b: Enabled
-                                  //   [1]:   ERR2 Reset Enabled
-                                  //               0b: Disabled
-                                  //               1b: Enabled
-                                  //   [7:2]: Reserved
-    uint8_t reserved;             // Reserved
-    char caterrStatus[maxCPUNum]; // for all CPUs including the non-legacy
-                                  // socket CPU CPU CATERR (Core Error)
-                                  // occurrence
-                                  //     [5:0]: Error Occurrence Count
-                                  //     [7:6]: CPU Status
-                                  //                 00b: Disabled
-                                  //                 01b: Enabled
-                                  //                 11b: Not Present
 };
 
 struct GetOEMShutdownPolicyRes
