@@ -675,8 +675,8 @@ IPMIThresholds getIPMIThresholds(const SensorMap &sensorMap)
             throw std::runtime_error("Invalid sensor map");
         }
 
-        double max;
-        double min;
+        double max = 0;
+        double min = 0;
         getSensorMaxMin(sensorMap, max, min);
 
         int16_t mValue = 0;
