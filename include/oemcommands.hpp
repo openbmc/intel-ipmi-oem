@@ -42,6 +42,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
     cmdGetLEDStatus = 0xB0,
+    cmdGetNmiStatus = 0xE5,
+    cmdSetNmiStatus = 0xED,
 };
 
 enum class IPMINetfnIntelOEMPlatformCmd
@@ -111,6 +113,12 @@ static constexpr const char* processorErrConfigObjPath =
     "/xyz/openbmc_project/control/processor_error_config";
 static constexpr const char* processorErrConfigIntf =
     "xyz.openbmc_project.Control.Processor.ErrConfig";
+
+static constexpr const char* oemNmiSourceIntf = "com.intel.Control.NMISource";
+static constexpr const char* oemNmiSourceObjPath =
+    "/com/intel/control/NMISource";
+static constexpr const char* oemNmiBmcSourceObjPathProp = "BMCSource";
+static constexpr const char* oemNmiEnabledObjPathProp = "Enabled";
 
 static constexpr const char* postCodesObjPath =
     "/xyz/openbmc_project/State/Boot/PostCode";
@@ -435,4 +443,17 @@ enum class IPMINetFnIntelOemGeneralCmds
     SetSmSignal = 0x15,
     BmcControlServices = 0xC0,
     SetSensorOverride = 0xEE,
+};
+
+enum class NmiSource : uint8_t
+{
+    none = 0,
+    fpBtn = 1,
+    wdPreTimeout = 2,
+    pefMatch = 3,
+    chassisCmd = 4,
+    memoryError = 5,
+    pciSerrPerr = 6,
+    southbridgeNmi = 7,
+    chipsetNmi = 8,
 };
