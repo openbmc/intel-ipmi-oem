@@ -538,7 +538,7 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     }
     else
     {
-        retCode = IPMI_CC_ILLEGAL_COMMAND;
+        retCode = IPMI_CC_INVALID;
     }
 
     *data_len = 0; // Only CC is return for SetSmSignal cmd
