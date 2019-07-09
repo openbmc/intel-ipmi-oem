@@ -1203,24 +1203,13 @@ ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                               ipmi_request_t request, ipmi_response_t response,
-                               ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi::RspType<uint8_t, // profile support map
+              uint8_t, // fan control profile enable
+              uint8_t, // flags
+              uint32_t // dimm presence bit map
+              >
+    ipmiOEMGetFanConfig(uint8_t DIMMgroupID)
 {
-
-    if (*dataLen > 1)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMGetFanConfig: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    // todo: talk to bios about needing less information
-
-    GetFanConfigResp* resp = reinterpret_cast<GetFanConfigResp*>(response);
-    *dataLen = sizeof(GetFanConfigResp);
-
     boost::container::flat_map<
         std::string, std::variant<std::vector<std::string>, std::string>>
         profileData;
@@ -1228,7 +1217,7 @@ ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     if (!getFanProfileInterface(*dbus, profileData))
     {
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseResponseError();
     }
 
     std::string* current = std::get_if<std::string>(&profileData["Current"]);
@@ -1237,18 +1226,18 @@ ipmi_ret_t ipmiOEMGetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMGetFanConfig: can't get current mode!");
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseResponseError();
     }
     bool performance = (*current == "Performance");
 
+    uint8_t flags = 0;
     if (performance)
     {
-        resp->flags |= 1 << 2;
+        flags |= 1 << 2;
     }
 
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(0, 0, flags, 0);
 }
-
 constexpr const char* cfmLimitSettingPath =
     "/xyz/openbmc_project/control/cfm_limit";
 constexpr const char* cfmLimitIface = "xyz.openbmc_project.Control.CFMLimit";
@@ -2026,10 +2015,10 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetFanConfig),
         NULL, ipmiOEMSetFanConfig, PRIVILEGE_USER);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetFanConfig),
-        NULL, ipmiOEMGetFanConfig, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetFanConfig),
+        ipmi::Privilege::User, ipmiOEMGetFanConfig);
 
     ipmi::registerHandler(
         ipmi::prioOemBase, netfnIntcOEMGeneral,
