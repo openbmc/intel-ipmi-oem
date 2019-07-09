@@ -299,16 +299,6 @@ struct SetFanConfigReq
     uint8_t flags;
     // other parameters from previous generation are not supported
 };
-
-struct GetFanConfigResp
-{
-    uint8_t supportMask;
-    uint8_t profileSupport;
-    uint8_t fanControlProfileEnable;
-    uint8_t flags;
-    uint8_t dimmPresenceMap[4];
-};
-
 struct CfgHostSerialReq
 {
     uint8_t command;
