@@ -182,54 +182,6 @@ struct IpmbResponse
 };
 
 /**
- * @brief Send Message Request
- */
-typedef struct
-{
-    uint8_t channelData;
-    uint8_t data[];
-
-    constexpr uint8_t channelNumGet()
-    {
-        return (channelData & 0xF);
-    }
-
-    constexpr uint8_t authenticationGet()
-    {
-        return ((channelData & 0x10) >> 4);
-    }
-
-    constexpr uint8_t encryptionGet()
-    {
-        return ((channelData & 0x20) >> 5);
-    }
-
-    constexpr uint8_t modeGet()
-    {
-        return ((channelData & 0xC0) >> 6);
-    }
-} __attribute__((packed)) sSendMessageReq;
-
-/**
- * @brief Get Message Response
- */
-typedef struct
-{
-    uint8_t channelData;
-    uint8_t data[];
-
-    constexpr void channelNumSet(uint8_t num)
-    {
-        channelData |= num & 0xF;
-    }
-
-    constexpr void privilegeLvlSet(CommandPrivilege privLvl)
-    {
-        channelData |= static_cast<uint8_t>(privLvl) & 0xF0;
-    }
-} __attribute__((packed)) sGetMessageRes;
-
-/**
  * @brief Get Message Flags Response
  */
 constexpr uint8_t getMsgFlagReceiveMessageBit = 0;
@@ -287,13 +239,15 @@ class Bridging
     Bridging() = default;
     std::size_t getResponseQueueSize();
 
-    ipmi_return_codes sendMessageHandler(ipmi_request_t request,
-                                         ipmi_response_t response,
-                                         ipmi_data_len_t dataLen);
+    ipmi::Cc handleIpmbChannel(uint4_t channelType, uint8_t *msgData,
+                               uint8_t msgLen, uint8_t rspData[],
+                               size_t *dataLength);
 
-    ipmi_return_codes getMessageHandler(ipmi_request_t request,
-                                        ipmi_response_t response,
-                                        ipmi_data_len_t dataLen);
+    std::vector<IpmbResponse> getResponseQueue();
+
+    IpmbResponse getMessageFromQueue();
+
+    void eraseMessageFromQueue();
 
     ipmi_return_codes clearMessageFlagsHandler(ipmi_request_t request,
                                                ipmi_response_t response,
@@ -308,8 +262,4 @@ class Bridging
 
   private:
     std::vector<IpmbResponse> responseQueue;
-
-    ipmi_return_codes handleIpmbChannel(sSendMessageReq *sendMsgReq,
-                                        ipmi_response_t response,
-                                        ipmi_data_len_t dataLen);
 };
