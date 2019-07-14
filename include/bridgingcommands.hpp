@@ -100,12 +100,6 @@ constexpr uint8_t modeTrackRequest = 0x1;
 constexpr uint8_t modeSendRaw = 0x2;
 
 /**
- * @brief Command specific codes
- */
-constexpr ipmi_return_codes ipmiGetMessageCmdDataNotAvailable =
-    static_cast<ipmi_return_codes>(0x80);
-
-/**
  * @brief Ipmb frame
  */
 typedef struct
@@ -182,54 +176,6 @@ struct IpmbResponse
 };
 
 /**
- * @brief Send Message Request
- */
-typedef struct
-{
-    uint8_t channelData;
-    uint8_t data[];
-
-    constexpr uint8_t channelNumGet()
-    {
-        return (channelData & 0xF);
-    }
-
-    constexpr uint8_t authenticationGet()
-    {
-        return ((channelData & 0x10) >> 4);
-    }
-
-    constexpr uint8_t encryptionGet()
-    {
-        return ((channelData & 0x20) >> 5);
-    }
-
-    constexpr uint8_t modeGet()
-    {
-        return ((channelData & 0xC0) >> 6);
-    }
-} __attribute__((packed)) sSendMessageReq;
-
-/**
- * @brief Get Message Response
- */
-typedef struct
-{
-    uint8_t channelData;
-    uint8_t data[];
-
-    constexpr void channelNumSet(uint8_t num)
-    {
-        channelData |= num & 0xF;
-    }
-
-    constexpr void privilegeLvlSet(CommandPrivilege privLvl)
-    {
-        channelData |= static_cast<uint8_t>(privLvl) & 0xF0;
-    }
-} __attribute__((packed)) sGetMessageRes;
-
-/**
  * @brief Get Message Flags Response
  */
 constexpr uint8_t getMsgFlagReceiveMessageBit = 0;
@@ -238,44 +184,6 @@ constexpr uint8_t getMsgFlagWatchdogPreTimeOutBit = 3;
 constexpr uint8_t getMsgFlagOEM0Bit = 5;
 constexpr uint8_t getMsgFlagOEM1Bit = 6;
 constexpr uint8_t getMsgFlagOEM2Bit = 7;
-
-/**
- * @brief Clear Message Flags Request
- */
-typedef struct
-{
-    uint8_t flags;
-
-    constexpr uint8_t receiveMessageBitGet()
-    {
-        return (flags & 0x1);
-    }
-
-    constexpr uint8_t eventMessageBitGet()
-    {
-        return ((flags & 0x2) >> 1);
-    }
-
-    constexpr uint8_t watchdogTimeoutBitGet()
-    {
-        return ((flags & 0x8) >> 3);
-    }
-
-    constexpr uint8_t oem0BitGet()
-    {
-        return ((flags & 0x20) >> 5);
-    }
-
-    constexpr uint8_t oem1BitGet()
-    {
-        return ((flags & 0x40) >> 6);
-    }
-
-    constexpr uint8_t oem2BitGet()
-    {
-        return ((flags & 0x80) >> 7);
-    }
-} __attribute__((packed)) sClearMessageFlagsReq;
 
 /** @class Bridging
  *
@@ -287,26 +195,18 @@ class Bridging
     Bridging() = default;
     std::size_t getResponseQueueSize();
 
-    std::vector<IpmbResponse> getResponseQueue();
     void clearResponseQueue();
 
-    ipmi_return_codes sendMessageHandler(ipmi_request_t request,
-                                         ipmi_response_t response,
-                                         ipmi_data_len_t dataLen);
+    ipmi::Cc handleIpmbChannel(const uint8_t tracking,
+                               const std::vector<uint8_t> &msgData,
+                               std::vector<uint8_t> &rspData);
 
-    ipmi_return_codes getMessageHandler(ipmi_request_t request,
-                                        ipmi_response_t response,
-                                        ipmi_data_len_t dataLen);
-    enum IpmiAppBridgingCmds
-    {
-        ipmiCmdGetMessage = 0x33,
-        ipmiCmdSendMessage = 0x34,
-    };
+    void insertMessageInQueue(IpmbResponse msg);
+
+    IpmbResponse getMessageFromQueue();
+
+    void eraseMessageFromQueue();
 
   private:
     std::vector<IpmbResponse> responseQueue;
-
-    ipmi_return_codes handleIpmbChannel(sSendMessageReq *sendMsgReq,
-                                        ipmi_response_t response,
-                                        ipmi_data_len_t dataLen);
 };
