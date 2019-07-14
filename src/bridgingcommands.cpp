@@ -49,7 +49,7 @@ void Bridging::clearResponseQueue()
 /**
  * @brief utils for checksum
  */
-static bool ipmbChecksumValidate(uint8_t *data, uint8_t length)
+static bool ipmbChecksumValidate(const uint8_t *data, uint8_t length)
 {
     if (data == nullptr)
     {
@@ -89,21 +89,22 @@ static uint8_t ipmbChecksumCompute(uint8_t *data, uint8_t length)
     return checksum;
 }
 
-static inline bool ipmbConnectionHeaderChecksumValidate(ipmbHeader *ipmbHeader)
+static inline bool
+    ipmbConnectionHeaderChecksumValidate(const ipmbHeader *ipmbHeader)
 {
-    return ipmbChecksumValidate(reinterpret_cast<uint8_t *>(ipmbHeader),
+    return ipmbChecksumValidate(reinterpret_cast<const uint8_t *>(ipmbHeader),
                                 ipmbConnectionHeaderLength);
 }
 
-static inline bool ipmbDataChecksumValidate(ipmbHeader *ipmbHeader,
+static inline bool ipmbDataChecksumValidate(const ipmbHeader *ipmbHeader,
                                             uint8_t length)
 {
-    return ipmbChecksumValidate(
-        (reinterpret_cast<uint8_t *>(ipmbHeader) + ipmbConnectionHeaderLength),
-        (length - ipmbConnectionHeaderLength));
+    return ipmbChecksumValidate((reinterpret_cast<const uint8_t *>(ipmbHeader) +
+                                 ipmbConnectionHeaderLength),
+                                (length - ipmbConnectionHeaderLength));
 }
 
-static bool isFrameValid(ipmbHeader *frame, uint8_t length)
+static bool isFrameValid(const ipmbHeader *frame, uint8_t length)
 {
     if ((length < ipmbMinFrameLength) || (length > ipmbMaxFrameLength))
     {
@@ -237,21 +238,21 @@ static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
     }
 }
 
-ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
-                                              ipmi_response_t response,
-                                              ipmi_data_len_t dataLen)
+ipmi::Cc Bridging::handleIpmbChannel(const uint8_t tracking,
+                                     const std::vector<uint8_t> &msgData,
+                                     std::vector<uint8_t> &rspData)
 {
     ipmi::Manufacturing mtm;
 
-    if ((*dataLen < (sizeof(sSendMessageReq) + ipmbMinFrameLength)) ||
-        (*dataLen > (sizeof(sSendMessageReq) + ipmbMaxFrameLength)))
+    size_t msgLen = msgData.size();
+    if ((msgLen < ipmbMinFrameLength) || (msgLen > ipmbMaxFrameLength))
     {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "handleIpmbChannel, IPMB data length is invalid");
+        return ipmi::ccReqDataLenInvalid;
     }
 
-    auto sendMsgReqData = reinterpret_cast<ipmbHeader *>(sendMsgReq->data);
-
+    auto sendMsgReqData = reinterpret_cast<const ipmbHeader *>(msgData.data());
     // TODO: check privilege lvl. Bridging to ME requires Administrator lvl
 
     // allow bridging to ME only
@@ -259,8 +260,7 @@ ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "handleIpmbChannel, IPMB address invalid");
-        *dataLen = 0;
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::ccParmOutOfRange;
     }
 
     constexpr uint8_t shiftLUN = 2;
@@ -269,31 +269,28 @@ ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
         if (!isMeCmdAllowed((sendMsgReqData->Header.Req.rsNetFnLUN >> shiftLUN),
                             sendMsgReqData->Header.Req.cmd))
         {
-            return IPMI_CC_INSUFFICIENT_PRIVILEGE;
+            constexpr ipmi::Cc ccCmdNotSupportedInPresentState = 0xD5;
+            return ccCmdNotSupportedInPresentState;
         }
     }
 
     // check allowed modes
-    if (sendMsgReq->modeGet() != modeNoTracking &&
-        sendMsgReq->modeGet() != modeTrackRequest)
+    if (tracking != modeNoTracking && tracking != modeTrackRequest)
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "handleIpmbChannel, mode not supported");
-        *dataLen = 0;
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::ccParmOutOfRange;
     }
 
     // check if request contains valid IPMB frame
-    if (!isFrameValid(sendMsgReqData, (*dataLen - sizeof(sSendMessageReq))))
+    if (!isFrameValid(sendMsgReqData, msgLen))
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "handleIpmbChannel, IPMB frame invalid");
-        *dataLen = 0;
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::ccParmOutOfRange;
     }
 
-    auto ipmbRequest =
-        IpmbRequest(sendMsgReqData, (*dataLen - sizeof(sSendMessageReq)));
+    auto ipmbRequest = IpmbRequest(sendMsgReqData, msgLen);
 
     std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
         ipmbResponse;
@@ -312,8 +309,7 @@ ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "handleIpmbChannel, dbus call exception");
-        *dataLen = 0;
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::ccUnspecifiedError;
     }
 
     std::vector<uint8_t> dataReceived(0);
@@ -331,80 +327,108 @@ ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
     {
         phosphor::logging::log<phosphor::logging::level::WARNING>(
             "handleIpmbChannel, ipmb returned non zero status");
-        *dataLen = 0;
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::ccResponseError;
     }
 
-    auto sendMsgRes = reinterpret_cast<uint8_t *>(response);
-
-    switch (sendMsgReq->modeGet())
+    switch (tracking)
     {
         case modeNoTracking:
-            if (responseQueue.size() == responseQueueMaxSize)
+        {
+            if (getResponseQueueSize() == responseQueueMaxSize)
             {
-                *dataLen = 0;
-                return IPMI_CC_BUSY;
+                return ipmi::ccBusy;
             }
-            responseQueue.insert(responseQueue.end(), std::move(respReceived));
-            *dataLen = 0;
-            return IPMI_CC_OK;
-
+            insertMessageInQueue(respReceived);
             break;
+        }
         case modeTrackRequest:
-            respReceived.ipmbToi2cConstruct(sendMsgRes, dataLen);
-            return IPMI_CC_OK;
-
+        {
+            size_t dataLength = 0;
+            respReceived.ipmbToi2cConstruct(rspData.data(), &dataLength);
+            // resizing the rspData to its correct length
+            rspData.resize(dataLength);
             break;
+        }
         default:
+        {
             phosphor::logging::log<phosphor::logging::level::INFO>(
                 "handleIpmbChannel, mode not supported");
-            *dataLen = 0;
-            return IPMI_CC_PARM_OUT_OF_RANGE;
+            return ipmi::ccParmOutOfRange;
+        }
     }
 
-    *dataLen = 0;
-    return IPMI_CC_UNSPECIFIED_ERROR;
+    return ipmi::ccSuccess;
 }
 
-ipmi_return_codes Bridging::sendMessageHandler(ipmi_request_t request,
-                                               ipmi_response_t response,
-                                               ipmi_data_len_t dataLen)
+void Bridging::insertMessageInQueue(IpmbResponse msg)
 {
-    ipmi_return_codes retCode = IPMI_CC_OK;
+    responseQueue.insert(responseQueue.end(), std::move(msg));
+}
 
-    if (*dataLen < sizeof(sSendMessageReq))
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
+void Bridging::eraseMessageFromQueue()
+{
+    responseQueue.erase(responseQueue.begin());
+}
 
-    auto sendMsgReq = reinterpret_cast<sSendMessageReq *>(request);
+IpmbResponse Bridging::getMessageFromQueue()
+{
+    return responseQueue.front();
+}
 
+/**
+ * @brief This command is used for bridging ipmi message between channels.
+ * @param channelNumber         - channel number to send message to
+ * @param authenticationEnabled - authentication.
+ * @param encryptionEnabled     - encryption
+ * @param Tracking              - track request
+ * @param msg                   - message data
+ *
+ * @return IPMI completion code plus response data on success.
+ * - rspData - response data
+ **/
+ipmi::RspType<std::vector<uint8_t> // responseData
+              >
+    ipmiAppSendMessage(const uint4_t channelNumber,
+                       const bool authenticationEnabled,
+                       const bool encryptionEnabled, const uint2_t tracking,
+                       ipmi::message::Payload &msg)
+{
     // check message fields:
     // encryption not supported
-    if (sendMsgReq->encryptionGet() != 0)
+    if (encryptionEnabled)
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
-            "sendMessageHandler, encryption not supported");
-        *dataLen = 0;
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+            "ipmiAppSendMessage, encryption not supported");
+        return ipmi::responseParmOutOfRange();
     }
 
     // authentication not supported
-    if (sendMsgReq->authenticationGet() != 0)
+    if (authenticationEnabled)
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
-            "sendMessageHandler, authentication not supported");
-        *dataLen = 0;
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+            "ipmiAppSendMessage, authentication not supported");
+        return ipmi::responseParmOutOfRange();
     }
 
-    switch (sendMsgReq->channelNumGet())
+    ipmi::Cc returnVal;
+    std::vector<uint8_t> rspData(ipmbMaxFrameLength);
+    size_t dataLength = 0;
+    std::vector<uint8_t> unpackMsg;
+
+    auto channelNo = static_cast<const uint8_t>(channelNumber);
+    // Get the channel number
+    switch (channelNo)
     {
         // we only handle ipmb for now
         case targetChannelIpmb:
         case targetChannelOtherLan:
-            retCode = handleIpmbChannel(sendMsgReq, response, dataLen);
+            if (msg.unpack(unpackMsg) || !msg.fullyUnpacked())
+            {
+                return ipmi::responseReqDataLenInvalid();
+            }
+
+            returnVal = bridging.handleIpmbChannel(
+                static_cast<const uint8_t>(tracking), unpackMsg, rspData);
             break;
         // fall through to default
         case targetChannelIcmb10:
@@ -417,69 +441,62 @@ ipmi_return_codes Bridging::sendMessageHandler(ipmi_request_t request,
         case targetChannelSystemInterface:
         default:
             phosphor::logging::log<phosphor::logging::level::INFO>(
-                "sendMessageHandler, TargetChannel invalid");
-            *dataLen = 0;
-            return IPMI_CC_PARM_OUT_OF_RANGE;
+                "ipmiAppSendMessage, TargetChannel invalid");
+            return ipmi::responseParmOutOfRange();
+    }
+    if (returnVal != ipmi::ccSuccess)
+    {
+        return ipmi::response(returnVal);
     }
 
-    return retCode;
+    return ipmi::responseSuccess(rspData);
 }
 
-ipmi_return_codes Bridging::getMessageHandler(ipmi_request_t request,
-                                              ipmi_response_t response,
-                                              ipmi_data_len_t dataLen)
+/**
+ * @brief This command is used to Get data from the receive message queue.
+ *  This command should be executed executed via system interface only.
+ *
+ * @return IPMI completion code plus response data on success.
+ * - channelNumber
+ * - messageData
+ **/
+
+ipmi::RspType<uint8_t,             // channelNumber
+              std::vector<uint8_t> // messageData
+              >
+    ipmiAppGetMessage()
 {
-    if (*dataLen != 0)
+    uint8_t channelData = 0;
+    std::vector<uint8_t> res(ipmbMaxFrameLength);
+    size_t dataLength = 0;
+
+    if (!bridging.getResponseQueueSize())
     {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    auto getMsgRes = reinterpret_cast<sGetMessageRes *>(response);
-    auto getMsgResData = static_cast<uint8_t *>(getMsgRes->data);
-
-    std::memset(getMsgRes, 0, sizeof(sGetMessageRes));
-
-    auto respQueueItem = responseQueue.begin();
-
-    if (respQueueItem == responseQueue.end())
-    {
+        constexpr ipmi::Cc ipmiGetMessageCmdDataNotAvailable = 0x80;
         phosphor::logging::log<phosphor::logging::level::INFO>(
-            "getMessageHandler, no data available");
-        *dataLen = 0;
-        return ipmiGetMessageCmdDataNotAvailable;
+            "ipmiAppGetMessage, no data available");
+        return ipmi::response(ipmiGetMessageCmdDataNotAvailable);
     }
 
-    // set message fields
-    getMsgRes->privilegeLvlSet(SYSTEM_INTERFACE);
-    getMsgRes->channelNumSet(targetChannelSystemInterface);
+    // channel number set.
+    channelData |= static_cast<uint8_t>(targetChannelSystemInterface) & 0x0F;
 
-    // construct response
-    respQueueItem->ipmbToi2cConstruct(getMsgResData, dataLen);
-    responseQueue.erase(respQueueItem);
+    // Priviledge level set.
+    channelData |= SYSTEM_INTERFACE & 0xF0;
 
-    *dataLen = *dataLen + sizeof(sGetMessageRes);
-    return IPMI_CC_OK;
-}
+    // Get the first message from queue
+    auto respQueueItem = bridging.getMessageFromQueue();
 
-ipmi_ret_t ipmiAppSendMessage(ipmi_netfn_t netFn, ipmi_cmd_t cmd,
-                              ipmi_request_t request, ipmi_response_t response,
-                              ipmi_data_len_t dataLen, ipmi_context_t context)
-{
-    ipmi_ret_t retCode = IPMI_CC_OK;
-    retCode = bridging.sendMessageHandler(request, response, dataLen);
+    // construct response data.
+    respQueueItem.ipmbToi2cConstruct(res.data(), &dataLength);
 
-    return retCode;
-}
+    // Remove the message from queue
+    bridging.eraseMessageFromQueue();
 
-ipmi_ret_t ipmiAppGetMessage(ipmi_netfn_t netFn, ipmi_cmd_t cmd,
-                             ipmi_request_t request, ipmi_response_t response,
-                             ipmi_data_len_t dataLen, ipmi_context_t context)
-{
-    ipmi_ret_t retCode = IPMI_CC_OK;
-    retCode = bridging.getMessageHandler(request, response, dataLen);
+    // resizing the rspData to its correct length
+    res.resize(dataLength);
 
-    return retCode;
+    return ipmi::responseSuccess(channelData, res);
 }
 
 std::size_t Bridging::getResponseQueueSize()
@@ -654,13 +671,13 @@ static void register_bridging_functions()
                           ipmi::app::cmdGetMessageFlags, ipmi::Privilege::User,
                           ipmiAppGetMessageFlags);
 
-    ipmi_register_callback(NETFUN_APP,
-                           Bridging::IpmiAppBridgingCmds::ipmiCmdGetMessage,
-                           NULL, ipmiAppGetMessage, PRIVILEGE_USER);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnApp,
+                          ipmi::app::cmdGetMessage, ipmi::Privilege::User,
+                          ipmiAppGetMessage);
 
-    ipmi_register_callback(NETFUN_APP,
-                           Bridging::IpmiAppBridgingCmds::ipmiCmdSendMessage,
-                           NULL, ipmiAppSendMessage, PRIVILEGE_USER);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnApp,
+                          ipmi::app::cmdSendMessage, ipmi::Privilege::User,
+                          ipmiAppSendMessage);
 
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnApp,
                           ipmi::app::cmdReadEventMessageBuffer,
