@@ -35,6 +35,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetFanConfig = 0x8a,
     cmdSetFanSpeedOffset = 0x8c,
     cmdGetFanSpeedOffset = 0x8d,
+    cmdSetDimmOffset = 0x8e,
+    cmdGetDimmOffset = 0x8f,
     cmdSetFscParameter = 0x90,
     cmdGetFscParameter = 0x91,
     cmdGetChassisIdentifier = 0x92,
@@ -357,6 +359,12 @@ enum class setFscParamFlags : uint8_t
     pwmOffset = 0x2,
     maxPwm = 0x3,
     cfm = 0x4
+};
+
+enum class dimmOffsetTypes : uint8_t
+{
+    staticCltt = 0x0,
+    dimmPower = 0x2
 };
 
 // FIXME: this stuff needs to be rewritten
