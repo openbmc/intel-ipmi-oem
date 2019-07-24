@@ -30,6 +30,7 @@
 #include <iostream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
+#include <nlohmann/json.hpp>
 #include <oemcommands.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
@@ -61,6 +62,8 @@ static constexpr const char* oemNmiSourceObjPath =
     "/com/intel/control/NMISource";
 static constexpr const char* oemNmiBmcSourceObjPathProp = "BMCSource";
 static constexpr const char* oemNmiEnabledObjPathProp = "Enabled";
+
+static constexpr const char* dimmOffsetFile = "/var/lib/ipmi/ipmi_dimms.json";
 
 enum class NmiSource : uint8_t
 {
@@ -2116,6 +2119,146 @@ ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
     return ipmi::responseSuccess();
 }
 
+namespace dimmOffset
+{
+constexpr const char* dimmPower = "DimmPower";
+constexpr const char* staticCltt = "StaticCltt";
+constexpr const char* offsetPath = "/xyz/openbmc_project/Inventory/Item/Dimm";
+constexpr const char* offsetInterface =
+    "xyz.openbmc_project.Inventory.Item.Dimm.Offset";
+constexpr const char* property = "DimmOffset";
+
+}; // namespace dimmOffset
+
+ipmi::RspType<>
+    ipmiOEMSetDimmOffset(uint8_t type,
+                         const std::vector<std::tuple<uint8_t, uint8_t>>& data)
+{
+    if (type != static_cast<uint8_t>(dimmOffsetTypes::dimmPower) &&
+        type != static_cast<uint8_t>(dimmOffsetTypes::staticCltt))
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    if (data.empty())
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+    nlohmann::json json;
+
+    std::ifstream jsonStream(dimmOffsetFile);
+    if (jsonStream.good())
+    {
+        json = nlohmann::json::parse(jsonStream, nullptr, false);
+        if (json.is_discarded())
+        {
+            json = nlohmann::json();
+        }
+        jsonStream.close();
+    }
+
+    std::string typeName;
+    if (type == static_cast<uint8_t>(dimmOffsetTypes::dimmPower))
+    {
+        typeName = dimmOffset::dimmPower;
+    }
+    else
+    {
+        typeName = dimmOffset::staticCltt;
+    }
+
+    nlohmann::json& field = json[typeName];
+
+    for (const auto& [index, value] : data)
+    {
+        field[index] = value;
+    }
+
+    for (nlohmann::json& val : field)
+    {
+        if (val == nullptr)
+        {
+            val = static_cast<uint8_t>(0);
+        }
+    }
+
+    std::ofstream output(dimmOffsetFile);
+    if (!output.good())
+    {
+        std::cerr << "Error writing json file\n";
+        return ipmi::responseResponseError();
+    }
+
+    output << json.dump(4);
+
+    if (type == static_cast<uint8_t>(dimmOffsetTypes::staticCltt))
+    {
+        std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+
+        std::variant<std::vector<uint8_t>> offsets =
+            field.get<std::vector<uint8_t>>();
+        auto call = bus->new_method_call(
+            settingsBusName, dimmOffset::offsetPath, PROP_INTF, "Set");
+        call.append(dimmOffset::offsetInterface, dimmOffset::property, offsets);
+        try
+        {
+            bus->call(call);
+        }
+        catch (sdbusplus::exception_t& e)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMSetDimmOffset: can't set dimm offsets!",
+                phosphor::logging::entry("ERR=%s", e.what()));
+            return ipmi::responseResponseError();
+        }
+    }
+
+    return ipmi::responseSuccess();
+}
+
+ipmi::RspType<uint8_t> ipmiOEMGetDimmOffset(uint8_t type, uint8_t index)
+{
+
+    if (type != static_cast<uint8_t>(dimmOffsetTypes::dimmPower) &&
+        type != static_cast<uint8_t>(dimmOffsetTypes::staticCltt))
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    std::ifstream jsonStream(dimmOffsetFile);
+
+    auto json = nlohmann::json::parse(jsonStream, nullptr, false);
+    if (json.is_discarded())
+    {
+        std::cerr << "File error in " << dimmOffsetFile << "\n";
+        return ipmi::responseResponseError();
+    }
+
+    std::string typeName;
+    if (type == static_cast<uint8_t>(dimmOffsetTypes::dimmPower))
+    {
+        typeName = dimmOffset::dimmPower;
+    }
+    else
+    {
+        typeName = dimmOffset::staticCltt;
+    }
+
+    auto it = json.find(typeName);
+    if (it == json.end())
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    if (it->size() <= index)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    uint8_t resp = it->at(index).get<uint8_t>();
+    return ipmi::responseSuccess(resp);
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -2268,6 +2411,16 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, netfn::intel::oemGeneral,
                     netfn::intel::cmdRestoreConfiguration, Privilege::Admin,
                     ipmiRestoreConfiguration);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetDimmOffset),
+        ipmi::Privilege::Operator, ipmiOEMSetDimmOffset);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetDimmOffset),
+        ipmi::Privilege::Operator, ipmiOEMGetDimmOffset);
 }
 
 } // namespace ipmi
