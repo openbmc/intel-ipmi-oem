@@ -49,6 +49,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
 enum class IPMINetfnIntelOEMPlatformCmd
 {
     cmdCfgHostSerialPortSpeed = 0x90,
+    cmdClearCMOS = 0x91,
 };
 
 enum class IPMIIntelOEMReturnCodes

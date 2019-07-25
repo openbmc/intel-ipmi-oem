@@ -1127,6 +1127,23 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+ipmi_ret_t ipmiOEMClearCMOS(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                            ipmi_request_t request, ipmi_response_t response,
+                            ipmi_data_len_t dataLen, ipmi_context_t context)
+{
+    if (*dataLen != 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ClearCMOS: invalid input len!",
+            phosphor::logging::entry("LEN=%d", *dataLen));
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
+    }
+
+    // TODO
+
+    return IPMI_CC_OK;
+}
+
 constexpr const char* thermalModeInterface =
     "xyz.openbmc_project.Control.ThermalMode";
 constexpr const char* thermalModePath =
@@ -2211,6 +2228,10 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMPlatformCmd::cmdCfgHostSerialPortSpeed),
         NULL, ipmiOEMCfgHostSerialPortSpeed, PRIVILEGE_ADMIN);
+    ipmiPrintAndRegister(
+        netfnIntcOEMPlatform,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMPlatformCmd::cmdClearCMOS),
+        NULL, ipmiOEMClearCMOS, PRIVILEGE_ADMIN);
     ipmi::registerHandler(
         ipmi::prioOemBase, netfnIntcOEMGeneral,
         static_cast<ipmi::Cmd>(
