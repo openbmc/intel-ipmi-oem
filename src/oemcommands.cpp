@@ -2088,6 +2088,15 @@ ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
     return ipmi::responseSuccess();
 }
 
+ipmi_ret_t ipmiOEMAPPSlotI2C(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                             ipmi_request_t request, ipmi_response_t response,
+                             ipmi_data_len_t dataLen, ipmi_context_t context)
+{
+    // TODO
+
+    return IPMI_CC_OK;
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -2098,6 +2107,11 @@ static void registerOEMFunctions(void)
     ipmiPrintAndRegister(netfunIntelAppOEM, IPMI_CMD_WILDCARD, NULL,
                          ipmiOEMWildcard,
                          PRIVILEGE_USER); // wildcard default handler
+    ipmiPrintAndRegister(
+        netfunIntelAppOEM,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMAppCmd::slotI2C), NULL,
+        ipmiOEMAPPSlotI2C,
+        PRIVILEGE_ADMIN); // slot i2c
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(
