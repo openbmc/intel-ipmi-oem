@@ -354,6 +354,45 @@ static bool setButtonEnabled(const std::string& buttonPath, const bool disabled)
     return 0;
 }
 
+static bool getRestartCause(std::string& restartCause)
+{
+    constexpr const char* restartCausePath =
+        "/xyz/openbmc_project/control/host0/restart_cause";
+    constexpr const char* restartCauseIntf =
+        "xyz.openbmc_project.Common.RestartCause";
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
+
+    try
+    {
+        auto service =
+            ipmi::getService(*busp, restartCauseIntf, restartCausePath);
+
+        ipmi::Value result = ipmi::getDbusProperty(
+            *busp, service, restartCausePath, restartCauseIntf, "RestartCause");
+        restartCause = std::get<std::string>(result);
+    }
+    catch (const std::exception& e)
+    {
+        log<level::ERR>("Failed to fetch RestartCause property",
+                        entry("ERROR=%s", e.what()),
+                        entry("PATH=%s", restartCausePath),
+                        entry("INTERFACE=%s", restartCauseIntf));
+        return false;
+    }
+    return true;
+}
+
+static bool isIPMIRestartCause()
+{
+    std::string restartCause;
+    if (!getRestartCause(restartCause))
+    {
+        return false;
+    }
+    return (restartCause ==
+            "xyz.openbmc_project.State.Host.RestartCause.IpmiCommand");
+}
+
 //----------------------------------------------------------------------
 // Get Chassis Status commands
 //----------------------------------------------------------------------
@@ -437,6 +476,8 @@ ipmi::RspType<bool,    // Power is on
 
     bool powerDownAcFailed = power_policy::getACFailStatus();
 
+    bool powerStatusIPMI = isIPMIRestartCause();
+
     // This response has a lot of hard-coded, unsupported fields
     // They are set to false or 0
     constexpr bool powerOverload = false;
@@ -446,7 +487,6 @@ ipmi::RspType<bool,    // Power is on
     constexpr bool powerDownOverload = false;
     constexpr bool powerDownInterlock = false;
     constexpr bool powerDownPowerFault = false;
-    constexpr bool powerStatusIPMI = false;
     constexpr bool chassisIntrusionActive = false;
     constexpr bool frontPanelLockoutActive = false;
     constexpr bool driveFault = false;
@@ -475,7 +515,7 @@ ipmi::RspType<bool,    // Power is on
         interruptButtonDisableAllow, sleepButtonDisableAllow);
 }
 
-static uint4_t getRestartCause(const std::string& cause)
+static uint4_t getRestartCauseValue(const std::string& cause)
 {
     uint4_t restartCauseValue = 0;
     if (cause == "xyz.openbmc_project.State.Host.RestartCause.Unknown")
@@ -539,32 +579,13 @@ ipmi::RspType<uint4_t, // Restart Cause
               >
     ipmiGetSystemRestartCause()
 {
-    constexpr const char* restartCausePath =
-        "/xyz/openbmc_project/control/host0/restart_cause";
-    constexpr const char* restartCauseIntf =
-        "xyz.openbmc_project.Common.RestartCause";
     std::string restartCauseStr;
-    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
-
-    try
+    if (!getRestartCause(restartCauseStr))
     {
-        auto service =
-            ipmi::getService(*busp, restartCauseIntf, restartCausePath);
-
-        ipmi::Value result = ipmi::getDbusProperty(
-            *busp, service, restartCausePath, restartCauseIntf, "RestartCause");
-        restartCauseStr = std::get<std::string>(result);
-    }
-    catch (const std::exception& e)
-    {
-        log<level::ERR>("Failed to fetch RestartCause property",
-                        entry("ERROR=%s", e.what()),
-                        entry("PATH=%s", restartCausePath),
-                        entry("INTERFACE=%s", restartCauseIntf));
         return ipmi::responseUnspecifiedError();
     }
 
-    return ipmi::responseSuccess(getRestartCause(restartCauseStr), 0, 0);
+    return ipmi::responseSuccess(getRestartCauseValue(restartCauseStr), 0, 0);
 }
 
 ipmi::RspType<> ipmiSetFrontPanelButtonEnables(bool disablePowerButton,
