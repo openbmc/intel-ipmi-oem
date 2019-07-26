@@ -53,6 +53,13 @@ const static constexpr char* ledIDBlinkObj =
     "/xyz/openbmc_project/led/groups/enclosure_identify_blink";
 const static constexpr char* ledInterface = "xyz.openbmc_project.Led.Group";
 const static constexpr char* ledProp = "Asserted";
+enum class ChassisIDState
+{
+    off = 0,
+    temporary = 1,
+    indefinite = 2,
+};
+static ChassisIDState chassisIDState = ChassisIDState::off;
 
 constexpr size_t defaultIdentifyTimeOut = 15;
 
@@ -104,6 +111,7 @@ bool getIDState(const char* objName, bool& state)
 
 void enclosureIdentifyLedBlinkOff()
 {
+    chassisIDState = ChassisIDState::off;
     enclosureIdentifyLed(ledIDBlinkObj, false);
 }
 
@@ -147,6 +155,7 @@ void idButtonPropChanged(sdbusplus::message::message& msg)
         if (asserted)
         {
             // LED is blinking, turn off the LED
+            chassisIDState = ChassisIDState::off;
             enclosureIdentifyLed(ledIDBlinkObj, false);
             enclosureIdentifyLed(ledIDOnObj, false);
         }
@@ -185,8 +194,10 @@ ipmi::RspType<> ipmiChassisIdentify(std::optional<uint8_t> interval,
         enclosureIdentifyLed(ledIDBlinkObj, true);
         if (forceIdentify)
         {
+            chassisIDState = ChassisIDState::indefinite;
             return ipmi::responseSuccess();
         }
+        chassisIDState = ChassisIDState::temporary;
         // start the timer
         auto time = std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::seconds(identifyInterval));
@@ -194,6 +205,7 @@ ipmi::RspType<> ipmiChassisIdentify(std::optional<uint8_t> interval,
     }
     else
     {
+        chassisIDState = ChassisIDState::off;
         enclosureIdentifyLed(ledIDBlinkObj, false);
     }
     return ipmi::responseSuccess();
@@ -453,7 +465,7 @@ ipmi::RspType<bool,    // Power is on
     constexpr bool coolingFanFault = false;
     // chassisIdentifySupport set because this command is implemented
     constexpr bool chassisIdentifySupport = true;
-    uint2_t chassisIdentifyState = 0;
+    uint2_t chassisIdentifyState = chassisIDState;
     constexpr bool sleepButtonDisabled = false;
     constexpr bool sleepButtonDisableAllow = false;
 
