@@ -43,6 +43,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetProcessorErrConfig = 0x9B,
     cmdGetLEDStatus = 0xB0,
     cmdGetNmiStatus = 0xE5,
+    cmdSetEfiBootOptions = 0xEA,
+    cmdGetEfiBootOptions = 0xEB,
     cmdSetNmiStatus = 0xED,
 };
 
