@@ -17,11 +17,19 @@
 #include <bridgingcommands.hpp>
 #include <cstring>
 #include <ipmid/api.hpp>
+#include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/bus/match.hpp>
 #include <sdbusplus/message.hpp>
 #include <vector>
+
+static constexpr const char *wdtService = "xyz.openbmc_project.Watchdog";
+static constexpr const char *wdtInterface =
+    "xyz.openbmc_project.State.Watchdog";
+static constexpr const char *wdtObjPath = "/xyz/openbmc_project/watchdog/host0";
+static constexpr const char *wdtInterruptFlagProp =
+    "PreTimeoutInterruptOccurFlag";
 
 static constexpr const char *ipmbBus = "xyz.openbmc_project.Ipmi.Channel.Ipmb";
 static constexpr const char *ipmbObj = "/xyz/openbmc_project/Ipmi/Channel/Ipmb";
@@ -415,6 +423,24 @@ ipmi_return_codes Bridging::getMessageFlagsHandler(ipmi_request_t request,
     else
     {
         getMsgFlagsRes->receiveMessageBitSet(0);
+    }
+
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        ipmi::Value variant = ipmi::getDbusProperty(
+            *dbus, wdtService, wdtObjPath, wdtInterface, wdtInterruptFlagProp);
+        if (std::get<bool>(variant))
+        {
+            getMsgFlagsRes->watchdogTimeoutBitSet(1);
+        }
+    }
+    catch (sdbusplus::exception::SdBusError &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getMessageFlagsHandler2, dbus call exception");
+        *dataLen = 0;
+        return IPMI_CC_UNSPECIFIED_ERROR;
     }
 
     *dataLen = sizeof(sGetMessageFlagsResp);
