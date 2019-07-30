@@ -372,177 +372,165 @@ ipmi::RspType<uint8_t,                // Signal value
     }
 }
 
-ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                   ipmi_request_t request,
-                                   ipmi_response_t response,
-                                   ipmi_data_len_t data_len,
-                                   ipmi_context_t context)
+ipmi::RspType<> appMTMSetSignal(uint8_t signalTypeByte, uint8_t instance,
+                                uint8_t actionByte,
+                                std::optional<uint8_t> pwmSpeed)
 {
-    uint8_t ret = 0;
-    ipmi_ret_t retCode = IPMI_CC_OK;
-    SetSmSignalReq* pReq = static_cast<SetSmSignalReq*>(request);
-    std::string ledName;
-    ///////////////////  Signal to led configuration ////////////////
-    //        {SM_SYSTEM_READY_LED, STAT_GRN_LED},    GPIOS4  gpio148
-    //        {SM_POWER_FAULT_LED, STAT_AMB_LED},     GPIOS5  gpio149
-    //        {SM_IDENTIFY_LED, IDENTIFY_LED},        GPIOS6  gpio150
-    //        {SM_SPEAKER, SPEAKER},                  GPIOAB0 gpio216
-    /////////////////////////////////////////////////////////////////
-    if ((*data_len == sizeof(*pReq)) &&
-        (mtm.getAccessLvl() >= MtmLvl::mtmAvailable))
+    if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
     {
-        switch (pReq->Signal)
-        {
-            case SmSignalSet::smPowerFaultLed:
-            case SmSignalSet::smSystemReadyLed:
-            case SmSignalSet::smIdentifyLed:
-                switch (pReq->Action)
+        return ipmi::responseInvalidCommand();
+    }
+
+    SmSignalSet signalType = static_cast<SmSignalSet>(signalTypeByte);
+    SmActionSet action = static_cast<SmActionSet>(actionByte);
+    Cc retCode = ccSuccess;
+    uint8_t ret = 0;
+
+    switch (signalType)
+    {
+        case SmSignalSet::smPowerFaultLed:
+        case SmSignalSet::smSystemReadyLed:
+        case SmSignalSet::smIdentifyLed:
+            switch (action)
+            {
+                case SmActionSet::forceDeasserted:
                 {
-                    case SmActionSet::forceDeasserted:
-                    {
-                        phosphor::logging::log<phosphor::logging::level::INFO>(
-                            "case SmActionSet::forceDeasserted");
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "case SmActionSet::forceDeasserted");
 
-                        retCode =
-                            ledStoreAndSet(pReq->Signal, std::string("Off"));
-                        if (retCode != IPMI_CC_OK)
-                        {
-                            break;
-                        }
-                        mtm.revertTimer.start(revertTimeOut);
-                    }
-                    break;
-                    case SmActionSet::forceAsserted:
+                    retCode = ledStoreAndSet(signalType, std::string("Off"));
+                    if (retCode != ccSuccess)
                     {
-                        phosphor::logging::log<phosphor::logging::level::INFO>(
-                            "case SmActionSet::forceAsserted");
-
-                        retCode =
-                            ledStoreAndSet(pReq->Signal, std::string("On"));
-                        if (retCode != IPMI_CC_OK)
-                        {
-                            break;
-                        }
-                        mtm.revertTimer.start(revertTimeOut);
-                        if (SmSignalSet::smPowerFaultLed == pReq->Signal)
-                        {
-                            // Deassert "system ready"
-                            retCode =
-                                ledStoreAndSet(SmSignalSet::smSystemReadyLed,
-                                               std::string("Off"));
-                            if (retCode != IPMI_CC_OK)
-                            {
-                                break;
-                            }
-                        }
-                        else if (SmSignalSet::smSystemReadyLed == pReq->Signal)
-                        {
-                            // Deassert "fault led"
-                            retCode =
-                                ledStoreAndSet(SmSignalSet::smPowerFaultLed,
-                                               std::string("Off"));
-                            if (retCode != IPMI_CC_OK)
-                            {
-                                break;
-                            }
-                        }
+                        break;
                     }
-                    break;
-                    case SmActionSet::revert:
-                    {
-                        phosphor::logging::log<phosphor::logging::level::INFO>(
-                            "case SmActionSet::revert");
-                        retCode = ledRevert(pReq->Signal);
-                        if (retCode != IPMI_CC_OK)
-                        {
-                            break;
-                        }
-                    }
-                    break;
-                    default:
-                    {
-                        retCode = IPMI_CC_INVALID_FIELD_REQUEST;
-                    }
-                    break;
+                    mtm.revertTimer.start(revertTimeOut);
                 }
                 break;
-            case SmSignalSet::smFanPowerSpeed:
-            {
-                if (((pReq->Action == SmActionSet::forceAsserted) &&
-                     (*data_len != sizeof(*pReq)) && (pReq->Value > 100)) ||
-                    pReq->Instance == 0)
+                case SmActionSet::forceAsserted:
                 {
-                    retCode = IPMI_CC_INVALID_FIELD_REQUEST;
-                    break;
-                }
-                uint8_t pwmValue = 0;
-                switch (pReq->Action)
-                {
-                    case SmActionSet::revert:
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "case SmActionSet::forceAsserted");
+
+                    retCode = ledStoreAndSet(signalType, std::string("On"));
+                    if (retCode != ccSuccess)
                     {
-                        if (mtm.revertFanPWM)
+                        break;
+                    }
+                    mtm.revertTimer.start(revertTimeOut);
+                    if (SmSignalSet::smPowerFaultLed == signalType)
+                    {
+                        // Deassert "system ready"
+                        retCode = ledStoreAndSet(SmSignalSet::smSystemReadyLed,
+                                                 std::string("Off"));
+                        if (retCode != ccSuccess)
                         {
-                            ret = mtm.disablePidControlService(false);
-                            if (ret < 0)
-                            {
-                                retCode = IPMI_CC_UNSPECIFIED_ERROR;
-                                break;
-                            }
-                            mtm.revertFanPWM = false;
+                            break;
                         }
                     }
-                    break;
-                    case SmActionSet::forceAsserted:
+                    else if (SmSignalSet::smSystemReadyLed == signalType)
                     {
-                        pwmValue = pReq->Value;
-                    } // fall-through
-                    case SmActionSet::forceDeasserted:
-                    {
-                        if (!mtm.revertFanPWM)
+                        // Deassert "fault led"
+                        retCode = ledStoreAndSet(SmSignalSet::smPowerFaultLed,
+                                                 std::string("Off"));
+                        if (retCode != ccSuccess)
                         {
-                            ret = mtm.disablePidControlService(true);
-                            if (ret < 0)
-                            {
-                                retCode = IPMI_CC_UNSPECIFIED_ERROR;
-                                break;
-                            }
-                            mtm.revertFanPWM = true;
+                            break;
                         }
-                        mtm.revertTimer.start(revertTimeOut);
-                        std::string fanPwmInstancePath =
-                            fanPwmPath + std::to_string(pReq->Instance);
+                    }
+                }
+                break;
+                case SmActionSet::revert:
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "case SmActionSet::revert");
+                    retCode = ledRevert(signalType);
+                    if (retCode != ccSuccess)
+                    {
+                        break;
+                    }
+                }
+                break;
+                default:
+                {
+                    retCode = ccInvalidFieldRequest;
+                }
+                break;
+            }
+            break;
+        case SmSignalSet::smFanPowerSpeed:
+        {
+            if (!pwmSpeed)
+            {
+                return ipmi::responseReqDataLenInvalid();
+            }
 
-                        ret = mtm.setProperty(fanService, fanPwmInstancePath,
-                                              fanIntf, "Value",
-                                              static_cast<double>(pwmValue));
+            if ((action == SmActionSet::forceAsserted) && (*pwmSpeed > 100))
+            {
+                retCode = ccInvalidFieldRequest;
+                break;
+            }
+
+            uint8_t pwmValue = 0;
+            switch (action)
+            {
+                case SmActionSet::revert:
+                {
+                    if (mtm.revertFanPWM)
+                    {
+                        ret = mtm.disablePidControlService(false);
                         if (ret < 0)
                         {
-                            retCode = IPMI_CC_UNSPECIFIED_ERROR;
+                            retCode = ccUnspecifiedError;
+                            break;
                         }
+                        mtm.revertFanPWM = false;
                     }
-                    break;
-                    default:
-                    {
-                        retCode = IPMI_CC_INVALID_FIELD_REQUEST;
-                    }
-                    break;
                 }
-            }
-            break;
-            default:
-            {
-                retCode = IPMI_CC_INVALID_FIELD_REQUEST;
-            }
-            break;
-        }
-    }
-    else
-    {
-        retCode = IPMI_CC_INVALID;
-    }
+                break;
+                case SmActionSet::forceAsserted:
+                {
+                    pwmValue = *pwmSpeed;
+                } // fall-through
+                case SmActionSet::forceDeasserted:
+                {
+                    if (!mtm.revertFanPWM)
+                    {
+                        ret = mtm.disablePidControlService(true);
+                        if (ret < 0)
+                        {
+                            retCode = ccUnspecifiedError;
+                            break;
+                        }
+                        mtm.revertFanPWM = true;
+                    }
+                    mtm.revertTimer.start(revertTimeOut);
+                    std::string fanPwmInstancePath =
+                        fanPwmPath + std::to_string(instance + 1);
 
-    *data_len = 0; // Only CC is return for SetSmSignal cmd
-    return retCode;
+                    ret =
+                        mtm.setProperty(fanService, fanPwmInstancePath, fanIntf,
+                                        "Value", static_cast<double>(pwmValue));
+                    if (ret < 0)
+                    {
+                        retCode = ccUnspecifiedError;
+                    }
+                }
+                break;
+                default:
+                {
+                    retCode = ccInvalidFieldRequest;
+                }
+                break;
+            }
+        }
+        break;
+        default:
+        {
+            retCode = ccInvalidFieldRequest;
+        }
+        break;
+    }
+    return ipmi::response(retCode);
 }
 
 } // namespace ipmi
@@ -554,12 +542,12 @@ void register_mtm_commands()
     ipmi::registerHandler(
         ipmi::prioOemBase, ipmi::netFnOemOne,
         static_cast<ipmi::Cmd>(IPMINetFnIntelOemGeneralCmds::GetSmSignal),
-        ipmi::Privilege::User, ipmi::appMTMGetSignal);
+        ipmi::Privilege::Admin, ipmi::appMTMGetSignal);
 
-    ipmi_register_callback(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetFnIntelOemGeneralCmds::SetSmSignal),
-        NULL, ipmi::ipmi_app_mtm_set_signal, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, ipmi::netFnOemOne,
+        static_cast<ipmi::Cmd>(IPMINetFnIntelOemGeneralCmds::SetSmSignal),
+        ipmi::Privilege::Admin, ipmi::appMTMSetSignal);
 
     return;
 }
