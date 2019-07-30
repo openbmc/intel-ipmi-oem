@@ -16,11 +16,14 @@
 
 #pragma once
 
+#include <ipmid/api-types.hpp>
 #include <user_channel/user_layer.hpp>
 enum class IPMINetfnIntelOEMGeneralCmd
 {
     cmdSetBIOSID = 0x26,
     cmdGetOEMDeviceInfo = 0x27,
+    cmdSetColdRedundancyConfig = 0x2d,
+    cmdGetColdRedundancyConfig = 0x2e,
     cmdGetAICSlotFRUIDSlotPosRecords = 0x31,
     cmdSetSystemGUID = 0x41,
     cmdSendEmbeddedFWUpdStatus = 0x44,
@@ -89,6 +92,8 @@ enum class IPMIReturnCodeExt
     ipmiCCDestinationUnavailable = 0xD3,
     ipmiCCParamterNotSupportInPresentState = 0xD5,
 };
+
+constexpr ipmi::Cc ccParameterNotSupported = 0x80;
 
 constexpr const uint8_t netfunIntelAppOEM = 0x3E;
 static constexpr ipmi_netfn_t netfnIntcOEMGeneral =
