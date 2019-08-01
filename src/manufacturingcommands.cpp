@@ -54,6 +54,9 @@ int getGpioPathForSmSignal(const SmSignalGet signal, std::string& path)
         case SmSignalGet::smNMIButton:
             path = "/xyz/openbmc_project/chassis/buttons/nmi";
             break;
+        case SmSignalGet::smIdentifyButton:
+            path = "/xyz/openbmc_project/chassis/buttons/id";
+            break;
         default:
             return -1;
             break;
