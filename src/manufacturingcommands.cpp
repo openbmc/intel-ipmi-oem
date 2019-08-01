@@ -54,6 +54,9 @@ int getGpioPathForSmSignal(const SmSignalGet signal, std::string& path)
         case SmSignalGet::smNMIButton:
             path = "/xyz/openbmc_project/chassis/buttons/nmi";
             break;
+        case SmSignalGet::smIdentifyButton:
+            path = "/xyz/openbmc_project/chassis/buttons/id";
+            break;
         default:
             return -1;
             break;
@@ -306,10 +309,20 @@ ipmi::RspType<uint8_t,                // Signal value
             return ipmi::responseSuccess(sensorVal, fanTach);
         }
         break;
+        case SmSignalGet::smIdentifyButton:
+        {
+            if (action == SmActionGet::revert || action == SmActionGet::ignore)
+            {
+                // ButtonMasked property is not supported for ID button as it is
+                // unnecessary. Hence if requested for revert / ignore, override
+                // it to sample action to make tools happy.
+                action = SmActionGet::sample;
+            }
+            // fall-through
+        }
         case SmSignalGet::smResetButton:
         case SmSignalGet::smPowerButton:
         case SmSignalGet::smNMIButton:
-        case SmSignalGet::smIdentifyButton:
         {
             std::string path;
             if (getGpioPathForSmSignal(signalType, path) < 0)
