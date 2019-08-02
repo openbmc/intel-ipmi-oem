@@ -41,6 +41,22 @@ const static constexpr char* systemDMgrIntf =
     "org.freedesktop.systemd1.Manager";
 const static constexpr char* pidControlService = "phosphor-pid-control.service";
 
+static inline Cc resetMtmTimer(boost::asio::yield_context yield)
+{
+    auto sdbusp = getSdBus();
+    boost::system::error_code ec;
+    sdbusp->yield_method_call<>(yield, ec, specialModeService,
+                                specialModeObjPath, specialModeIntf,
+                                "ResetTimer");
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to reset the manufacturing mode timer");
+        return ccUnspecifiedError;
+    }
+    return ccSuccess;
+}
+
 int getGpioPathForSmSignal(const SmSignalGet signal, std::string& path)
 {
     switch (signal)
@@ -558,6 +574,22 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return retCode;
 }
 
+ipmi::RspType<> mtmKeepAlive(boost::asio::yield_context yield, uint8_t reserved,
+                             const std::array<char, 5>& intentionalSignature)
+{
+    // Allow MTM keep alive command only in manfacturing mode.
+    if (mtm.getAccessLvl() != MtmLvl::mtmAvailable)
+    {
+        return ipmi::responseInvalidCommand();
+    }
+    constexpr std::array<char, 5> signatureOk = {'I', 'N', 'T', 'E', 'L'};
+    if (intentionalSignature != signatureOk || reserved != 0)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+    return ipmi::response(resetMtmTimer(yield));
+}
+
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -573,6 +605,11 @@ void register_mtm_commands()
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(IPMINetFnIntelOemGeneralCmds::SetSmSignal),
         NULL, ipmi::ipmi_app_mtm_set_signal, PRIVILEGE_USER);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, ipmi::netFnOemOne,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdMtmKeepAlive),
+        ipmi::Privilege::Admin, ipmi::mtmKeepAlive);
 
     return;
 }

@@ -56,6 +56,13 @@ static constexpr const char* busPropertyIntf =
 static constexpr const char* ledStateStr =
     "xyz.openbmc_project.Led.Physical.Action."; // Comes with postfix Off/On
 
+static constexpr const char* specialModeService =
+    "xyz.openbmc_project.SpecialMode";
+static constexpr const char* specialModeObjPath =
+    "/xyz/openbmc_project/security/special_mode";
+static constexpr const char* specialModeIntf =
+    "xyz.openbmc_project.Security.SpecialMode";
+
 /** @enum MtmLvl
 .*
  *  Manufacturing command access levels
@@ -243,10 +250,8 @@ class Manufacturing
         if (mtmMode != MtmLvl::mtmExpired)
         {
             ipmi::Value mode;
-            if (getProperty("xyz.openbmc_project.SpecialMode",
-                            "/xyz/openbmc_project/security/special_mode",
-                            "xyz.openbmc_project.Security.SpecialMode",
-                            "SpecialMode", &mode) != 0)
+            if (getProperty(specialModeService, specialModeObjPath,
+                            specialModeIntf, "SpecialMode", &mode) != 0)
             {
                 mtmMode = MtmLvl::mtmExpired;
                 return mtmMode;
