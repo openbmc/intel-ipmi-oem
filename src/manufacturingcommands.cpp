@@ -281,6 +281,7 @@ ipmi::RspType<uint8_t,                // Signal value
                 return ipmi::responseUnspecifiedError();
             }
             uint8_t sensorVal = std::round(*doubleVal);
+            resetMtmTimer(yield);
             return ipmi::responseSuccess(sensorVal, std::nullopt);
         }
         break;
@@ -323,6 +324,7 @@ ipmi::RspType<uint8_t,                // Signal value
             uint8_t sensorVal = FAN_PRESENT | FAN_SENSOR_PRESENT;
             std::optional<uint16_t> fanTach = std::round(*doubleVal);
 
+            resetMtmTimer(yield);
             return ipmi::responseSuccess(sensorVal, fanTach);
         }
         break;
@@ -392,6 +394,7 @@ ipmi::RspType<uint8_t,                // Signal value
             {
                 return ipmi::responseUnspecifiedError();
             }
+            resetMtmTimer(yield);
             uint8_t sensorVal = *valPtr;
             return ipmi::responseSuccess(sensorVal, std::nullopt);
         }
@@ -402,7 +405,8 @@ ipmi::RspType<uint8_t,                // Signal value
     }
 }
 
-ipmi::RspType<> appMTMSetSignal(uint8_t signalTypeByte, uint8_t instance,
+ipmi::RspType<> appMTMSetSignal(boost::asio::yield_context yield,
+                                uint8_t signalTypeByte, uint8_t instance,
                                 uint8_t actionByte,
                                 std::optional<uint8_t> pwmSpeed)
 {
@@ -541,6 +545,10 @@ ipmi::RspType<> appMTMSetSignal(uint8_t signalTypeByte, uint8_t instance,
         {
             return ipmi::responseInvalidFieldRequest();
         }
+    }
+    if (retCode == ccSuccess)
+    {
+        resetMtmTimer(yield);
     }
     return ipmi::response(retCode);
 }
