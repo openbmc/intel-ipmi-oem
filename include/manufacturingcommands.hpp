@@ -244,7 +244,7 @@ class Manufacturing
         {
             ipmi::Value mode;
             if (getProperty("xyz.openbmc_project.SpecialMode",
-                            "/xyz/openbmc_project/security/specialMode",
+                            "/xyz/openbmc_project/security/special_mode",
                             "xyz.openbmc_project.Security.SpecialMode",
                             "SpecialMode", &mode) != 0)
             {
