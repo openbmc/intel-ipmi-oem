@@ -42,6 +42,22 @@ const static constexpr char* systemDMgrIntf =
     "org.freedesktop.systemd1.Manager";
 const static constexpr char* pidControlService = "phosphor-pid-control.service";
 
+static inline Cc resetMtmTimer(boost::asio::yield_context yield)
+{
+    auto sdbusp = getSdBus();
+    boost::system::error_code ec;
+    sdbusp->yield_method_call<>(yield, ec, specialModeService,
+                                specialModeObjPath, specialModeIntf,
+                                "ResetTimer");
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to reset the manufacturing mode timer");
+        return ccUnspecifiedError;
+    }
+    return ccSuccess;
+}
+
 int getGpioPathForSmSignal(const SmSignalGet signal, std::string& path)
 {
     switch (signal)
@@ -534,6 +550,22 @@ ipmi::RspType<> appMTMSetSignal(uint8_t signalTypeByte, uint8_t instance,
     return ipmi::response(retCode);
 }
 
+ipmi::RspType<> mtmKeepAlive(boost::asio::yield_context yield, uint8_t reserved,
+                             const std::array<char, 5>& intentionalSignature)
+{
+    // Allow MTM keep alive command only in manfacturing mode.
+    if (mtm.getAccessLvl() != MtmLvl::mtmAvailable)
+    {
+        return ipmi::responseInvalidCommand();
+    }
+    constexpr std::array<char, 5> signatureOk = {'I', 'N', 'T', 'E', 'L'};
+    if (intentionalSignature != signatureOk || reserved != 0)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+    return ipmi::response(resetMtmTimer(yield));
+}
+
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -549,6 +581,11 @@ void register_mtm_commands()
         ipmi::prioOemBase, ipmi::netFnOemOne,
         static_cast<ipmi::Cmd>(IPMINetFnIntelOemGeneralCmds::SetSmSignal),
         ipmi::Privilege::Admin, ipmi::appMTMSetSignal);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, ipmi::netFnOemOne,
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdMtmKeepAlive),
+        ipmi::Privilege::Admin, ipmi::mtmKeepAlive);
 
     return;
 }
