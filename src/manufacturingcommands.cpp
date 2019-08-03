@@ -15,6 +15,7 @@
 */
 
 #include <boost/container/flat_map.hpp>
+#include <fstream>
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
 #include <oemcommands.hpp>
@@ -394,6 +395,23 @@ ipmi::RspType<uint8_t,                // Signal value
             }
             uint8_t sensorVal = *valPtr;
             return ipmi::responseSuccess(sensorVal, std::nullopt);
+        }
+        break;
+        case SmSignalGet::smNcsiDiag:
+        {
+            constexpr const char* netBasePath = "/sys/class/net/eth";
+            constexpr const char* carrierSuffix = "/carrier";
+            std::ifstream netIfs(netBasePath + std::to_string(instance) +
+                                 carrierSuffix);
+            if (!netIfs.good())
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            std::string carrier;
+            netIfs >> carrier;
+            resetMtmTimer(yield);
+            return ipmi::responseSuccess(
+                static_cast<uint8_t>(std::atoi(carrier.c_str())), std::nullopt);
         }
         break;
         default:
