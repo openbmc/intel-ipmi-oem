@@ -13,7 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
+#include <linux/i2c-dev.h>
+#include <linux/i2c.h>
 
+#include <filesystem>
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
 #include <oemcommands.hpp>
@@ -227,6 +230,35 @@ int8_t Manufacturing::disablePidControlService(const bool disable)
             "ERROR: phosphor-pid-control service start or stop failed");
         return -1;
     }
+    return 0;
+}
+
+static int getBusNum(const uint8_t& riserNum, const uint8_t& slotNum,
+                     uint8_t& busNum)
+{
+    std::string path = "/dev/i2c-mux/Riser_" + std::to_string(riserNum) +
+                       "_Mux/PcieSlot" + std::to_string(slotNum);
+
+    if (std::filesystem::exists(path) && std::filesystem::is_symlink(path))
+    {
+
+        std::string link = std::filesystem::read_symlink(path).filename();
+
+        size_t findDash = link.find("-");
+        if (findDash == std::string::npos || link.size() <= findDash + 1)
+        {
+            std::cerr << "Error finding device from symlink";
+        }
+
+        size_t bus = 0;
+        bus = std::stoi(link.substr(findDash + 1));
+        busNum = bus;
+    }
+    else
+    {
+        return -1;
+    }
+
     return 0;
 }
 
