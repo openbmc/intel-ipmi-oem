@@ -1259,6 +1259,22 @@ ipmi::RspType<> cmd_mdr2_data_done(uint16_t agentId, uint16_t lockHandle)
         return ipmi::responseUnspecifiedError();
     }
 
+    sdbusplus::message::message restartMethod = bus->new_method_call(
+        "org.freedesktop.systemd1", "/org/freedesktop/systemd1",
+        "org.freedesktop.systemd1.Manager", "RestartUnit");
+    restartMethod.append("smbios-mdrv2.service", "replace");
+
+    try
+    {
+        bus->call(restartMethod);
+    }
+    catch (sdbusplus::exception_t &)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Error to restart smbios v2 service");
+        return ipmi::responseUnspecifiedError();
+    }
+
     return ipmi::responseSuccess();
 }
 
