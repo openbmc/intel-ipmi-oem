@@ -1310,10 +1310,13 @@ constexpr const char* cfmLimitSettingPath =
     "/xyz/openbmc_project/control/cfm_limit";
 constexpr const char* cfmLimitIface = "xyz.openbmc_project.Control.CFMLimit";
 constexpr const size_t legacyExitAirSensorNumber = 0x2e;
+constexpr const size_t legacyPCHSensorNumber = 0x22;
+constexpr const char* exitAirPathName = "Exit_Air";
+constexpr const char* pchPathName = "SSB_Temp";
 constexpr const char* pidConfigurationIface =
     "xyz.openbmc_project.Configuration.Pid";
 
-static std::string getExitAirConfigPath()
+static std::string getConfigPath(const std::string& name)
 {
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     auto method =
@@ -1334,9 +1337,10 @@ static std::string getExitAirConfigPath()
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMGetFscParameter: mapper error");
     };
-    auto config = std::find_if(resp.begin(), resp.end(), [](const auto& pair) {
-        return pair.first.find("Exit_Air") != std::string::npos;
-    });
+    auto config =
+        std::find_if(resp.begin(), resp.end(), [&name](const auto& pair) {
+            return pair.first.find(name) != std::string::npos;
+        });
     if (config != resp.end())
     {
         path = std::move(config->first);
@@ -1495,18 +1499,24 @@ ipmi::RspType<> ipmiOEMSetFscParameter(uint8_t command, uint8_t param1,
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     if (command == static_cast<uint8_t>(setFscParamFlags::tcontrol))
     {
+        std::string pathName;
         if (param1 == legacyExitAirSensorNumber)
         {
-            std::string path = getExitAirConfigPath();
-            ipmi::setDbusProperty(*dbus, "xyz.openbmc_project.EntityManager",
-                                  path, pidConfigurationIface, "SetPoint",
-                                  static_cast<double>(param2));
-            return ipmi::responseSuccess();
+            pathName = exitAirPathName;
+        }
+        else if (param1 == legacyPCHSensorNumber)
+        {
+            pathName = pchPathName;
         }
         else
         {
             return ipmi::responseParmOutOfRange();
         }
+        std::string path = getConfigPath(pathName);
+        ipmi::setDbusProperty(*dbus, "xyz.openbmc_project.EntityManager", path,
+                              pidConfigurationIface, "SetPoint",
+                              static_cast<double>(param2));
+        return ipmi::responseSuccess();
     }
     else if (command == static_cast<uint8_t>(setFscParamFlags::cfm))
     {
@@ -1596,12 +1606,23 @@ ipmi::RspType<
             return ipmi::responseReqDataLenInvalid();
         }
 
-        if (*param != legacyExitAirSensorNumber)
+        std::string pathName;
+
+        if (*param == legacyExitAirSensorNumber)
+        {
+            pathName = exitAirPathName;
+        }
+        else if (*param == legacyPCHSensorNumber)
+        {
+            pathName = pchPathName;
+        }
+        else
         {
             return ipmi::responseParmOutOfRange();
         }
+
         uint8_t setpoint = legacyDefaultExitAirLimit;
-        std::string path = getExitAirConfigPath();
+        std::string path = getConfigPath(pathName);
         if (path.size())
         {
             Value val = ipmi::getDbusProperty(
