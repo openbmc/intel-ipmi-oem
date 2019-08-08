@@ -1,0 +1,8 @@
+Code-Review+2: James Feist <james.feist@linux.intel.com>
+Ok-To-Test+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Verified+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Submitted-by: Richard Marian Thomaiyar <richard.marian.thomaiyar@linux.intel.com>
+Submitted-at: Thu, 08 Aug 2019 04:45:57 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/24127
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
