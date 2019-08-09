@@ -207,7 +207,7 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 {
     DeviceInfo* data = reinterpret_cast<DeviceInfo*>(request);
 
-    if ((*dataLen < 2) || (*dataLen != (1 + data->biosIDLength)))
+    if ((*dataLen < 2) || (*dataLen != (1 + data->biosIDLength)) || *dataLen > maxBIOSIDLength)
     {
         *dataLen = 0;
         return IPMI_CC_REQ_DATA_LEN_INVALID;
