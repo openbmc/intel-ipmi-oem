@@ -591,6 +591,23 @@ ipmi::RspType<> mtmKeepAlive(boost::asio::yield_context yield, uint8_t reserved,
     return ipmi::response(resetMtmTimer(yield));
 }
 
+ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
+{
+    if (mtm.getAccessLvl() != MtmLvl::mtmAvailable)
+    {
+        // disable some commands for security reasons
+        if ((request->ctx->netFn == ipmi::netFnApp) &&
+            (request->ctx->cmd == ipmi::app::cmdMasterWriteRead))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Disable i2c master write read command");
+            return ipmi::ccInsufficientPrivilege;
+        }
+    }
+
+    return ipmi::ccSuccess;
+}
+
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -611,6 +628,11 @@ void register_mtm_commands()
         ipmi::prioOemBase, ipmi::netFnOemOne,
         static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdMtmKeepAlive),
         ipmi::Privilege::Admin, ipmi::mtmKeepAlive);
+
+    ipmi::registerFilter(ipmi::netFnOemOne,
+                         [](ipmi::message::Request::ptr request) {
+                             return ipmi::mfgFilterMessage(request);
+                         });
 
     return;
 }
