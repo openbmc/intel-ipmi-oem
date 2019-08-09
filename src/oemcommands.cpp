@@ -2109,6 +2109,12 @@ ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
             oemNmiBmcSourceObjPathProp,
             sdbusplus::com::intel::Control::server::convertForMessage(
                 bmcSourceSignal));
+        if (bmcSourceSignal != nmi::NMISource::BMCSourceSignal::None)
+        {
+            setDbusProperty(*dbus, service, oemNmiSourceObjPath,
+                            oemNmiSourceIntf, oemNmiEnabledObjPathProp,
+                            static_cast<bool>(true));
+        }
     }
     catch (sdbusplus::exception_t& e)
     {
