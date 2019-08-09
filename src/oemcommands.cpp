@@ -2109,6 +2109,16 @@ ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
             oemNmiBmcSourceObjPathProp,
             sdbusplus::com::intel::Control::server::convertForMessage(
                 bmcSourceSignal));
+        // set Enabled property to inform NMI source handling
+        // to trigger a NMI_OUT BSOD.
+        // if it's triggered by NMI source property changed,
+        // NMI_OUT BSOD could be missed if the same source occurs twice in a row
+        if (bmcSourceSignal != nmi::NMISource::BMCSourceSignal::None)
+        {
+            setDbusProperty(*dbus, service, oemNmiSourceObjPath,
+                            oemNmiSourceIntf, oemNmiEnabledObjPathProp,
+                            static_cast<bool>(true));
+        }
     }
     catch (sdbusplus::exception_t& e)
     {
