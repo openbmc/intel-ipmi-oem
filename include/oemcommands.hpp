@@ -100,7 +100,7 @@ static constexpr ipmi_netfn_t netfnIntcOEMGeneral =
 
 // Intel OEM Platform code is 0x32
 static constexpr ipmi_netfn_t netfnIntcOEMPlatform = NETFUN_OEM;
-static constexpr const uint8_t maxBIOSIDLength = 0xFF;
+static constexpr const uint8_t maxBIOSIDLength = 0x40;
 static constexpr const uint8_t maxCPUNum = 4;
 static constexpr const char* biosObjPath = "/xyz/openbmc_project/bios";
 static constexpr const char* biosIntf =
