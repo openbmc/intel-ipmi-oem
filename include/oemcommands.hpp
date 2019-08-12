@@ -46,6 +46,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetLEDStatus = 0xB0,
     cmdMtmKeepAlive = 0xB5,
     cmdGetNmiStatus = 0xE5,
+    cmdSetEfiBootOptions = 0xEA,
+    cmdGetEfiBootOptions = 0xEB,
     cmdSetNmiStatus = 0xED,
 };
 
