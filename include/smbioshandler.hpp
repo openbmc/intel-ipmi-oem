@@ -80,15 +80,6 @@ struct RegionReadResponse
     uint8_t data[msgPayloadSize];
 } __attribute__((packed));
 
-struct RegionWriteRequest
-{
-    uint8_t sessionId;
-    uint8_t regionId;
-    uint8_t length;
-    uint16_t offset;
-    uint8_t data[msgPayloadSize];
-} __attribute__((packed));
-
 struct RegionLockRequest
 {
     uint8_t sessionId;
