@@ -349,8 +349,9 @@ ipmi::RspType<std::vector<uint8_t>>
     }
 
     std::vector<uint8_t> writeData;
-    std::copy(data.begin(), data.begin() + length,
-              writeData.data() + sizeof(regionIdLocal) + sizeof(length));
+    writeData.insert(writeData.begin() + sizeof(regionIdLocal) + sizeof(length),
+                     data.begin(), data.begin() + length);
+
     auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
                                        MDRV1_INTERFACE, "RegionWrite");
 
