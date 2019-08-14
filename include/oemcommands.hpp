@@ -21,6 +21,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
 {
     cmdSetBIOSID = 0x26,
     cmdGetOEMDeviceInfo = 0x27,
+    cmdSetColdRedundancyConfig = 0x2d,
+    cmdGetColdRedundancyConfig = 0x2e,
     cmdGetAICSlotFRUIDSlotPosRecords = 0x31,
     cmdSetSystemGUID = 0x41,
     cmdSendEmbeddedFWUpdStatus = 0x44,
