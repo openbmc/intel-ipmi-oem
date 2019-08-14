@@ -1,4 +1,4 @@
-/*
+u/*
 // Copyright (c) 2017 2018 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -1053,52 +1053,41 @@ ipmi_ret_t ipmiSenGetSensorEventStatus(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
 /* storage commands */
 
-ipmi_ret_t ipmiStorageGetSDRRepositoryInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                           ipmi_request_t request,
-                                           ipmi_response_t response,
-                                           ipmi_data_len_t dataLen,
-                                           ipmi_context_t context)
+ipmi::RspType<uint8_t,  // sdr version
+              uint16_t, // record count
+              uint16_t, // free space
+              uint32_t, // most recent addition
+              uint32_t, // most recent erase
+              uint8_t   // operationSupport
+              >
+    ipmiStorageGetSDRRepositoryInfo(void)
 {
-    printCommand(+netfn, +cmd);
-
-    if (*dataLen)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    *dataLen = 0; // default to 0 in case of an error
-
+    constexpr const uint16_t unspecifiedFreeSpace = 0xFFFF;
     if (sensorTree.empty() && !getSensorSubtree(sensorTree))
     {
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::responseResponseError();
     }
 
-    // zero out response buff
-    auto responseClear = static_cast<uint8_t *>(response);
-    std::fill(responseClear, responseClear + sizeof(GetSDRInfoResp), 0);
+    size_t fruCount = 0;
+    ipmi_ret_t ret = ipmi::storage::getFruSdrCount(fruCount);
+    if (ret != IPMI_CC_OK)
+    {
+        return ipmi::response(ret);
+    }
 
-    auto resp = static_cast<GetSDRInfoResp *>(response);
-    resp->sdrVersion = ipmiSdrVersion;
-    uint16_t recordCount = sensorTree.size();
+    uint16_t recordCount =
+        sensorTree.size() + fruCount + ipmi::storage::type12Count;
 
-    // todo: for now, sdr count is number of sensors
-    resp->recordCountLS = recordCount & 0xFF;
-    resp->recordCountMS = recordCount >> 8;
-
-    // free space unspcified
-    resp->freeSpace[0] = 0xFF;
-    resp->freeSpace[1] = 0xFF;
-
-    resp->mostRecentAddition = sdrLastAdd;
-    resp->mostRecentErase = sdrLastRemove;
-    resp->operationSupport = static_cast<uint8_t>(
+    uint8_t operationSupport = static_cast<uint8_t>(
         SdrRepositoryInfoOps::overflow); // write not supported
-    resp->operationSupport |=
+
+    operationSupport |=
         static_cast<uint8_t>(SdrRepositoryInfoOps::allocCommandSupported);
-    resp->operationSupport |= static_cast<uint8_t>(
+    operationSupport |= static_cast<uint8_t>(
         SdrRepositoryInfoOps::reserveSDRRepositoryCommandSupported);
-    *dataLen = sizeof(GetSDRInfoResp);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(ipmiSdrVersion, recordCount,
+                                 unspecifiedFreeSpace, sdrLastAdd,
+                                 sdrLastRemove, operationSupport);
 }
 
 /** @brief implements the get SDR allocation info command
@@ -1172,7 +1161,8 @@ ipmi::RspType<uint16_t,            // next record ID
         return ipmi::response(ret);
     }
 
-    size_t lastRecord = sensorTree.size() + fruCount - 1;
+    size_t lastRecord =
+        sensorTree.size() + fruCount + ipmi::storage::type12Count - 1;
     if (recordID == lastRecordIndex)
     {
         recordID = lastRecord;
@@ -1186,30 +1176,51 @@ ipmi::RspType<uint16_t,            // next record ID
 
     if (recordID >= sensorTree.size())
     {
+        std::vector<uint8_t> recordData;
         size_t fruIndex = recordID - sensorTree.size();
         if (fruIndex >= fruCount)
         {
-            return ipmi::responseInvalidFieldRequest();
-        }
-        get_sdr::SensorDataFruRecord data;
-        if (offset > sizeof(data))
-        {
-            return ipmi::responseInvalidFieldRequest();
-        }
-        ret = ipmi::storage::getFruSdrs(fruIndex, data);
-        if (ret != IPMI_CC_OK)
-        {
-            return ipmi::response(ret);
-        }
-        data.header.record_id_msb = recordID << 8;
-        data.header.record_id_lsb = recordID & 0xFF;
-        if (sizeof(data) < (offset + bytesToRead))
-        {
-            bytesToRead = sizeof(data) - offset;
-        }
+            // handle type 12 hardcoded records
+            size_t type12Index = fruIndex - fruCount;
+            if (type12Index >= ipmi::storage::type12Count ||
+                offset > sizeof(Type12Record))
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            std::vector<uint8_t> record =
+                ipmi::storage::getType12SDRs(type12Index, recordID);
+            if (record.size() < (offset + bytesToRead))
+            {
+                bytesToRead = record.size() - offset;
+            }
 
-        uint8_t *respStart = reinterpret_cast<uint8_t *>(&data) + offset;
-        std::vector<uint8_t> recordData(respStart, respStart + bytesToRead);
+            recordData.insert(recordData.end(), record.begin() + offset,
+                              record.begin() + offset + bytesToRead);
+        }
+        else
+        {
+            // handle fru records
+            get_sdr::SensorDataFruRecord data;
+            if (offset > sizeof(data))
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            ret = ipmi::storage::getFruSdrs(fruIndex, data);
+            if (ret != IPMI_CC_OK)
+            {
+                return ipmi::response(ret);
+            }
+            data.header.record_id_msb = recordID << 8;
+            data.header.record_id_lsb = recordID & 0xFF;
+            if (sizeof(data) < (offset + bytesToRead))
+            {
+                bytesToRead = sizeof(data) - offset;
+            }
+
+            uint8_t *respStart = reinterpret_cast<uint8_t *>(&data) + offset;
+            recordData.insert(recordData.end(), respStart,
+                              respStart + bytesToRead);
+        }
 
         return ipmi::responseSuccess(nextRecordId, recordData);
     }
@@ -1491,10 +1502,10 @@ void registerSensorFunctions()
     // versions
 
     // <Get SDR Repository Info>
-    ipmiPrintAndRegister(
-        NETFUN_STORAGE,
-        static_cast<ipmi_cmd_t>(IPMINetfnStorageCmds::ipmiCmdGetRepositoryInfo),
-        nullptr, ipmiStorageGetSDRRepositoryInfo, PRIVILEGE_USER);
+    ipmi::registerHandler(
+        ipmi::prioOemBase, NETFUN_STORAGE,
+        static_cast<ipmi::Cmd>(IPMINetfnStorageCmds::ipmiCmdGetRepositoryInfo),
+        ipmi::Privilege::User, ipmiStorageGetSDRRepositoryInfo);
 
     // <Get SDR Allocation Info>
     ipmi::registerHandler(
