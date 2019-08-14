@@ -35,17 +35,6 @@ static constexpr uint8_t eventMsgRev = 0x04;
 } // namespace intel_oem::ipmi::sel
 
 #pragma pack(push, 1)
-struct GetSDRInfoResp
-{
-    uint8_t sdrVersion;
-    uint8_t recordCountLS;
-    uint8_t recordCountMS;
-    uint8_t freeSpace[2];
-    uint32_t mostRecentAddition;
-    uint32_t mostRecentErase;
-    uint8_t operationSupport;
-};
-
 struct GetSDRReq
 {
     uint16_t reservationID;
@@ -123,12 +112,33 @@ struct FRUHeader
 };
 #pragma pack(pop)
 
+#pragma pack(push, 1)
+struct Type12Record
+{
+    get_sdr::SensorDataRecordHeader header;
+    uint8_t slaveAddress;
+    uint8_t channelNumber;
+    uint8_t powerStateNotification;
+    uint8_t deviceCapabilities;
+    uint24_t reserved;
+    uint8_t entityID;
+    uint8_t entityInstance;
+    uint8_t oem;
+    uint8_t typeLengthCode;
+    char name[16];
+};
+#pragma pack(pop)
+
 namespace ipmi
 {
 namespace storage
 {
+
+constexpr const size_t type12Count = 2;
 ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp);
 
 ipmi_ret_t getFruSdrCount(size_t& count);
+
+std::vector<uint8_t> getType12SDRs(uint16_t index, uint16_t recordId);
 } // namespace storage
 } // namespace ipmi
