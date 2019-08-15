@@ -183,6 +183,7 @@ enum class IPMINetfnIntelOEMAppCmd
     mdr2DataStart = 0x3b,
     mdr2DataDone = 0x3c,
     mdr2SendDataBlock = 0x3d,
+    slotI2CMasterWriteRead = 0x52,
 };
 
 enum class OEMDevEntityType

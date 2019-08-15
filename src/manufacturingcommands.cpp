@@ -18,6 +18,7 @@
 #include <linux/i2c.h>
 
 #include <boost/container/flat_map.hpp>
+#include <filesystem>
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
 #include <oemcommands.hpp>
@@ -32,6 +33,11 @@ static auto revertTimeOut =
         std::chrono::seconds(60)); // 1 minute timeout
 
 static constexpr uint8_t maxIPMIWriteReadSize = 144;
+static constexpr uint8_t slotAddressTypeBus = 0;
+static constexpr uint8_t slotAddressTypeUniqueid = 1;
+static constexpr uint8_t slotI2CMaxReadSize = 35;
+static constexpr uint8_t slotBBNumMask = 0x7;         // bit2-bit0
+static constexpr uint8_t slotRiserSlotNumMask = 0x38; // bit5-bit3
 
 static constexpr const char* callbackMgrService =
     "xyz.openbmc_project.CallbackManager";
@@ -715,6 +721,116 @@ ipmi::RspType<std::vector<uint8_t>>
 
     return ipmi::responseSuccess(readBuf);
 }
+
+static int getBusNum(const uint8_t& riserNum, const uint8_t& slotNum,
+                     uint8_t& busNum)
+{
+    std::string path = "/dev/i2c-mux/Riser_" + std::to_string(riserNum) +
+                       "_Mux/Pcie_Slot_" + std::to_string(slotNum);
+
+    if (std::filesystem::exists(path) && std::filesystem::is_symlink(path))
+    {
+        std::string link = std::filesystem::read_symlink(path).filename();
+        size_t findDash = link.find("-");
+        if (findDash == std::string::npos || link.size() <= findDash + 1)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Master write read command: Error finding device from symlink");
+            return -1;
+        }
+
+        size_t bus = 0;
+        try
+        {
+            bus = std::stoi(link.substr(findDash + 1));
+        }
+        catch (const std::invalid_argument&)
+        {
+            return -1;
+        }
+        busNum = bus;
+    }
+    else
+    {
+        return -1;
+    }
+    return 0;
+}
+
+/** @brief implements slot master write read IPMI command which can be used for
+ * low-level I2C/SMBus write, read or write-read access for PCIE slots
+ * @param busNum - bus number
+ * @param reserved - skip 2 bit
+ * @param addressType - address type
+ * @param slotNum - slot number
+ * @param slaveAddr - slave address
+ * @param readCount - number of bytes to be read
+ * @param writeData - data to be written
+ *
+ * @returns IPMI completion code plus response data
+ */
+ipmi::RspType<std::vector<uint8_t>> appSlotI2CMasterWriteRead(
+    uint4_t busNum, uint2_t reserved, uint2_t addressType, uint8_t slotNum,
+    uint8_t slaveAddr, uint8_t readCount, std::vector<uint8_t> writeData)
+{
+    i2c_rdwr_ioctl_data msgReadWrite = {0};
+    i2c_msg i2cmsg[2] = {0};
+    uint8_t busId = 0;
+    int ret = 0;
+    const size_t writeCount = writeData.size();
+
+    if (addressType == slotAddressTypeBus)
+    {
+        ret = getBusNum((slotNum & slotBBNumMask),
+                        ((slotNum & slotRiserSlotNumMask) >> 3), busId);
+        if (ret)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Master write read command: Cannot get BusID");
+            return ipmi::responseInvalidFieldRequest();
+        }
+    }
+    else if (addressType == slotAddressTypeUniqueid)
+    {
+        busId = slotNum;
+    }
+
+    // Allow single byte write as it is offset byte to read the data, rest allow
+    // only in MFG mode.
+    if (writeCount > 1)
+    {
+        if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
+        {
+            return ipmi::responseInsufficientPrivilege();
+        }
+    }
+
+    if (readCount > slotI2CMaxReadSize)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Master write read command: Read count exceeds limit");
+        return ipmi::responseParmOutOfRange();
+    }
+
+    if (!readCount && !writeCount)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Master write read command: Read & write count are 0");
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    std::vector<uint8_t> readBuf(readCount);
+
+    ipmi::Cc retI2C = i2cReadWrite(static_cast<uint8_t>(busId),
+                                   static_cast<uint8_t>(slaveAddr), readCount,
+                                   readBuf, writeCount, writeData);
+    if (retI2C != ipmi::ccSuccess)
+    {
+        return ipmi::response(retI2C);
+    }
+
+    return ipmi::responseSuccess(readBuf);
+}
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -739,6 +855,12 @@ void register_mtm_commands()
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnApp,
                           ipmi::app::cmdMasterWriteRead, ipmi::Privilege::Admin,
                           ipmi::ipmiMasterWriteRead);
+
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnOemEight,
+                          static_cast<ipmi_cmd_t>(
+                              IPMINetfnIntelOEMAppCmd::slotI2CMasterWriteRead),
+                          ipmi::Privilege::User,
+                          ipmi::appSlotI2CMasterWriteRead);
 
     return;
 }
