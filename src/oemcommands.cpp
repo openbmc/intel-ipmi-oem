@@ -592,14 +592,23 @@ ipmi::RspType<> ipmiOEMSetProcessorErrConfig(
         if (clearCPUErrorCount.value_or(false))
         {
             ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
-                                  processorErrConfigIntf, "ErrorCountCPU1", 0);
+                                  processorErrConfigIntf, "ErrorCountCPU1",
+                                  static_cast<uint8_t>(0));
             ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
-                                  processorErrConfigIntf, "ErrorCountCPU2", 0);
+                                  processorErrConfigIntf, "ErrorCountCPU2",
+                                  static_cast<uint8_t>(0));
+            ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
+                                  processorErrConfigIntf, "ErrorCountCPU3",
+                                  static_cast<uint8_t>(0));
+            ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
+                                  processorErrConfigIntf, "ErrorCountCPU4",
+                                  static_cast<uint8_t>(0));
         }
         if (clearCrashdumpCount.value_or(false))
         {
             ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
-                                  processorErrConfigIntf, "CrashdumpCount", 0);
+                                  processorErrConfigIntf, "CrashdumpCount",
+                                  static_cast<uint8_t>(0));
         }
     }
     catch (std::exception& e)
