@@ -232,40 +232,12 @@ typedef struct
 /**
  * @brief Get Message Flags Response
  */
-typedef struct
-{
-    uint8_t flags;
-
-    constexpr void receiveMessageBitSet(uint8_t value)
-    {
-        flags |= (value & 1);
-    }
-
-    constexpr void eventMessageBitSet(uint8_t value)
-    {
-        flags |= (value & 1) << 1;
-    }
-
-    constexpr void watchdogTimeoutBitSet(uint8_t value)
-    {
-        flags |= (value & 1) << 3;
-    }
-
-    constexpr void oem0BitSet(uint8_t value)
-    {
-        flags |= (value & 1) << 5;
-    }
-
-    constexpr void oem1BitSet(uint8_t value)
-    {
-        flags |= (value & 1) << 6;
-    }
-
-    constexpr void oem2BitSet(uint8_t value)
-    {
-        flags |= (value & 1) << 7;
-    }
-} __attribute__((packed)) sGetMessageFlagsResp;
+constexpr uint8_t getMsgFlagReceiveMessageBit = 0;
+constexpr uint8_t getMsgFlagEventMessageBit = 1;
+constexpr uint8_t getMsgFlagWatchdogPreTimeOutBit = 3;
+constexpr uint8_t getMsgFlagOEM0Bit = 5;
+constexpr uint8_t getMsgFlagOEM1Bit = 6;
+constexpr uint8_t getMsgFlagOEM2Bit = 7;
 
 /**
  * @brief Clear Message Flags Request
@@ -313,6 +285,7 @@ class Bridging
 {
   public:
     Bridging() = default;
+    std::size_t getResponseQueueSize();
 
     ipmi_return_codes sendMessageHandler(ipmi_request_t request,
                                          ipmi_response_t response,
@@ -326,14 +299,9 @@ class Bridging
                                                ipmi_response_t response,
                                                ipmi_data_len_t dataLen);
 
-    ipmi_return_codes getMessageFlagsHandler(ipmi_request_t request,
-                                             ipmi_response_t response,
-                                             ipmi_data_len_t dataLen);
-
     enum IpmiAppBridgingCmds
     {
         ipmiCmdClearMessageFlags = 0x30,
-        ipmiCmdGetMessageFlags = 0x31,
         ipmiCmdGetMessage = 0x33,
         ipmiCmdSendMessage = 0x34,
     };
