@@ -14,14 +14,23 @@
 // limitations under the License.
 */
 
+#include <bitset>
 #include <bridgingcommands.hpp>
 #include <cstring>
 #include <ipmid/api.hpp>
+#include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/bus/match.hpp>
 #include <sdbusplus/message.hpp>
 #include <vector>
+
+static constexpr const char *wdtService = "xyz.openbmc_project.Watchdog";
+static constexpr const char *wdtInterface =
+    "xyz.openbmc_project.State.Watchdog";
+static constexpr const char *wdtObjPath = "/xyz/openbmc_project/watchdog/host0";
+static constexpr const char *wdtInterruptFlagProp =
+    "PreTimeoutInterruptOccurFlag";
 
 static constexpr const char *ipmbBus = "xyz.openbmc_project.Ipmi.Channel.Ipmb";
 static constexpr const char *ipmbObj = "/xyz/openbmc_project/Ipmi/Channel/Ipmb";
@@ -390,38 +399,6 @@ ipmi_return_codes Bridging::getMessageHandler(ipmi_request_t request,
     return IPMI_CC_OK;
 }
 
-ipmi_return_codes Bridging::getMessageFlagsHandler(ipmi_request_t request,
-                                                   ipmi_response_t response,
-                                                   ipmi_data_len_t dataLen)
-{
-    if (*dataLen != 0)
-    {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    auto getMsgFlagsRes = reinterpret_cast<sGetMessageFlagsResp *>(response);
-
-    std::memset(getMsgFlagsRes, 0, sizeof(sGetMessageFlagsResp));
-
-    // preserve current (legacy) behaviour
-    getMsgFlagsRes->eventMessageBitSet(1);
-
-    // set message fields
-    if (responseQueue.size() > 0)
-    {
-        getMsgFlagsRes->receiveMessageBitSet(1);
-    }
-    else
-    {
-        getMsgFlagsRes->receiveMessageBitSet(0);
-    }
-
-    *dataLen = sizeof(sGetMessageFlagsResp);
-
-    return IPMI_CC_OK;
-}
-
 ipmi_return_codes Bridging::clearMessageFlagsHandler(ipmi_request_t request,
                                                      ipmi_response_t response,
                                                      ipmi_data_len_t dataLen)
@@ -461,16 +438,54 @@ ipmi_ret_t ipmiAppGetMessage(ipmi_netfn_t netFn, ipmi_cmd_t cmd,
     return retCode;
 }
 
-ipmi_ret_t ipmiAppGetMessageFlags(ipmi_netfn_t netFn, ipmi_cmd_t cmd,
-                                  ipmi_request_t request,
-                                  ipmi_response_t response,
-                                  ipmi_data_len_t dataLen,
-                                  ipmi_context_t context)
+std::size_t Bridging::getResponseQueueSize()
 {
-    ipmi_ret_t retCode = IPMI_CC_OK;
-    retCode = bridging.getMessageFlagsHandler(request, response, dataLen);
+    return responseQueue.size();
+}
 
-    return retCode;
+/**
+@brief This command is used to retrive present message available states.
+
+@return IPMI completion code plus Flags as response data on success.
+**/
+ipmi::RspType<uint8_t // Flags
+              >
+    ipmiAppGetMessageFlags()
+{
+    std::bitset<8> getMsgFlagsRes;
+
+    getMsgFlagsRes.set(getMsgFlagEventMessageBit);
+
+    // set message fields
+    if (bridging.getResponseQueueSize() > 0)
+    {
+        getMsgFlagsRes.set(getMsgFlagReceiveMessageBit);
+    }
+    else
+    {
+        getMsgFlagsRes.reset(getMsgFlagReceiveMessageBit);
+    }
+
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        ipmi::Value variant = ipmi::getDbusProperty(
+            *dbus, wdtService, wdtObjPath, wdtInterface, wdtInterruptFlagProp);
+        if (std::get<bool>(variant))
+        {
+            getMsgFlagsRes.set(getMsgFlagWatchdogPreTimeOutBit);
+        }
+    }
+    catch (sdbusplus::exception::SdBusError &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppGetMessageFlags, dbus call exception");
+        return ipmi::responseUnspecifiedError();
+    }
+
+    uint8_t flags = static_cast<uint8_t>(getMsgFlagsRes.to_ulong());
+
+    return ipmi::responseSuccess(flags);
 }
 
 ipmi_ret_t ipmiAppClearMessageFlags(ipmi_netfn_t netFn, ipmi_cmd_t cmd,
@@ -494,9 +509,9 @@ static void register_bridging_functions()
         NETFUN_APP, Bridging::IpmiAppBridgingCmds::ipmiCmdClearMessageFlags,
         NULL, ipmiAppClearMessageFlags, PRIVILEGE_USER);
 
-    ipmi_register_callback(
-        NETFUN_APP, Bridging::IpmiAppBridgingCmds::ipmiCmdGetMessageFlags, NULL,
-        ipmiAppGetMessageFlags, PRIVILEGE_USER);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_APP,
+                          Bridging::IpmiAppBridgingCmds::ipmiCmdGetMessageFlags,
+                          ipmi::Privilege::User, ipmiAppGetMessageFlags);
 
     ipmi_register_callback(NETFUN_APP,
                            Bridging::IpmiAppBridgingCmds::ipmiCmdGetMessage,
