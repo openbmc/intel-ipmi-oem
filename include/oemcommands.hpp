@@ -25,6 +25,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetColdRedundancyConfig = 0x2e,
     cmdGetAICSlotFRUIDSlotPosRecords = 0x31,
     cmdSetSystemGUID = 0x41,
+    cmdDisableBMCSystemReset = 0x42,
+    cmdGetBMCResetDisables = 0x43,
     cmdSendEmbeddedFWUpdStatus = 0x44,
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,
@@ -118,6 +120,10 @@ static constexpr const char* processorErrConfigObjPath =
     "/xyz/openbmc_project/control/processor_error_config";
 static constexpr const char* processorErrConfigIntf =
     "xyz.openbmc_project.Control.Processor.ErrConfig";
+static constexpr const char* bmcResetDisablesPath =
+    "/xyz/openbmc_project/control/bmc_reset_disables";
+static constexpr const char* bmcResetDisablesIntf =
+    "xyz.openbmc_project.Control.ResetDisables";
 
 static constexpr const char* postCodesObjPath =
     "/xyz/openbmc_project/State/Boot/PostCode";

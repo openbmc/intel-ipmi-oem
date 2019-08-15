@@ -202,6 +202,58 @@ ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+ipmi::RspType<> ipmiOEMDisableBMCSystemReset(bool disableResetOnSMI,
+                                             uint7_t reserved1)
+{
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
+
+    try
+    {
+        auto service =
+            ipmi::getService(*busp, bmcResetDisablesIntf, bmcResetDisablesPath);
+        ipmi::setDbusProperty(*busp, service, bmcResetDisablesPath,
+                              bmcResetDisablesIntf, "ResetOnSMI",
+                              !disableResetOnSMI);
+    }
+    catch (std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to set BMC reset disables",
+            phosphor::logging::entry("EXCEPTION=%s", e.what()));
+        return ipmi::responseUnspecifiedError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
+ipmi::RspType<bool,   // disableResetOnSMI
+              uint7_t // reserved
+              >
+    ipmiOEMGetBMCResetDisables()
+{
+    bool disableResetOnSMI = true;
+
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
+    try
+    {
+        auto service =
+            ipmi::getService(*busp, bmcResetDisablesIntf, bmcResetDisablesPath);
+        Value variant =
+            ipmi::getDbusProperty(*busp, service, bmcResetDisablesPath,
+                                  bmcResetDisablesIntf, "ResetOnSMI");
+        disableResetOnSMI = !std::get<bool>(variant);
+    }
+    catch (std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to get BMC reset disables",
+            phosphor::logging::entry("EXCEPTION=%s", e.what()));
+        return ipmi::responseUnspecifiedError();
+    }
+
+    return ipmi::responseSuccess(disableResetOnSMI, 0);
+}
+
 ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                             ipmi_request_t request, ipmi_response_t response,
                             ipmi_data_len_t dataLen, ipmi_context_t context)
@@ -2712,6 +2764,20 @@ static void registerOEMFunctions(void)
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetSystemGUID),
         NULL, ipmiOEMSetSystemGUID,
         PRIVILEGE_ADMIN); // set system guid
+
+    // <Disable BMC System Reset Action>
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdDisableBMCSystemReset),
+        ipmi::Privilege::Admin, ipmiOEMDisableBMCSystemReset);
+    // <Get BMC Reset Disables>
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetBMCResetDisables),
+        ipmi::Privilege::Admin, ipmiOEMGetBMCResetDisables);
+
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
         static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetBIOSID),
