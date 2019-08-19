@@ -408,7 +408,7 @@ ipmi_ret_t ipmi_app_mtm_set_signal(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                    ipmi_data_len_t data_len,
                                    ipmi_context_t context)
 {
-    uint8_t ret = 0;
+    int8_t ret = 0;
     ipmi_ret_t retCode = IPMI_CC_OK;
     SetSmSignalReq* pReq = static_cast<SetSmSignalReq*>(request);
     std::string ledName;
