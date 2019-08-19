@@ -8,7 +8,14 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+set (
+    CMAKE_CXX_FLAGS \
+    "${CMAKE_CXX_FLAGS} \
+    -Werror \
+    -Wtype-limits \
+    -Wnull-dereference \
+"
+)
 
 project (intel-ipmi-oem CXX)
 
@@ -22,7 +29,7 @@ add_definitions (-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 add_definitions (-Wno-psabi)
 
 if (NOT YOCTO) # headers that can't be built without yocto
-    include_directories (non-yocto)
+    include_directories (SYSTEM non-yocto)
 
     configure_file (CMakeLists.txt.in 3rdparty/CMakeLists.txt)
     execute_process (COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -31,30 +38,30 @@ if (NOT YOCTO) # headers that can't be built without yocto
                      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty)
 
     set (CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/prefix ${CMAKE_PREFIX_PATH})
-    include_directories (${CMAKE_BINARY_DIR}/prefix/include)
+    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/prefix/include)
     link_directories (${CMAKE_BINARY_DIR}/prefix/lib)
 
-    include_directories (${CMAKE_BINARY_DIR}/sdbusplus-src)
+    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/sdbusplus-src)
     link_directories (${CMAKE_BINARY_DIR}/sdbusplus-src/.libs)
-    include_directories (${CMAKE_BINARY_DIR}/phosphor-logging-src)
+    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/phosphor-logging-src)
     link_directories (${CMAKE_BINARY_DIR}/phosphor-logging-src/.libs)
-    include_directories (${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src)
+    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src)
     link_directories (${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src/.libs)
-    include_directories (${CMAKE_BINARY_DIR}/phosphor-ipmi-host/include)
-    include_directories (${CMAKE_BINARY_DIR}/ipmid/user_channel)
-    include_directories (${CMAKE_BINARY_DIR}) # link_directories
-                                              # (${CMAKE_BINARY_DIR}/sdbusplus-
-                                              # src/.libs)
+    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/phosphor-ipmi-host/include)
+    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/ipmid/user_channel)
+    include_directories (SYSTEM ${CMAKE_BINARY_DIR}) # link_directories  (${CMAK
+                                                     # E_BINARY_DIR}/sdbusplus-
+                                                     # src/.libs)
 endif ()
 
 if (YOCTO)
     find_package (PkgConfig REQUIRED)
     pkg_check_modules (LOGGING phosphor-logging REQUIRED)
-    include_directories (${LOGGING_INCLUDE_DIRS})
+    include_directories (SYSTEM ${LOGGING_INCLUDE_DIRS})
     link_directories (${LOGGING_LIBRARY_DIRS})
 
     pkg_check_modules (LIBIPMID libipmid REQUIRED)
-    include_directories (${LIBIPMID_INCLUDE_DIRS})
+    include_directories (SYSTEM ${LIBIPMID_INCLUDE_DIRS})
     link_directories (${LIBIPMID_LIBRARY_DIRS})
 
 endif ()
@@ -73,13 +80,10 @@ if (NOT YOCTO)
     target_link_libraries (runSensorTests ${GTEST_BOTH_LIBRARIES}
                            ${CMAKE_THREAD_LIBS_INIT} sdbusplus -lsystemd)
 endif ()
-
-include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
-
 #
 # import OpenSSL (crypto)
 find_package (OpenSSL REQUIRED)
-include_directories (${OPENSSL_INCLUDE_DIR})
+include_directories (SYSTEM ${OPENSSL_INCLUDE_DIR})
 
 add_library (zinteloemcmds
              SHARED src/oemcommands.cpp src/sensorcommands.cpp
