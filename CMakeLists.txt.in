@@ -9,8 +9,7 @@ file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/prefix/include)
 
 externalproject_add (
     intel-dbus-interfaces PREFIX ${CMAKE_BINARY_DIR}/intel-dbus-interfaces
-    GIT_REPOSITORY
-    https://github.com/openbmc/intel-dbus-interfaces GIT_TAG
+    GIT_REPOSITORY https://github.com/openbmc/intel-dbus-interfaces GIT_TAG
     b5f2dd444c5d3808d005452417e4ae2ea28624ff SOURCE_DIR
     ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src BINARY_DIR
     ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-build CONFIGURE_COMMAND cd
@@ -29,8 +28,7 @@ externalproject_add (
 )
 
 externalproject_add (
-    host-ipmid PREFIX ${CMAKE_BINARY_DIR}/phosphor-host-ipmid
-    GIT_REPOSITORY
+    host-ipmid PREFIX ${CMAKE_BINARY_DIR}/phosphor-host-ipmid GIT_REPOSITORY
     https://github.com/openbmc/phosphor-host-ipmid SOURCE_DIR
     ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src BINARY_DIR
     ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-build CONFIGURE_COMMAND cd
@@ -52,12 +50,11 @@ externalproject_add (
     "${CMAKE_BINARY_DIR}/prefix/include/phosphor-ipmi-host/" LOG_DOWNLOAD ON
 )
 
-externalproject_add (
-    gtest GIT_REPOSITORY "https://github.com/google/googletest.git" GIT_TAG
-    dfa853b63d17c787914b663b50c2095a0c5b706e CMAKE_ARGS
-    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/googletest-build SOURCE_DIR
-    "${CMAKE_BINARY_DIR}/googletest-src" BINARY_DIR
-    "${CMAKE_BINARY_DIR}/googletest-build" CMAKE_ARGS
-    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/prefix
-)
+externalproject_add (gtest GIT_REPOSITORY
+                     "https://github.com/google/googletest.git" GIT_TAG
+                     dfa853b63d17c787914b663b50c2095a0c5b706e CMAKE_ARGS
+                     -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/googletest-build
+                     SOURCE_DIR "${CMAKE_BINARY_DIR}/googletest-src" BINARY_DIR
+                     "${CMAKE_BINARY_DIR}/googletest-build" CMAKE_ARGS
+                     -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/prefix)
 

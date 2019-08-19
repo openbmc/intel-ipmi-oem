@@ -104,6 +104,7 @@ static inline bool getEnabledValue(const DbusInterfaceMap& intfMap)
             return !std::get<bool>(it->second);
         }
     }
+    return false;
 }
 
 ipmi::RspType<> setBmcControlServices(boost::asio::yield_context yield,
