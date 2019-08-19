@@ -18,6 +18,7 @@
 #include <linux/i2c.h>
 
 #include <boost/container/flat_map.hpp>
+#include <filesystem>
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
 #include <oemcommands.hpp>
@@ -32,6 +33,9 @@ static auto revertTimeOut =
         std::chrono::seconds(60)); // 1 minute timeout
 
 static constexpr uint8_t maxIPMIWriteReadSize = 144;
+static constexpr uint8_t slotAddressTypeBus = 0;
+static constexpr uint8_t slotAddressTypeUniqueid = 1;
+static constexpr uint8_t slotI2CMaxReadSize = 35;
 
 static constexpr const char* callbackMgrService =
     "xyz.openbmc_project.CallbackManager";
@@ -714,6 +718,93 @@ ipmi::RspType<std::vector<uint8_t>>
 
     return ipmi::responseSuccess(readBuf);
 }
+
+/** @brief implements slot master write read IPMI command which can be used for
+ * low-level I2C/SMBus write, read or write-read access for PCIE slots
+ * @param reserved - skip 6 bit
+ * @param addressType - address type
+ * @param bbSlotNum - baseboard slot number
+ * @param riserSlotNum - riser slot number
+ * @param reserved2 - skip 2 bit
+ * @param slaveAddr - slave address
+ * @param readCount - number of bytes to be read
+ * @param writeData - data to be written
+ *
+ * @returns IPMI completion code plus response data
+ */
+ipmi::RspType<std::vector<uint8_t>>
+    appSlotI2CMasterWriteRead(uint6_t reserved, uint2_t addressType,
+                              uint3_t bbSlotNum, uint3_t riserSlotNum,
+                              uint2_t resvered2, uint8_t slaveAddr,
+                              uint8_t readCount, std::vector<uint8_t> writeData)
+{
+    const size_t writeCount = writeData.size();
+    std::string i2cBus;
+    if (addressType == slotAddressTypeBus)
+    {
+        std::string path = "/dev/i2c-mux/Riser_" +
+                           std::to_string(static_cast<uint8_t>(bbSlotNum)) +
+                           "_Mux/Pcie_Slot_" +
+                           std::to_string(static_cast<uint8_t>(riserSlotNum));
+
+        if (std::filesystem::exists(path) && std::filesystem::is_symlink(path))
+        {
+            i2cBus = std::filesystem::read_symlink(path);
+        }
+        else
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Master write read command: Cannot get BusID");
+            return ipmi::responseInvalidFieldRequest();
+        }
+    }
+    else if (addressType == slotAddressTypeUniqueid)
+    {
+        i2cBus = "/dev/i2c-" +
+                 std::to_string(static_cast<uint8_t>(bbSlotNum) |
+                                (static_cast<uint8_t>(riserSlotNum) << 3));
+    }
+    else
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Master write read command: invalid request");
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    // Allow single byte write as it is offset byte to read the data, rest allow
+    // only in MFG mode.
+    if (writeCount > 1)
+    {
+        if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
+        {
+            return ipmi::responseInsufficientPrivilege();
+        }
+    }
+
+    if (readCount > slotI2CMaxReadSize)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Master write read command: Read count exceeds limit");
+        return ipmi::responseParmOutOfRange();
+    }
+
+    if (!readCount && !writeCount)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Master write read command: Read & write count are 0");
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    std::vector<uint8_t> readBuf(readCount);
+
+    ipmi::Cc retI2C = i2cReadWrite(i2cBus, slaveAddr, readBuf, writeData);
+    if (retI2C != ipmi::ccSuccess)
+    {
+        return ipmi::response(retI2C);
+    }
+
+    return ipmi::responseSuccess(readBuf);
+}
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -738,6 +829,12 @@ void register_mtm_commands()
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnApp,
                           ipmi::app::cmdMasterWriteRead,
                           ipmi::Privilege::Operator, ipmi::ipmiMasterWriteRead);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfunIntelAppOEM,
+        static_cast<ipmi_cmd_t>(
+            IPMINetFnIntelOemGeneralCmds::slotI2CMasterWriteRead),
+        ipmi::Privilege::User, ipmi::appSlotI2CMasterWriteRead);
 
     return;
 }
