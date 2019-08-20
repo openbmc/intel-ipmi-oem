@@ -38,6 +38,8 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <xyz/openbmc_project/Control/Boot/Mode/server.hpp>
+#include <xyz/openbmc_project/Control/Boot/Source/server.hpp>
 #include <xyz/openbmc_project/Control/PowerSupplyRedundancy/server.hpp>
 
 namespace ipmi
@@ -2701,6 +2703,237 @@ ipmi::RspType<uint8_t> ipmiOEMGetDimmOffset(uint8_t type, uint8_t index)
     return ipmi::responseSuccess(resp);
 }
 
+namespace boot_options
+{
+
+using namespace sdbusplus::xyz::openbmc_project::Control::Boot::server;
+using IpmiValue = uint8_t;
+constexpr auto ipmiDefault = 0;
+
+std::map<IpmiValue, Source::Sources> sourceIpmiToDbus = {
+    {0x01, Source::Sources::Network},
+    {0x02, Source::Sources::Disk},
+    {0x05, Source::Sources::ExternalMedia},
+    {0x0f, Source::Sources::RemovableMedia},
+    {ipmiDefault, Source::Sources::Default}};
+
+std::map<IpmiValue, Mode::Modes> modeIpmiToDbus = {
+    {0x03, Mode::Modes::Safe},
+    {0x06, Mode::Modes::Setup},
+    {ipmiDefault, Mode::Modes::Regular}};
+
+std::map<Source::Sources, IpmiValue> sourceDbusToIpmi = {
+    {Source::Sources::Network, 0x01},
+    {Source::Sources::Disk, 0x02},
+    {Source::Sources::ExternalMedia, 0x05},
+    {Source::Sources::RemovableMedia, 0x0f},
+    {Source::Sources::Default, ipmiDefault}};
+
+std::map<Mode::Modes, IpmiValue> modeDbusToIpmi = {
+    {Mode::Modes::Safe, 0x03},
+    {Mode::Modes::Setup, 0x06},
+    {Mode::Modes::Regular, ipmiDefault}};
+
+static constexpr auto bootModeIntf = "xyz.openbmc_project.Control.Boot.Mode";
+static constexpr auto bootSourceIntf =
+    "xyz.openbmc_project.Control.Boot.Source";
+static constexpr auto enabledIntf = "xyz.openbmc_project.Object.Enable";
+static constexpr auto persistentObjPath =
+    "/xyz/openbmc_project/control/host0/boot";
+static constexpr auto oneTimePath =
+    "/xyz/openbmc_project/control/host0/boot/one_time";
+static constexpr auto bootSourceProp = "BootSource";
+static constexpr auto bootModeProp = "BootMode";
+static constexpr auto oneTimeBootEnableProp = "Enabled";
+static constexpr auto httpBootMode =
+    "xyz.openbmc_project.Control.Boot.Source.Sources.Http";
+
+enum class BootOptionParameter : size_t
+{
+    setInProgress = 0x0,
+    bootFlags = 0x5,
+};
+static constexpr uint8_t setComplete = 0x0;
+static constexpr uint8_t setInProgress = 0x1;
+static uint8_t transferStatus = setComplete;
+static constexpr uint8_t setParmVersion = 0x01;
+static constexpr uint8_t setParmBootFlagsPermanent = 0x40;
+static constexpr uint8_t setParmBootFlagsValidOneTime = 0x80;
+static constexpr uint8_t setParmBootFlagsValidPermanent = 0xC0;
+static constexpr uint8_t httpBoot = 0xd;
+static constexpr uint8_t bootSourceMask = 0x3c;
+
+} // namespace boot_options
+
+ipmi::RspType<uint8_t,               // version
+              uint8_t,               // param
+              uint8_t,               // data0, dependent on parameter
+              std::optional<uint8_t> // data1, dependent on parameter
+              >
+    ipmiOemGetEfiBootOptions(uint8_t parameter, uint8_t set, uint8_t block)
+{
+    using namespace boot_options;
+    uint8_t bootOption = 0;
+
+    if (parameter == static_cast<uint8_t>(BootOptionParameter::setInProgress))
+    {
+        return ipmi::responseSuccess(setParmVersion, parameter, transferStatus,
+                                     std::nullopt);
+    }
+
+    if (parameter != static_cast<uint8_t>(BootOptionParameter::bootFlags))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Unsupported parameter");
+        return ipmi::responseResponseError();
+    }
+
+    try
+    {
+        auto oneTimeEnabled = false;
+        // read one time Enabled property
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        std::string service = getService(*dbus, enabledIntf, oneTimePath);
+        Value variant = getDbusProperty(*dbus, service, oneTimePath,
+                                        enabledIntf, oneTimeBootEnableProp);
+        oneTimeEnabled = std::get<bool>(variant);
+
+        // get BootSource and BootMode properties
+        // according to oneTimeEnable
+        auto bootObjPath = oneTimePath;
+        if (oneTimeEnabled == false)
+        {
+            bootObjPath = persistentObjPath;
+        }
+
+        service = getService(*dbus, bootModeIntf, bootObjPath);
+        variant = getDbusProperty(*dbus, service, bootObjPath, bootModeIntf,
+                                  bootModeProp);
+
+        auto bootMode =
+            Mode::convertModesFromString(std::get<std::string>(variant));
+
+        service = getService(*dbus, bootSourceIntf, bootObjPath);
+        variant = getDbusProperty(*dbus, service, bootObjPath, bootSourceIntf,
+                                  bootSourceProp);
+
+        if (std::get<std::string>(variant) == httpBootMode)
+        {
+            bootOption = httpBoot;
+        }
+        else
+        {
+            auto bootSource = Source::convertSourcesFromString(
+                std::get<std::string>(variant));
+            bootOption = sourceDbusToIpmi.at(bootSource);
+            if (Source::Sources::Default == bootSource)
+            {
+                bootOption = modeDbusToIpmi.at(bootMode);
+            }
+        }
+
+        uint8_t oneTime = oneTimeEnabled ? setParmBootFlagsValidOneTime
+                                         : setParmBootFlagsValidPermanent;
+        bootOption <<= 2; // shift for responseconstexpr
+        return ipmi::responseSuccess(setParmVersion, parameter, oneTime,
+                                     bootOption);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseResponseError();
+    }
+}
+
+ipmi::RspType<> ipmiOemSetEfiBootOptions(uint8_t bootFlag, uint8_t bootParam,
+                                         std::optional<uint8_t> bootOption)
+{
+    using namespace boot_options;
+    auto oneTimeEnabled = false;
+
+    if (bootFlag == static_cast<uint8_t>(BootOptionParameter::setInProgress))
+    {
+        if (transferStatus == setInProgress)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "boot option set in progress!");
+            return ipmi::responseResponseError();
+        }
+
+        transferStatus = bootParam;
+        return ipmi::responseSuccess();
+    }
+
+    if (bootFlag != (uint8_t)BootOptionParameter::bootFlags)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Unsupported parameter");
+        return ipmi::responseResponseError();
+    }
+
+    if (((bootOption.value_or(0) & bootSourceMask) >> 2) !=
+        httpBoot) // not http boot, exit
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "wrong boot option parameter!");
+        return ipmi::responseParmOutOfRange();
+    }
+
+    try
+    {
+        bool permanent = (bootParam & setParmBootFlagsPermanent) ==
+                         setParmBootFlagsPermanent;
+
+        // read one time Enabled property
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        std::string service = getService(*dbus, enabledIntf, oneTimePath);
+        Value variant = getDbusProperty(*dbus, service, oneTimePath,
+                                        enabledIntf, oneTimeBootEnableProp);
+        oneTimeEnabled = std::get<bool>(variant);
+
+        /*
+         * Check if the current boot setting is onetime or permanent, if the
+         * request in the command is otherwise, then set the "Enabled"
+         * property in one_time object path to 'True' to indicate onetime
+         * and 'False' to indicate permanent.
+         *
+         * Once the onetime/permanent setting is applied, then the bootMode
+         * and bootSource is updated for the corresponding object.
+         */
+        if (permanent == oneTimeEnabled)
+        {
+            setDbusProperty(*dbus, service, oneTimePath, enabledIntf,
+                            oneTimeBootEnableProp, !permanent);
+        }
+
+        // set BootSource and BootMode properties
+        // according to oneTimeEnable or persistent
+        auto bootObjPath = oneTimePath;
+        if (oneTimeEnabled == false)
+        {
+            bootObjPath = persistentObjPath;
+        }
+        std::string bootMode =
+            "xyz.openbmc_project.Control.Boot.Mode.Modes.Regular";
+        std::string bootSource = httpBootMode;
+
+        service = getService(*dbus, bootModeIntf, bootObjPath);
+        setDbusProperty(*dbus, service, bootObjPath, bootModeIntf, bootModeProp,
+                        bootMode);
+
+        service = getService(*dbus, bootSourceIntf, bootObjPath);
+        setDbusProperty(*dbus, service, bootObjPath, bootSourceIntf,
+                        bootSourceProp, bootSource);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -2834,6 +3067,18 @@ static void registerOEMFunctions(void)
         ipmi::prioOemBase, netfnIntcOEMGeneral,
         static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetNmiStatus),
         ipmi::Privilege::Operator, ipmiOEMSetNmiSource);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetEfiBootOptions),
+        ipmi::Privilege::User, ipmiOemGetEfiBootOptions);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetEfiBootOptions),
+        ipmi::Privilege::Operator, ipmiOemSetEfiBootOptions);
 
     ipmiPrintAndRegister(
         netfnIntcOEMGeneral,
