@@ -26,7 +26,7 @@
 #include <sdbusplus/timer.hpp>
 #include <sstream>
 
-static constexpr char *secondaryFitImageStartAddr = "22480000";
+static constexpr const char *secondaryFitImageStartAddr = "22480000";
 static uint8_t getActiveBootImage(void);
 static void register_netfn_firmware_functions() __attribute__((constructor));
 
