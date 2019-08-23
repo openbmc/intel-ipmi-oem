@@ -409,6 +409,7 @@ enum class IPMINetFnIntelOemGeneralCmds
 {
     GetSmSignal = 0x14,
     SetSmSignal = 0x15,
+    slotI2CMasterWriteRead = 0x52,
     controlBmcServices = 0xB1,
     getBmcServiceStatus = 0xB2,
     SetSensorOverride = 0xEE,
