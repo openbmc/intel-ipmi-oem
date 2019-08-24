@@ -19,6 +19,8 @@
 #include <user_channel/user_layer.hpp>
 enum class IPMINetfnIntelOEMGeneralCmd
 {
+    cmdGetSmSignal = 0x14,
+    cmdSetSmSignal = 0x15,
     cmdSetBIOSID = 0x26,
     cmdGetOEMDeviceInfo = 0x27,
     cmdSetColdRedundancyConfig = 0x2d,
@@ -48,6 +50,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
     cmdGetLEDStatus = 0xB0,
+    cmdControlBmcServices = 0xB1,
+    cmdGetBmcServiceStatus = 0xB2,
     cmdMtmKeepAlive = 0xB5,
     cmdGetNmiStatus = 0xE5,
     cmdSetNmiStatus = 0xED,
@@ -403,13 +407,4 @@ enum IPMI_NETFN_INTEL_OEM_APP_CMD
     MDRII_DATA_START = 0x3b,
     MDRII_DATA_DONE = 0x3c,
     MDRII_SEND_DATA_BLOCK = 0x3d,
-};
-
-enum class IPMINetFnIntelOemGeneralCmds
-{
-    GetSmSignal = 0x14,
-    SetSmSignal = 0x15,
-    controlBmcServices = 0xB1,
-    getBmcServiceStatus = 0xB2,
-    SetSensorOverride = 0xEE,
 };

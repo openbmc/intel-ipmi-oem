@@ -201,15 +201,16 @@ ipmi::RspType<uint16_t> getBmcControlServices(boost::asio::yield_context yield)
 
 void register_netfn_bmc_control_functions()
 {
-    ipmi::registerHandler(ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
-                          static_cast<ipmi_cmd_t>(
-                              IPMINetFnIntelOemGeneralCmds::controlBmcServices),
-                          ipmi::Privilege::Admin, setBmcControlServices);
+    ipmi::registerHandler(
+        ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdControlBmcServices),
+        ipmi::Privilege::Admin, setBmcControlServices);
 
     ipmi::registerHandler(
         ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
-            IPMINetFnIntelOemGeneralCmds::getBmcServiceStatus),
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetBmcServiceStatus),
         ipmi::Privilege::User, getBmcControlServices);
 }
 } // namespace ipmi

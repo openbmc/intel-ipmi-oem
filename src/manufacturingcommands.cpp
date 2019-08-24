@@ -595,12 +595,12 @@ void register_mtm_commands()
     // <Get SM Signal>
     ipmi::registerHandler(
         ipmi::prioOemBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(IPMINetFnIntelOemGeneralCmds::GetSmSignal),
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetSmSignal),
         ipmi::Privilege::Admin, ipmi::appMTMGetSignal);
 
     ipmi::registerHandler(
         ipmi::prioOemBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(IPMINetFnIntelOemGeneralCmds::SetSmSignal),
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetSmSignal),
         ipmi::Privilege::Admin, ipmi::appMTMSetSignal);
 
     ipmi::registerHandler(
