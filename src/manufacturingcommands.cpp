@@ -606,6 +606,76 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
     return ipmi::ccSuccess;
 }
 
+static constexpr uint8_t maxEthSize = 6;
+static constexpr uint8_t maxSupportedEth = 3;
+static constexpr const char* factoryEthAddrBaseFileName =
+    "/var/sofs/factory-settings/network/mac/eth";
+
+ipmi::RspType<> setManufacturingData(boost::asio::yield_context yield,
+                                     uint8_t dataType,
+                                     std::array<uint8_t, maxEthSize> ethData)
+{
+    // mfg filter logic will restrict this command executing only in mfg mode.
+    if (dataType >= maxSupportedEth)
+    {
+        return ipmi::responseParmOutOfRange();
+    }
+
+    constexpr uint8_t invalidData = 0;
+    constexpr uint8_t validData = 1;
+    constexpr uint8_t ethAddrStrSize =
+        19; // XX:XX:XX:XX:XX:XX + \n + null termination;
+    std::vector<uint8_t> buff(ethAddrStrSize);
+    std::snprintf(reinterpret_cast<char*>(buff.data()), ethAddrStrSize,
+                  "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx\n", ethData.at(0),
+                  ethData.at(1), ethData.at(2), ethData.at(3), ethData.at(4),
+                  ethData.at(5));
+    std::ofstream oEthFile(factoryEthAddrBaseFileName +
+                               std::to_string(dataType),
+                           std::ofstream::out);
+    if (!oEthFile.good())
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+
+    oEthFile << reinterpret_cast<char*>(buff.data());
+    oEthFile << fflush;
+    oEthFile.close();
+
+    resetMtmTimer(yield);
+    return ipmi::responseSuccess();
+}
+
+ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
+    getManufacturingData(boost::asio::yield_context yield, uint8_t dataType)
+{
+    // mfg filter logic will restrict this command executing only in mfg mode.
+    if (dataType >= maxSupportedEth)
+    {
+        return ipmi::responseParmOutOfRange();
+    }
+    std::array<uint8_t, maxEthSize> ethData{0};
+    constexpr uint8_t invalidData = 0;
+    constexpr uint8_t validData = 1;
+
+    std::ifstream iEthFile(factoryEthAddrBaseFileName +
+                               std::to_string(dataType),
+                           std::ifstream::in);
+    if (!iEthFile.good())
+    {
+        return ipmi::responseSuccess(invalidData, ethData);
+    }
+    std::string ethStr;
+    iEthFile >> ethStr;
+    uint8_t* data = ethData.data();
+    std::sscanf(ethStr.c_str(), "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx",
+                data, (data + 1), (data + 2), (data + 3), (data + 4),
+                (data + 5));
+
+    resetMtmTimer(yield);
+    return ipmi::responseSuccess(validData, ethData);
+}
+
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -626,6 +696,18 @@ void register_mtm_commands()
         ipmi::prioOemBase, ipmi::netFnOemOne,
         static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdMtmKeepAlive),
         ipmi::Privilege::Admin, ipmi::mtmKeepAlive);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, ipmi::netFnOemOne,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdSetManufacturingData),
+        ipmi::Privilege::Admin, ipmi::setManufacturingData);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, ipmi::netFnOemOne,
+        static_cast<ipmi::Cmd>(
+            IPMINetfnIntelOEMGeneralCmd::cmdGetManufacturingData),
+        ipmi::Privilege::Admin, ipmi::getManufacturingData);
 
     ipmi::registerFilter(ipmi::netFnOemOne,
                          [](ipmi::message::Request::ptr request) {
