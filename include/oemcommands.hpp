@@ -47,6 +47,8 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdReadBaseBoardProductId = 0x93,
     cmdGetProcessorErrConfig = 0x9A,
     cmdSetProcessorErrConfig = 0x9B,
+    cmdSetManufacturingData = 0xA1,
+    cmdGetManufacturingData = 0xA2,
     cmdGetLEDStatus = 0xB0,
     cmdMtmKeepAlive = 0xB5,
     cmdGetNmiStatus = 0xE5,
