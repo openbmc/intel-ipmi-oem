@@ -2063,8 +2063,8 @@ ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(ipmi::Context::ptr ctx,
 
     // TODO Halfwidth needs to set SetInProgress
     if (setCRConfig(ctx, "ColdRedundancyStatus",
-                    "xyz.openbmc_project.Control.PowerSupplyRedundancy.Status."
-                    "completed"))
+                    std::string("xyz.openbmc_project.Control."
+                                "PowerSupplyRedundancy.Status.completed")))
     {
         return ipmi::responseResponseError();
     }
