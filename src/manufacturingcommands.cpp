@@ -257,10 +257,8 @@ ipmi::RspType<uint8_t,                // Signal value
     appMTMGetSignal(boost::asio::yield_context yield, uint8_t signalTypeByte,
                     uint8_t instance, uint8_t actionByte)
 {
-    if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
-    {
-        return ipmi::responseInvalidCommand();
-    }
+    // mfg filter logic is used to allow MTM get signal command only in
+    // manfacturing mode.
 
     SmSignalGet signalType = static_cast<SmSignalGet>(signalTypeByte);
     SmActionGet action = static_cast<SmActionGet>(actionByte);
@@ -428,10 +426,8 @@ ipmi::RspType<> appMTMSetSignal(boost::asio::yield_context yield,
                                 uint8_t actionByte,
                                 std::optional<uint8_t> pwmSpeed)
 {
-    if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
-    {
-        return ipmi::responseInvalidCommand();
-    }
+    // mfg filter logic is used to allow MTM set signal command only in
+    // manfacturing mode.
 
     SmSignalSet signalType = static_cast<SmSignalSet>(signalTypeByte);
     SmActionSet action = static_cast<SmActionSet>(actionByte);
@@ -574,11 +570,9 @@ ipmi::RspType<> appMTMSetSignal(boost::asio::yield_context yield,
 ipmi::RspType<> mtmKeepAlive(boost::asio::yield_context yield, uint8_t reserved,
                              const std::array<char, 5>& intentionalSignature)
 {
-    // Allow MTM keep alive command only in manfacturing mode.
-    if (mtm.getAccessLvl() != MtmLvl::mtmAvailable)
-    {
-        return ipmi::responseInvalidCommand();
-    }
+    // mfg filter logic is used to allow MTM keep alive command only in
+    // manfacturing mode
+
     constexpr std::array<char, 5> signatureOk = {'I', 'N', 'T', 'E', 'L'};
     if (intentionalSignature != signatureOk || reserved != 0)
     {
@@ -587,6 +581,40 @@ ipmi::RspType<> mtmKeepAlive(boost::asio::yield_context yield, uint8_t reserved,
     return ipmi::response(resetMtmTimer(yield));
 }
 
+ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
+{
+    // i2c master write read command needs additional checking
+    if ((request->ctx->netFn == ipmi::netFnApp) &&
+        (request->ctx->cmd == ipmi::app::cmdMasterWriteRead))
+    {
+        if (request->payload.size() > 4)
+        {
+            // Allow write data count > 1, only if it is in MFG mode
+            if (mtm.getAccessLvl() != MtmLvl::mtmAvailable)
+            {
+                return ipmi::ccInsufficientPrivilege;
+            }
+        }
+    }
+
+    std::vector<uint8_t> mtmCmds = {
+        static_cast<ipmi::Cmd>(IPMINetFnIntelOemGeneralCmds::GetSmSignal),
+        static_cast<ipmi::Cmd>(IPMINetFnIntelOemGeneralCmds::SetSmSignal),
+        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdMtmKeepAlive)};
+    if (request->ctx->netFn == ipmi::netFnOemOne)
+    {
+        if (std::binary_search(mtmCmds.begin(), mtmCmds.end(),
+                               request->ctx->cmd))
+        {
+            // Check for MTM mode
+            if (mtm.getAccessLvl() != MtmLvl::mtmAvailable)
+            {
+                return ipmi::ccInvalidCommand;
+            }
+        }
+    }
+    return ipmi::ccSuccess;
+}
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -607,6 +635,11 @@ void register_mtm_commands()
         ipmi::prioOemBase, ipmi::netFnOemOne,
         static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdMtmKeepAlive),
         ipmi::Privilege::Admin, ipmi::mtmKeepAlive);
+
+    ipmi::registerFilter(ipmi::netFnOemOne,
+                         [](ipmi::message::Request::ptr request) {
+                             return ipmi::mfgFilterMessage(request);
+                         });
 
     return;
 }
