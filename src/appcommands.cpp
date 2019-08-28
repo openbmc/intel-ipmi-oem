@@ -40,8 +40,6 @@ using BMC = sdbusplus::xyz::openbmc_project::State::server::BMC;
 constexpr auto bmc_state_interface = "xyz.openbmc_project.State.BMC";
 constexpr auto bmc_state_property = "CurrentBMCState";
 
-namespace
-{
 static constexpr auto redundancyIntf =
     "xyz.openbmc_project.Software.RedundancyPriority";
 static constexpr auto versionIntf = "xyz.openbmc_project.Software.Version";
@@ -236,7 +234,7 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
 
     return std::nullopt;
 }
-} // namespace
+
 auto ipmiAppGetDeviceId() -> ipmi::RspType<uint8_t, // Device ID
                                            uint8_t, // Device Revision
                                            uint8_t, // Firmware Revision Major
