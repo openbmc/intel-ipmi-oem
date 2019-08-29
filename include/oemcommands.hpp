@@ -30,6 +30,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdDisableBMCSystemReset = 0x42,
     cmdGetBMCResetDisables = 0x43,
     cmdSendEmbeddedFWUpdStatus = 0x44,
+    cmdSlotI2CMasterWriteRead = 0x52,
     cmdSetPowerRestoreDelay = 0x54,
     cmdGetPowerRestoreDelay = 0x55,
     cmdSetFaultIndication = 0x57,
