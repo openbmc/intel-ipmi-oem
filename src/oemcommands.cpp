@@ -19,6 +19,7 @@
 
 #include <systemd/sd-journal.h>
 
+#include <appcommands.hpp>
 #include <array>
 #include <boost/container/flat_map.hpp>
 #include <boost/process/child.hpp>
@@ -301,6 +302,73 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+int8_t getSwVerInfo(uint8_t& bmcMajor, uint8_t& bmcMinor, uint8_t& meMajor,
+                    uint8_t& meMinor)
+{
+    // step 1 : get BMC Major and Minor numbers from its DBUS property
+    std::optional<MetaRevision> rev{};
+    try
+    {
+        std::string version = getActiveSoftwareVersionInfo();
+        rev = convertIntelVersion(version);
+    }
+    catch (const std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to get active version info",
+            phosphor::logging::entry("ERROR=%s", e.what()));
+        return -1;
+    }
+
+    if (rev.has_value())
+    {
+        MetaRevision revision = rev.value();
+        bmcMajor = revision.major;
+
+        revision.minor = (revision.minor > 99 ? 99 : revision.minor);
+        bmcMinor = revision.minor % 10 + (revision.minor / 10) * 16;
+    }
+    else
+    {
+        bmcMajor = 0xff;
+        bmcMinor = 0xff;
+    }
+
+    // step 2 : get ME Major and Minor numbers from its DBUS property
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        std::string service =
+            getService(*dbus, "xyz.openbmc_project.Software.Version",
+                       "/xyz/openbmc_project/me_version");
+        Value variant =
+            getDbusProperty(*dbus, service, "/xyz/openbmc_project/me_version",
+                            "xyz.openbmc_project.Software.Version", "Version");
+
+        std::string& meString = std::get<std::string>(variant);
+        if (meString.size() == 0)
+        {
+            meMajor = 0xff;
+            meMajor = 0xff;
+            return 0;
+        }
+        // get ME major number
+        std::size_t pos1 = meString.find(".");
+        meMajor = static_cast<uint8_t>(
+            std::stoul(meString.substr(0, pos1), nullptr, 16));
+        // get ME minor number
+        std::size_t pos2 = meString.find(".", pos1 + 1);
+        meMinor = static_cast<uint8_t>(
+            std::stoul(meString.substr(pos1 + 1, pos2), nullptr, 16));
+    }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return -1;
+    }
+    return 0;
+}
+
 ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                 ipmi_request_t request,
                                 ipmi_response_t response,
@@ -366,6 +434,20 @@ ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         break;
 
         case OEMDevEntityType::devVer:
+        {
+            static constexpr const size_t length = 4;
+            if (0 != getSwVerInfo(res->data[0], res->data[1], res->data[2],
+                                  res->data[3]))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "ipmiOEMGetDeviceInfo: fail to get Dev Ver!");
+                return IPMI_CC_UNSPECIFIED_ERROR;
+            }
+            res->resDatalen = length;
+            *dataLen = res->resDatalen + 1;
+        }
+        break;
+
         case OEMDevEntityType::sdrVer:
             // TODO:
             return IPMI_CC_ILLEGAL_COMMAND;

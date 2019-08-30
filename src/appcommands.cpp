@@ -15,6 +15,7 @@
 */
 #include "xyz/openbmc_project/Common/error.hpp"
 
+#include <appcommands.hpp>
 #include <fstream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
@@ -40,8 +41,6 @@ using BMC = sdbusplus::xyz::openbmc_project::State::server::BMC;
 constexpr auto bmc_state_interface = "xyz.openbmc_project.State.BMC";
 constexpr auto bmc_state_property = "CurrentBMCState";
 
-namespace
-{
 static constexpr auto redundancyIntf =
     "xyz.openbmc_project.Software.RedundancyPriority";
 static constexpr auto versionIntf = "xyz.openbmc_project.Software.Version";
@@ -161,16 +160,6 @@ std::string getActiveSoftwareVersionInfo()
     return revision;
 }
 
-typedef struct
-{
-    std::string platform;
-    uint8_t major;
-    uint8_t minor;
-    uint32_t buildNo;
-    std::string openbmcHash;
-    std::string metaHash;
-} MetaRevision;
-
 // Support both 2 solutions:
 // 1.Current solution  2.7.0-dev-533-g14dc00e79-5e7d997
 //   openbmcTag  2.7.0-dev
@@ -236,7 +225,7 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
 
     return std::nullopt;
 }
-} // namespace
+
 auto ipmiAppGetDeviceId() -> ipmi::RspType<uint8_t, // Device ID
                                            uint8_t, // Device Revision
                                            uint8_t, // Firmware Revision Major
