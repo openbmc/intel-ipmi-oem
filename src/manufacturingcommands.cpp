@@ -48,13 +48,12 @@ const static constexpr char* systemDMgrIntf =
     "org.freedesktop.systemd1.Manager";
 const static constexpr char* pidControlService = "phosphor-pid-control.service";
 
-static inline Cc resetMtmTimer(boost::asio::yield_context yield)
+static inline Cc resetMtmTimer(ipmi::Context::ptr ctx)
 {
-    auto sdbusp = getSdBus();
     boost::system::error_code ec;
-    sdbusp->yield_method_call<>(yield, ec, specialModeService,
-                                specialModeObjPath, specialModeIntf,
-                                "ResetTimer");
+    ctx->bus->yield_method_call<>(*(ctx->yield), ec, specialModeService,
+                                  specialModeObjPath, specialModeIntf,
+                                  "ResetTimer");
     if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -259,7 +258,7 @@ int8_t Manufacturing::disablePidControlService(const bool disable)
 ipmi::RspType<uint8_t,                // Signal value
               std::optional<uint16_t> // Fan tach value
               >
-    appMTMGetSignal(boost::asio::yield_context yield, uint8_t signalTypeByte,
+    appMTMGetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                     uint8_t instance, uint8_t actionByte)
 {
     if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
@@ -287,20 +286,19 @@ ipmi::RspType<uint8_t,                // Signal value
                 return ipmi::responseUnspecifiedError();
             }
             uint8_t sensorVal = std::round(*doubleVal);
-            resetMtmTimer(yield);
+            resetMtmTimer(ctx);
             return ipmi::responseSuccess(sensorVal, std::nullopt);
         }
         break;
         case SmSignalGet::smFanTachometerGet:
         {
-            auto sdbusp = getSdBus();
             boost::system::error_code ec;
             using objFlatMap = boost::container::flat_map<
                 std::string, boost::container::flat_map<
                                  std::string, std::vector<std::string>>>;
 
-            auto flatMap = sdbusp->yield_method_call<objFlatMap>(
-                yield, ec, "xyz.openbmc_project.ObjectMapper",
+            auto flatMap = ctx->bus->yield_method_call<objFlatMap>(
+                *(ctx->yield), ec, "xyz.openbmc_project.ObjectMapper",
                 "/xyz/openbmc_project/object_mapper",
                 "xyz.openbmc_project.ObjectMapper", "GetSubTree",
                 fanTachBasePath, 0, std::array<const char*, 1>{fanIntf});
@@ -330,7 +328,7 @@ ipmi::RspType<uint8_t,                // Signal value
             uint8_t sensorVal = FAN_PRESENT | FAN_SENSOR_PRESENT;
             std::optional<uint16_t> fanTach = std::round(*doubleVal);
 
-            resetMtmTimer(yield);
+            resetMtmTimer(ctx);
             return ipmi::responseSuccess(sensorVal, fanTach);
         }
         break;
@@ -400,7 +398,7 @@ ipmi::RspType<uint8_t,                // Signal value
             {
                 return ipmi::responseUnspecifiedError();
             }
-            resetMtmTimer(yield);
+            resetMtmTimer(ctx);
             uint8_t sensorVal = *valPtr;
             return ipmi::responseSuccess(sensorVal, std::nullopt);
         }
@@ -417,7 +415,7 @@ ipmi::RspType<uint8_t,                // Signal value
             }
             std::string carrier;
             netIfs >> carrier;
-            resetMtmTimer(yield);
+            resetMtmTimer(ctx);
             return ipmi::responseSuccess(
                 static_cast<uint8_t>(std::stoi(carrier)), std::nullopt);
         }
@@ -428,9 +426,8 @@ ipmi::RspType<uint8_t,                // Signal value
     }
 }
 
-ipmi::RspType<> appMTMSetSignal(boost::asio::yield_context yield,
-                                uint8_t signalTypeByte, uint8_t instance,
-                                uint8_t actionByte,
+ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
+                                uint8_t instance, uint8_t actionByte,
                                 std::optional<uint8_t> pwmSpeed)
 {
     if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
@@ -571,12 +568,12 @@ ipmi::RspType<> appMTMSetSignal(boost::asio::yield_context yield,
     }
     if (retCode == ccSuccess)
     {
-        resetMtmTimer(yield);
+        resetMtmTimer(ctx);
     }
     return ipmi::response(retCode);
 }
 
-ipmi::RspType<> mtmKeepAlive(boost::asio::yield_context yield, uint8_t reserved,
+ipmi::RspType<> mtmKeepAlive(ipmi::Context::ptr ctx, uint8_t reserved,
                              const std::array<char, 5>& intentionalSignature)
 {
     // Allow MTM keep alive command only in manfacturing mode.
@@ -589,7 +586,7 @@ ipmi::RspType<> mtmKeepAlive(boost::asio::yield_context yield, uint8_t reserved,
     {
         return ipmi::responseInvalidFieldRequest();
     }
-    return ipmi::response(resetMtmTimer(yield));
+    return ipmi::response(resetMtmTimer(ctx));
 }
 
 ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
@@ -616,8 +613,7 @@ static constexpr uint8_t maxSupportedEth = 3;
 static constexpr const char* factoryEthAddrBaseFileName =
     "/var/sofs/factory-settings/network/mac/eth";
 
-ipmi::RspType<> setManufacturingData(boost::asio::yield_context yield,
-                                     uint8_t dataType,
+ipmi::RspType<> setManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType,
                                      std::array<uint8_t, maxEthSize> ethData)
 {
     // mfg filter logic will restrict this command executing only in mfg mode.
@@ -647,12 +643,12 @@ ipmi::RspType<> setManufacturingData(boost::asio::yield_context yield,
     oEthFile << fflush;
     oEthFile.close();
 
-    resetMtmTimer(yield);
+    resetMtmTimer(ctx);
     return ipmi::responseSuccess();
 }
 
 ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
-    getManufacturingData(boost::asio::yield_context yield, uint8_t dataType)
+    getManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType)
 {
     // mfg filter logic will restrict this command executing only in mfg mode.
     if (dataType >= maxSupportedEth)
@@ -677,7 +673,7 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
                 data, (data + 1), (data + 2), (data + 3), (data + 4),
                 (data + 5));
 
-    resetMtmTimer(yield);
+    resetMtmTimer(ctx);
     return ipmi::responseSuccess(validData, ethData);
 }
 
