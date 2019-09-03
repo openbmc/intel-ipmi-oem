@@ -767,6 +767,32 @@ ipmi::RspType<std::vector<uint8_t>>
 
     return ipmi::responseSuccess(readBuf);
 }
+
+ipmi::RspType<> clearCMOS()
+{
+    // There is an i2c device on bus 4, the slave address is 0x70. Based on the
+    // spec, writing 0x1 to address 0x60 on this device, will trigger the clear
+    // CMOS action.
+    uint8_t slaveAddr = 0x70;
+    std::string i2cBus = "/dev/i2c-4";
+    std::vector<uint8_t> writeData = {0x60, 0x1};
+    std::vector<uint8_t> readBuf(0);
+
+    // TODO Needs to replace the below security checking
+    if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
+    {
+        return ipmi::responseInsufficientPrivilege();
+    }
+
+    ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
+    if (retI2C != ipmi::ccSuccess)
+    {
+        return ipmi::response(retI2C);
+    }
+
+    return ipmi::responseSuccess();
+}
+
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -805,6 +831,11 @@ void register_mtm_commands()
         static_cast<ipmi_cmd_t>(
             IPMINetfnIntelOEMGeneralCmd::cmdSlotI2CMasterWriteRead),
         ipmi::Privilege::Admin, ipmi::appSlotI2CMasterWriteRead);
+
+    ipmi::registerHandler(
+        ipmi::prioOemBase, netfnIntcOEMPlatform,
+        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMPlatformCmd::cmdClearCMOS),
+        ipmi::Privilege::Admin, ipmi::clearCMOS);
 
     ipmi::registerFilter(ipmi::netFnOemOne,
                          [](ipmi::message::Request::ptr request) {
