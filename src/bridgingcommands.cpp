@@ -473,7 +473,7 @@ ipmi::RspType<uint8_t // Flags
             *dbus, wdtService, wdtObjPath, wdtInterface, wdtInterruptFlagProp);
         if (std::get<bool>(variant))
         {
-            getMsgFlagsRes.watchdogTimeoutBitSet(1);
+            getMsgFlagsRes.watchdogPreTimeoutBitSet(1);
         }
     }
     catch (sdbusplus::exception::SdBusError &e)

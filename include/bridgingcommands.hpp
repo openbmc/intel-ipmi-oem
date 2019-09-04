@@ -246,7 +246,7 @@ typedef struct
         flags |= (value & 1) << 1;
     }
 
-    constexpr void watchdogTimeoutBitSet(uint8_t value)
+    constexpr void watchdogPreTimeoutBitSet(uint8_t value)
     {
         flags |= (value & 1) << 3;
     }
