@@ -26,6 +26,15 @@
 #include <sdbusplus/timer.hpp>
 #include <sstream>
 
+#ifdef PFR_UPDATE
+
+uint32_t magicNum = 0;
+uint32_t imgLength = 0;
+uint32_t imgType = 0;
+static constexpr uint32_t perBlock0MagicNum = 0xB6EAFD19;
+
+#endif
+
 static constexpr const char *secondaryFitImageStartAddr = "22480000";
 static uint8_t getActiveBootImage(void);
 static void register_netfn_firmware_functions() __attribute__((constructor));
@@ -1560,23 +1569,63 @@ static ipmi_ret_t ipmi_firmware_write_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     std::ofstream out(FIRMWARE_BUFFER_FILE,
                       std::ofstream::binary | std::ofstream::app);
-    if (!out)
+    if (!out.good())
     {
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    if (out.tellp() > FIRMWARE_BUFFER_MAX_SIZE)
+
+    uint64_t fileDataLen = out.tellp();
+    if (fileDataLen > FIRMWARE_BUFFER_MAX_SIZE)
     {
         return IPMI_CC_INVALID_FIELD_REQUEST;
     }
     auto data = reinterpret_cast<uint8_t *>(request);
     out.write(reinterpret_cast<char *>(data), bytes_in);
     out.close();
+
     if (xfer_hash_check)
     {
         xfer_hash_check->hash({data, data + bytes_in});
     }
 
-    // Status code.
+#ifdef PFR_UPDATE
+    /* PFR image block 0 - As defined in HAS */
+    struct pfr_image_block0
+    {
+        uint32_t tag;
+        uint32_t pcLength;
+        uint32_t pcType;
+        uint32_t reserved1;
+        uint8_t hash_256[32];
+        uint8_t hash_384[48];
+        uint8_t reserved2[32];
+    };
+    static bool block0Mapped = false;
+
+    /* Get the PFR block 0 data and read the uploaded image
+     * information( Image type, length etc) */
+    if ((fileDataLen >= sizeof(struct pfr_image_block0)) && (!block0Mapped))
+    {
+        struct pfr_image_block0 block0Data;
+
+        std::ifstream inFile(FIRMWARE_BUFFER_FILE,
+                             std::ios::binary | std::ios::in);
+        inFile.read((char *)&block0Data, sizeof(block0Data));
+        inFile.close();
+
+        magicNum = block0Data.tag;
+
+        /* Validate the magic number */
+        if (magicNum != perBlock0MagicNum)
+        {
+            return IPMI_CC_INVALID_FIELD_REQUEST;
+        }
+
+        imgLength = block0Data.pcLength;
+        imgType = block0Data.pcType;
+        block0Mapped = true;
+    }
+#endif // end of PFR_UPDATE
     return IPMI_CC_OK;
 }
 
