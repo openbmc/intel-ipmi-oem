@@ -26,6 +26,14 @@
 #include <sdbusplus/timer.hpp>
 #include <sstream>
 
+#ifdef INTEL_PFR_ENABLED
+uint32_t magicNum = 0;
+uint32_t imgLength = 0;
+uint32_t imgType = 0;
+bool block0Mapped = false;
+static constexpr uint32_t perBlock0MagicNum = 0xB6EAFD19;
+#endif
+
 static constexpr const char *secondaryFitImageStartAddr = "22480000";
 static uint8_t getActiveBootImage(void);
 static void register_netfn_firmware_functions() __attribute__((constructor));
@@ -846,6 +854,12 @@ static ipmi_ret_t ipmi_firmware_control(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             {
                 xfer_hash_check->clear();
             }
+#ifdef INTEL_PFR_ENABLED
+            magicNum = 0;
+            imgLength = 0;
+            imgType = 0;
+            block0Mapped = false;
+#endif
             if (DEBUG)
                 std::cerr << "transfer start\n";
         }
@@ -1560,23 +1574,62 @@ static ipmi_ret_t ipmi_firmware_write_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     std::ofstream out(FIRMWARE_BUFFER_FILE,
                       std::ofstream::binary | std::ofstream::app);
-    if (!out)
+    if (!out.good())
     {
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    if (out.tellp() > FIRMWARE_BUFFER_MAX_SIZE)
+
+    uint64_t fileDataLen = out.tellp();
+    if (fileDataLen > FIRMWARE_BUFFER_MAX_SIZE)
     {
         return IPMI_CC_INVALID_FIELD_REQUEST;
     }
     auto data = reinterpret_cast<uint8_t *>(request);
     out.write(reinterpret_cast<char *>(data), bytes_in);
     out.close();
+
     if (xfer_hash_check)
     {
         xfer_hash_check->hash({data, data + bytes_in});
     }
 
-    // Status code.
+#ifdef INTEL_PFR_ENABLED
+    /* PFR image block 0 - As defined in HAS */
+    struct PFRImageBlock0
+    {
+        uint32_t tag;
+        uint32_t pcLength;
+        uint32_t pcType;
+        uint32_t reserved1;
+        uint8_t hash256[32];
+        uint8_t hash384[48];
+        uint8_t reserved2[32];
+    };
+
+    /* Get the PFR block 0 data and read the uploaded image
+     * information( Image type, length etc) */
+    if ((fileDataLen >= sizeof(PFRImageBlock0)) && (!block0Mapped))
+    {
+        struct PFRImageBlock0 block0Data;
+
+        std::ifstream inFile(FIRMWARE_BUFFER_FILE,
+                             std::ios::binary | std::ios::in);
+        inFile.read((char *)&block0Data, sizeof(block0Data));
+        inFile.close();
+
+        magicNum = block0Data.tag;
+
+        /* Validate the magic number */
+        if (magicNum != perBlock0MagicNum)
+        {
+            return IPMI_CC_INVALID_FIELD_REQUEST;
+        }
+
+        imgLength = block0Data.pcLength;
+        imgType = block0Data.pcType;
+        block0Mapped = true;
+    }
+#endif // end of INTEL_PFR_ENABLED
     return IPMI_CC_OK;
 }
 
