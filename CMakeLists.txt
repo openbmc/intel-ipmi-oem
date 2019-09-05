@@ -28,6 +28,10 @@ add_definitions (-DBOOST_ASIO_DISABLE_THREADS)
 add_definitions (-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 add_definitions (-Wno-psabi)
 
+if(${PFR_ENABLE})
+    add_definitions (-DPFR_SUPPORT_ENABLED)
+endif(${PFR_ENABLE})
+
 if (NOT YOCTO) # headers that can't be built without yocto
     include_directories (SYSTEM non-yocto)
 
