@@ -2095,7 +2095,7 @@ ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(ipmi::Context::ptr ctx,
     return ipmi::responseSuccess(crSetCompleted);
 }
 
-ipmi::RspType<std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
+ipmi::RspType<uint8_t, std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
     ipmiOEMGetCRConfig(ipmi::Context::ptr ctx, uint8_t parameter)
 {
     crConfigVariant value;
@@ -2121,10 +2121,12 @@ ipmi::RspType<std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
             switch (status)
             {
                 case server::PowerSupplyRedundancy::Status::inProgress:
-                    return ipmi::responseSuccess(static_cast<uint8_t>(0));
+                    return ipmi::responseSuccess(parameter,
+                                                 static_cast<uint8_t>(0));
 
                 case server::PowerSupplyRedundancy::Status::completed:
-                    return ipmi::responseSuccess(static_cast<uint8_t>(1));
+                    return ipmi::responseSuccess(parameter,
+                                                 static_cast<uint8_t>(1));
                 default:
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "Error to get valid status");
@@ -2145,7 +2147,8 @@ ipmi::RspType<std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
                 return ipmi::responseResponseError();
             }
 
-            return ipmi::responseSuccess(static_cast<uint8_t>(*pResponse));
+            return ipmi::responseSuccess(parameter,
+                                         static_cast<uint8_t>(*pResponse));
         }
         case crParameter::rotationFeature:
         {
@@ -2160,7 +2163,8 @@ ipmi::RspType<std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
                     "Error to get RotationEnabled property");
                 return ipmi::responseResponseError();
             }
-            return ipmi::responseSuccess(static_cast<uint8_t>(*pResponse));
+            return ipmi::responseSuccess(parameter,
+                                         static_cast<uint8_t>(*pResponse));
         }
         case crParameter::rotationAlgo:
         {
@@ -2214,7 +2218,7 @@ ipmi::RspType<std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
             }
             std::copy(pResponse->begin(), pResponse->end(),
                       response.begin() + 1);
-            return ipmi::responseSuccess(response);
+            return ipmi::responseSuccess(parameter, response);
         }
         case crParameter::rotationPeriod:
         {
@@ -2229,7 +2233,7 @@ ipmi::RspType<std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
                     "Error to get RotationAlgorithm property");
                 return ipmi::responseResponseError();
             }
-            return ipmi::responseSuccess(*pResponse);
+            return ipmi::responseSuccess(parameter, *pResponse);
         }
         case crParameter::numOfPSU:
         {
@@ -2238,7 +2242,7 @@ ipmi::RspType<std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
             {
                 return ipmi::responseResponseError();
             }
-            return ipmi::responseSuccess(numberOfPSU);
+            return ipmi::responseSuccess(parameter, numberOfPSU);
         }
         default:
         {
