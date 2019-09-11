@@ -51,6 +51,13 @@ static constexpr const char* fanIntf = "xyz.openbmc_project.Sensor.Value";
 static constexpr const char* buttonIntf = "xyz.openbmc_project.Chassis.Buttons";
 static constexpr const char* ledIntf = "xyz.openbmc_project.Led.Physical";
 
+static constexpr const char* intrusionService =
+    "xyz.openbmc_project.IntrusionSensor";
+static constexpr const char* intrusionPath =
+    "/xyz/openbmc_project/Intrusion/Chassis_Intrusion";
+static constexpr const char* intrusionIntf =
+    "xyz.openbmc_project.Chassis.Intrusion";
+
 static constexpr const char* busPropertyIntf =
     "org.freedesktop.DBus.Properties";
 static constexpr const char* ledStateStr =
@@ -119,6 +126,17 @@ enum class SmSignalSet : uint8_t
     smSystemReadyLed,
     smLcdBacklight = 0x10,
     smSetSignalMax
+};
+
+/** @enum IntrusionStatus
+.*
+ *  Intrusion Status
+ */
+enum class IntrusionStatus : uint8_t
+{
+    normal = 0,
+    hardwareIntrusion,
+    tamperingDetected
 };
 
 struct SetSmSignalReq

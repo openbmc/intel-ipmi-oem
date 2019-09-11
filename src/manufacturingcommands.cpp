@@ -277,6 +277,41 @@ ipmi::RspType<uint8_t,                // Signal value
 
     switch (signalType)
     {
+        case SmSignalGet::smChassisIntrusion:
+        {
+            ipmi::Value reply;
+            if (mtm.getProperty(intrusionService, intrusionPath, intrusionIntf,
+                                "Status", &reply) < 0)
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            std::string* intrusionStatus = std::get_if<std::string>(&reply);
+            if (!intrusionStatus)
+            {
+                return ipmi::responseUnspecifiedError();
+            }
+
+            uint8_t status = 0;
+            if (!intrusionStatus->compare("Normal"))
+            {
+                status = static_cast<uint8_t>(IntrusionStatus::normal);
+            }
+            else if (!intrusionStatus->compare("HardwareIntrusion"))
+            {
+                status =
+                    static_cast<uint8_t>(IntrusionStatus::hardwareIntrusion);
+            }
+            else if (!intrusionStatus->compare("TamperingDetected"))
+            {
+                status =
+                    static_cast<uint8_t>(IntrusionStatus::tamperingDetected);
+            }
+            else
+            {
+                return ipmi::responseUnspecifiedError();
+            }
+            return ipmi::responseSuccess(status, std::nullopt);
+        }
         case SmSignalGet::smFanPwmGet:
         {
             ipmi::Value reply;
