@@ -1,3 +1,4 @@
+
 #include <ipmid/api.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
@@ -25,6 +26,10 @@
 #include <sdbusplus/server/object.hpp>
 #include <sdbusplus/timer.hpp>
 #include <sstream>
+
+#ifdef INTEL_PFR_ENABLED
+#include <spiDev.hpp>
+#endif
 
 static constexpr const char *secondaryFitImageStartAddr = "22480000";
 static uint8_t getActiveBootImage(void);
@@ -951,208 +956,157 @@ static ipmi_ret_t ipmi_firmware_control(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return rc;
 }
 
-struct fw_version_info
-{
-    uint8_t id_tag;
-    uint8_t major;
-    uint8_t minor;
-    uint32_t build;
-    uint32_t build_time;
-    uint32_t update_time;
-} __attribute__((packed));
+#ifdef INTEL_PFR_ENABLED
 
-static ipmi_ret_t ipmi_firmware_get_fw_version_info(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+static constexpr const uint8_t bmcActiveImgPfmMTDDevNo = 2;
+static constexpr const uint32_t bmcActiveImgVerOffset = 0x406;
+static constexpr const uint32_t bmcActiveImgBuildNumOffset = 0x40C;
+static constexpr const uint32_t bmcActiveImgSecVerOffset = 0x404;
+static constexpr const uint8_t bmcRecoveryImgMTDDevNo = 7;
+static constexpr const uint32_t bmcRecoveryImgVerOffset = 0x806;
+static constexpr const uint32_t bmcRecoveryImgBuildNumOffset = 0x80C;
+static constexpr const uint32_t bmcRecoveryImgSecVerOffset = 0x804;
+
+enum class FWDeviceIDTag : uint8_t
+{
+    bmcActiveImage = 1,
+    bmcRecoveryImage,
+};
+
+static std::vector<FWDeviceIDTag> idTagList = {FWDeviceIDTag::bmcActiveImage,
+                                               FWDeviceIDTag::bmcRecoveryImage};
+
+using fwVersionInfoType = std::tuple<uint8_t,   // ID Tag
+                                     uint8_t,   // Major Version Number
+                                     uint8_t,   // Minor Version Number
+                                     uint32_t,  // Build Number
+                                     uint32_t,  // Build Timestamp
+                                     uint32_t>; // Update Timestamp
+
+ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
 {
     if (DEBUG)
         std::cerr << "Get FW Version Info\n";
 
     // Byte 1 - Count (N) Number of devices data is being returned for.
-    // Byte 2 - ID Tag 00 – reserved 01 – BMC Active Image 02 – BBU Active Image
-    //                 03 – BMC Backup Image 04 – BBU Backup Image 05 – BBR
-    //                 Image
-    // Byte 3 - Major Version Number
-    // Byte 4 - Minor Version Number
-    // Bytes 5:8 - Build Number
-    // Bytes 9:12 - Build Timestamp Format: LSB first, same format as SEL
-    // timestamp
-    // Bytes 13:16 - Update Timestamp
+    // Bytes  2:16 - Device firmare information(fwVersionInfoType)
     // Bytes - 17:(15xN) - Repeat of 2 through 16
 
-    uint8_t count = 0;
-    auto ret_count = reinterpret_cast<uint8_t *>(response);
-    auto info = reinterpret_cast<struct fw_version_info *>(ret_count + 1);
+    std::vector<fwVersionInfoType> fwVerInfoList;
 
-    for (uint8_t id_tag = 1; id_tag < 6; id_tag++)
+    for (auto const &idTag : idTagList)
     {
-        const char *fw_path;
-        switch (id_tag)
+        uint8_t mtdDevNo;
+        uint32_t verOffset;
+        uint32_t bldNumOffset;
+
+        switch (idTag)
         {
-            case 1:
-                fw_path = FW_UPDATE_ACTIVE_INFO_PATH;
+            case (FWDeviceIDTag::bmcActiveImage):
+            {
+                mtdDevNo = bmcActiveImgPfmMTDDevNo;
+                verOffset = bmcActiveImgVerOffset;
+                bldNumOffset = bmcActiveImgBuildNumOffset;
                 break;
-            case 2:
-                fw_path = FW_UPDATE_BACKUP_INFO_PATH;
+            }
+            case (FWDeviceIDTag::bmcRecoveryImage):
+            {
+                mtdDevNo = bmcRecoveryImgMTDDevNo;
+                verOffset = bmcRecoveryImgVerOffset;
+                bldNumOffset = bmcRecoveryImgBuildNumOffset;
                 break;
-            case 3:
-            case 4:
-            case 5:
-                continue; // skip for now
-                break;
+            }
+            default:
+                continue;
         }
-        std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-        auto method =
-            bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, fw_path,
-                                 "org.freedesktop.DBus.Properties", "GetAll");
-        method.append(FW_UPDATE_INFO_INTERFACE);
-        std::vector<std::pair<std::string, ipmi::DbusVariant>> properties;
+
         try
         {
-            auto reply = bus->call(method);
 
-            if (reply.is_method_error())
-                continue;
+            SPIDev spiDev(mtdDevNo);
+            uint8_t buildNo;
+            std::array<uint8_t, 2> ver;
+            spiDev.spiReadData(verOffset, sizeof(ver),
+                               reinterpret_cast<void *>(&ver));
+            spiDev.spiReadData(bldNumOffset, sizeof(buildNo),
+                               reinterpret_cast<void *>(&buildNo));
 
-            reply.read(properties);
+            // Build Timestamp - Not supported.
+            // Update Timestamp - TODO: Need to check with CPLD team.
+            fwVerInfoList.push_back(fwVersionInfoType(
+                static_cast<uint8_t>(idTag), ver[0], ver[1], buildNo, 0, 0));
         }
-        catch (sdbusplus::exception::SdBusError &e)
+        catch (const std::exception &e)
         {
-            std::cerr << "SDBus Error: " << e.what();
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Exception caught in ipmiGetFwVersionInfo.",
+                phosphor::logging::entry("MSG=%s", e.what()));
+            return ipmi::responseUnspecifiedError();
         }
-        uint8_t major = 0;
-        uint8_t minor = 0;
-        uint32_t build = 0;
-        int32_t build_time = 0;
-        int32_t update_time = 0;
-        for (const auto &t : properties)
-        {
-            auto key = t.first;
-            auto value = t.second;
-            if (key == "version")
-            {
-                auto strver = std::get<std::string>(value);
-                std::stringstream ss;
-                ss << std::hex << strver;
-                uint32_t t;
-                ss >> t;
-                major = t;
-                ss.ignore();
-                ss >> t;
-                minor = t;
-                ss.ignore();
-                ss >> build;
-            }
-            else if (key == "build_time")
-            {
-                build_time = std::get<int32_t>(value);
-            }
-            else if (key == "update_time")
-            {
-                update_time = std::get<int32_t>(value);
-            }
-        }
-
-        info->id_tag = id_tag;
-        info->major = major;
-        info->minor = minor;
-        info->build = build;
-        info->build_time = build_time;
-        info->update_time = update_time;
-        count++;
-        info++;
     }
-    *ret_count = count;
 
-    // Status code.
-    ipmi_ret_t rc = IPMI_CC_OK;
-    *data_len = sizeof(count) + count * sizeof(*info);
-
-    return rc;
+    return ipmi::responseSuccess(fwVerInfoList.size(), fwVerInfoList);
 }
 
-struct fw_security_revision_info
-{
-    uint8_t id_tag;
-    uint16_t sec_rev;
-} __attribute__((packed));
+using fwSecurityRevType = std::tuple<uint8_t,   // ID Tag
+                                     uint16_t>; // Security Version(svn, bkc)
 
-static ipmi_ret_t ipmi_firmware_get_fw_security_revision(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+ipmi::RspType<uint8_t, std::vector<fwSecurityRevType>> ipmiGetFwSecurityRev()
 {
     if (DEBUG)
         std::cerr << "Get FW security revision info\n";
 
-    // Byte 1 - Count (N) Number of devices data is being returned for.
-    // Byte 2 - ID Tag 00 – reserved 01 – BMC Active Image 02 – BBU Active Image
-    //                 03 – BMC Backup Image 04 – BBU Backup Image 05 – BBR
-    //                 Image
-    // Byte 3 - Major Version Number
-    // Byte 4 - Minor Version Number
-    // Bytes 5:8 - Build Number
-    // Bytes 9:12 - Build Timestamp Format: LSB first, same format as SEL
-    // timestamp
-    // Bytes 13:16 - Update Timestamp
-    // Bytes - 17:(15xN) - Repeat of 2 through 16
+    // Byte 1   - Count (N) Number of devices data is being returned for.
+    // Byte 2:4 - Device FW security revision( ID, Sec rev)
+    // Bytes - 5:(3xN) - Repeat of 2 through 4
 
-    uint8_t count = 0;
-    auto ret_count = reinterpret_cast<uint8_t *>(response);
-    auto info =
-        reinterpret_cast<struct fw_security_revision_info *>(ret_count + 1);
+    std::vector<fwSecurityRevType> fwSecurityRevList;
 
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-    for (uint8_t id_tag = 1; id_tag < 6; id_tag++)
+    for (auto const &idTag : idTagList)
     {
-        const char *fw_path;
-        switch (id_tag)
+        uint8_t mtdDevNo;
+        uint32_t secVerOffset;
+
+        switch (idTag)
         {
-            case 1:
-                fw_path = FW_UPDATE_ACTIVE_INFO_PATH;
+            case (FWDeviceIDTag::bmcActiveImage):
+            {
+                mtdDevNo = bmcActiveImgPfmMTDDevNo;
+                secVerOffset = bmcActiveImgSecVerOffset;
                 break;
-            case 2:
-                fw_path = FW_UPDATE_BACKUP_INFO_PATH;
+            }
+            case (FWDeviceIDTag::bmcRecoveryImage):
+            {
+                mtdDevNo = bmcRecoveryImgMTDDevNo;
+                secVerOffset = bmcRecoveryImgSecVerOffset;
                 break;
-            case 3:
-            case 4:
-            case 5:
-                continue; // skip for now
-                break;
+            }
+            default:
+                continue;
         }
-        auto method =
-            bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, fw_path,
-                                 "org.freedesktop.DBus.Properties", "GetAll");
-        method.append(FW_UPDATE_INFO_INTERFACE, "security_version");
-        ipmi::DbusVariant sec_rev;
+
         try
         {
-            auto reply = bus->call(method);
 
-            if (reply.is_method_error())
-                continue;
+            SPIDev spiDev(mtdDevNo);
+            uint16_t secVer;
+            spiDev.spiReadData(secVerOffset, sizeof(secVer),
+                               reinterpret_cast<void *>(&secVer));
 
-            reply.read(sec_rev);
+            fwSecurityRevList.push_back(
+                fwSecurityRevType(static_cast<uint8_t>(idTag), secVer));
         }
-        catch (sdbusplus::exception::SdBusError &e)
+        catch (const std::exception &e)
         {
-            std::cerr << "SDBus Error: " << e.what();
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Exception caught in ipmiGetFwSecurityRev.",
+                phosphor::logging::entry("MSG=%s", e.what()));
+            return ipmi::responseUnspecifiedError();
         }
-
-        info->id_tag = id_tag;
-        info->sec_rev = std::get<int>(sec_rev);
-        count++;
-        info++;
     }
-    *ret_count = count;
-
-    // Status code.
-    ipmi_ret_t rc = IPMI_CC_OK;
-    *data_len = sizeof(count) + count * sizeof(*info);
-
-    return rc;
+    return ipmi::responseSuccess(fwSecurityRevList.size(), fwSecurityRevList);
 }
+#endif
 
 struct fw_channel_size
 {
@@ -1659,15 +1613,21 @@ static void register_netfn_firmware_functions()
     if (DEBUG)
         std::cerr << "Registering firmware update commands\n";
 
+#ifdef INTEL_PFR_ENABLED
+    // Following commands are supported only for PFR enabled platforms
+    // CMD:0x20 - Get Firmware Version Information
+    // CMD:0x21 - Get Security Version Information
+
     // get firmware version information
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_VERSION_INFO,
-                           NULL, ipmi_firmware_get_fw_version_info,
-                           PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_GET_FW_VERSION_INFO,
+                          ipmi::Privilege::Admin, ipmiGetFwVersionInfo);
 
     // get firmware security version information
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_SEC_VERSION_INFO,
-                           NULL, ipmi_firmware_get_fw_security_revision,
-                           PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_GET_FW_SEC_VERSION_INFO,
+                          ipmi::Privilege::Admin, ipmiGetFwSecurityRev);
+#endif
 
     // get channel information (max transfer sizes)
     ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
