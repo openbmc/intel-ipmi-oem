@@ -62,6 +62,7 @@ enum class IPMINetfnIntelOEMGeneralCmd
     cmdSetEfiBootOptions = 0xEA,
     cmdGetEfiBootOptions = 0xEB,
     cmdSetNmiStatus = 0xED,
+    cmdGetPSUVersion = 0xEF,
 };
 
 enum class IPMINetfnIntelOEMPlatformCmd
