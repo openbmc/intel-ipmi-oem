@@ -471,27 +471,24 @@ static void register_netfn_smbios_functions(void)
 {
     // MDR V1 Command
     // <Get MDR Status Command>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDR_STATUS, NULL,
+    ipmi_register_callback(ipmi::intel::netFnApp,
+                           ipmi::intel::app::cmdMdrStatus, NULL,
                            cmd_region_status, PRIVILEGE_OPERATOR);
 
     // <Update Complete Status Command>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDR_COMPLETE, NULL,
+    ipmi_register_callback(ipmi::intel::netFnApp,
+                           ipmi::intel::app::cmdMdrComplete, NULL,
                            cmd_region_complete, PRIVILEGE_OPERATOR);
 
     // <Read MDR Command>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDR_READ, NULL,
-                           cmd_region_read, PRIVILEGE_OPERATOR);
+    ipmi_register_callback(ipmi::intel::netFnApp, ipmi::intel::app::cmdMdrRead,
+                           NULL, cmd_region_read, PRIVILEGE_OPERATOR);
 
     // <Write MDR Command>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDR_WRITE, NULL,
-                           cmd_region_write, PRIVILEGE_OPERATOR);
+    ipmi_register_callback(ipmi::intel::netFnApp, ipmi::intel::app::cmdMdrWrite,
+                           NULL, cmd_region_write, PRIVILEGE_OPERATOR);
 
     // <Lock MDR Command>
-    ipmi_register_callback(NETFUN_INTEL_APP_OEM,
-                           IPMI_NETFN_INTEL_OEM_APP_CMD::MDR_LOCK, NULL,
-                           cmd_region_lock, PRIVILEGE_OPERATOR);
+    ipmi_register_callback(ipmi::intel::netFnApp, ipmi::intel::app::cmdMdrLock,
+                           NULL, cmd_region_lock, PRIVILEGE_OPERATOR);
 }

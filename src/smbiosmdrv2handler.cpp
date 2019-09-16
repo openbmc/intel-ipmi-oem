@@ -26,6 +26,7 @@
 #include <fstream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
+#include <oemcommands.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/message/types.hpp>
 #include <smbiosmdrv2handler.hpp>
@@ -1252,63 +1253,62 @@ static void register_netfn_smbiosmdrv2_functions(void)
 {
     // MDR V2 Command
     // <Get MDRII Status Command>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_AGENT_STATUS,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIIAgentStatus,
                           ipmi::Privilege::Operator, mdr2AgentStatus);
 
     // <Get MDRII Directory Command>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_GET_DIR,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIIGetDir,
                           ipmi::Privilege::Operator, mdr2GetDir);
 
     // <Send MDRII Directory Command>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_SEND_DIR,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIISendDir,
                           ipmi::Privilege::Operator, mdr2SendDir);
 
     // <Get MDRII Data Info Command>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_GET_DATA_INFO,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIIGetDataInfo,
                           ipmi::Privilege::Operator, mdr2GetDataInfo);
 
     // <Send MDRII Info Offer>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-        IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_SEND_DATA_INFO_OFFER,
-        ipmi::Privilege::Operator, mdr2DataInfoOffer);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIISendDataInfoOffer,
+                          ipmi::Privilege::Operator, mdr2DataInfoOffer);
 
     // <Send MDRII Data Info>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_SEND_DATA_INFO,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIISendDataInfo,
                           ipmi::Privilege::Operator, mdr2SendDataInfo);
 
     // <Get MDRII Data Block Command>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_GET_DATA_BLOCK,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIIGetDataBlock,
                           ipmi::Privilege::Operator, mdr2GetDataBlock);
 
     // <Send MDRII Data Block>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_SEND_DATA_BLOCK,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIISendDataBlock,
                           ipmi::Privilege::Operator, mdr2SendDataBlock);
 
     // <Lock MDRII Data Command>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_LOCK_DATA,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIILockData,
                           ipmi::Privilege::Operator, mdr2LockData);
 
     // <Unlock MDRII Data Command>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_UNLOCK_DATA,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIIUnlockData,
                           ipmi::Privilege::Operator, mdr2UnlockData);
 
     // <Send MDRII Data Start>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_DATA_START,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIIDataStart,
                           ipmi::Privilege::Operator, cmd_mdr2_data_start);
 
     // <Send MDRII Data Done>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_INTEL_APP_OEM,
-                          IPMI_NETFN_INTEL_OEM_APP_CMD::MDRII_DATA_DONE,
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::app::cmdMdrIIDataDone,
                           ipmi::Privilege::Operator, cmd_mdr2_data_done);
 }

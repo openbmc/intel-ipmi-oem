@@ -116,20 +116,17 @@ void registerMultiNodeFunctions(void)
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Registering MultiNode commands");
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(IPMINetfnMultiNodeCmd::cmdGetMultiNodePresence),
-        ipmi::Privilege::User, ipmiGetMultiNodePresence);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdGetMultiNodePresence,
+                          ipmi::Privilege::User, ipmiGetMultiNodePresence);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(IPMINetfnMultiNodeCmd::cmdGetMultiNodeId),
-        ipmi::Privilege::User, ipmiGetMultiNodeId);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdGetMultiNodeId,
+                          ipmi::Privilege::User, ipmiGetMultiNodeId);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(IPMINetfnMultiNodeCmd::cmdGetMultiNodeRole),
-        ipmi::Privilege::User, ipmiGetMultiNodeRole);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdGetMultiNodeRole,
+                          ipmi::Privilege::User, ipmiGetMultiNodeRole);
 }
 
 } // namespace ipmi

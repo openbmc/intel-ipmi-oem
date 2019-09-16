@@ -47,12 +47,6 @@ namespace ipmi
 {
 static void registerOEMFunctions() __attribute__((constructor));
 
-namespace netfn::intel
-{
-constexpr NetFn oemGeneral = netFnOemOne;
-constexpr Cmd cmdRestoreConfiguration = 0x02;
-} // namespace netfn::intel
-
 static constexpr size_t maxFRUStringLength = 0x3F;
 
 static constexpr auto ethernetIntf =
@@ -3280,215 +3274,166 @@ static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Registering OEM commands");
-    ipmiPrintAndRegister(netfnIntcOEMGeneral, IPMI_CMD_WILDCARD, NULL,
+    ipmiPrintAndRegister(intel::netFnGeneral, IPMI_CMD_WILDCARD, NULL,
                          ipmiOEMWildcard,
                          PRIVILEGE_USER); // wildcard default handler
-    ipmiPrintAndRegister(netfunIntelAppOEM, IPMI_CMD_WILDCARD, NULL,
+
+    ipmiPrintAndRegister(intel::netFnApp, IPMI_CMD_WILDCARD, NULL,
                          ipmiOEMWildcard,
                          PRIVILEGE_USER); // wildcard default handler
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
-            IPMINetfnIntelOEMGeneralCmd::cmdGetChassisIdentifier),
-        NULL, ipmiOEMGetChassisIdentifier,
-        PRIVILEGE_USER); // get chassis identifier
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetSystemGUID),
-        NULL, ipmiOEMSetSystemGUID,
-        PRIVILEGE_ADMIN); // set system guid
+
+    ipmiPrintAndRegister(intel::netFnGeneral,
+                         intel::general::cmdGetChassisIdentifier, NULL,
+                         ipmiOEMGetChassisIdentifier,
+                         PRIVILEGE_USER); // get chassis identifier
+
+    ipmiPrintAndRegister(intel::netFnGeneral, intel::general::cmdSetSystemGUID,
+                         NULL, ipmiOEMSetSystemGUID,
+                         PRIVILEGE_ADMIN); // set system guid
 
     // <Disable BMC System Reset Action>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdDisableBMCSystemReset),
-        ipmi::Privilege::Admin, ipmiOEMDisableBMCSystemReset);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdDisableBMCSystemReset, Privilege::Admin,
+                    ipmiOEMDisableBMCSystemReset);
+
     // <Get BMC Reset Disables>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdGetBMCResetDisables),
-        ipmi::Privilege::Admin, ipmiOEMGetBMCResetDisables);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetBMCResetDisables, Privilege::Admin,
+                    ipmiOEMGetBMCResetDisables);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetBIOSID),
-        NULL, ipmiOEMSetBIOSID, PRIVILEGE_ADMIN);
-    ipmiPrintAndRegister(netfnIntcOEMGeneral,
-                         static_cast<ipmi_cmd_t>(
-                             IPMINetfnIntelOEMGeneralCmd::cmdGetOEMDeviceInfo),
-                         NULL, ipmiOEMGetDeviceInfo, PRIVILEGE_USER);
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
-            IPMINetfnIntelOEMGeneralCmd::cmdGetAICSlotFRUIDSlotPosRecords),
-        NULL, ipmiOEMGetAICFRU, PRIVILEGE_USER);
+    ipmiPrintAndRegister(intel::netFnGeneral, intel::general::cmdSetBIOSID,
+                         NULL, ipmiOEMSetBIOSID, PRIVILEGE_ADMIN);
 
-    ipmi::registerHandler(
-        ipmi::prioOpenBmcBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSendEmbeddedFWUpdStatus),
-        ipmi::Privilege::Operator, ipmiOEMSendEmbeddedFwUpdStatus);
+    ipmiPrintAndRegister(intel::netFnGeneral,
+                         intel::general::cmdGetOEMDeviceInfo, NULL,
+                         ipmiOEMGetDeviceInfo, PRIVILEGE_USER);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetPowerRestoreDelay),
-        NULL, ipmiOEMSetPowerRestoreDelay, PRIVILEGE_OPERATOR);
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(
-            IPMINetfnIntelOEMGeneralCmd::cmdGetPowerRestoreDelay),
-        NULL, ipmiOEMGetPowerRestoreDelay, PRIVILEGE_USER);
+    ipmiPrintAndRegister(intel::netFnGeneral,
+                         intel::general::cmdGetAICSlotFRUIDSlotPosRecords, NULL,
+                         ipmiOEMGetAICFRU, PRIVILEGE_USER);
 
-    ipmi::registerHandler(
-        ipmi::prioOpenBmcBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetOEMUser2Activation),
-        ipmi::Privilege::Callback, ipmiOEMSetUser2Activation);
+    registerHandler(prioOpenBmcBase, intel::netFnGeneral,
+                    intel::general::cmdSendEmbeddedFWUpdStatus,
+                    Privilege::Operator, ipmiOEMSendEmbeddedFwUpdStatus);
 
-    ipmi::registerHandler(
-        ipmi::prioOpenBmcBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetSpecialUserPassword),
-        ipmi::Privilege::Callback, ipmiOEMSetSpecialUserPassword);
+    ipmiPrintAndRegister(intel::netFnGeneral,
+                         intel::general::cmdSetPowerRestoreDelay, NULL,
+                         ipmiOEMSetPowerRestoreDelay, PRIVILEGE_OPERATOR);
+
+    ipmiPrintAndRegister(intel::netFnGeneral,
+                         intel::general::cmdGetPowerRestoreDelay, NULL,
+                         ipmiOEMGetPowerRestoreDelay, PRIVILEGE_USER);
+
+    registerHandler(prioOpenBmcBase, intel::netFnGeneral,
+                    intel::general::cmdSetOEMUser2Activation,
+                    Privilege::Callback, ipmiOEMSetUser2Activation);
+
+    registerHandler(prioOpenBmcBase, intel::netFnGeneral,
+                    intel::general::cmdSetSpecialUserPassword,
+                    Privilege::Callback, ipmiOEMSetSpecialUserPassword);
 
     // <Get Processor Error Config>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdGetProcessorErrConfig),
-        ipmi::Privilege::User, ipmiOEMGetProcessorErrConfig);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetProcessorErrConfig, Privilege::User,
+                    ipmiOEMGetProcessorErrConfig);
+
     // <Set Processor Error Config>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetProcessorErrConfig),
-        ipmi::Privilege::Admin, ipmiOEMSetProcessorErrConfig);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetProcessorErrConfig, Privilege::Admin,
+                    ipmiOEMSetProcessorErrConfig);
 
-    ipmiPrintAndRegister(netfnIntcOEMGeneral,
-                         static_cast<ipmi_cmd_t>(
-                             IPMINetfnIntelOEMGeneralCmd::cmdSetShutdownPolicy),
-                         NULL, ipmiOEMSetShutdownPolicy, PRIVILEGE_ADMIN);
-    ipmiPrintAndRegister(netfnIntcOEMGeneral,
-                         static_cast<ipmi_cmd_t>(
-                             IPMINetfnIntelOEMGeneralCmd::cmdGetShutdownPolicy),
-                         NULL, ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
+    ipmiPrintAndRegister(intel::netFnGeneral,
+                         intel::general::cmdSetShutdownPolicy, NULL,
+                         ipmiOEMSetShutdownPolicy, PRIVILEGE_ADMIN);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdSetFanConfig),
-        NULL, ipmiOEMSetFanConfig, PRIVILEGE_USER);
+    ipmiPrintAndRegister(intel::netFnGeneral,
+                         intel::general::cmdGetShutdownPolicy, NULL,
+                         ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetFanConfig),
-        ipmi::Privilege::User, ipmiOEMGetFanConfig);
+    ipmiPrintAndRegister(intel::netFnGeneral, intel::general::cmdSetFanConfig,
+                         NULL, ipmiOEMSetFanConfig, PRIVILEGE_USER);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdGetFanSpeedOffset),
-        ipmi::Privilege::User, ipmiOEMGetFanSpeedOffset);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetFanConfig, Privilege::User,
+                    ipmiOEMGetFanConfig);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetFanSpeedOffset),
-        ipmi::Privilege::User, ipmiOEMSetFanSpeedOffset);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetFanSpeedOffset, Privilege::User,
+                    ipmiOEMGetFanSpeedOffset);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetFscParameter),
-        ipmi::Privilege::User, ipmiOEMSetFscParameter);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetFanSpeedOffset, Privilege::User,
+                    ipmiOEMSetFanSpeedOffset);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetFscParameter),
-        ipmi::Privilege::User, ipmiOEMGetFscParameter);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetFscParameter, Privilege::User,
+                    ipmiOEMSetFscParameter);
 
-    ipmi::registerHandler(
-        ipmi::prioOpenBmcBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdReadBaseBoardProductId),
-        ipmi::Privilege::Admin, ipmiOEMReadBoardProductId);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetFscParameter, Privilege::User,
+                    ipmiOEMGetFscParameter);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetNmiStatus),
-        ipmi::Privilege::User, ipmiOEMGetNmiSource);
+    registerHandler(prioOpenBmcBase, intel::netFnGeneral,
+                    intel::general::cmdReadBaseBoardProductId, Privilege::Admin,
+                    ipmiOEMReadBoardProductId);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetNmiStatus),
-        ipmi::Privilege::Operator, ipmiOEMSetNmiSource);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetNmiStatus, Privilege::User,
+                    ipmiOEMGetNmiSource);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdGetEfiBootOptions),
-        ipmi::Privilege::User, ipmiOemGetEfiBootOptions);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetNmiStatus, Privilege::Operator,
+                    ipmiOEMSetNmiSource);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetEfiBootOptions),
-        ipmi::Privilege::Operator, ipmiOemSetEfiBootOptions);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetEfiBootOptions, Privilege::User,
+                    ipmiOemGetEfiBootOptions);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetSecurityMode),
-        Privilege::User, ipmiGetSecurityMode);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetEfiBootOptions, Privilege::Operator,
+                    ipmiOemSetEfiBootOptions);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetSecurityMode),
-        Privilege::Admin, ipmiSetSecurityMode);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetSecurityMode, Privilege::User,
+                    ipmiGetSecurityMode);
 
-    ipmiPrintAndRegister(
-        netfnIntcOEMGeneral,
-        static_cast<ipmi_cmd_t>(IPMINetfnIntelOEMGeneralCmd::cmdGetLEDStatus),
-        NULL, ipmiOEMGetLEDStatus, PRIVILEGE_ADMIN);
-    ipmiPrintAndRegister(
-        netfnIntcOEMPlatform,
-        static_cast<ipmi_cmd_t>(
-            IPMINetfnIntelOEMPlatformCmd::cmdCfgHostSerialPortSpeed),
-        NULL, ipmiOEMCfgHostSerialPortSpeed, PRIVILEGE_ADMIN);
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetFaultIndication),
-        ipmi::Privilege::Operator, ipmiOEMSetFaultIndication);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetSecurityMode, Privilege::Admin,
+                    ipmiSetSecurityMode);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetColdRedundancyConfig),
-        ipmi::Privilege::User, ipmiOEMSetCRConfig);
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdGetColdRedundancyConfig),
-        ipmi::Privilege::User, ipmiOEMGetCRConfig);
+    ipmiPrintAndRegister(intel::netFnGeneral, intel::general::cmdGetLEDStatus,
+                         NULL, ipmiOEMGetLEDStatus, PRIVILEGE_ADMIN);
 
-    registerHandler(prioOemBase, netfn::intel::oemGeneral,
-                    netfn::intel::cmdRestoreConfiguration, Privilege::Admin,
+    ipmiPrintAndRegister(ipmi::intel::netFnPlatform,
+                         ipmi::intel::platform::cmdCfgHostSerialPortSpeed, NULL,
+                         ipmiOEMCfgHostSerialPortSpeed, PRIVILEGE_ADMIN);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetFaultIndication, Privilege::Operator,
+                    ipmiOEMSetFaultIndication);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetColdRedundancyConfig, Privilege::User,
+                    ipmiOEMSetCRConfig);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetColdRedundancyConfig, Privilege::User,
+                    ipmiOEMGetCRConfig);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdRestoreConfiguration, Privilege::Admin,
                     ipmiRestoreConfiguration);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetDimmOffset),
-        ipmi::Privilege::Operator, ipmiOEMSetDimmOffset);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetDimmOffset, Privilege::Operator,
+                    ipmiOEMSetDimmOffset);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfnIntcOEMGeneral,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetDimmOffset),
-        ipmi::Privilege::Operator, ipmiOEMGetDimmOffset);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetDimmOffset, Privilege::Operator,
+                    ipmiOEMGetDimmOffset);
 
-    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnChassis,
-                          ipmi::chassis::cmdSetSystemBootOptions,
-                          ipmi::Privilege::Operator, ipmiOemSetBootOptions);
+    registerHandler(prioOemBase, netFnChassis, chassis::cmdSetSystemBootOptions,
+                    Privilege::Operator, ipmiOemSetBootOptions);
 }
 
 } // namespace ipmi

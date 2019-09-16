@@ -1450,92 +1450,76 @@ void registerSensorFunctions()
                          ipmiSensorWildcardHandler, PRIVILEGE_USER);
 
     // <Get Sensor Type>
-    ipmiPrintAndRegister(
-        NETFUN_SENSOR,
-        static_cast<ipmi_cmd_t>(IPMINetfnSensorCmds::ipmiCmdGetSensorType),
-        nullptr, ipmiSensorWildcardHandler, PRIVILEGE_USER);
+    ipmiPrintAndRegister(NETFUN_SENSOR, ipmi::sensor_event::cmdGetSensorType,
+                         nullptr, ipmiSensorWildcardHandler, PRIVILEGE_USER);
 
     // <Set Sensor Reading and Event Status>
     ipmiPrintAndRegister(
-        NETFUN_SENSOR,
-        static_cast<ipmi_cmd_t>(
-            IPMINetfnSensorCmds::ipmiCmdSetSensorReadingAndEventStatus),
+        NETFUN_SENSOR, ipmi::sensor_event::cmdSetSensorReadingAndEvtSts,
         nullptr, ipmiSensorWildcardHandler, PRIVILEGE_OPERATOR);
 
     // <Platform Event>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, ipmi::netFnSensor,
-        static_cast<ipmi::Cmd>(ipmi::sensor_event::cmdPlatformEvent),
-        ipmi::Privilege::Operator, ipmiSenPlatformEvent);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
+                          ipmi::sensor_event::cmdPlatformEvent,
+                          ipmi::Privilege::Operator, ipmiSenPlatformEvent);
 
     // <Get Sensor Reading>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, NETFUN_SENSOR,
-        static_cast<ipmi::Cmd>(IPMINetfnSensorCmds::ipmiCmdGetSensorReading),
-        ipmi::Privilege::User, ipmiSenGetSensorReading);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
+                          ipmi::sensor_event::cmdGetSensorReading,
+                          ipmi::Privilege::User, ipmiSenGetSensorReading);
 
     // <Get Sensor Threshold>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, NETFUN_SENSOR,
-        static_cast<ipmi::Cmd>(IPMINetfnSensorCmds::ipmiCmdGetSensorThreshold),
-        ipmi::Privilege::User, ipmiSenGetSensorThresholds);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
+                          ipmi::sensor_event::cmdGetSensorThreshold,
+                          ipmi::Privilege::User, ipmiSenGetSensorThresholds);
 
     // <Set Sensor Threshold>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, NETFUN_SENSOR,
-        static_cast<ipmi::Cmd>(IPMINetfnSensorCmds::ipmiCmdSetSensorThreshold),
-        ipmi::Privilege::Operator, ipmiSenSetSensorThresholds);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
+                          ipmi::sensor_event::cmdSetSensorThreshold,
+                          ipmi::Privilege::Operator,
+                          ipmiSenSetSensorThresholds);
 
     // <Get Sensor Event Enable>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_SENSOR,
-                          static_cast<ipmi::Cmd>(
-                              IPMINetfnSensorCmds::ipmiCmdGetSensorEventEnable),
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
+                          ipmi::sensor_event::cmdGetSensorEventEnable,
                           ipmi::Privilege::User, ipmiSenGetSensorEventEnable);
 
     // <Get Sensor Event Status>
     ipmiPrintAndRegister(NETFUN_SENSOR,
-                         static_cast<ipmi_cmd_t>(
-                             IPMINetfnSensorCmds::ipmiCmdGetSensorEventStatus),
-                         nullptr, ipmiSenGetSensorEventStatus, PRIVILEGE_USER);
+                         ipmi::sensor_event::cmdGetSensorEventStatus, nullptr,
+                         ipmiSenGetSensorEventStatus, PRIVILEGE_USER);
 
     // register all storage commands for both Sensor and Storage command
     // versions
 
     // <Get SDR Repository Info>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, NETFUN_STORAGE,
-        static_cast<ipmi::Cmd>(IPMINetfnStorageCmds::ipmiCmdGetRepositoryInfo),
-        ipmi::Privilege::User, ipmiStorageGetSDRRepositoryInfo);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnStorage,
+                          ipmi::storage::cmdGetSdrRepositoryInfo,
+                          ipmi::Privilege::User,
+                          ipmiStorageGetSDRRepositoryInfo);
 
     // <Get SDR Allocation Info>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, NETFUN_STORAGE,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnStorageCmds::ipmiCmdGetSDRAllocationInfo),
-        ipmi::Privilege::User, ipmiStorageGetSDRAllocationInfo);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnStorage,
+                          ipmi::storage::cmdGetSdrRepositoryAllocInfo,
+                          ipmi::Privilege::User,
+                          ipmiStorageGetSDRAllocationInfo);
 
     // <Reserve SDR Repo>
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_SENSOR,
-                          static_cast<ipmi::Cmd>(
-                              IPMINetfnSensorCmds::ipmiCmdReserveDeviceSDRRepo),
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
+                          ipmi::sensor_event::cmdReserveDeviceSdrRepository,
                           ipmi::Privilege::User, ipmiStorageReserveSDR);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, NETFUN_STORAGE,
-        static_cast<ipmi::Cmd>(IPMINetfnStorageCmds::ipmiCmdReserveSDR),
-        ipmi::Privilege::User, ipmiStorageReserveSDR);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnStorage,
+                          ipmi::storage::cmdReserveSdrRepository,
+                          ipmi::Privilege::User, ipmiStorageReserveSDR);
 
     // <Get Sdr>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, NETFUN_SENSOR,
-        static_cast<ipmi::Cmd>(IPMINetfnSensorCmds::ipmiCmdGetDeviceSDR),
-        ipmi::Privilege::User, ipmiStorageGetSDR);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
+                          ipmi::sensor_event::cmdGetDeviceSdr,
+                          ipmi::Privilege::User, ipmiStorageGetSDR);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, NETFUN_STORAGE,
-        static_cast<ipmi::Cmd>(IPMINetfnStorageCmds::ipmiCmdGetSDR),
-        ipmi::Privilege::User, ipmiStorageGetSDR);
-
-    return;
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnStorage,
+                          ipmi::storage::cmdGetSdr, ipmi::Privilege::User,
+                          ipmiStorageGetSDR);
 }
 } // namespace ipmi

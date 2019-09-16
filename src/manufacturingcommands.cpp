@@ -773,43 +773,33 @@ void register_mtm_commands() __attribute__((constructor));
 void register_mtm_commands()
 {
     // <Get SM Signal>
-    ipmi::registerHandler(
-        ipmi::prioOemBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdGetSmSignal),
-        ipmi::Privilege::Admin, ipmi::appMTMGetSignal);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdGetSmSignal,
+                          ipmi::Privilege::Admin, ipmi::appMTMGetSignal);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdSetSmSignal),
-        ipmi::Privilege::Admin, ipmi::appMTMSetSignal);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdSetSmSignal,
+                          ipmi::Privilege::Admin, ipmi::appMTMSetSignal);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(IPMINetfnIntelOEMGeneralCmd::cmdMtmKeepAlive),
-        ipmi::Privilege::Admin, ipmi::mtmKeepAlive);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdMtmKeepAlive,
+                          ipmi::Privilege::Admin, ipmi::mtmKeepAlive);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSetManufacturingData),
-        ipmi::Privilege::Admin, ipmi::setManufacturingData);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdSetManufacturingData,
+                          ipmi::Privilege::Admin, ipmi::setManufacturingData);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, ipmi::netFnOemOne,
-        static_cast<ipmi::Cmd>(
-            IPMINetfnIntelOEMGeneralCmd::cmdGetManufacturingData),
-        ipmi::Privilege::Admin, ipmi::getManufacturingData);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdGetManufacturingData,
+                          ipmi::Privilege::Admin, ipmi::getManufacturingData);
 
-    ipmi::registerHandler(
-        ipmi::prioOemBase, netfunIntelAppOEM,
-        static_cast<ipmi_cmd_t>(
-            IPMINetfnIntelOEMGeneralCmd::cmdSlotI2CMasterWriteRead),
-        ipmi::Privilege::Admin, ipmi::appSlotI2CMasterWriteRead);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
+                          ipmi::intel::general::cmdSlotI2CMasterWriteRead,
+                          ipmi::Privilege::Admin,
+                          ipmi::appSlotI2CMasterWriteRead);
 
-    ipmi::registerFilter(ipmi::netFnOemOne,
+    ipmi::registerFilter(ipmi::prioOemBase,
                          [](ipmi::message::Request::ptr request) {
                              return ipmi::mfgFilterMessage(request);
                          });
-
-    return;
 }
