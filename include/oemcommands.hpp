@@ -16,59 +16,100 @@
 
 #pragma once
 
+#include <ipmid/api-types.hpp>
 #include <user_channel/user_layer.hpp>
-enum class IPMINetfnIntelOEMGeneralCmd
+namespace ipmi
 {
-    cmdGetSmSignal = 0x14,
-    cmdSetSmSignal = 0x15,
-    cmdSetBIOSID = 0x26,
-    cmdGetOEMDeviceInfo = 0x27,
-    cmdSetColdRedundancyConfig = 0x2d,
-    cmdGetColdRedundancyConfig = 0x2e,
-    cmdGetAICSlotFRUIDSlotPosRecords = 0x31,
-    cmdSetSystemGUID = 0x41,
-    cmdDisableBMCSystemReset = 0x42,
-    cmdGetBMCResetDisables = 0x43,
-    cmdSendEmbeddedFWUpdStatus = 0x44,
-    cmdSlotI2CMasterWriteRead = 0x52,
-    cmdSetPowerRestoreDelay = 0x54,
-    cmdGetPowerRestoreDelay = 0x55,
-    cmdSetFaultIndication = 0x57,
-    cmdSetOEMUser2Activation = 0x5A,
-    cmdSetSpecialUserPassword = 0x5F,
-    cmdSetShutdownPolicy = 0x60,
-    cmdGetShutdownPolicy = 0x62,
-    cmdSetFanConfig = 0x89,
-    cmdGetFanConfig = 0x8a,
-    cmdSetFanSpeedOffset = 0x8c,
-    cmdGetFanSpeedOffset = 0x8d,
-    cmdSetDimmOffset = 0x8e,
-    cmdGetDimmOffset = 0x8f,
-    cmdSetFscParameter = 0x90,
-    cmdGetFscParameter = 0x91,
-    cmdGetChassisIdentifier = 0x92,
-    cmdReadBaseBoardProductId = 0x93,
-    cmdGetProcessorErrConfig = 0x9A,
-    cmdSetProcessorErrConfig = 0x9B,
-    cmdSetManufacturingData = 0xA1,
-    cmdGetManufacturingData = 0xA2,
-    cmdGetLEDStatus = 0xB0,
-    cmdControlBmcServices = 0xB1,
-    cmdGetBmcServiceStatus = 0xB2,
-    cmdGetSecurityMode = 0xB3,
-    cmdSetSecurityMode = 0xB4,
-    cmdMtmKeepAlive = 0xB5,
-    cmdGetNmiStatus = 0xE5,
-    cmdSetEfiBootOptions = 0xEA,
-    cmdGetEfiBootOptions = 0xEB,
-    cmdSetNmiStatus = 0xED,
-};
-
-enum class IPMINetfnIntelOEMPlatformCmd
+namespace intel
 {
-    cmdCfgHostSerialPortSpeed = 0x90,
-};
 
+static constexpr NetFn netFnGeneral = netFnOemOne;
+static constexpr NetFn netFnPlatform = netFnOemTwo;
+static constexpr NetFn netFnApp = netFnOemEight;
+
+namespace general
+{
+static constexpr Cmd cmdRestoreConfiguration = 0x02;
+static constexpr Cmd cmdGetSmSignal = 0x14;
+static constexpr Cmd cmdSetSmSignal = 0x15;
+static constexpr Cmd cmdSetBIOSID = 0x26;
+static constexpr Cmd cmdGetOEMDeviceInfo = 0x27;
+static constexpr Cmd cmdSetColdRedundancyConfig = 0x2d;
+static constexpr Cmd cmdGetColdRedundancyConfig = 0x2e;
+static constexpr Cmd cmdGetAICSlotFRUIDSlotPosRecords = 0x31;
+static constexpr Cmd cmdGetMultiNodeRole = 0x33;
+static constexpr Cmd cmdGetMultiNodeId = 0x36;
+static constexpr Cmd cmdSetSystemGUID = 0x41;
+static constexpr Cmd cmdDisableBMCSystemReset = 0x42;
+static constexpr Cmd cmdGetBMCResetDisables = 0x43;
+static constexpr Cmd cmdSendEmbeddedFWUpdStatus = 0x44;
+static constexpr Cmd cmdSlotI2CMasterWriteRead = 0x52;
+static constexpr Cmd cmdSetPowerRestoreDelay = 0x54;
+static constexpr Cmd cmdGetPowerRestoreDelay = 0x55;
+static constexpr Cmd cmdSetFaultIndication = 0x57;
+static constexpr Cmd cmdSetOEMUser2Activation = 0x5A;
+static constexpr Cmd cmdSetSpecialUserPassword = 0x5F;
+static constexpr Cmd cmdSetShutdownPolicy = 0x60;
+static constexpr Cmd cmdGetShutdownPolicy = 0x62;
+static constexpr Cmd cmdGetMultiNodePresence = 0x63;
+static constexpr Cmd cmdSetFanConfig = 0x89;
+static constexpr Cmd cmdGetFanConfig = 0x8a;
+static constexpr Cmd cmdSetFanSpeedOffset = 0x8c;
+static constexpr Cmd cmdGetFanSpeedOffset = 0x8d;
+static constexpr Cmd cmdSetDimmOffset = 0x8e;
+static constexpr Cmd cmdGetDimmOffset = 0x8f;
+static constexpr Cmd cmdSetFscParameter = 0x90;
+static constexpr Cmd cmdGetFscParameter = 0x91;
+static constexpr Cmd cmdGetChassisIdentifier = 0x92;
+static constexpr Cmd cmdReadBaseBoardProductId = 0x93;
+static constexpr Cmd cmdGetProcessorErrConfig = 0x9A;
+static constexpr Cmd cmdSetProcessorErrConfig = 0x9B;
+static constexpr Cmd cmdSetManufacturingData = 0xA1;
+static constexpr Cmd cmdGetManufacturingData = 0xA2;
+static constexpr Cmd cmdGetLEDStatus = 0xB0;
+static constexpr Cmd cmdControlBmcServices = 0xB1;
+static constexpr Cmd cmdGetBmcServiceStatus = 0xB2;
+static constexpr Cmd cmdGetSecurityMode = 0xB3;
+static constexpr Cmd cmdSetSecurityMode = 0xB4;
+static constexpr Cmd cmdMtmKeepAlive = 0xB5;
+static constexpr Cmd cmdGetNmiStatus = 0xE5;
+static constexpr Cmd cmdSetEfiBootOptions = 0xEA;
+static constexpr Cmd cmdGetEfiBootOptions = 0xEB;
+static constexpr Cmd cmdSetNmiStatus = 0xED;
+} // namespace general
+
+namespace platform
+{
+static constexpr Cmd cmdCfgHostSerialPortSpeed = 0x90;
+} // namespace platform
+
+namespace app
+{
+static constexpr Cmd cmdMdrStatus = 0x20;
+static constexpr Cmd cmdMdrComplete = 0x21;
+static constexpr Cmd cmdMdrEvent = 0x22;
+static constexpr Cmd cmdMdrRead = 0x23;
+static constexpr Cmd cmdMdrWrite = 0x24;
+static constexpr Cmd cmdMdrLock = 0x25;
+static constexpr Cmd cmdMdrIIAgentStatus = 0x30;
+static constexpr Cmd cmdMdrIIGetDir = 0x31;
+static constexpr Cmd cmdMdrIIGetDataInfo = 0x32;
+static constexpr Cmd cmdMdrIILockData = 0x33;
+static constexpr Cmd cmdMdrIIUnlockData = 0X34;
+static constexpr Cmd cmdMdrIIGetDataBlock = 0x35;
+static constexpr Cmd cmdMdrIISendDir = 0x38;
+static constexpr Cmd cmdMdrIISendDataInfoOffer = 0x39;
+static constexpr Cmd cmdMdrIISendDataInfo = 0x3a;
+static constexpr Cmd cmdMdrIIDataStart = 0x3b;
+static constexpr Cmd cmdMdrIIDataDone = 0x3c;
+static constexpr Cmd cmdMdrIISendDataBlock = 0x3d;
+} // namespace app
+
+} // namespace intel
+
+} // namespace ipmi
+
+// FIXME: put these in the cpp files that use them
 enum class IPMIIntelOEMReturnCodes
 {
     ipmiCCPayloadActive = 0x80,
@@ -108,13 +149,6 @@ enum class IPMIReturnCodeExt
     ipmiCCParamterNotSupportInPresentState = 0xD5,
 };
 
-constexpr const uint8_t netfunIntelAppOEM = 0x3E;
-static constexpr ipmi_netfn_t netfnIntcOEMGeneral =
-    NETFUN_NONE; // Netfun_none. In our platform, we use it as "intel oem
-                 // general". The code is 0x30
-
-// Intel OEM Platform code is 0x32
-static constexpr ipmi_netfn_t netfnIntcOEMPlatform = NETFUN_OEM;
 static constexpr const uint8_t maxBIOSIDLength = 0xFF;
 static constexpr const uint8_t maxCPUNum = 4;
 static constexpr const char* biosObjPath = "/xyz/openbmc_project/bios";
@@ -390,28 +424,4 @@ enum IPMI_RETURN_CODE_EXT
     IPMI_CC_REQUEST_SENSOR_DATA_RECORD_NOT_FOUND = 0xCB,
     IPMI_CC_DESTINATION_UNAVAILABLE = 0xD3,
     IPMI_CC_PARAMETER_NOT_SUPPORT_IN_PRESENT_STATE = 0xD5,
-};
-
-constexpr unsigned char NETFUN_INTEL_APP_OEM = 0x3E;
-
-enum IPMI_NETFN_INTEL_OEM_APP_CMD
-{
-    MDR_STATUS = 0x20,
-    MDR_COMPLETE = 0x21,
-    MDR_EVENT = 0x22,
-    MDR_READ = 0x23,
-    MDR_WRITE = 0x24,
-    MDR_LOCK = 0x25,
-    MDRII_AGENT_STATUS = 0x30,
-    MDRII_GET_DIR = 0x31,
-    MDRII_GET_DATA_INFO = 0x32,
-    MDRII_LOCK_DATA = 0x33,
-    MDRII_UNLOCK_DATA = 0x34,
-    MDRII_GET_DATA_BLOCK = 0x35,
-    MDRII_SEND_DIR = 0x38,
-    MDRII_SEND_DATA_INFO_OFFER = 0x39,
-    MDRII_SEND_DATA_INFO = 0x3a,
-    MDRII_DATA_START = 0x3b,
-    MDRII_DATA_DONE = 0x3c,
-    MDRII_SEND_DATA_BLOCK = 0x3d,
 };
