@@ -16,13 +16,6 @@
 
 #pragma once
 
-enum class IPMINetfnMultiNodeCmd
-{
-    cmdGetMultiNodeRole = 0x33,
-    cmdGetMultiNodeId = 0x36,
-    cmdGetMultiNodePresence = 0x63,
-};
-
 static constexpr const char* multiNodeObjPath =
     "/xyz/openbmc_project/MultiNode/Status";
 static constexpr const char* multiNodeIntf =

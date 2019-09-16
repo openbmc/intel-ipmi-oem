@@ -237,16 +237,17 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
     return std::nullopt;
 }
 } // namespace
-auto ipmiAppGetDeviceId() -> ipmi::RspType<uint8_t, // Device ID
-                                           uint8_t, // Device Revision
-                                           uint8_t, // Firmware Revision Major
-                                           uint8_t, // Firmware Revision minor
-                                           uint8_t, // IPMI version
-                                           uint8_t, // Additional device support
-                                           uint24_t, // MFG ID
-                                           uint16_t, // Product ID
-                                           uint32_t  // AUX info
-                                           >
+RspType<uint8_t,  // Device ID
+        uint8_t,  // Device Revision
+        uint8_t,  // Firmware Revision Major
+        uint8_t,  // Firmware Revision minor
+        uint8_t,  // IPMI version
+        uint8_t,  // Additional device support
+        uint24_t, // MFG ID
+        uint16_t, // Product ID
+        uint32_t  // AUX info
+        >
+    ipmiAppGetDeviceId()
 {
     static struct
     {
@@ -375,10 +376,8 @@ static void registerAPPFunctions(void)
 {
     Log::log<Log::level::INFO>("Registering App commands");
     // <Get Device ID>
-    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnApp,
-                          ipmi::app::cmdGetDeviceId, ipmi::Privilege::User,
-                          ipmiAppGetDeviceId);
-    return;
+    registerHandler(prioOemBase, netFnApp, app::cmdGetDeviceId, Privilege::User,
+                    ipmiAppGetDeviceId);
 }
 
 } // namespace ipmi
