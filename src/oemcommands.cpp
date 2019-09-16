@@ -1846,7 +1846,7 @@ int setCRConfig(ipmi::Context::ptr ctx, const std::string& property,
 {
     boost::system::error_code ec;
     ctx->bus->yield_method_call<void>(
-        *(ctx->yield), ec, "xyz.openbmc_project.Settings",
+        ctx->yield, ec, "xyz.openbmc_project.Settings",
         "/xyz/openbmc_project/control/power_supply_redundancy",
         "org.freedesktop.DBus.Properties", "Set",
         "xyz.openbmc_project.Control.PowerSupplyRedundancy", property, value);
@@ -1866,7 +1866,7 @@ int getCRConfig(ipmi::Context::ptr ctx, const std::string& property,
 {
     boost::system::error_code ec;
     value = ctx->bus->yield_method_call<crConfigVariant>(
-        *(ctx->yield), ec, "xyz.openbmc_project.Settings",
+        ctx->yield, ec, "xyz.openbmc_project.Settings",
         "/xyz/openbmc_project/control/power_supply_redundancy",
         "org.freedesktop.DBus.Properties", "Get",
         "xyz.openbmc_project.Control.PowerSupplyRedundancy", property);
@@ -2483,7 +2483,7 @@ ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr ctx)
 
     boost::system::error_code ec;
     auto varRestrMode = ctx->bus->yield_method_call<std::variant<std::string>>(
-        *ctx->yield, ec, restricionModeService, restricionModeBasePath,
+        ctx->yield, ec, restricionModeService, restricionModeBasePath,
         dBusPropertyIntf, dBusPropertyGetMethod, restricionModeIntf,
         restricionModeProperty);
     if (ec)
@@ -2497,7 +2497,7 @@ ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr ctx)
         securityNameSpace::RestrictionMode::convertModesFromString(
             std::get<std::string>(varRestrMode)));
     auto varSpecialMode = ctx->bus->yield_method_call<std::variant<uint8_t>>(
-        *ctx->yield, ec, specialModeService, specialModeBasePath,
+        ctx->yield, ec, specialModeService, specialModeBasePath,
         dBusPropertyIntf, dBusPropertyGetMethod, specialModeIntf,
         specialModeProperty);
     if (ec)
@@ -2549,7 +2549,7 @@ ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
 
     boost::system::error_code ec;
     auto varRestrMode = ctx->bus->yield_method_call<std::variant<std::string>>(
-        *ctx->yield, ec, restricionModeService, restricionModeBasePath,
+        ctx->yield, ec, restricionModeService, restricionModeBasePath,
         dBusPropertyIntf, dBusPropertyGetMethod, restricionModeIntf,
         restricionModeProperty);
     if (ec)
@@ -2578,7 +2578,7 @@ ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
 
     ec.clear();
     ctx->bus->yield_method_call<>(
-        *ctx->yield, ec, restricionModeService, restricionModeBasePath,
+        ctx->yield, ec, restricionModeService, restricionModeBasePath,
         dBusPropertyIntf, dBusPropertySetMethod, restricionModeIntf,
         restricionModeProperty,
         static_cast<std::variant<std::string>>(
