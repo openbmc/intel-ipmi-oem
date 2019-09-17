@@ -281,21 +281,18 @@ static ipmi_ret_t ipmi_firmware_get_fw_random_number(
     return IPMI_CC_OK;
 }
 
-static ipmi_ret_t ipmi_firmware_enter_fw_transfer_mode(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+/** @brief implements Firmware Set Update Mode command
+ *  @parameter
+ *   - fwRandomMumber - Random Number
+ *  @returns IPMI completion
+ *   - Status IPMI Completion Code
+ */
+ipmi::RspType<> ipmiFirmwareSetUpdateMode(
+    std::array<uint8_t, FW_RANDOM_NUMBER_LENGTH> &fwRandomMumber)
 {
     if (DEBUG)
         std::cerr << "Enter FW transfer mode requested, data_len = "
-                  << *data_len << '\n';
-
-    if (*data_len != FW_RANDOM_NUMBER_LENGTH)
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    *data_len = 0;
-
+                  << fwRandomMumber.size() << '\n';
     auto rq_time = std::chrono::steady_clock::now();
     if (DEBUG)
         std::cerr << "now - fwts = "
@@ -311,18 +308,17 @@ static ipmi_ret_t ipmi_firmware_enter_fw_transfer_mode(
     {
         if (DEBUG)
             std::cerr << "key timeout\n";
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        return ipmi::responseParmOutOfRange();
     }
 
-    uint8_t *msg_request = static_cast<uint8_t *>(request);
     for (int i = 0; i < FW_RANDOM_NUMBER_LENGTH; i++)
     {
-        if (fw_random_number[i] != msg_request[i])
+        if (fw_random_number[i] != fwRandomMumber[i])
         {
             if (DEBUG)
                 std::cerr << "key error" << (int)fw_random_number[i]
-                          << "!=" << (int)msg_request[i] << "\n";
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+                          << "!=" << (int)fwRandomMumber[i] << "\n";
+            return ipmi::responseInvalidFieldRequest();
         }
     }
 
@@ -335,7 +331,8 @@ static ipmi_ret_t ipmi_firmware_enter_fw_transfer_mode(
     {
         if (DEBUG)
             std::cerr << "not in INIT or IDLE\n";
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::responseInvalidFieldRequest();
+        ;
     }
     // FIXME? c++ doesn't off an option for exclusive file creation
     FILE *fp = fopen(FIRMWARE_BUFFER_FILE, "wx");
@@ -343,11 +340,10 @@ static ipmi_ret_t ipmi_firmware_enter_fw_transfer_mode(
     {
         if (DEBUG)
             std::cerr << "failed to create buffer file\n";
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::responseInvalidFieldRequest();
     }
     fclose(fp);
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess();
 }
 
 static ipmi_ret_t ipmi_firmware_exit_fw_update_mode(
@@ -1302,21 +1298,24 @@ ipmi::RspType<uint8_t, // status
     return ipmi::responseSuccess(status, percent, check);
 }
 
-static constexpr uint8_t FW_UPDATE_OPTIONS_NO_DOWNREV = (1 << 0);
-static constexpr uint8_t FW_UPDATE_OPTIONS_DEFER_RESTART = (1 << 1);
-static constexpr uint8_t FW_UPDATE_OPTIONS_SHA2_CHECK = (1 << 2);
-static constexpr uint8_t FW_UPDATE_OPTIONS_RESVD1 = (1 << 3);
-struct fw_update_options_request
+/** @brief implements set firmware update options
+ *  @parameter
+ *  @ mask  - options mask used to set or clear
+ *  @ options - used to set or clear options
+ *  @ integrityVerCheckValue - integrity check value
+ *  @returns IPMI completion code plus response data
+ *  - fwUpdateOptions -udpated options value
+ */
+ipmi::RspType<uint8_t // fwUpdateOptions
+              >
+    setFirmwareUpdateOptions(uint8_t mask, uint8_t options,
+                             std::vector<uint8_t> integrityVerCheckValue)
 {
-    uint8_t mask;
-    uint8_t options;
-} __attribute__((packed));
 
-uint32_t fw_update_options = 0;
-static ipmi_ret_t ipmi_firmware_update_options(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
-{
+    uint8_t fwUpdateOptions = 0;
+    constexpr uint8_t fwUpdateOptionsNoDownRev = (1 << 0);
+    constexpr uint8_t fwUpdateOptionsDeferRestart = (1 << 1);
+    constexpr uint8_t fwUpdateOptionsSha2Check = (1 << 2);
     if (DEBUG)
         std::cerr << "Get/set FW update options\n";
 
@@ -1326,77 +1325,66 @@ static ipmi_ret_t ipmi_firmware_update_options(
     // Byte 3-34 - optional integrity check expected value
     // response:
     // Byte 1 - set options
-
-    auto fw_options =
-        reinterpret_cast<struct fw_update_options_request *>(request);
-
     const char *path = FW_UPDATE_SERVER_INFO_PATH;
     const char *iface = FW_UPDATE_SECURITY_INTERFACE;
-    if ((fw_options->mask & FW_UPDATE_OPTIONS_NO_DOWNREV) &&
-        (fw_options->options & FW_UPDATE_OPTIONS_NO_DOWNREV) !=
-            (fw_update_options & FW_UPDATE_OPTIONS_NO_DOWNREV))
+    if ((mask & fwUpdateOptionsNoDownRev) &&
+        (options & fwUpdateOptionsNoDownRev) !=
+            (fwUpdateOptions & fwUpdateOptionsNoDownRev))
     {
-        if (fw_options->options & FW_UPDATE_OPTIONS_NO_DOWNREV)
+        if (options & fwUpdateOptionsNoDownRev)
         {
-            fw_update_options |= FW_UPDATE_OPTIONS_NO_DOWNREV;
+            fwUpdateOptions |= fwUpdateOptionsNoDownRev;
             /*setting flag to flase for deferring downgrade support*/
             fw_update_status.setInhibitDowngrade(true);
         }
         else
         {
-            fw_update_options &= ~FW_UPDATE_OPTIONS_NO_DOWNREV;
+            fwUpdateOptions &= ~fwUpdateOptionsNoDownRev;
             /*setting flag to true for downgrade support*/
             fw_update_status.setInhibitDowngrade(false);
         }
     }
-    if ((fw_options->mask & FW_UPDATE_OPTIONS_DEFER_RESTART) &&
-        (fw_options->options & FW_UPDATE_OPTIONS_DEFER_RESTART) !=
-            (fw_update_options & FW_UPDATE_OPTIONS_DEFER_RESTART))
+    if ((mask & fwUpdateOptionsDeferRestart) &&
+        (options & fwUpdateOptionsDeferRestart) !=
+            (fwUpdateOptions & fwUpdateOptionsDeferRestart))
     {
-        if (fw_options->options & FW_UPDATE_OPTIONS_DEFER_RESTART)
+        if (options & fwUpdateOptionsDeferRestart)
         {
-            fw_update_options |= FW_UPDATE_OPTIONS_DEFER_RESTART;
+            fwUpdateOptions |= fwUpdateOptionsDeferRestart;
             /* setting flag to true to stop image activation */
             fw_update_status.setDeferRestart(true);
         }
         else
         {
             /* setting flag to false for image activation */
-            fw_update_options &= ~FW_UPDATE_OPTIONS_DEFER_RESTART;
+            fwUpdateOptions &= ~fwUpdateOptionsDeferRestart;
             fw_update_status.setDeferRestart(false);
         }
     }
-    if (fw_options->mask & FW_UPDATE_OPTIONS_SHA2_CHECK)
+    if (mask & fwUpdateOptionsSha2Check)
     {
-        auto hash_size = EVP_MD_size(EVP_sha256());
-        if (fw_options->options & FW_UPDATE_OPTIONS_SHA2_CHECK)
+        auto hashSize = EVP_MD_size(EVP_sha256());
+        if (options & fwUpdateOptionsSha2Check)
         {
-            if (*data_len != (sizeof(*fw_options) + hash_size))
-            {
-                *data_len = 0;
-                return IPMI_CC_REQ_DATA_LEN_INVALID;
-            }
             xfer_hash_check = std::make_shared<transfer_hash_check>();
-            auto exp_hash = reinterpret_cast<uint8_t *>(fw_options + 1);
-            xfer_hash_check->init({exp_hash, exp_hash + hash_size});
-            fw_update_options |= FW_UPDATE_OPTIONS_SHA2_CHECK;
+            auto expHash =
+                reinterpret_cast<uint8_t *>(sizeof(mask) + sizeof(options) + 1);
+            xfer_hash_check->init({expHash, expHash + hashSize});
+            fwUpdateOptions |= fwUpdateOptionsSha2Check;
         }
         else
         {
-            fw_update_options &= ~FW_UPDATE_OPTIONS_SHA2_CHECK;
+            fwUpdateOptions &= ~fwUpdateOptionsSha2Check;
             // delete the xfer_hash_check object
             xfer_hash_check.reset();
         }
     }
-    auto options_rsp = reinterpret_cast<uint8_t *>(response);
-    *options_rsp = fw_update_options;
 
     if (DEBUG)
-        std::cerr << "current fw_update_options = " << std::hex
-                  << fw_update_options << '\n';
+        std::cerr << "current fwUpdateOptions = " << std::hex
+                  << (int)fwUpdateOptions << '\n';
     // Status code.
-    *data_len = sizeof(*options_rsp);
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(fwUpdateOptions);
 }
 
 struct fw_cert_info
@@ -1544,40 +1532,45 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_data(
     return rc;
 }
 
-static ipmi_ret_t ipmi_firmware_write_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                           ipmi_request_t request,
-                                           ipmi_response_t response,
-                                           ipmi_data_len_t data_len,
-                                           ipmi_context_t context)
+/** @brief implements Firmware Set Transfer Mode command
+ *  @parameter
+ *   - Incoming Data Buffer
+ *  @returns IPMI completion code plus response data
+ *   - Number of bytes received in this transfer
+ */
+ipmi::RspType<uint32_t // Transfer bytes recieved
+              >
+    ipmiFirmwareWriteData(std::vector<uint8_t> &request)
 {
     if (DEBUG)
-        std::cerr << "write fw data (" << *data_len << " bytes)\n";
+        std::cerr << "write fw data \n";
 
-    auto bytes_in = *data_len;
-    *data_len = 0;
+    uint32_t bytesIn = 0;
+
     if (fw_update_status.state() != fw_update_status_cache::FW_STATE_DOWNLOAD)
-        return IPMI_CC_INVALID;
+        return ipmi::responseBusy();
 
     std::ofstream out(FIRMWARE_BUFFER_FILE,
                       std::ofstream::binary | std::ofstream::app);
     if (!out)
     {
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
     if (out.tellp() > FIRMWARE_BUFFER_MAX_SIZE)
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::responseInvalidFieldRequest();
     }
-    auto data = reinterpret_cast<uint8_t *>(request);
-    out.write(reinterpret_cast<char *>(data), bytes_in);
+    auto data = request.data();
+    bytesIn = request.size();
+    out.write(reinterpret_cast<char *>(data), bytesIn);
     out.close();
     if (xfer_hash_check)
     {
-        xfer_hash_check->hash({data, data + bytes_in});
+        xfer_hash_check->hash({data, data + bytesIn});
     }
 
-    // Status code.
-    return IPMI_CC_OK;
+    // Return Success Status code.
+    return ipmi::responseSuccess(bytesIn);
 }
 
 static constexpr char NOT_IMPLEMENTED[] = "NOT IMPLEMENTED";
@@ -1695,9 +1688,11 @@ static void register_netfn_firmware_functions()
                            PRIVILEGE_ADMIN);
 
     // enter firmware update mode
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_SET_FW_UPDATE_MODE,
-                           NULL, ipmi_firmware_enter_fw_transfer_mode,
-                           PRIVILEGE_ADMIN);
+    //    ipmi::registerHandler(ipmi::prioOemBase,
+    //    IPMI_CMD_FW_SET_FW_UPDATE_MODE,
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_SET_FW_UPDATE_MODE,
+                          ipmi::Privilege::Admin, ipmiFirmwareSetUpdateMode);
 
     // exit firmware update mode
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_EXIT_FW_UPDATE_MODE,
@@ -1713,12 +1708,13 @@ static void register_netfn_firmware_functions()
                           IPMI_CMD_FW_GET_STATUS, ipmi::Privilege::Admin,
                           ipmiFrmwareGetStatus);
     // set firmware update options (no downgrade, etc.)
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_SET_FW_UPDATE_OPTIONS,
-                           NULL, ipmi_firmware_update_options, PRIVILEGE_ADMIN);
-
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_SET_FW_UPDATE_OPTIONS,
+                          ipmi::Privilege::Admin, setFirmwareUpdateOptions);
     // write image data
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_IMAGE_WRITE, NULL,
-                           ipmi_firmware_write_data, PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_IMAGE_WRITE, ipmi::Privilege::Admin,
+                          ipmiFirmwareWriteData);
 
     // get update timestamps
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_TIMESTAMP, NULL,
