@@ -76,6 +76,7 @@ static constexpr Cmd cmdGetNmiStatus = 0xE5;
 static constexpr Cmd cmdSetEfiBootOptions = 0xEA;
 static constexpr Cmd cmdGetEfiBootOptions = 0xEB;
 static constexpr Cmd cmdSetNmiStatus = 0xED;
+static constexpr Cmd cmdGetPSUVersion = 0xEF;
 } // namespace general
 
 namespace platform
