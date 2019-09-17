@@ -81,6 +81,7 @@ static constexpr Cmd cmdSetNmiStatus = 0xED;
 namespace platform
 {
 static constexpr Cmd cmdCfgHostSerialPortSpeed = 0x90;
+static constexpr Cmd cmdClearCMOS = 0x91;
 } // namespace platform
 
 namespace app
