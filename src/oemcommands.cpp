@@ -19,6 +19,7 @@
 
 #include <systemd/sd-journal.h>
 
+#include <appcommands.hpp>
 #include <array>
 #include <boost/container/flat_map.hpp>
 #include <boost/process/child.hpp>
@@ -33,6 +34,7 @@
 #include <nlohmann/json.hpp>
 #include <oemcommands.hpp>
 #include <phosphor-logging/log.hpp>
+#include <regex>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/message/types.hpp>
 #include <string>
@@ -295,37 +297,82 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                ipmi_request_t request,
-                                ipmi_response_t response,
-                                ipmi_data_len_t dataLen, ipmi_context_t context)
+bool getSwVerInfo(uint8_t& bmcMajor, uint8_t& bmcMinor, uint8_t& meMajor,
+                  uint8_t& meMinor)
 {
-    GetOemDeviceInfoReq* req = reinterpret_cast<GetOemDeviceInfoReq*>(request);
-    GetOemDeviceInfoRes* res = reinterpret_cast<GetOemDeviceInfoRes*>(response);
-
-    if (*dataLen == 0)
+    // step 1 : get BMC Major and Minor numbers from its DBUS property
+    std::optional<MetaRevision> rev{};
+    try
     {
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        std::string version = getActiveSoftwareVersionInfo();
+        rev = convertIntelVersion(version);
+    }
+    catch (const std::exception& e)
+    {
+        return false;
     }
 
-    size_t reqDataLen = *dataLen;
-    *dataLen = 0;
-    if (req->entityType > static_cast<uint8_t>(OEMDevEntityType::sdrVer))
+    if (rev.has_value())
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        MetaRevision revision = rev.value();
+        bmcMajor = revision.major;
+
+        revision.minor = (revision.minor > 99 ? 99 : revision.minor);
+        bmcMinor = revision.minor % 10 + (revision.minor / 10) * 16;
+    }
+
+    // step 2 : get ME Major and Minor numbers from its DBUS property
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        std::string service =
+            getService(*dbus, "xyz.openbmc_project.Software.Version",
+                       "/xyz/openbmc_project/me_version");
+        Value variant =
+            getDbusProperty(*dbus, service, "/xyz/openbmc_project/me_version",
+                            "xyz.openbmc_project.Software.Version", "Version");
+
+        std::string& meString = std::get<std::string>(variant);
+
+        // get ME major number
+        std::regex pattern1("(\\d+?).(\\d+?).(\\d+?).(\\d+?).(\\d+?)");
+        constexpr size_t matchedPhosphor = 6;
+        std::smatch results;
+        if (std::regex_match(meString, results, pattern1))
+        {
+            if (results.size() == matchedPhosphor)
+            {
+                meMajor = static_cast<uint8_t>(std::stoi(results[1]));
+                meMinor = static_cast<uint8_t>(std::stoi(results[2]));
+            }
+        }
+    }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        return false;
+    }
+    return true;
+}
+
+ipmi::RspType<std::vector<uint8_t>> ipmiOEMGetDeviceInfo(uint8_t entityType,
+                                                         uint8_t countToRead,
+                                                         uint8_t offset)
+{
+    if (countToRead == 0)
+    {
+        return ipmi::responseReqDataLenInvalid();
+    }
+
+    if (entityType > static_cast<uint8_t>(OEMDevEntityType::sdrVer))
+    {
+        return ipmi::responseInvalidFieldRequest();
     }
 
     // handle OEM command items
-    switch (OEMDevEntityType(req->entityType))
+    switch (OEMDevEntityType(entityType))
     {
         case OEMDevEntityType::biosId:
         {
-            if (sizeof(GetOemDeviceInfoReq) != reqDataLen)
-            {
-                return IPMI_CC_REQ_DATA_LEN_INVALID;
-            }
-
             std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
             std::string service = getService(*dbus, biosIntf, biosObjPath);
             try
@@ -333,40 +380,54 @@ ipmi_ret_t ipmiOEMGetDeviceInfo(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 Value variant = getDbusProperty(*dbus, service, biosObjPath,
                                                 biosIntf, biosProp);
                 std::string& idString = std::get<std::string>(variant);
-                if (req->offset >= idString.size())
+                if (offset >= idString.size())
                 {
-                    return IPMI_CC_PARM_OUT_OF_RANGE;
+                    return ipmi::responseParmOutOfRange();
                 }
                 size_t length = 0;
-                if (req->countToRead > (idString.size() - req->offset))
+                if (countToRead > (idString.size() - offset))
                 {
-                    length = idString.size() - req->offset;
+                    length = idString.size() - offset;
                 }
                 else
                 {
-                    length = req->countToRead;
+                    length = countToRead;
                 }
-                std::copy(idString.begin() + req->offset, idString.end(),
-                          res->data);
-                res->resDatalen = length;
-                *dataLen = res->resDatalen + 1;
+
+                std::vector<uint8_t> readBuf(
+                    length +
+                    1); // the first datum indicates the BIOS data length
+                readBuf[0] = length;
+                std::copy(idString.begin() + offset, idString.end(),
+                          (readBuf.begin() + 1));
+                return ipmi::responseSuccess(readBuf);
             }
             catch (std::bad_variant_access& e)
             {
-                phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-                return IPMI_CC_UNSPECIFIED_ERROR;
+                return ipmi::responseUnspecifiedError();
             }
         }
         break;
 
         case OEMDevEntityType::devVer:
+        {
+            static constexpr const size_t verLen = 4;
+            std::vector<uint8_t> readBuf = {verLen, 0xff, 0xff, 0xff, 0xff};
+            if (true !=
+                getSwVerInfo(readBuf[1], readBuf[2], readBuf[3], readBuf[4]))
+            {
+                return ipmi::responseUnspecifiedError();
+            }
+            return ipmi::responseSuccess(readBuf);
+        }
+        break;
+
         case OEMDevEntityType::sdrVer:
             // TODO:
-            return IPMI_CC_ILLEGAL_COMMAND;
+            return ipmi::responseIllegalCommand();
         default:
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
     }
-    return IPMI_CC_OK;
 }
 
 ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -3304,9 +3365,9 @@ static void registerOEMFunctions(void)
     ipmiPrintAndRegister(intel::netFnGeneral, intel::general::cmdSetBIOSID,
                          NULL, ipmiOEMSetBIOSID, PRIVILEGE_ADMIN);
 
-    ipmiPrintAndRegister(intel::netFnGeneral,
-                         intel::general::cmdGetOEMDeviceInfo, NULL,
-                         ipmiOEMGetDeviceInfo, PRIVILEGE_USER);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetOEMDeviceInfo, Privilege::User,
+                    ipmiOEMGetDeviceInfo);
 
     ipmiPrintAndRegister(intel::netFnGeneral,
                          intel::general::cmdGetAICSlotFRUIDSlotPosRecords, NULL,
