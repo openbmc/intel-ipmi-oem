@@ -3270,6 +3270,106 @@ ipmi::RspType<> ipmiOemSetBootOptions(uint8_t bootFlag, uint8_t bootParam,
     return ipmi::responseSuccess();
 }
 
+using BasicVariantType = std::variant<std::vector<uint64_t>, uint64_t>;
+using PropertyMapType =
+    boost::container::flat_map<std::string, BasicVariantType>;
+static constexpr const std::array<const char*, 1> psuPresenceTypes = {
+    "xyz.openbmc_project.Configuration.PSUPresence"};
+int getPSUAddress(ipmi::Context::ptr ctx, uint8_t& bus,
+                  std::vector<uint64_t>& addrTable)
+{
+    boost::system::error_code ec;
+    GetSubTreeType subtree = ctx->bus->yield_method_call<GetSubTreeType>(
+        ctx->yield, ec, "xyz.openbmc_project.ObjectMapper",
+        "/xyz/openbmc_project/object_mapper",
+        "xyz.openbmc_project.ObjectMapper", "GetSubTree",
+        "/xyz/openbmc_project/inventory/system", 3, psuPresenceTypes);
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to set dbus property to cold redundancy");
+        return -1;
+    }
+    for (const auto& object : subtree)
+    {
+        const std::string& pathName = object.first;
+        for (const auto& serviceIface : object.second)
+        {
+            const std::string& serviceName = serviceIface.first;
+
+            ec.clear();
+            PropertyMapType propMap =
+                ctx->bus->yield_method_call<PropertyMapType>(
+                    ctx->yield, ec, serviceName, pathName,
+                    "org.freedesktop.DBus.Properties", "GetAll",
+                    "xyz.openbmc_project.Configuration.PSUPresence");
+            if (ec)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to set dbus property to cold redundancy");
+                return -1;
+            }
+            auto psuBus = std::get_if<uint64_t>(&propMap["Bus"]);
+            auto psuAddress =
+                std::get_if<std::vector<uint64_t>>(&propMap["Address"]);
+
+            if (psuBus == nullptr || psuAddress == nullptr)
+            {
+                std::cerr << "error finding necessary "
+                             "entry in configuration\n";
+                return -1;
+            }
+            bus = static_cast<uint8_t>(*psuBus);
+            addrTable = *psuAddress;
+            return 0;
+        }
+    }
+    return -1;
+}
+
+static const constexpr uint8_t addrOffset = 8;
+static const constexpr uint8_t psuRevision = 0xd9;
+static const constexpr uint8_t defaultPSUBus = 7;
+// Second Minor, Primary Minor, Major
+static const constexpr uint8_t verLen = 3;
+ipmi::RspType<std::vector<uint8_t>> ipmiOEMGetPSUVersion(ipmi::Context::ptr ctx)
+{
+    uint8_t bus = defaultPSUBus;
+    std::vector<uint64_t> addrTable;
+    std::vector<uint8_t> result;
+    if (getPSUAddress(ctx, bus, addrTable))
+    {
+        std::cerr << "Failed to get PSU bus and address\n";
+        return ipmi::responseResponseError();
+    }
+
+    for (const auto& slaveAddr : addrTable)
+    {
+        std::vector<uint8_t> writeData = {psuRevision};
+        std::vector<uint8_t> readBuf(verLen);
+        uint8_t addr = static_cast<uint8_t>(slaveAddr) + addrOffset;
+        std::string i2cBus = "/dev/i2c-" + std::to_string(bus);
+
+        auto retI2C = ipmi::i2cWriteRead(i2cBus, addr, writeData, readBuf);
+        if (retI2C != ipmi::ccSuccess)
+        {
+            for (const uint8_t& data : readBuf)
+            {
+                result.emplace_back(0x00);
+            }
+        }
+        else
+        {
+            for (const uint8_t& data : readBuf)
+            {
+                result.emplace_back(data);
+            }
+        }
+    }
+
+    return ipmi::responseSuccess(result);
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -3434,6 +3534,10 @@ static void registerOEMFunctions(void)
 
     registerHandler(prioOemBase, netFnChassis, chassis::cmdSetSystemBootOptions,
                     Privilege::Operator, ipmiOemSetBootOptions);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetPSUVersion, Privilege::User,
+                    ipmiOEMGetPSUVersion);
 }
 
 } // namespace ipmi
