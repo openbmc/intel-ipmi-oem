@@ -87,7 +87,7 @@ static constexpr const char* restricionModeProperty = "RestrictionMode";
 static constexpr const char* specialModeService =
     "xyz.openbmc_project.SpecialMode";
 static constexpr const char* specialModeBasePath =
-    "/xyz/openbmc_project/security/specialMode";
+    "/xyz/openbmc_project/security/special_mode";
 static constexpr const char* specialModeIntf =
     "xyz.openbmc_project.Security.SpecialMode";
 static constexpr const char* specialModeProperty = "SpecialMode";
