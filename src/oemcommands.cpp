@@ -3150,8 +3150,10 @@ ipmi::RspType<> ipmiOemSetEfiBootOptions(uint8_t bootFlag, uint8_t bootParam,
     return ipmi::responseSuccess();
 }
 
-ipmi::RspType<> ipmiOemSetBootOptions(uint8_t bootFlag, uint8_t bootParam,
-                                      std::optional<uint8_t> bootOption)
+ipmi::RspType<>
+    ipmiOemSetBootOptions(uint8_t bootFlag, uint8_t bootParam,
+                          std::optional<uint8_t> bootOption,
+                          std::optional<std::array<uint8_t, 3>> bootResv)
 {
     bool oneTimeEnabled = false;
     uint8_t bootOptionValue = 0;
@@ -3163,13 +3165,6 @@ ipmi::RspType<> ipmiOemSetBootOptions(uint8_t bootFlag, uint8_t bootParam,
         if (bootOption)
         {
             return ipmi::responseReqDataLenInvalid();
-        }
-
-        if (boot_options::transferStatus == boot_options::setInProgress)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "boot option set in progress!");
-            return ipmi::responseResponseError();
         }
 
         boot_options::transferStatus = bootParam;
