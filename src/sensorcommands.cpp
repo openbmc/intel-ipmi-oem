@@ -23,6 +23,7 @@
 #include <ipmi_to_redfish_hooks.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
+#include <map>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sdrutils.hpp>
