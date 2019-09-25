@@ -313,12 +313,6 @@ struct GetOEMShutdownPolicyRes
     uint8_t policySupport;
 };
 
-struct SetFanConfigReq
-{
-    uint8_t selectedProfile;
-    uint8_t flags;
-    // other parameters from previous generation are not supported
-};
 struct CfgHostSerialReq
 {
     uint8_t command;
@@ -358,15 +352,6 @@ enum class DimmFaultType
     cpu1cpu2Dimm,
     cpu3cpu4Dimm,
     maxFaultGroup,
-};
-
-enum class setFanProfileFlags : uint8_t
-{
-    setFanProfile = 7,
-    setPerfAcousMode = 6,
-    // reserved [5:3]
-    performAcousSelect = 2
-    // reserved [1:0]
 };
 
 enum class setFscParamFlags : uint8_t
