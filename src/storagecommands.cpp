@@ -589,7 +589,7 @@ static int countSELEntries()
 }
 
 static bool findSELEntry(const int recordID,
-                         const std::vector<std::filesystem::path> selLogFiles,
+                         const std::vector<std::filesystem::path>& selLogFiles,
                          std::string& entry)
 {
     // Record ID is the first entry field following the timestamp. It is
@@ -619,7 +619,7 @@ static bool findSELEntry(const int recordID,
 
 static uint16_t
     getNextRecordID(const uint16_t recordID,
-                    const std::vector<std::filesystem::path> selLogFiles)
+                    const std::vector<std::filesystem::path>& selLogFiles)
 {
     uint16_t nextRecordID = recordID + 1;
     std::string entry;
@@ -633,7 +633,7 @@ static uint16_t
     }
 }
 
-static int fromHexStr(const std::string hexStr, std::vector<uint8_t>& data)
+static int fromHexStr(const std::string& hexStr, std::vector<uint8_t>& data)
 {
     for (unsigned int i = 0; i < hexStr.size(); i += 2)
     {
