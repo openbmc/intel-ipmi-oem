@@ -1365,45 +1365,41 @@ bool getFanProfileInterface(
     return true;
 }
 
-ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                               ipmi_request_t request, ipmi_response_t response,
-                               ipmi_data_len_t dataLen, ipmi_context_t context)
+/**@brief implements the OEM set fan config.
+ * @param selectedFanProfile - fan profile to enable
+ * @param reserved1
+ * @param performanceMode - Performance/Acoustic mode
+ * @param reserved2
+ * @param setPerformanceMode - set Performance/Acoustic mode
+ * @param setFanProfile - set fan profile
+ *
+ * @return IPMI completion code.
+ **/
+ipmi::RspType<> ipmiOEMSetFanConfig(uint8_t selectedFanProfile,
+
+                                    uint2_t reserved1, bool performanceMode,
+                                    uint3_t reserved2, bool setPerformanceMode,
+                                    bool setFanProfile)
 {
-
-    if (*dataLen < 2 || *dataLen > 7)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiOEMSetFanConfig: invalid input len!");
-        *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
     // todo: tell bios to only send first 2 bytes
-
-    SetFanConfigReq* req = reinterpret_cast<SetFanConfigReq*>(request);
     boost::container::flat_map<
         std::string, std::variant<std::vector<std::string>, std::string>>
         profileData;
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     if (!getFanProfileInterface(*dbus, profileData))
     {
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::responseUnspecifiedError();
     }
 
     std::vector<std::string>* supported =
         std::get_if<std::vector<std::string>>(&profileData["Supported"]);
     if (supported == nullptr)
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::responseInvalidFieldRequest();
     }
     std::string mode;
-    if (req->flags &
-        (1 << static_cast<uint8_t>(setFanProfileFlags::setPerfAcousMode)))
+    if (setPerformanceMode)
     {
-        bool performanceMode =
-            (req->flags & (1 << static_cast<uint8_t>(
-                               setFanProfileFlags::performAcousSelect))) > 0;
-
         if (performanceMode)
         {
 
@@ -1415,7 +1411,6 @@ ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         }
         else
         {
-
             if (std::find(supported->begin(), supported->end(), "Acoustic") !=
                 supported->end())
             {
@@ -1424,13 +1419,24 @@ ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         }
         if (mode.empty())
         {
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::responseInvalidFieldRequest();
         }
-        setDbusProperty(*dbus, settingsBusName, thermalModePath,
-                        thermalModeInterface, "Current", mode);
+
+        try
+        {
+            setDbusProperty(*dbus, settingsBusName, thermalModePath,
+                            thermalModeInterface, "Current", mode);
+        }
+        catch (sdbusplus::exception_t& e)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMSetFanConfig: can't set thermal mode!",
+                phosphor::logging::entry("EXCEPTION=%s", e.what()));
+            return ipmi::responseResponseError();
+        }
     }
 
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess();
 }
 
 ipmi::RspType<uint8_t, // profile support map
@@ -3404,8 +3410,9 @@ static void registerOEMFunctions(void)
                          intel::general::cmdGetShutdownPolicy, NULL,
                          ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
 
-    ipmiPrintAndRegister(intel::netFnGeneral, intel::general::cmdSetFanConfig,
-                         NULL, ipmiOEMSetFanConfig, PRIVILEGE_USER);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetFanConfig, Privilege::User,
+                    ipmiOEMSetFanConfig);
 
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetFanConfig, Privilege::User,
