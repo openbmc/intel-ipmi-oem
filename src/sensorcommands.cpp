@@ -829,11 +829,11 @@ ipmi::RspType<uint8_t, // enabled
     std::string connection;
     std::string path;
 
-    uint8_t enabled;
-    uint8_t assertionEnabledLsb;
-    uint8_t assertionEnabledMsb;
-    uint8_t deassertionEnabledLsb;
-    uint8_t deassertionEnabledMsb;
+    uint8_t enabled = 0;
+    uint8_t assertionEnabledLsb = 0;
+    uint8_t assertionEnabledMsb = 0;
+    uint8_t deassertionEnabledLsb = 0;
+    uint8_t deassertionEnabledMsb = 0;
 
     auto status = getSensorConnection(sensorNum, connection, path);
     if (status)
