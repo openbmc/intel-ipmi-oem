@@ -32,6 +32,7 @@
 #include <sensorutils.hpp>
 #include <storagecommands.hpp>
 #include <string>
+#include <utility>
 
 namespace ipmi
 {
