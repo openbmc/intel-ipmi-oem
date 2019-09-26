@@ -34,6 +34,7 @@
 #include <storagecommands.hpp>
 #include <string>
 #include <utility>
+#include <variant>
 
 namespace ipmi
 {
