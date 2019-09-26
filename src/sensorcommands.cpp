@@ -14,6 +14,7 @@
 // limitations under the License.
 */
 
+#include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <chrono>
