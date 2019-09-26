@@ -86,7 +86,7 @@ int getGpioPathForSmSignal(const SmSignalGet signal, std::string& path)
     return 0;
 }
 
-ipmi_ret_t ledStoreAndSet(SmSignalSet signal, std::string setState)
+ipmi_ret_t ledStoreAndSet(SmSignalSet signal, const std::string& setState)
 {
     LedProperty* ledProp = mtm.findLedProperty(signal);
     if (ledProp == nullptr)
