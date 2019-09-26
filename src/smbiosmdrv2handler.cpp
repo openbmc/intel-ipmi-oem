@@ -621,10 +621,6 @@ ipmi::RspType<uint32_t,            // xferLength
     mdr2GetDataBlock(uint16_t agentId, uint16_t lockHandle, uint32_t xferOffset,
                      uint32_t xferLength)
 {
-    std::tuple<uint8_t, uint32_t, uint32_t, std::vector<uint8_t>> res;
-    std::vector<uint8_t> resData;
-    uint8_t status = 1;
-
     if (mdrv2 == nullptr)
     {
         mdrv2 = std::make_unique<MDRV2>();
