@@ -19,6 +19,7 @@
 #include <chrono>
 #include <cmath>
 #include <commandutils.hpp>
+#include <cstring>
 #include <iostream>
 #include <ipmi_to_redfish_hooks.hpp>
 #include <ipmid/api.hpp>
