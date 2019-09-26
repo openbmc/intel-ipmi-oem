@@ -567,7 +567,7 @@ ipmi::RspType<bool> mdr2SendDataInfo(uint16_t agentId,
         return ipmi::responseParmOutOfRange();
     }
 
-    int idIndex = mdrv2->findDataId(dataInfo.data(), sizeof(dataInfo), service);
+    int idIndex = mdrv2->findDataId(dataInfo.data(), dataInfo.size(), service);
 
     if ((idIndex < 0) || (idIndex >= maxDirEntries))
     {
@@ -999,7 +999,7 @@ ipmi::RspType<uint8_t,  // mdr2Version
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     std::string service = ipmi::getService(*bus, mdrv2Interface, mdrv2Path);
 
-    int idIndex = mdrv2->findDataId(dataInfo.data(), sizeof(dataInfo), service);
+    int idIndex = mdrv2->findDataId(dataInfo.data(), dataInfo.size(), service);
 
     if ((idIndex < 0) || (idIndex >= maxDirEntries))
     {
@@ -1109,7 +1109,7 @@ ipmi::RspType<uint8_t, uint16_t>
         return ipmi::responseParmOutOfRange();
     }
 
-    int idIndex = mdrv2->findDataId(dataInfo.data(), sizeof(dataInfo), service);
+    int idIndex = mdrv2->findDataId(dataInfo.data(), dataInfo.size(), service);
 
     if ((idIndex < 0) || (idIndex >= maxDirEntries))
     {
