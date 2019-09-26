@@ -34,6 +34,7 @@
 #include <sdrutils.hpp>
 #include <sensorcommands.hpp>
 #include <sensorutils.hpp>
+#include <stdexcept>
 #include <storagecommands.hpp>
 #include <string>
 #include <utility>
