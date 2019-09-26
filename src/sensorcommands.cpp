@@ -24,6 +24,7 @@
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <map>
+#include <optional>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sdrutils.hpp>
