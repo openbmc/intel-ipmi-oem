@@ -15,6 +15,7 @@
 */
 
 #include <algorithm>
+#include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <chrono>
