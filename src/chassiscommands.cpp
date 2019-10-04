@@ -371,7 +371,7 @@ static bool getRestartCause(std::string& restartCause)
     constexpr const char* restartCausePath =
         "/xyz/openbmc_project/control/host0/restart_cause";
     constexpr const char* restartCauseIntf =
-        "xyz.openbmc_project.Common.RestartCause";
+        "xyz.openbmc_project.Control.Host.RestartCause";
     std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
 
     try
