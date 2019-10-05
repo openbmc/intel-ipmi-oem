@@ -898,8 +898,7 @@ ipmi::RspType<uint16_t, // Next Record ID
         return ipmi::responseSuccess(nextRecordID, recordID, recordType,
                                      oemTsEventType{timestamp, eventData});
     }
-    else if (recordType >= intel_oem::ipmi::sel::oemEventFirst &&
-             recordType <= intel_oem::ipmi::sel::oemEventLast)
+    else if (recordType >= intel_oem::ipmi::sel::oemEventFirst)
     {
         // Only keep the bytes that fit in the record
         std::array<uint8_t, intel_oem::ipmi::sel::oemEventSize> eventData{};
