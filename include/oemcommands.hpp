@@ -301,13 +301,6 @@ struct GetPowerRestoreDelayRes
     uint8_t byteLSB;
 };
 
-struct GetOemDeviceInfoReq
-{
-    uint8_t entityType;
-    uint8_t countToRead;
-    uint8_t offset;
-};
-
 struct GetOemDeviceInfoRes
 {
     uint8_t resDatalen;
