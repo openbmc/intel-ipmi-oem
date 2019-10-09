@@ -3201,7 +3201,7 @@ ipmi::RspType<>
         Value variant = getDbusProperty(
             *dbus, service, boot_options::oneTimePath,
             boot_options::enabledIntf, boot_options::oneTimeBootEnableProp);
-        oneTimeEnabled = std::get_if<bool>(&variant);
+        oneTimeEnabled = std::get<bool>(variant);
 
         /*
          * Check if the current boot setting is onetime or permanent, if the
@@ -3217,6 +3217,7 @@ ipmi::RspType<>
             setDbusProperty(*dbus, service, boot_options::oneTimePath,
                             boot_options::enabledIntf,
                             boot_options::oneTimeBootEnableProp, !permanent);
+            oneTimeEnabled = !permanent;
         }
 
         // set BootSource and BootMode properties
