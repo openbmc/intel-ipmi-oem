@@ -16,6 +16,8 @@
 
 #pragma once
 #include <cstdint>
+#include <ipmid/api.hpp>
+#include <sdrutils.hpp>
 
 #pragma pack(push, 1)
 
