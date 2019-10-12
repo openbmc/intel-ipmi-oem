@@ -522,7 +522,7 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     resp.header.record_id_lsb = 0x0; // calling code is to implement these
     resp.header.record_id_msb = 0x0;
     resp.header.sdr_version = ipmiSdrVersion;
-    resp.header.record_type = 0x11; // FRU Device Locator
+    resp.header.record_type = get_sdr::SENSOR_DATA_FRU_RECORD;
     resp.header.record_length = sizeof(resp.body) + sizeof(resp.key) - sizeDiff;
     resp.key.deviceAddress = 0x20;
     resp.key.fruID = device->first;
