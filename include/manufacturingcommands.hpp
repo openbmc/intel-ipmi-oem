@@ -264,6 +264,7 @@ class Manufacturing
     bool revertFanPWM = false;
     bool revertLedCallback = false;
     phosphor::Timer revertTimer;
+    int mtmTestBeepFd = -1;
 };
 
 } // namespace ipmi
