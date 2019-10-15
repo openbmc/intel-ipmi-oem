@@ -14,6 +14,8 @@
 // limitations under the License.
 */
 
+#include <linux/input.h>
+
 #include <boost/container/flat_map.hpp>
 #include <filesystem>
 #include <fstream>
@@ -47,6 +49,9 @@ const static constexpr char* systemDObjPath = "/org/freedesktop/systemd1";
 const static constexpr char* systemDMgrIntf =
     "org.freedesktop.systemd1.Manager";
 const static constexpr char* pidControlService = "phosphor-pid-control.service";
+
+static constexpr char bpMtmDevName[] = "/dev/input/event0";
+int mtmTestBeepFd = -1;
 
 static inline Cc resetMtmTimer(ipmi::Context::ptr ctx)
 {
@@ -178,6 +183,11 @@ void Manufacturing::revertTimerHandler()
     {
         revertFanPWM = false;
         disablePidControlService(false);
+    }
+
+    if (mtmTestBeepFd != -1)
+    {
+        ::close(mtmTestBeepFd);
     }
 
     for (const auto& ledProperty : ledPropertyList)
@@ -547,6 +557,79 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                     if (ret < 0)
                     {
                         return ipmi::responseUnspecifiedError();
+                    }
+                }
+                break;
+                default:
+                {
+                    return ipmi::responseInvalidFieldRequest();
+                }
+            }
+        }
+        break;
+        case SmSignalSet::smSpeaker:
+        {
+            switch (action)
+            {
+                case SmActionSet::forceDeasserted:
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "case SmActionSet::forceDeasserted");
+
+                    if (mtmTestBeepFd != -1)
+                    {
+                        ::close(mtmTestBeepFd);
+                        mtmTestBeepFd = -1;
+                    }
+                }
+                break;
+                case SmActionSet::forceAsserted:
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "case SmActionSet::forceAsserted");
+
+                    if (mtmTestBeepFd != -1)
+                    {
+                        std::cerr << " mtm beep device is opening already!"
+                                  << std::endl;
+                        // returning success as already beep is in progress
+                        return ipmi::response(retCode);
+                    }
+
+                    if ((mtmTestBeepFd =
+                             ::open(bpMtmDevName, O_RDWR | O_CLOEXEC)) < 0)
+                    {
+                        phosphor::logging::log<phosphor::logging::level::ERR>(
+                            "Failed to open input device");
+                        return ipmi::responseUnspecifiedError();
+                    }
+
+                    uint32_t freq = 2000;
+                    struct input_event event;
+                    event.type = EV_SND;
+                    event.code = SND_TONE;
+                    event.value = freq;
+
+                    if (::write(mtmTestBeepFd, &event,
+                                sizeof(struct input_event)) !=
+                        sizeof(struct input_event))
+                    {
+                        phosphor::logging::log<phosphor::logging::level::ERR>(
+                            "Failed to write a tone sound event");
+                        ::close(mtmTestBeepFd);
+                        mtmTestBeepFd = -1;
+                        return ipmi::responseUnspecifiedError();
+                    }
+                    mtm.revertTimer.start(revertTimeOut);
+                }
+                break;
+                case SmActionSet::revert:
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "case SmActionSet::revert");
+                    if (mtmTestBeepFd != -1)
+                    {
+                        ::close(mtmTestBeepFd);
                     }
                 }
                 break;
