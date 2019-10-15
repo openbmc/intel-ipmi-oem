@@ -25,6 +25,9 @@
 #include <sdbusplus/server/object.hpp>
 #include <sdbusplus/timer.hpp>
 #include <sstream>
+#ifdef INTEL_PFR_ENABLED
+#include <spiDev.hpp>
+#endif
 
 #ifdef INTEL_PFR_ENABLED
 uint32_t imgLength = 0;
@@ -1492,69 +1495,84 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_info(
     return rc;
 }
 
-struct fw_cert_data_req
+#ifdef INTEL_PFR_ENABLED
+enum class FwGetRootCertDataTag : uint8_t
 {
-    uint8_t cert_id;
-    uint16_t offset;
-    uint16_t count;
-} __attribute__((packed));
+    activeRootKey = 1,
+    recoveryRootKey,
+    activeCSK,
+    recoveryCSK,
+};
 
-static ipmi_ret_t ipmi_firmware_get_root_cert_data(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+static constexpr char *bmcPfmMTDDev = "/dev/mtd/pfm";
+static constexpr uint32_t pfmBaseOffsetInImage = 0x400;
+static constexpr uint32_t rootCertOffsetInPfm = 0xA0;
+static constexpr uint32_t cskOffsetInPfm = 0x118;
+static constexpr uint8_t certRootKeySize = 96;
+static constexpr uint8_t cskSize = 24;
+
+ipmi::RspType<std::array<uint8_t, certRootKeySize>,
+              std::optional<std::array<uint8_t, cskSize>>>
+    ipmiGetFwRootCertData(uint8_t certId)
 {
-    if (DEBUG)
-        std::cerr << "Get FW root cert data\n";
+    uint32_t certOffset = 0;
+    uint32_t cskOffset = 0;
 
-    // request:
-    // Byte 1 - certificate ID: request which certificate (ignored)
-    // Byte 2-3 - offset within cert to start at
-    // Byte 4-5 - number of bytes to return
+    switch (certId)
+    {
+        case static_cast<uint8_t>(FwGetRootCertDataTag::activeRootKey):
+        {
+            certOffset = rootCertOffsetInPfm;
+            break;
+        }
+        case static_cast<uint8_t>(FwGetRootCertDataTag::recoveryRootKey):
+        {
+            certOffset = rootCertOffsetInPfm + pfmBaseOffsetInImage;
+            break;
+        }
+        case static_cast<uint8_t>(FwGetRootCertDataTag::activeCSK):
+        {
+            certOffset = rootCertOffsetInPfm;
+            cskOffset = cskOffsetInPfm;
+            break;
+        }
+        case static_cast<uint8_t>(FwGetRootCertDataTag::recoveryCSK):
+        {
+            certOffset = rootCertOffsetInPfm + pfmBaseOffsetInImage;
+            cskOffset = cskOffsetInPfm + pfmBaseOffsetInImage;
+            break;
+        }
+        default:
+        {
+            return ipmi::responseInvalidFieldRequest();
+        }
+    }
 
-    // response:
-    // Byte 1-N  - certificate data
+    std::array<uint8_t, certRootKeySize> certRootKey = {0};
 
-    if (*data_len != sizeof(fw_cert_data_req))
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-
-    auto cert_data_req = reinterpret_cast<struct fw_cert_data_req *>(request);
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-    auto method = bus->new_method_call(
-        FW_UPDATE_SERVER_DBUS_NAME, FW_UPDATE_SERVER_INFO_PATH,
-        "org.freedesktop.DBus.Properties", "Get");
-    method.append(FW_UPDATE_SECURITY_INTERFACE, "certificate");
-    ipmi::DbusVariant cert;
     try
     {
-        auto reply = bus->call(method);
-        reply.read(cert);
+        SPIDev spiDev(bmcPfmMTDDev);
+        spiDev.spiReadData(certOffset, certRootKeySize, certRootKey.data());
+
+        if (cskOffset)
+        {
+            std::array<uint8_t, cskSize> cskData = {0};
+            spiDev.spiReadData(cskOffset, cskSize, cskData.data());
+            return ipmi::responseSuccess(certRootKey, cskData);
+        }
     }
-    catch (sdbusplus::exception::SdBusError &e)
+    catch (const std::exception &e)
     {
-        std::cerr << "SDBus Error: " << e.what();
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Exception caught in ipmiGetFwRootCertData",
+            phosphor::logging::entry("MSG=%s", e.what()));
+        return ipmi::responseUnspecifiedError();
     }
-    auto cert_data = std::get<std::string>(cert);
 
-    if (cert_data_req->offset >= cert_data.size())
-    {
-        *data_len = 0;
-        return IPMI_CC_INVALID_FIELD_REQUEST;
-    }
-    auto first = cert_data.begin() + cert_data_req->offset;
-    auto last = first + cert_data_req->count;
-    if (last > cert_data.end())
-        last = cert_data.end();
-
-    auto data_out = reinterpret_cast<char *>(response);
-    std::copy(first, last, data_out);
-
-    // Status code.
-    ipmi_ret_t rc = IPMI_CC_OK;
-    *data_len = (last - first);
-
-    return rc;
+    return ipmi::responseSuccess(certRootKey, std::nullopt);
 }
+#endif
 
 static ipmi_ret_t ipmi_firmware_write_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                            ipmi_request_t request,
@@ -1655,12 +1673,14 @@ static ipmi_ret_t ipmi_intel_app_get_buffer_size(
     return IPMI_CC_OK;
 }
 
+#ifdef INTEL_PFR_ENABLED
+static constexpr ipmi::Cmd cmdFwGetRootCertData = 0x25;
+#endif
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_FW_VERSION_INFO = 0x20;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_FW_SEC_VERSION_INFO = 0x21;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_FW_UPD_CHAN_INFO = 0x22;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_BMC_EXEC_CTX = 0x23;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_ROOT_CERT_INFO = 0x24;
-static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_ROOT_CERT_DATA = 0x25;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_FW_UPDATE_RAND_NUM = 0x26;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_SET_FW_UPDATE_MODE = 0x27;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_EXIT_FW_UPDATE_MODE = 0x28;
@@ -1711,11 +1731,12 @@ static void register_netfn_firmware_functions()
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_ROOT_CERT_INFO,
                            NULL, ipmi_firmware_get_root_cert_info,
                            PRIVILEGE_ADMIN);
-
+#ifdef INTEL_PFR_ENABLED
     // get root certificate data
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_ROOT_CERT_DATA,
-                           NULL, ipmi_firmware_get_root_cert_data,
-                           PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, NETFUN_FIRMWARE,
+                          cmdFwGetRootCertData, ipmi::Privilege::Admin,
+                          ipmiGetFwRootCertData);
+#endif
 
     // generate bmc fw update random number (for enter fw tranfer mode)
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_UPDATE_RAND_NUM,
