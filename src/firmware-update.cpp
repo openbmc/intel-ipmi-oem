@@ -288,48 +288,40 @@ static ipmi_ret_t ipmi_firmware_get_fw_random_number(
     return IPMI_CC_OK;
 }
 
-static ipmi_ret_t ipmi_firmware_enter_fw_transfer_mode(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+/** @brief Set Firmware Update Mode
+ *
+ *  This function sets BMC into firmware update mode
+ *  after validating Random number obtained from the Get
+ *  Firmware Update Random Number command
+ *
+ *  @parameter
+ *   -  randNum - Random number(token)
+ *  @returns IPMI completion code
+ **/
+ipmi::RspType<> ipmiSetFirmwareUpdateMode(
+    std::array<uint8_t, FW_RANDOM_NUMBER_LENGTH> &randNum)
 {
-    if (DEBUG)
-        std::cerr << "Enter FW transfer mode requested, data_len = "
-                  << *data_len << '\n';
-
-    if (*data_len != FW_RANDOM_NUMBER_LENGTH)
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-    *data_len = 0;
-
-    auto rq_time = std::chrono::steady_clock::now();
-    if (DEBUG)
-        std::cerr << "now - fwts = "
-                  << std::chrono::duration_cast<std::chrono::microseconds>(
-                         rq_time - fw_random_number_timestamp)
-                         .count()
-                  << " us\n";
-    if (std::chrono::duration_cast<std::chrono::microseconds>(
-            rq_time - fw_random_number_timestamp)
+    /* Firmware Update Random number is valid for 30 seconds only */
+    auto timeElapsed =
+        (std::chrono::steady_clock::now() - fw_random_number_timestamp);
+    if (std::chrono::duration_cast<std::chrono::microseconds>(timeElapsed)
             .count() > std::chrono::duration_cast<std::chrono::microseconds>(
                            FW_RANDOM_NUMBER_TTL)
                            .count())
     {
-        if (DEBUG)
-            std::cerr << "key timeout\n";
-        return IPMI_CC_PARM_OUT_OF_RANGE;
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Firmware update random number expired.");
+        return ipmi::responseInvalidFieldRequest();
     }
 
-    uint8_t *msg_request = static_cast<uint8_t *>(request);
+    /* Validate random number */
     for (int i = 0; i < FW_RANDOM_NUMBER_LENGTH; i++)
     {
-        if (fw_random_number[i] != msg_request[i])
+        if (fw_random_number[i] != randNum[i])
         {
-            if (DEBUG)
-                std::cerr << "key error" << (int)fw_random_number[i]
-                          << "!=" << (int)msg_request[i] << "\n";
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Invalid random number specified.");
+            return ipmi::responseInvalidFieldRequest();
         }
     }
 
@@ -340,21 +332,21 @@ static ipmi_ret_t ipmi_firmware_enter_fw_transfer_mode(
         // mechanism at finer grain
         && fw_update_status.state() != fw_update_status_cache::FW_STATE_INIT)
     {
-        if (DEBUG)
-            std::cerr << "not in INIT or IDLE\n";
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Already firmware update is in progress.");
+        return ipmi::responseBusy();
     }
     // FIXME? c++ doesn't off an option for exclusive file creation
     FILE *fp = fopen(FIRMWARE_BUFFER_FILE, "wx");
     if (!fp)
     {
-        if (DEBUG)
-            std::cerr << "failed to create buffer file\n";
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Unable to open file.");
+        return ipmi::responseUnspecifiedError();
     }
     fclose(fp);
 
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess();
 }
 
 static ipmi_ret_t ipmi_firmware_exit_fw_update_mode(
@@ -1722,10 +1714,10 @@ static void register_netfn_firmware_functions()
                            NULL, ipmi_firmware_get_fw_random_number,
                            PRIVILEGE_ADMIN);
 
-    // enter firmware update mode
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_SET_FW_UPDATE_MODE,
-                           NULL, ipmi_firmware_enter_fw_transfer_mode,
-                           PRIVILEGE_ADMIN);
+    // Set Firmware Update Mode(0x27)
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_SET_FW_UPDATE_MODE,
+                          ipmi::Privilege::Admin, ipmiSetFirmwareUpdateMode);
 
     // exit firmware update mode
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_EXIT_FW_UPDATE_MODE,
