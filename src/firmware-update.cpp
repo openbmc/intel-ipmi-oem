@@ -1580,29 +1580,6 @@ static ipmi_ret_t ipmi_firmware_write_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-static constexpr char NOT_IMPLEMENTED[] = "NOT IMPLEMENTED";
-
-static ipmi_ret_t ipmi_firmware_wildcard_handler(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
-{
-    if (DEBUG)
-        std::cerr << "Handling stubbed Netfn:[0x" << std::hex << +netfn
-                  << "], Cmd:[0x" << std::hex << +cmd << "]\n";
-
-    // Status code.
-    ipmi_ret_t rc = IPMI_CC_OK;
-
-    *data_len = sizeof(NOT_IMPLEMENTED);
-
-    // Now pack actual response
-    char *msg_reply = static_cast<char *>(response);
-    std::copy(std::begin(NOT_IMPLEMENTED), std::end(NOT_IMPLEMENTED),
-              msg_reply);
-
-    return rc;
-}
-
 struct intc_app_get_buffer_size_resp
 {
     uint8_t kcs_size;
@@ -1719,24 +1696,6 @@ static void register_netfn_firmware_functions()
     // write image data
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_IMAGE_WRITE, NULL,
                            ipmi_firmware_write_data, PRIVILEGE_ADMIN);
-
-    // get update timestamps
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_TIMESTAMP, NULL,
-                           ipmi_firmware_wildcard_handler, PRIVILEGE_ADMIN);
-
-    // get error message (when in error state)
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_UPDATE_ERR_MSG,
-                           NULL, ipmi_firmware_wildcard_handler,
-                           PRIVILEGE_ADMIN);
-
-    // get remote firmware information (PSU, HSBP, etc.)
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_REMOTE_FW_INFO,
-                           NULL, ipmi_firmware_wildcard_handler,
-                           PRIVILEGE_ADMIN);
-
-    // <Wildcard Command>
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_WILDCARD, NULL,
-                           ipmi_firmware_wildcard_handler, PRIVILEGE_ADMIN);
 
     // get buffer size is used by fw update (exclusively?)
     ipmi_register_callback(NETFUN_INTC_APP, IPMI_CMD_INTC_GET_BUFFER_SIZE, NULL,
