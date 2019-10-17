@@ -97,6 +97,8 @@ using ManagedEntry = std::pair<
 
 constexpr static const char* fruDeviceServiceName =
     "xyz.openbmc_project.FruDevice";
+constexpr static const char* entityManagerServiceName =
+    "xyz.openbmc_project.EntityManager";
 constexpr static const size_t cacheTimeoutSeconds = 10;
 
 // event direction is bit[7] of eventType where 1b = Deassertion event
@@ -498,6 +500,76 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     {
         return IPMI_CC_RESPONSE_ERROR;
     }
+
+    boost::container::flat_map<std::string, DbusVariant>* entityData = nullptr;
+    ManagedObjectType entities;
+
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+
+        sdbusplus::message::message getObjects = dbus->new_method_call(
+            entityManagerServiceName, "/", "org.freedesktop.DBus.ObjectManager",
+            "GetManagedObjects");
+
+        sdbusplus::message::message resp = dbus->call(getObjects);
+        resp.read(entities);
+
+        auto entity = std::find_if(
+            entities.begin(), entities.end(),
+            [bus, address, &entityData](ManagedEntry& entry) {
+                auto findFruDevice = entry.second.find(
+                    "xyz.openbmc_project.Inventory.Decorator.FruDevice");
+                if (findFruDevice == entry.second.end())
+                {
+                    return false;
+                }
+
+                // Integer fields added via Entity-Manager json are uint64_ts by
+                // default.
+                auto findBus = findFruDevice->second.find("Bus");
+                auto findAddress = findFruDevice->second.find("Address");
+
+                if (findBus == findFruDevice->second.end() ||
+                    findAddress == findFruDevice->second.end())
+                {
+                    return false;
+                }
+                if ((std::get<uint64_t>(findBus->second) != bus) ||
+                    (std::get<uint64_t>(findAddress->second) != address))
+                {
+                    return false;
+                }
+
+                auto findIpmiDevice = entry.second.find(
+                    "xyz.openbmc_project.Inventory.Decorator.Ipmi");
+                if (findIpmiDevice == entry.second.end())
+                {
+                    return false;
+                }
+
+                entityData = &(findIpmiDevice->second);
+                return true;
+            });
+
+        if (entity == entities.end())
+        {
+            if constexpr (DEBUG)
+            {
+                std::fprintf(
+                    stderr,
+                    "Ipmi or FruDevice Decorator interface not found for Fru\n");
+            }
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::fprintf(
+            stderr,
+            "Search for FruDevice+Ipmi Decorator Interface excepted: '%s'\n",
+            e.what());
+    }
+
     std::string name;
     auto findProductName = fruData->find("BOARD_PRODUCT_NAME");
     auto findBoardName = fruData->find("PRODUCT_PRODUCT_NAME");
@@ -531,8 +603,30 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     resp.body.reserved = 0x0;
     resp.body.deviceType = 0x10;
     resp.body.deviceTypeModifier = 0x0;
-    resp.body.entityID = 0x0;
-    resp.body.entityInstance = 0x1;
+
+    uint8_t entityID = 0;
+    uint8_t entityInstance = 0x1;
+
+    if (entityData)
+    {
+        auto entityIdProperty = entityData->find("EntityId");
+        auto entityInstanceProperty = entityData->find("EntityInstance");
+
+        if (entityIdProperty != entityData->end())
+        {
+            entityID = static_cast<uint8_t>(
+                std::get<uint64_t>(entityIdProperty->second));
+        }
+        if (entityInstanceProperty != entityData->end())
+        {
+            entityInstance = static_cast<uint8_t>(
+                std::get<uint64_t>(entityInstanceProperty->second));
+        }
+    }
+
+    resp.body.entityID = entityID;
+    resp.body.entityInstance = entityInstance;
+
     resp.body.oem = 0x0;
     resp.body.deviceIDLen = name.size();
     name.copy(resp.body.deviceID, name.size());
