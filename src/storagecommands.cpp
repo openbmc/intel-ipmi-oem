@@ -97,6 +97,8 @@ using ManagedEntry = std::pair<
 
 constexpr static const char* fruDeviceServiceName =
     "xyz.openbmc_project.FruDevice";
+constexpr static const char* entityManagerServiceName =
+    "xyz.openbmc_project.EntityManager";
 constexpr static const size_t cacheTimeoutSeconds = 10;
 
 // event direction is bit[7] of eventType where 1b = Deassertion event
@@ -500,10 +502,10 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     }
 
     boost::container::flat_map<std::string, DbusVariant>* entityData = nullptr;
-    constexpr static const char* entityManagerServiceName = "xyz.openbmc_project.EntityManager";
     ManagedObjectType entities;
 
-    try {
+    try
+    {
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
 
         sdbusplus::message::message getObjects = dbus->new_method_call(
@@ -513,39 +515,56 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
         sdbusplus::message::message resp = dbus->call(getObjects);
         resp.read(entities);
 
-        auto entity = std::find_if(entities.begin(), entities.end(),
+        auto entity = std::find_if(
+            entities.begin(), entities.end(),
             [bus, address, &entityData](ManagedEntry& entry) {
+                auto findFruDevice = entry.second.find(
+                    "xyz.openbmc_project.Inventory.Decorator.FruDevice");
+                if (findFruDevice == entry.second.end())
+                {
+                    return false;
+                }
 
-            auto findFruDevice = entry.second.find("xyz.openbmc_project.Inventory.Decorator.FruDevice");
-            if (findFruDevice == entry.second.end()) {
-                return false;
-            }
+                // Integer fields added via Entity-Manager json are uint64_ts by
+                // default.
+                auto findBus = findFruDevice->second.find("Bus");
+                auto findAddress = findFruDevice->second.find("Address");
 
-            // Integer fields added via Entity-Manager json are uint64_ts by default.
-            auto findBus = findFruDevice->second.find("Bus");
-            auto findAddress = findFruDevice->second.find("Address");
+                if (findBus == findFruDevice->second.end() ||
+                    findAddress == findFruDevice->second.end())
+                {
+                    return false;
+                }
+                if ((std::get<uint64_t>(findBus->second) != bus) ||
+                    (std::get<uint64_t>(findAddress->second) != address))
+                {
+                    return false;
+                }
 
-            if (findBus == findFruDevice->second.end() || findAddress == findFruDevice->second.end()) {
-                return false;
-            }
-            if ((std::get<uint64_t>(findBus->second) != bus) || (std::get<uint64_t>(findAddress->second) != address)) {
-                return false;
-            }
+                auto findIpmiDevice = entry.second.find(
+                    "xyz.openbmc_project.Inventory.Decorator.Ipmi");
+                if (findIpmiDevice == entry.second.end())
+                {
+                    return false;
+                }
 
-            auto findIpmiDevice = entry.second.find("xyz.openbmc_project.Inventory.Decorator.Ipmi");
-            if (findIpmiDevice == entry.second.end()) {
-                return false;
-            }
+                entityData = &(findIpmiDevice->second);
+                return true;
+            });
 
-            entityData = &(findIpmiDevice->second);
-            return true;
-        });
-
-        if (entity == entities.end()) {
-            std::fprintf(stderr, "Ipmi or FruDevice Decorator interface not found for Fru\n");
+        if (entity == entities.end())
+        {
+            std::fprintf(
+                stderr,
+                "Ipmi or FruDevice Decorator interface not found for Fru\n");
         }
-    } catch (const std::exception& e) {
-        std::fprintf(stderr, "Search for FruDevice+Ipmi Decorator Interface excepted: '%s'\n", e.what());
+    }
+    catch (const std::exception& e)
+    {
+        std::fprintf(
+            stderr,
+            "Search for FruDevice+Ipmi Decorator Interface excepted: '%s'\n",
+            e.what());
     }
 
     std::string name;
@@ -586,15 +605,20 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     uint8_t entityID = 0;
     uint8_t entityInstance = 0x1;
 
-    if (entityData) {
+    if (entityData)
+    {
         auto entityIdProperty = entityData->find("EntityId");
         auto entityInstanceProperty = entityData->find("EntityInstance");
 
-        if (entityIdProperty != entityData->end()) {
-            entityID = static_cast<uint8_t>(std::get<uint64_t>(entityIdProperty->second));
+        if (entityIdProperty != entityData->end())
+        {
+            entityID = static_cast<uint8_t>(
+                std::get<uint64_t>(entityIdProperty->second));
         }
-        if (entityInstanceProperty != entityData->end()) {
-            entityInstance = static_cast<uint8_t>(std::get<uint64_t>(entityInstanceProperty->second));
+        if (entityInstanceProperty != entityData->end())
+        {
+            entityInstance = static_cast<uint8_t>(
+                std::get<uint64_t>(entityInstanceProperty->second));
         }
     }
 
