@@ -64,4 +64,6 @@ using DbusVariant =
 using GetSubTreeType = std::vector<
     std::pair<std::string,
               std::vector<std::pair<std::string, std::vector<std::string>>>>>;
+
+using SensorMap = std::map<std::string, std::map<std::string, DbusVariant>>;
 } // namespace ipmi
