@@ -287,6 +287,9 @@ class Bridging
     Bridging() = default;
     std::size_t getResponseQueueSize();
 
+    std::vector<IpmbResponse> getResponseQueue();
+    void clearResponseQueue();
+
     ipmi_return_codes sendMessageHandler(ipmi_request_t request,
                                          ipmi_response_t response,
                                          ipmi_data_len_t dataLen);
@@ -294,14 +297,8 @@ class Bridging
     ipmi_return_codes getMessageHandler(ipmi_request_t request,
                                         ipmi_response_t response,
                                         ipmi_data_len_t dataLen);
-
-    ipmi_return_codes clearMessageFlagsHandler(ipmi_request_t request,
-                                               ipmi_response_t response,
-                                               ipmi_data_len_t dataLen);
-
     enum IpmiAppBridgingCmds
     {
-        ipmiCmdClearMessageFlags = 0x30,
         ipmiCmdGetMessage = 0x33,
         ipmiCmdSendMessage = 0x34,
     };
