@@ -48,8 +48,6 @@ using ManagedObjectType =
     std::map<sdbusplus::message::object_path,
              std::map<std::string, std::map<std::string, DbusVariant>>>;
 
-using SensorMap = std::map<std::string, std::map<std::string, DbusVariant>>;
-
 static constexpr int sensorListUpdatePeriod = 10;
 static constexpr int sensorMapUpdatePeriod = 2;
 
@@ -1271,8 +1269,6 @@ ipmi::RspType<uint16_t,            // next record ID
     record.key.owner_lun = 0x0;
     record.key.sensor_number = sensornumber;
 
-    record.body.entity_id = 0x0;
-    record.body.entity_instance = 0x01;
     record.body.sensor_capabilities = 0x68; // auto rearm - todo hysteresis
     record.body.sensor_type = getSensorTypeFromPath(path);
     std::string type = getSensorTypeStringFromPath(path);
@@ -1291,6 +1287,16 @@ ipmi::RspType<uint16_t,            // next record ID
     {
         return ipmi::responseResponseError();
     }
+
+    uint8_t entityId = 0;
+    uint8_t entityInstance = 0x01;
+
+    // follow the association chain to get the parent board's entityid and
+    // entityInstance
+    updateIpmiFromAssociation(path, sensorMap, entityId, entityInstance);
+
+    record.body.entity_id = entityId;
+    record.body.entity_instance = entityInstance;
 
     auto maxObject = sensorObject->second.find("MaxValue");
     auto minObject = sensorObject->second.find("MinValue");
