@@ -29,6 +29,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
@@ -36,14 +37,18 @@
 #include <memory>
 #include <optional>
 #include <phosphor-logging/log.hpp>
+#include <regex>
 #include <sdbusplus/bus.hpp>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <variant>
 
 namespace ipmi
 {
+namespace fs = std::filesystem;
+
 using ManagedObjectType =
     std::map<sdbusplus::message::object_path,
              std::map<std::string, std::map<std::string, DbusVariant>>>;
@@ -1271,8 +1276,6 @@ ipmi::RspType<uint16_t,            // next record ID
     record.key.owner_lun = 0x0;
     record.key.sensor_number = sensornumber;
 
-    record.body.entity_id = 0x0;
-    record.body.entity_instance = 0x01;
     record.body.sensor_capabilities = 0x68; // auto rearm - todo hysteresis
     record.body.sensor_type = getSensorTypeFromPath(path);
     std::string type = getSensorTypeStringFromPath(path);
@@ -1291,6 +1294,127 @@ ipmi::RspType<uint16_t,            // next record ID
     {
         return ipmi::responseResponseError();
     }
+
+    uint8_t entityId = 0;
+    uint8_t entityInstance = 0x01;
+
+    // follow the association chain to get the parent board's entityid and
+    // entityInstance
+    auto sensorAssociationObject =
+        sensorMap.find("xyz.openbmc_project.Association.Definitions");
+    if (sensorAssociationObject != sensorMap.end())
+    {
+        auto associationObject =
+            sensorAssociationObject->second.find("Associations");
+        if (associationObject != sensorAssociationObject->second.end())
+        {
+            std::vector<Association> associationValues =
+                std::get<std::vector<Association>>(associationObject->second);
+
+            // loop through the Associations looking for the right one:
+            for (const auto &entry : associationValues)
+            {
+                // forward, reverse, endpoint
+                const std::string &forward = std::get<0>(entry);
+                const std::string &reverse = std::get<1>(entry);
+                const std::string &endpoint = std::get<2>(entry);
+
+                if (forward == "chassis" && reverse == "all_sensors")
+                {
+                    // the endpoint is the board entry provided by
+                    // Entity-Manager. so let's grab its properties if it has
+                    // the right interface.
+
+                    // just try grabbing the properties first.
+                    std::map<std::string, DbusVariant> ipmiProperties =
+                        getEntityManagerProperties(
+                            endpoint.c_str(),
+                            "xyz.openbmc_project.Inventory.Decorator.Ipmi");
+
+                    auto entityIdProp = ipmiProperties.find("EntityId");
+                    auto entityInstanceProp =
+                        ipmiProperties.find("EntityInstance");
+                    if (entityIdProp != ipmiProperties.end())
+                    {
+                        entityId = static_cast<uint8_t>(
+                            std::get<uint64_t>(entityIdProp->second));
+                    }
+                    if (entityInstanceProp != ipmiProperties.end())
+                    {
+                        entityInstance = static_cast<uint8_t>(
+                            std::get<uint64_t>(entityInstanceProp->second));
+                    }
+
+                    // Now check the entity-manager entry for this sensor to see
+                    // if it has its own value and use that instead.
+                    //
+                    // In theory, checking this first saves us from checking
+                    // both, except in most use-cases identified, there won't be
+                    // a per sensor override, so we need to always check both.
+                    std::string sensorNameFromPath = fs::path(path).filename();
+
+                    std::string sensorConfigPath =
+                        endpoint + "/" + sensorNameFromPath;
+
+                    // Download the interfaces for the sensor from
+                    // Entity-Manager to find the name of the configuration
+                    // interface.
+                    std::map<std::string, std::vector<std::string>>
+                        sensorInterfacesResponse =
+                            getObjectInterfaces(sensorConfigPath.c_str());
+
+                    const std::string *configurationInterface =
+                        getSensorConfigurationInterface(
+                            sensorInterfacesResponse);
+
+                    if (configurationInterface)
+                    {
+                        // We found a configuration interface.
+                        std::map<std::string, DbusVariant>
+                            configurationProperties =
+                                getEntityManagerProperties(
+                                    sensorConfigPath.c_str(),
+                                    configurationInterface->c_str());
+
+                        auto entityIdProp =
+                            configurationProperties.find("EntityId");
+                        auto entityInstanceProp =
+                            configurationProperties.find("EntityInstance");
+                        if (entityIdProp != configurationProperties.end())
+                        {
+                            entityId = static_cast<uint8_t>(
+                                std::get<uint64_t>(entityIdProp->second));
+                        }
+                        if (entityInstanceProp != configurationProperties.end())
+                        {
+                            entityInstance = static_cast<uint8_t>(
+                                std::get<uint64_t>(entityInstanceProp->second));
+                        }
+                    }
+
+                    // stop searching Association records.
+                    break;
+                }
+            }
+        } // end if have Association property.
+
+        if constexpr (debug)
+        {
+            std::fprintf(stderr, "path=%s, entityId=%d, entityInstance=%d\n",
+                         path.c_str(), entityId, entityInstance);
+        }
+    }
+    else
+    {
+        if constexpr (debug)
+        {
+            std::fprintf(stderr, "%s: path=%s, no association records found\n",
+                         __FUNCTION__, path.c_str());
+        }
+    }
+
+    record.body.entity_id = entityId;
+    record.body.entity_instance = entityInstance;
 
     auto maxObject = sensorObject->second.find("MaxValue");
     auto minObject = sensorObject->second.find("MinValue");
