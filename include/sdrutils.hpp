@@ -14,12 +14,17 @@
 // limitations under the License.
 */
 
+#include "commandutils.hpp"
+
 #include <boost/algorithm/string.hpp>
 #include <boost/bimap.hpp>
 #include <boost/container/flat_map.hpp>
 #include <cstring>
+#include <map>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus/match.hpp>
+#include <string>
+#include <vector>
 
 #pragma once
 
@@ -249,3 +254,91 @@ inline static std::string getPathFromSensorNumber(uint8_t sensorNum)
         return std::string();
     }
 }
+
+namespace ipmi
+{
+
+static inline std::map<std::string, std::vector<std::string>>
+    getObjectInterfaces(const char* path)
+{
+    std::map<std::string, std::vector<std::string>> interfacesResponse;
+    std::vector<std::string> interfaces;
+    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+
+    sdbusplus::message::message getObjectMessage =
+        dbus->new_method_call("xyz.openbmc_project.ObjectMapper",
+                              "/xyz/openbmc_project/object_mapper",
+                              "xyz.openbmc_project.ObjectMapper", "GetObject");
+    getObjectMessage.append(path, interfaces);
+
+    try
+    {
+        sdbusplus::message::message response = dbus->call(getObjectMessage);
+        response.read(interfacesResponse);
+    }
+    catch (...)
+    {
+    }
+
+    return interfacesResponse;
+}
+
+static inline std::map<std::string, DbusVariant>
+    getEntityManagerProperties(const char* path, const char* interface)
+{
+    std::map<std::string, DbusVariant> properties;
+    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+
+    sdbusplus::message::message getProperties =
+        dbus->new_method_call("xyz.openbmc_project.EntityManager", path,
+                              "org.freedesktop.DBus.Properties", "GetAll");
+    getProperties.append(interface);
+
+    try
+    {
+        sdbusplus::message::message response = dbus->call(getProperties);
+        response.read(properties);
+    }
+    catch (...)
+    {
+    }
+
+    return properties;
+}
+
+static inline const std::string* getSensorConfigurationInterface(
+    const std::map<std::string, std::vector<std::string>>&
+        sensorInterfacesResponse)
+{
+    auto entityManagerService =
+        sensorInterfacesResponse.find("xyz.openbmc_project.EntityManager");
+    if (entityManagerService == sensorInterfacesResponse.end())
+    {
+        return nullptr;
+    }
+
+    // Find the fan configuration first (fans can have multiple configuration
+    // interfaces).
+    for (const auto& entry : entityManagerService->second)
+    {
+        if (entry == "xyz.openbmc_project.Configuration.AspeedFan" ||
+            entry == "xyz.openbmc_project.Configuration.I2CFan" ||
+            entry == "xyz.openbmc_project.Configuration.NuvotonFan")
+        {
+            return &entry;
+        }
+    }
+
+    for (const auto& entry : entityManagerService->second)
+    {
+        if (boost::algorithm::starts_with(entry,
+                                          "xyz.openbmc_project.Configuration."))
+        {
+            return &entry;
+        }
+    }
+
+    return nullptr;
+}
+
+} // namespace ipmi
