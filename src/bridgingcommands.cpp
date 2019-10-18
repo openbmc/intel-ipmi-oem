@@ -38,6 +38,11 @@ static constexpr const char *ipmbIntf = "org.openbmc.Ipmb";
 
 static Bridging bridging;
 
+void Bridging::clearResponseQueue()
+{
+    responseQueue.clear();
+}
+
 /**
  * @brief utils for checksum
  */
@@ -399,25 +404,6 @@ ipmi_return_codes Bridging::getMessageHandler(ipmi_request_t request,
     return IPMI_CC_OK;
 }
 
-ipmi_return_codes Bridging::clearMessageFlagsHandler(ipmi_request_t request,
-                                                     ipmi_response_t response,
-                                                     ipmi_data_len_t dataLen)
-{
-    if (*dataLen != sizeof(sClearMessageFlagsReq))
-    {
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
-
-    auto clearMsgFlagsReq = reinterpret_cast<sClearMessageFlagsReq *>(request);
-
-    if (clearMsgFlagsReq->receiveMessageBitGet() == 1)
-    {
-        responseQueue.clear();
-    }
-
-    return IPMI_CC_OK;
-}
-
 ipmi_ret_t ipmiAppSendMessage(ipmi_netfn_t netFn, ipmi_cmd_t cmd,
                               ipmi_request_t request, ipmi_response_t response,
                               ipmi_data_len_t dataLen, ipmi_context_t context)
@@ -484,26 +470,42 @@ ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags()
     return ipmi::responseSuccess(getMsgFlagsRes);
 }
 
-ipmi_ret_t ipmiAppClearMessageFlags(ipmi_netfn_t netFn, ipmi_cmd_t cmd,
-                                    ipmi_request_t request,
-                                    ipmi_response_t response,
-                                    ipmi_data_len_t dataLen,
-                                    ipmi_context_t context)
+/** @brief This command is used to flush unread data from the receive
+ *   message queue
+ *  @param receiveMessage  - clear receive message queue
+ *  @param eventMsgBufFull - clear event message buffer full
+ *  @param reserved2       - reserved bit
+ *  @param watchdogTimeout - clear watchdog pre-timeout interrupt flag
+ *  @param reserved1       - reserved bit
+ *  @param oem0            - clear OEM 0 data
+ *  @param oem1            - clear OEM 1 data
+ *  @param oem2            - clear OEM 2 data
+
+ *  @return IPMI completion code on success
+ */
+ipmi::RspType<> ipmiAppClearMessageFlags(bool receiveMessage,
+                                         bool eventMsgBufFull, bool reserved2,
+                                         bool watchdogTimeout, bool reserved1,
+                                         bool oem0, bool oem1, bool oem2)
 {
-    ipmi_ret_t retCode = IPMI_CC_OK;
-    retCode = bridging.clearMessageFlagsHandler(request, response, dataLen);
+    if (reserved1 || reserved2)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
 
-    *dataLen = 0;
-
-    return retCode;
+    if (receiveMessage)
+    {
+        bridging.clearResponseQueue();
+    }
+    return ipmi::responseSuccess();
 }
 
 static void register_bridging_functions() __attribute__((constructor));
 static void register_bridging_functions()
 {
-    ipmi_register_callback(
-        NETFUN_APP, Bridging::IpmiAppBridgingCmds::ipmiCmdClearMessageFlags,
-        NULL, ipmiAppClearMessageFlags, PRIVILEGE_USER);
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnApp,
+                          ipmi::app::cmdClearMessageFlags,
+                          ipmi::Privilege::User, ipmiAppClearMessageFlags);
 
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnApp,
                           ipmi::app::cmdGetMessageFlags, ipmi::Privilege::User,
