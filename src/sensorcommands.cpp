@@ -1353,6 +1353,23 @@ ipmi::RspType<uint16_t,            // next record ID
                     // a per sensor override, so we need to always check both.
                     std::string sensorNameFromPath = fs::path(path).filename();
 
+                    // TODO: The Pwm sensor has an assocation record pointing to
+                    // the board, but not the corresponding fan(s).
+                    // https://github.com/openbmc/dbus-sensors/issues/2
+                    // If sensor is Pwm_\d+, then we swap it out for fan(\1 - 1)
+                    std::smatch baseMatch;
+                    if (std::regex_match(sensorNameFromPath, baseMatch,
+                                         std::regex("Pwm_(\\d+)$")))
+                    {
+                        // regex capture the value... to make it easier.
+                        if (baseMatch.size() == 2)
+                        {
+                            std::ssub_match baseSubMatch = baseMatch[1];
+                            int value = std::stoi(baseSubMatch.str()) - 1;
+                            sensorNameFromPath = "fan" + std::to_string(value);
+                        }
+                    }
+
                     std::string sensorConfigPath =
                         endpoint + "/" + sensorNameFromPath;
 
