@@ -15,9 +15,13 @@
 */
 
 #pragma once
+
 #include <iostream>
 #include <ipmid/api.hpp>
 #include <sdbusplus/bus.hpp>
+#include <string>
+#include <utility>
+#include <vector>
 
 static constexpr bool debug = false;
 
