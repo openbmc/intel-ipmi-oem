@@ -14,16 +14,22 @@
 // limitations under the License.
 */
 
+#include "sensorcommands.hpp"
+
+#include "commandutils.hpp"
+#include "ipmi_to_redfish_hooks.hpp"
+#include "sdrutils.hpp"
+#include "sensorutils.hpp"
+#include "storagecommands.hpp"
+
 #include <algorithm>
 #include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <chrono>
 #include <cmath>
-#include <commandutils.hpp>
 #include <cstring>
 #include <iostream>
-#include <ipmi_to_redfish_hooks.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <map>
@@ -31,11 +37,7 @@
 #include <optional>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
-#include <sdrutils.hpp>
-#include <sensorcommands.hpp>
-#include <sensorutils.hpp>
 #include <stdexcept>
-#include <storagecommands.hpp>
 #include <string>
 #include <utility>
 #include <variant>
