@@ -14,22 +14,24 @@
 // limitations under the License.
 */
 
+#include "storagecommands.hpp"
+
+#include "commandutils.hpp"
+#include "ipmi_to_redfish_hooks.hpp"
+#include "sdrutils.hpp"
+
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <boost/process.hpp>
-#include <commandutils.hpp>
 #include <filesystem>
 #include <functional>
 #include <iostream>
-#include <ipmi_to_redfish_hooks.hpp>
 #include <ipmid/api.hpp>
 #include <phosphor-ipmi-host/selutility.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/message/types.hpp>
 #include <sdbusplus/timer.hpp>
-#include <sdrutils.hpp>
 #include <stdexcept>
-#include <storagecommands.hpp>
 #include <string_view>
 
 static constexpr bool DEBUG = false;
