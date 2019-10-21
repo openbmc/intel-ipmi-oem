@@ -824,7 +824,7 @@ void SharedMemoryArea::Initialize(uint32_t addr, uint32_t areaSize)
     int memDriver = 0;
 
     // open mem driver for the system memory access
-    memDriver = open("/dev/vgasharedmem", O_RDONLY);
+    memDriver = open("/dev/vgasharedmem", O_RDWR);
     if (memDriver < 0)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -1152,6 +1152,13 @@ ipmi::RspType<uint8_t, uint16_t>
     return ipmi::responseSuccess(xferStartAck, session);
 }
 
+void clearSharedMemory(uint32_t size)
+{
+    uint8_t *sourceAddr = reinterpret_cast<uint8_t *>(mdrv2->area->vPtr);
+    std::fill(sourceAddr, sourceAddr + size, 0);
+    mdrv2->area.reset(nullptr);
+}
+
 /**
 @brief This command is executed to close the session.
 
@@ -1191,7 +1198,6 @@ ipmi::RspType<> cmd_mdr2_data_done(uint16_t agentId, uint16_t lockHandle)
         return ipmi::responseDestinationUnavailable();
     }
 
-    mdrv2->area.reset(nullptr);
     MDRSMBIOSHeader mdr2Smbios;
     mdr2Smbios.mdrType = mdrTypeII;
     mdr2Smbios.dirVer = mdrv2->smbiosDir.dir[0].common.dataVersion;
@@ -1210,10 +1216,12 @@ ipmi::RspType<> cmd_mdr2_data_done(uint16_t agentId, uint16_t lockHandle)
     if (!mdrv2->storeDatatoFlash(
             &mdr2Smbios, mdrv2->smbiosDir.dir[smbiosDirIndex].dataStorage))
     {
+        clearSharedMemory(mdr2Smbios.dataSize);
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "MDR2 Store data to flash failed");
         return ipmi::responseDestinationUnavailable();
     }
+    clearSharedMemory(mdr2Smbios.dataSize);
     bool status = false;
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     std::string service = ipmi::getService(*bus, mdrv2Interface, mdrv2Path);
