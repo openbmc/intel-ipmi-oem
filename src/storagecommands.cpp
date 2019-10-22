@@ -506,6 +506,7 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     }
 
     boost::container::flat_map<std::string, DbusVariant>* entityData = nullptr;
+    boost::container::flat_map<std::string, DbusVariant>* boardData = nullptr;
     ManagedObjectType entities;
 
     try
@@ -521,7 +522,7 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
 
         auto entity = std::find_if(
             entities.begin(), entities.end(),
-            [bus, address, &entityData](ManagedEntry& entry) {
+            [bus, address, &entityData, &boardData](ManagedEntry& entry) {
                 auto findFruDevice = entry.second.find(
                     "xyz.openbmc_project.Inventory.Decorator.FruDevice");
                 if (findFruDevice == entry.second.end())
@@ -547,6 +548,13 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
 
                 // At this point we found the device entry and should return
                 // true.
+                auto findBoardData = entry.second.find(
+                    "xyz.openbmc_project.Inventory.Item.Board");
+                if (findBoardData != entry.second.end())
+                {
+                    boardData = &(findBoardData->second);
+                }
+
                 auto findIpmiDevice = entry.second.find(
                     "xyz.openbmc_project.Inventory.Decorator.Ipmi");
                 if (findIpmiDevice != entry.second.end())
@@ -575,20 +583,33 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     }
 
     std::string name;
-    auto findProductName = fruData->find("BOARD_PRODUCT_NAME");
-    auto findBoardName = fruData->find("PRODUCT_PRODUCT_NAME");
-    if (findProductName != fruData->end())
+
+    if (boardData)
     {
-        name = std::get<std::string>(findProductName->second);
-    }
-    else if (findBoardName != fruData->end())
-    {
-        name = std::get<std::string>(findBoardName->second);
+        auto boardNameProperty = boardData->find("Name");
+        if (boardNameProperty != boardData->end())
+        {
+            name = std::get<std::string>(boardNameProperty->second);
+        }
     }
     else
     {
-        name = "UNKNOWN";
+        auto findProductName = fruData->find("BOARD_PRODUCT_NAME");
+        auto findBoardName = fruData->find("PRODUCT_PRODUCT_NAME");
+        if (findProductName != fruData->end())
+        {
+            name = std::get<std::string>(findProductName->second);
+        }
+        else if (findBoardName != fruData->end())
+        {
+            name = std::get<std::string>(findBoardName->second);
+        }
+        else
+        {
+            name = "UNKNOWN";
+        }
     }
+
     if (name.size() > maxFruSdrNameSize)
     {
         name = name.substr(0, maxFruSdrNameSize);
