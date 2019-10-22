@@ -70,6 +70,30 @@
       "revId": "7db240611b51794491a9f1e17d05a1126b4e5c25",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "81e4cae5_913cefec",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 599,
+      "author": {
+        "id": 1000100
+      },
+      "writtenOn": "2019-10-22T19:18:11Z",
+      "side": 1,
+      "message": "There\u0027s a Google bug to add the Association record to the FruDevice when the probe finds it -- that\u0027ll speed-up the FRU lookup portion.",
+      "parentUuid": "5bde66d5_778bd9bc",
+      "range": {
+        "startLine": 597,
+        "startChar": 6,
+        "endLine": 599,
+        "endChar": 46
+      },
+      "revId": "7db240611b51794491a9f1e17d05a1126b4e5c25",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
