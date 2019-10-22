@@ -94,6 +94,30 @@
       "revId": "7db240611b51794491a9f1e17d05a1126b4e5c25",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "0359a8f2_1713fcd5",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 599,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2019-10-22T20:33:16Z",
+      "side": 1,
+      "message": "I think you\u0027d want EntityManager to host the association, and just have it be based on the foundDevice in EntityManager, then you can do a reverse lookup in the mapper. That way when we have more than just FruDevice probes, it still works",
+      "parentUuid": "81e4cae5_913cefec",
+      "range": {
+        "startLine": 597,
+        "startChar": 6,
+        "endLine": 599,
+        "endChar": 46
+      },
+      "revId": "7db240611b51794491a9f1e17d05a1126b4e5c25",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
