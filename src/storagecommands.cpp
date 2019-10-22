@@ -545,14 +545,15 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
                     return false;
                 }
 
+                // At this point we found the device entry and should return
+                // true.
                 auto findIpmiDevice = entry.second.find(
                     "xyz.openbmc_project.Inventory.Decorator.Ipmi");
-                if (findIpmiDevice == entry.second.end())
+                if (findIpmiDevice != entry.second.end())
                 {
-                    return false;
+                    entityData = &(findIpmiDevice->second);
                 }
 
-                entityData = &(findIpmiDevice->second);
                 return true;
             });
 
