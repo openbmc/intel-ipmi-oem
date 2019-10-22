@@ -46,6 +46,30 @@
       "revId": "7db240611b51794491a9f1e17d05a1126b4e5c25",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5bde66d5_778bd9bc",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 599,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2019-10-22T19:10:22Z",
+      "side": 1,
+      "message": "Ah got it",
+      "parentUuid": "8728ba48_f5a35586",
+      "range": {
+        "startLine": 597,
+        "startChar": 6,
+        "endLine": 599,
+        "endChar": 46
+      },
+      "revId": "7db240611b51794491a9f1e17d05a1126b4e5c25",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
