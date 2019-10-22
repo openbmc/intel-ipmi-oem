@@ -17,6 +17,7 @@
 #include <bitset>
 #include <bridgingcommands.hpp>
 #include <cstring>
+#include <firmware-update.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
@@ -128,6 +129,14 @@ IpmbRequest::IpmbRequest(const ipmbHeader *ipmbBuffer, size_t bufferLength)
     size_t dataLength =
         bufferLength - (ipmbConnectionHeaderLength +
                         ipmbRequestDataHeaderLength + ipmbChecksumSize);
+
+    // BMC shall not accept IPMI firmware update commands from the IPMB.
+    if ((NETFUN_FIRMWARE == netFn) &&
+        ((cmd >= IPMI_CMD_FW_GET_FW_VERSION_INFO) &&
+         (cmd <= IPMI_CMD_FW_IMAGE_WRITE)))
+    {
+        return;
+    }
 
     if (dataLength > 0)
     {
