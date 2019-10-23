@@ -2109,7 +2109,7 @@ ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(ipmi::Context::ptr ctx,
                 {
                     ipmi::responseReqDataLenInvalid();
                 }
-                if (rankOrder.size() < numberOfPSU)
+                if (rankOrder.size() != numberOfPSU)
                 {
                     return ipmi::responseReqDataLenInvalid();
                 }
@@ -2171,7 +2171,7 @@ ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(ipmi::Context::ptr ctx,
     return ipmi::responseSuccess(crSetCompleted);
 }
 
-ipmi::RspType<uint8_t, std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
+ipmi::RspType<uint8_t, std::variant<uint8_t, uint32_t, std::vector<uint8_t>>>
     ipmiOEMGetCRConfig(ipmi::Context::ptr ctx, uint8_t parameter)
 {
     crConfigVariant value;
@@ -2256,17 +2256,18 @@ ipmi::RspType<uint8_t, std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
                     "Error to get RotationAlgorithm property");
                 return ipmi::responseResponseError();
             }
-            std::array<uint8_t, 5> response = {0, 0, 0, 0, 0};
+            std::vector<uint8_t> response;
             namespace server = sdbusplus::xyz::openbmc_project::Control::server;
             auto algo =
                 server::PowerSupplyRedundancy::convertAlgoFromString(*pAlgo);
+
             switch (algo)
             {
                 case server::PowerSupplyRedundancy::Algo::bmcSpecific:
-                    response[0] = 0;
+                    response.push_back(0);
                     break;
                 case server::PowerSupplyRedundancy::Algo::userSpecific:
-                    response[0] = 1;
+                    response.push_back(1);
                     break;
                 default:
                     phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -2286,14 +2287,10 @@ ipmi::RspType<uint8_t, std::variant<uint8_t, uint32_t, std::array<uint8_t, 5>>>
                     "Error to get RotationRankOrder property");
                 return ipmi::responseResponseError();
             }
-            if (pResponse->size() + 1 > response.size())
-            {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "Incorrect size of RotationAlgorithm property");
-                return ipmi::responseResponseError();
-            }
+
             std::copy(pResponse->begin(), pResponse->end(),
-                      response.begin() + 1);
+                      std::back_inserter(response));
+
             return ipmi::responseSuccess(parameter, response);
         }
         case crParameter::rotationPeriod:
