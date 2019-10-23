@@ -15,9 +15,10 @@
 */
 
 #pragma once
+#include "sdrutils.hpp"
+
 #include <cstdint>
 #include <ipmid/api.hpp>
-#include <sdrutils.hpp>
 
 #pragma pack(push, 1)
 
