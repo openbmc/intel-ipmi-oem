@@ -18,6 +18,7 @@
 #include <fstream>
 #include <iostream>
 #include <ipmid/api.hpp>
+#include <ipmid/utils.hpp>
 #include <map>
 #include <random>
 #include <sdbusplus/bus.hpp>
@@ -31,6 +32,22 @@ uint32_t imgLength = 0;
 uint32_t imgType = 0;
 bool block0Mapped = false;
 static constexpr uint32_t perBlock0MagicNum = 0xB6EAFD19;
+
+static constexpr const char *versionIntf =
+    "xyz.openbmc_project.Software.Version";
+
+enum class FWDeviceIDTag : uint8_t
+{
+    bmcActiveImage = 1,
+    bmcRecoveryImage,
+};
+
+const static boost::container::flat_map<FWDeviceIDTag, const char *>
+    fwVersionIdMap{{FWDeviceIDTag::bmcActiveImage,
+                    "/xyz/openbmc_project/software/bmc_active"},
+                   {FWDeviceIDTag::bmcRecoveryImage,
+                    "/xyz/openbmc_project/software/bmc_recovery"}};
+
 #endif
 
 static constexpr const char *secondaryFitImageStartAddr = "22480000";
@@ -954,126 +971,90 @@ static ipmi_ret_t ipmi_firmware_control(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return rc;
 }
 
-struct fw_version_info
+#ifdef INTEL_PFR_ENABLED
+using fwVersionInfoType = std::tuple<uint8_t,   // ID Tag
+                                     uint8_t,   // Major Version Number
+                                     uint8_t,   // Minor Version Number
+                                     uint32_t,  // Build Number
+                                     uint32_t,  // Build Timestamp
+                                     uint32_t>; // Update Timestamp
+ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
 {
-    uint8_t id_tag;
-    uint8_t major;
-    uint8_t minor;
-    uint32_t build;
-    uint32_t build_time;
-    uint32_t update_time;
-} __attribute__((packed));
-
-static ipmi_ret_t ipmi_firmware_get_fw_version_info(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
-{
-    if (DEBUG)
-        std::cerr << "Get FW Version Info\n";
-
     // Byte 1 - Count (N) Number of devices data is being returned for.
-    // Byte 2 - ID Tag 00 – reserved 01 – BMC Active Image 02 – BBU Active Image
-    //                 03 – BMC Backup Image 04 – BBU Backup Image 05 – BBR
-    //                 Image
-    // Byte 3 - Major Version Number
-    // Byte 4 - Minor Version Number
-    // Bytes 5:8 - Build Number
-    // Bytes 9:12 - Build Timestamp Format: LSB first, same format as SEL
-    // timestamp
-    // Bytes 13:16 - Update Timestamp
+    // Bytes  2:16 - Device firmare information(fwVersionInfoType)
     // Bytes - 17:(15xN) - Repeat of 2 through 16
 
-    uint8_t count = 0;
-    auto ret_count = reinterpret_cast<uint8_t *>(response);
-    auto info = reinterpret_cast<struct fw_version_info *>(ret_count + 1);
-
-    for (uint8_t id_tag = 1; id_tag < 6; id_tag++)
+    std::vector<fwVersionInfoType> fwVerInfoList;
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
+    for (const auto &fwDev : fwVersionIdMap)
     {
-        const char *fw_path;
-        switch (id_tag)
-        {
-            case 1:
-                fw_path = FW_UPDATE_ACTIVE_INFO_PATH;
-                break;
-            case 2:
-                fw_path = FW_UPDATE_BACKUP_INFO_PATH;
-                break;
-            case 3:
-            case 4:
-            case 5:
-                continue; // skip for now
-                break;
-        }
-        std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-        auto method =
-            bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, fw_path,
-                                 "org.freedesktop.DBus.Properties", "GetAll");
-        method.append(FW_UPDATE_INFO_INTERFACE);
-        std::vector<std::pair<std::string, ipmi::DbusVariant>> properties;
+        std::string verStr;
         try
         {
-            auto reply = bus->call(method);
+            auto service = ipmi::getService(*busp, versionIntf, fwDev.second);
 
-            if (reply.is_method_error())
-                continue;
-
-            reply.read(properties);
+            ipmi::Value result = ipmi::getDbusProperty(
+                *busp, service, fwDev.second, versionIntf, "Version");
+            verStr = std::get<std::string>(result);
         }
-        catch (sdbusplus::exception::SdBusError &e)
+        catch (const std::exception &e)
         {
-            std::cerr << "SDBus Error: " << e.what();
-            return IPMI_CC_UNSPECIFIED_ERROR;
-        }
-        uint8_t major = 0;
-        uint8_t minor = 0;
-        uint32_t build = 0;
-        int32_t build_time = 0;
-        int32_t update_time = 0;
-        for (const auto &t : properties)
-        {
-            auto key = t.first;
-            auto value = t.second;
-            if (key == "version")
-            {
-                auto strver = std::get<std::string>(value);
-                std::stringstream ss;
-                ss << std::hex << strver;
-                uint32_t t;
-                ss >> t;
-                major = t;
-                ss.ignore();
-                ss >> t;
-                minor = t;
-                ss.ignore();
-                ss >> build;
-            }
-            else if (key == "build_time")
-            {
-                build_time = std::get<int32_t>(value);
-            }
-            else if (key == "update_time")
-            {
-                update_time = std::get<int32_t>(value);
-            }
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Failed to fetch Version property",
+                phosphor::logging::entry("ERROR=%s", e.what()),
+                phosphor::logging::entry("PATH=%s", fwDev.second),
+                phosphor::logging::entry("INTERFACE=%s", versionIntf));
+            continue;
         }
 
-        info->id_tag = id_tag;
-        info->major = major;
-        info->minor = minor;
-        info->build = build;
-        info->build_time = build_time;
-        info->update_time = update_time;
-        count++;
-        info++;
+        if (verStr.empty())
+        {
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Version is empty.",
+                phosphor::logging::entry("PATH=%s", fwDev.second),
+                phosphor::logging::entry("INTERFACE=%s", versionIntf));
+            continue;
+        }
+
+        // BMC Version format: <major>.<minor>-<build bum>-<build hash>
+        std::vector<std::string> splitVer;
+        boost::split(splitVer, verStr, boost::is_any_of(".-"));
+        if (splitVer.size() < 3)
+        {
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Invalid Version format.",
+                phosphor::logging::entry("Version=%s", verStr.c_str()),
+                phosphor::logging::entry("PATH=%s", fwDev.second));
+            continue;
+        }
+
+        uint8_t majorNum = 0;
+        uint8_t minorNum = 0;
+        uint32_t buildNum = 0;
+        try
+        {
+            majorNum = std::stoul(splitVer[0], nullptr, 16);
+            minorNum = std::stoul(splitVer[1], nullptr, 16);
+            buildNum = std::stoul(splitVer[2], nullptr, 16);
+        }
+        catch (const std::exception &e)
+        {
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Failed to convert stoul.",
+                phosphor::logging::entry("ERROR=%s", e.what()));
+            continue;
+        }
+
+        // Build Timestamp - Not supported.
+        // Update Timestamp - TODO: Need to check with CPLD team.
+        fwVerInfoList.emplace_back(
+            fwVersionInfoType(static_cast<uint8_t>(fwDev.first), majorNum,
+                              minorNum, buildNum, 0, 0));
     }
-    *ret_count = count;
 
-    // Status code.
-    ipmi_ret_t rc = IPMI_CC_OK;
-    *data_len = sizeof(count) + count * sizeof(*info);
-
-    return rc;
+    return ipmi::responseSuccess(fwVerInfoList.size(), fwVerInfoList);
 }
+#endif
 
 struct fw_security_revision_info
 {
@@ -1678,11 +1659,15 @@ static void register_netfn_firmware_functions()
     if (DEBUG)
         std::cerr << "Registering firmware update commands\n";
 
-    // get firmware version information
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_VERSION_INFO,
-                           NULL, ipmi_firmware_get_fw_version_info,
-                           PRIVILEGE_ADMIN);
+#ifdef INTEL_PFR_ENABLED
+    // Following commands are supported only for PFR enabled platforms
+    // CMD:0x20 - Get Firmware Version Information
 
+    // get firmware version information
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, NETFUN_FIRMWARE,
+                          IPMI_CMD_FW_GET_FW_VERSION_INFO,
+                          ipmi::Privilege::Admin, ipmiGetFwVersionInfo);
+#endif
     // get firmware security version information
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_SEC_VERSION_INFO,
                            NULL, ipmi_firmware_get_fw_security_revision,
