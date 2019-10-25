@@ -17,7 +17,9 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <ipmid/api-types.hpp>
 #include <ipmid/api.hpp>
+#include <ipmid/utils.hpp>
 #include <map>
 #include <random>
 #include <sdbusplus/bus.hpp>
@@ -965,10 +967,29 @@ struct fw_version_info
     uint32_t update_time;
 } __attribute__((packed));
 
-static ipmi_ret_t ipmi_firmware_get_fw_version_info(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+ipmi::RspType<std::string> ipmiFirmwareGetFwVersionInfo(ipmi::Context::ptr ctx)
 {
+    ipmi::ChannelInfo chInfo = {0, 0, 0, false, 0};
+    try
+    {
+        getChannelInfo(ctx->channel, chInfo);
+    }
+    catch (sdbusplus::exception_t &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiFirmwareGetFwVersionInfo: Failed to get Channel Info",
+            phosphor::logging::entry("MSG: %s", e.description()));
+        return ipmi::responseUnspecifiedError();
+    }
+    if (chInfo.mediumType ==
+        static_cast<uint8_t>(ipmi::EChannelMediumType::ipmb))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiFirmwareGetFwVersionInfo: Error - not supported in ipmb "
+            "interface");
+        return ipmi::responseCommandNotAvailable();
+    }
+
     if (DEBUG)
         std::cerr << "Get FW Version Info\n";
 
@@ -984,9 +1005,10 @@ static ipmi_ret_t ipmi_firmware_get_fw_version_info(
     // Bytes 13:16 - Update Timestamp
     // Bytes - 17:(15xN) - Repeat of 2 through 16
 
+    std::string readBuf = {0};
     uint8_t count = 0;
-    auto ret_count = reinterpret_cast<uint8_t *>(response);
-    auto info = reinterpret_cast<struct fw_version_info *>(ret_count + 1);
+    uint8_t dataBuff[255] = {0};
+    auto info = reinterpret_cast<struct fw_version_info *>(dataBuff);
 
     for (uint8_t id_tag = 1; id_tag < 6; id_tag++)
     {
@@ -1023,7 +1045,7 @@ static ipmi_ret_t ipmi_firmware_get_fw_version_info(
         catch (sdbusplus::exception::SdBusError &e)
         {
             std::cerr << "SDBus Error: " << e.what();
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return ipmi::responseUnspecifiedError();
         }
         uint8_t major = 0;
         uint8_t minor = 0;
@@ -1067,13 +1089,11 @@ static ipmi_ret_t ipmi_firmware_get_fw_version_info(
         count++;
         info++;
     }
-    *ret_count = count;
+    readBuf.resize(count * sizeof(*info));
+    std::copy_n(dataBuff, (count * sizeof(*info)), (readBuf.begin()));
 
     // Status code.
-    ipmi_ret_t rc = IPMI_CC_OK;
-    *data_len = sizeof(count) + count * sizeof(*info);
-
-    return rc;
+    return ipmi::responseSuccess(readBuf);
 }
 
 struct fw_security_revision_info
@@ -1647,7 +1667,7 @@ static ipmi_ret_t ipmi_intel_app_get_buffer_size(
     return IPMI_CC_OK;
 }
 
-static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_FW_VERSION_INFO = 0x20;
+static constexpr ipmi_cmd_t cmdFwGetFwVersionInfo = 0x20;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_FW_SEC_VERSION_INFO = 0x21;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_FW_UPD_CHAN_INFO = 0x22;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_BMC_EXEC_CTX = 0x23;
@@ -1680,9 +1700,9 @@ static void register_netfn_firmware_functions()
         std::cerr << "Registering firmware update commands\n";
 
     // get firmware version information
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_VERSION_INFO,
-                           NULL, ipmi_firmware_get_fw_version_info,
-                           PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
+                          cmdFwGetFwVersionInfo, ipmi::Privilege::Admin,
+                          ipmiFirmwareGetFwVersionInfo);
 
     // get firmware security version information
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_SEC_VERSION_INFO,
