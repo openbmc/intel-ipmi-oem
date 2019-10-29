@@ -314,7 +314,8 @@ ipmi::RspType<uint8_t,             // Count
         requestedData.begin(), fruCache.begin() + fruInventoryOffset,
         fruCache.begin() + fruInventoryOffset + fromFruByteLen);
 
-    return ipmi::responseSuccess(countToRead, requestedData);
+    return ipmi::responseSuccess(static_cast<uint8_t>(requestedData.size()),
+                                 requestedData);
 }
 
 /** @brief implements the write FRU data command
