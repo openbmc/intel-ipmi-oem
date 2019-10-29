@@ -3246,6 +3246,15 @@ ipmi::RspType<>
             return ipmi::responseReqDataLenInvalid();
         }
 
+        // block double set-in-progress
+        if ((boot_options::transferStatus == boot_options::setInProgress) &&
+            (bootParam != boot_options::setComplete))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "boot option set in progress!");
+            return ipmi::responseResponseError();
+        }
+
         boot_options::transferStatus = bootParam;
         return ipmi::responseSuccess();
     }
@@ -3616,6 +3625,9 @@ static void registerOEMFunctions(void)
 
     registerHandler(prioOemBase, netFnChassis, chassis::cmdSetSystemBootOptions,
                     Privilege::Operator, ipmiOemSetBootOptions);
+
+    registerHandler(prioOemBase, netFnChassis, chassis::cmdGetSystemBootOptions,
+                    Privilege::Operator, ipmiOemGetEfiBootOptions);
 
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetPSUVersion, Privilege::User,
