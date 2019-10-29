@@ -52,6 +52,12 @@ TEST(sensorutils, TranslateToIPMI)
         EXPECT_EQ(bExp, 0);
     }
 
+    // check negative values
+    expected = 236; // 2s compliment -20
+    scaledVal = ipmi::scaleIPMIValueFromDouble(-20, mValue, rExp, bValue, bExp,
+                                               bSigned);
+    EXPECT_NEAR(scaledVal, expected, expected * 0.01);
+
     // fan example
     maxValue = 16000;
     minValue = 0;

@@ -137,21 +137,26 @@ static inline uint8_t
                              const int8_t rExp, const uint16_t bValue,
                              const int8_t bExp, const bool bSigned)
 {
-    uint32_t scaledValue =
+    int32_t scaledValue =
         (value - (bValue * std::pow(10, bExp) * std::pow(10, rExp))) /
         (mValue * std::pow(10, rExp));
 
-    if (scaledValue > std::numeric_limits<uint8_t>::max() ||
-        scaledValue < std::numeric_limits<uint8_t>::lowest())
-    {
-        throw std::out_of_range("Value out of range");
-    }
     if (bSigned)
     {
+        if (scaledValue > std::numeric_limits<int8_t>::max() ||
+            scaledValue < std::numeric_limits<int8_t>::lowest())
+        {
+            throw std::out_of_range("Value out of range");
+        }
         return static_cast<int8_t>(scaledValue);
     }
     else
     {
+        if (scaledValue > std::numeric_limits<uint8_t>::max() ||
+            scaledValue < std::numeric_limits<uint8_t>::lowest())
+        {
+            throw std::out_of_range("Value out of range");
+        }
         return static_cast<uint8_t>(scaledValue);
     }
 }
