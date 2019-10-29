@@ -1548,38 +1548,48 @@ static ipmi_ret_t ipmi_firmware_get_root_cert_data(
     return rc;
 }
 
-static ipmi_ret_t ipmi_firmware_write_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                           ipmi_request_t request,
-                                           ipmi_response_t response,
-                                           ipmi_data_len_t data_len,
-                                           ipmi_context_t context)
+ipmi::RspType<uint32_t> ipmiFwImageWriteData(std::vector<uint8_t> writeData)
 {
-    if (DEBUG)
-        std::cerr << "write fw data (" << *data_len << " bytes)\n";
+    const uint8_t ccCmdNotSupportedInPresentState = 0xD5;
+    uint32_t writeDataLen = writeData.size();
 
-    auto bytes_in = *data_len;
-    *data_len = 0;
+    if (!writeDataLen)
+    {
+        return ipmi::responseReqDataLenInvalid();
+    }
+
     if (fw_update_status.state() != fw_update_status_cache::FW_STATE_DOWNLOAD)
-        return IPMI_CC_INVALID;
+    {
+        phosphor::logging::log<phosphor::logging::level::DEBUG>(
+            "Inavlid firmware update state.");
+        return ipmi::response(ccCmdNotSupportedInPresentState);
+    }
 
     std::ofstream out(FIRMWARE_BUFFER_FILE,
                       std::ofstream::binary | std::ofstream::app);
     if (!out)
     {
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        phosphor::logging::log<phosphor::logging::level::DEBUG>(
+            "Error while opening file.");
+        return ipmi::responseUnspecifiedError();
     }
 
     uint64_t fileDataLen = out.tellp();
-    if (fileDataLen > FIRMWARE_BUFFER_MAX_SIZE)
+
+    if ((fileDataLen + writeDataLen) > FIRMWARE_BUFFER_MAX_SIZE)
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        phosphor::logging::log<phosphor::logging::level::DEBUG>(
+            "Firmware image size exceeds the limit");
+        return ipmi::responseInvalidFieldRequest();
     }
-    auto data = reinterpret_cast<uint8_t *>(request);
-    out.write(reinterpret_cast<char *>(data), bytes_in);
+
+    char *data = reinterpret_cast<char *>(writeData.data());
+    out.write(data, writeDataLen);
     out.close();
+
     if (xfer_hash_check)
     {
-        xfer_hash_check->hash({data, data + bytes_in});
+        xfer_hash_check->hash({data, data + writeDataLen});
     }
 
 #ifdef INTEL_PFR_ENABLED
@@ -1597,7 +1607,8 @@ static ipmi_ret_t ipmi_firmware_write_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
     /* Get the PFR block 0 data and read the uploaded image
      * information( Image type, length etc) */
-    if ((fileDataLen >= sizeof(PFRImageBlock0)) && (!block0Mapped))
+    if (((fileDataLen + writeDataLen) >= sizeof(PFRImageBlock0)) &&
+        (!block0Mapped))
     {
         struct PFRImageBlock0 block0Data = {0};
 
@@ -1611,7 +1622,9 @@ static ipmi_ret_t ipmi_firmware_write_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         /* Validate the magic number */
         if (magicNum != perBlock0MagicNum)
         {
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            phosphor::logging::log<phosphor::logging::level::DEBUG>(
+                "PFR image magic number not matched");
+            return ipmi::responseInvalidFieldRequest();
         }
         // Note:imgLength, imgType and block0Mapped are in global scope, as
         // these are used in cascaded updates.
@@ -1620,7 +1633,7 @@ static ipmi_ret_t ipmi_firmware_write_data(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         block0Mapped = true;
     }
 #endif // end of INTEL_PFR_ENABLED
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(writeDataLen);
 }
 
 struct intc_app_get_buffer_size_resp
@@ -1646,6 +1659,7 @@ static ipmi_ret_t ipmi_intel_app_get_buffer_size(
 
     return IPMI_CC_OK;
 }
+static constexpr ipmi::Cmd cmdFwImageWriteData = 0x2c;
 
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_FW_VERSION_INFO = 0x20;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_FW_SEC_VERSION_INFO = 0x21;
@@ -1659,7 +1673,6 @@ static constexpr ipmi_cmd_t IPMI_CMD_FW_EXIT_FW_UPDATE_MODE = 0x28;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_UPDATE_CONTROL = 0x29;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_STATUS = 0x2a;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_SET_FW_UPDATE_OPTIONS = 0x2b;
-static constexpr ipmi_cmd_t IPMI_CMD_FW_IMAGE_WRITE = 0x2c;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_TIMESTAMP = 0x2d;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_UPDATE_ERR_MSG = 0xe0;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_REMOTE_FW_INFO = 0xf0;
@@ -1737,8 +1750,9 @@ static void register_netfn_firmware_functions()
                            NULL, ipmi_firmware_update_options, PRIVILEGE_ADMIN);
 
     // write image data
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_IMAGE_WRITE, NULL,
-                           ipmi_firmware_write_data, PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, NETFUN_FIRMWARE,
+                          cmdFwImageWriteData, ipmi::Privilege::Admin,
+                          ipmiFwImageWriteData);
 
     // get buffer size is used by fw update (exclusively?)
     ipmi_register_callback(NETFUN_INTC_APP, IPMI_CMD_INTC_GET_BUFFER_SIZE, NULL,
