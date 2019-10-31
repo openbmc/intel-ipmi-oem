@@ -34,6 +34,7 @@ using level = phosphor::logging::level;
 constexpr const char* DBUS_PROPERTIES = "org.freedesktop.DBus.Properties";
 constexpr const char* MDRV1_PATH = "/xyz/openbmc_project/Smbios/MDR_V1";
 constexpr const char* MDRV1_INTERFACE = "xyz.openbmc_project.Smbios.MDR_V1";
+static constexpr uint8_t maxDataLen = 254;
 
 static void register_netfn_smbios_functions() __attribute__((constructor));
 
@@ -242,10 +243,17 @@ ipmi_ret_t cmd_region_read(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         phosphor::logging::log<level::ERR>("Error getting regionUsed");
         return IPMI_CC_UNSPECIFIED_ERROR;
     }
-    if (requestData->offset + requestData->length >
-        std::get<uint16_t>(regUsedVal))
+    if ((requestData->length >= maxDataLen) ||
+        (requestData->offset + requestData->length >
+         std::get<uint16_t>(regUsedVal)))
     {
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        phosphor::logging::log<level::ERR>(
+            "Invalid data request",
+            phosphor::logging::entry("OFFSET=%d", requestData->offset),
+            phosphor::logging::entry("LENGTH=%d", requestData->length),
+            phosphor::logging::entry("REGUSED=%d",
+                                     std::get<uint16_t>(regUsedVal)));
+        return IPMI_CC_INVALID_FIELD_REQUEST;
     }
 
     if (0 > sdplus_mdrv1_get_property("LockPolicy", lockPolicyVal, service))
@@ -277,7 +285,7 @@ ipmi_ret_t cmd_region_read(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     *data_len = responseData->length = res[0];
     responseData->updateCount = res[1];
 
-    if ((*data_len == 0) || (*data_len >= 254))
+    if ((*data_len == 0) || (*data_len >= maxDataLen))
     {
         phosphor::logging::log<level::ERR>(
             "Data length send from service is invalid");
