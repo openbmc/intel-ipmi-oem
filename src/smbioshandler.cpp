@@ -245,7 +245,13 @@ ipmi_ret_t cmd_region_read(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     if (requestData->offset + requestData->length >
         std::get<uint16_t>(regUsedVal))
     {
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        phosphor::logging::log<level::ERR>(
+            "Invalid data request",
+            phosphor::logging::entry("OFFSET=%d", requestData->offset),
+            phosphor::logging::entry("LENGTH=%d", requestData->length),
+            phosphor::logging::entry("REGUSED=%d",
+                                     std::get<uint16_t>(regUsedVal)));
+        return IPMI_CC_INVALID_FIELD_REQUEST;
     }
 
     if (0 > sdplus_mdrv1_get_property("LockPolicy", lockPolicyVal, service))
