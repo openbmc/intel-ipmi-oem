@@ -24,7 +24,6 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/process/child.hpp>
 #include <boost/process/io.hpp>
-#include <com/intel/Control/NMISource/server.hpp>
 #include <com/intel/Control/OCOTShutdownPolicy/server.hpp>
 #include <commandutils.hpp>
 #include <filesystem>
@@ -40,6 +39,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <xyz/openbmc_project/Chassis/Control/NMISource/server.hpp>
 #include <xyz/openbmc_project/Control/Boot/Mode/server.hpp>
 #include <xyz/openbmc_project/Control/Boot/Source/server.hpp>
 #include <xyz/openbmc_project/Control/PowerSupplyRedundancy/server.hpp>
@@ -57,9 +57,10 @@ static constexpr auto networkIPIntf = "xyz.openbmc_project.Network.IP";
 static constexpr auto networkService = "xyz.openbmc_project.Network";
 static constexpr auto networkRoot = "/xyz/openbmc_project/network";
 
-static constexpr const char* oemNmiSourceIntf = "com.intel.Control.NMISource";
+static constexpr const char* oemNmiSourceIntf =
+    "xyz.openbmc_project.Chassis.Control.NMISource";
 static constexpr const char* oemNmiSourceObjPath =
-    "/com/intel/control/NMISource";
+    "/xyz/openbmc_project/Chassis/Control/NMISource";
 static constexpr const char* oemNmiBmcSourceObjPathProp = "BMCSource";
 static constexpr const char* oemNmiEnabledObjPathProp = "Enabled";
 
@@ -68,14 +69,13 @@ static constexpr const char* dimmOffsetFile = "/var/lib/ipmi/ipmi_dimms.json";
 enum class NmiSource : uint8_t
 {
     none = 0,
-    fpBtn = 1,
-    wdPreTimeout = 2,
-    pefMatch = 3,
-    chassisCmd = 4,
-    memoryError = 5,
-    pciSerrPerr = 6,
-    southbridgeNmi = 7,
-    chipsetNmi = 8,
+    frontPanelButton = 1,
+    watchdog = 2,
+    chassisCmd = 3,
+    memoryError = 4,
+    pciBusError = 5,
+    pch = 6,
+    chipset = 7,
 };
 
 static constexpr const char* restricionModeService =
@@ -2721,7 +2721,7 @@ ipmi::RspType<uint8_t /* restore status */>
 ipmi::RspType<uint8_t> ipmiOEMGetNmiSource(void)
 {
     uint8_t bmcSource;
-    namespace nmi = sdbusplus::com::intel::Control::server;
+    namespace nmi = sdbusplus::xyz::openbmc_project::Chassis::Control::server;
 
     try
     {
@@ -2738,14 +2738,11 @@ ipmi::RspType<uint8_t> ipmiOEMGetNmiSource(void)
             case nmi::NMISource::BMCSourceSignal::None:
                 bmcSource = static_cast<uint8_t>(NmiSource::none);
                 break;
-            case nmi::NMISource::BMCSourceSignal::FpBtn:
-                bmcSource = static_cast<uint8_t>(NmiSource::fpBtn);
+            case nmi::NMISource::BMCSourceSignal::FrontPanelButton:
+                bmcSource = static_cast<uint8_t>(NmiSource::frontPanelButton);
                 break;
-            case nmi::NMISource::BMCSourceSignal::WdPreTimeout:
-                bmcSource = static_cast<uint8_t>(NmiSource::wdPreTimeout);
-                break;
-            case nmi::NMISource::BMCSourceSignal::PefMatch:
-                bmcSource = static_cast<uint8_t>(NmiSource::pefMatch);
+            case nmi::NMISource::BMCSourceSignal::Watchdog:
+                bmcSource = static_cast<uint8_t>(NmiSource::watchdog);
                 break;
             case nmi::NMISource::BMCSourceSignal::ChassisCmd:
                 bmcSource = static_cast<uint8_t>(NmiSource::chassisCmd);
@@ -2753,14 +2750,14 @@ ipmi::RspType<uint8_t> ipmiOEMGetNmiSource(void)
             case nmi::NMISource::BMCSourceSignal::MemoryError:
                 bmcSource = static_cast<uint8_t>(NmiSource::memoryError);
                 break;
-            case nmi::NMISource::BMCSourceSignal::PciSerrPerr:
-                bmcSource = static_cast<uint8_t>(NmiSource::pciSerrPerr);
+            case nmi::NMISource::BMCSourceSignal::PciBusError:
+                bmcSource = static_cast<uint8_t>(NmiSource::pciBusError);
                 break;
-            case nmi::NMISource::BMCSourceSignal::SouthbridgeNmi:
-                bmcSource = static_cast<uint8_t>(NmiSource::southbridgeNmi);
+            case nmi::NMISource::BMCSourceSignal::PCH:
+                bmcSource = static_cast<uint8_t>(NmiSource::pch);
                 break;
-            case nmi::NMISource::BMCSourceSignal::ChipsetNmi:
-                bmcSource = static_cast<uint8_t>(NmiSource::chipsetNmi);
+            case nmi::NMISource::BMCSourceSignal::Chipset:
+                bmcSource = static_cast<uint8_t>(NmiSource::chipset);
                 break;
             default:
                 phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -2781,7 +2778,7 @@ ipmi::RspType<uint8_t> ipmiOEMGetNmiSource(void)
 
 ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
 {
-    namespace nmi = sdbusplus::com::intel::Control::server;
+    namespace nmi = sdbusplus::xyz::openbmc_project::Chassis::Control::server;
 
     nmi::NMISource::BMCSourceSignal bmcSourceSignal =
         nmi::NMISource::BMCSourceSignal::None;
@@ -2791,14 +2788,11 @@ ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
         case NmiSource::none:
             bmcSourceSignal = nmi::NMISource::BMCSourceSignal::None;
             break;
-        case NmiSource::fpBtn:
-            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::FpBtn;
+        case NmiSource::frontPanelButton:
+            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::FrontPanelButton;
             break;
-        case NmiSource::wdPreTimeout:
-            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::WdPreTimeout;
-            break;
-        case NmiSource::pefMatch:
-            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::PefMatch;
+        case NmiSource::watchdog:
+            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::Watchdog;
             break;
         case NmiSource::chassisCmd:
             bmcSourceSignal = nmi::NMISource::BMCSourceSignal::ChassisCmd;
@@ -2806,14 +2800,14 @@ ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
         case NmiSource::memoryError:
             bmcSourceSignal = nmi::NMISource::BMCSourceSignal::MemoryError;
             break;
-        case NmiSource::pciSerrPerr:
-            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::PciSerrPerr;
+        case NmiSource::pciBusError:
+            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::PciBusError;
             break;
-        case NmiSource::southbridgeNmi:
-            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::SouthbridgeNmi;
+        case NmiSource::pch:
+            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::PCH;
             break;
-        case NmiSource::chipsetNmi:
-            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::ChipsetNmi;
+        case NmiSource::chipset:
+            bmcSourceSignal = nmi::NMISource::BMCSourceSignal::Chipset;
             break;
         default:
             phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -2827,11 +2821,9 @@ ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         std::string service =
             getService(*dbus, oemNmiSourceIntf, oemNmiSourceObjPath);
-        setDbusProperty(
-            *dbus, service, oemNmiSourceObjPath, oemNmiSourceIntf,
-            oemNmiBmcSourceObjPathProp,
-            sdbusplus::com::intel::Control::server::convertForMessage(
-                bmcSourceSignal));
+        setDbusProperty(*dbus, service, oemNmiSourceObjPath, oemNmiSourceIntf,
+                        oemNmiBmcSourceObjPathProp,
+                        nmi::convertForMessage(bmcSourceSignal));
         // set Enabled property to inform NMI source handling
         // to trigger a NMI_OUT BSOD.
         // if it's triggered by NMI source property changed,
