@@ -1,4 +1,5 @@
 /build*
+.idea/
 .vscode
 3rdparty/
 CMakeCache.txt
@@ -6,6 +7,7 @@ CMakeFiles/
 CTestTestfile.cmake
 Makefile
 Testing/
+cmake-build-debug/
 cmake_install.cmake
 compile_commands.json
 googletest-build/
