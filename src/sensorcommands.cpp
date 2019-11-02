@@ -1375,7 +1375,7 @@ ipmi::RspType<uint16_t,            // next record ID
         name = path.substr(nameStart + 1, std::string::npos - nameStart);
     }
 
-    std::replace(name.begin(), name.end(), '_', ' ');
+    // No longer replacing underlines in sensor names with spaces
     if (name.size() > FULL_RECORD_ID_STR_MAX_LENGTH)
     {
         // try to not truncate by replacing common words
