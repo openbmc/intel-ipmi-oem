@@ -105,7 +105,13 @@ target_link_libraries (zinteloemcmds ${OPENSSL_CRYPTO_LIBRARY})
 
 install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
 option (INTEL_PFR_ENABLED "Intel PFR Enabled" OFF)
+option (BMC_VALIDATION_UNSECURE_FEATURE
+        "Enables unsecure features required by validation. Note: must
+        be turned off for production images."
+        OFF)
 target_compile_definitions (
     zinteloemcmds PRIVATE
     $<$<BOOL:${INTEL_PFR_ENABLED}>: -DINTEL_PFR_ENABLED>
+    $<$<BOOL:${BMC_VALIDATION_UNSECURE_FEATURE}>:
+    -DBMC_VALIDATION_UNSECURE_FEATURE>
 )

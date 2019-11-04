@@ -256,7 +256,16 @@ class Manufacturing
                 mtmMode = MtmLvl::mtmExpired;
                 return mtmMode;
             }
+#ifdef BMC_VALIDATION_UNSECURE_FEATURE
+            uint8_t specialMode = std::get<std::uint8_t>(mode);
+            constexpr uint8_t validationUnsecureMode = 3;
+            constexpr uint8_t manufacturingMode = 2;
+            mtmMode = static_cast<MtmLvl>(specialMode == validationUnsecureMode
+                                              ? manufacturingMode
+                                              : specialMode);
+#else
             mtmMode = static_cast<MtmLvl>(std::get<std::uint8_t>(mode));
+#endif
         }
         return mtmMode;
     }
