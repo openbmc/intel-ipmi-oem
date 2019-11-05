@@ -137,7 +137,7 @@ static inline uint8_t
                              const int8_t rExp, const uint16_t bValue,
                              const int8_t bExp, const bool bSigned)
 {
-    int32_t scaledValue =
+    double scaledValue =
         (value - (bValue * std::pow(10, bExp) * std::pow(10, rExp))) /
         (mValue * std::pow(10, rExp));
 
@@ -148,7 +148,7 @@ static inline uint8_t
         {
             throw std::out_of_range("Value out of range");
         }
-        return static_cast<int8_t>(scaledValue);
+        return static_cast<int8_t>(std::round(scaledValue));
     }
     else
     {
@@ -157,7 +157,7 @@ static inline uint8_t
         {
             throw std::out_of_range("Value out of range");
         }
-        return static_cast<uint8_t>(scaledValue);
+        return static_cast<uint8_t>(std::round(scaledValue));
     }
 }
 
