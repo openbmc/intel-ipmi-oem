@@ -137,7 +137,7 @@ static inline uint8_t
                              const int8_t rExp, const uint16_t bValue,
                              const int8_t bExp, const bool bSigned)
 {
-    uint32_t scaledValue =
+    double scaledValue =
         (value - (bValue * std::pow(10, bExp) * std::pow(10, rExp))) /
         (mValue * std::pow(10, rExp));
 
@@ -148,11 +148,11 @@ static inline uint8_t
     }
     if (bSigned)
     {
-        return static_cast<int8_t>(scaledValue);
+        return static_cast<int8_t>(std::round(scaledValue));
     }
     else
     {
-        return static_cast<uint8_t>(scaledValue);
+        return static_cast<int8_t>(std::round(scaledValue));
     }
 }
 
