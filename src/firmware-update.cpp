@@ -35,8 +35,14 @@ namespace ipmi
 namespace firmware
 {
 constexpr Cmd cmdGetFwVersionInfo = 0x20;
-constexpr ipmi::Cmd cmdFwGetRootCertData = 0x25;
-constexpr ipmi::Cmd cmdFwImageWriteData = 0x2c;
+constexpr Cmd cmdGetFwSecurityVersionInfo = 0x21;
+constexpr Cmd cmdGetFwUpdateChannelInfo = 0x22;
+constexpr Cmd cmdGetBmcExecutionContext = 0x23;
+constexpr Cmd cmdFwGetRootCertData = 0x25;
+constexpr Cmd cmdGetFwUpdateRandomNumber = 0x26;
+constexpr Cmd cmdSetFirmwareUpdateMode = 0x27;
+constexpr Cmd cmdExitFirmwareUpdateMode = 0x28;
+constexpr Cmd cmdFwImageWriteData = 0x2c;
 } // namespace firmware
 } // namespace ipmi
 
@@ -63,8 +69,201 @@ const static boost::container::flat_map<FWDeviceIDTag, const char *>
 
 #endif
 
-static constexpr const char *secondaryFitImageStartAddr = "22480000";
-static uint8_t getActiveBootImage(void);
+enum class ChannelIdTag : uint8_t
+{
+    reserved = 0,
+    kcs = 1,
+    rmcpPlus = 2,
+    ipmb = 3
+};
+
+enum class BmcExecutionContext : uint8_t
+{
+    reserved = 0,
+    linuxOs = 0x10,
+    bootLoader = 0x11,
+};
+
+static std::chrono::steady_clock::time_point fwRandomNumGenTs;
+static constexpr auto fwRandomNumExpirySeconds = std::chrono::seconds(30);
+static constexpr uint8_t fwRandomNumLength = 8;
+static std::array<uint8_t, fwRandomNumLength> fwRandomNum;
+
+static uint8_t getActiveBootImage(void)
+{
+    constexpr uint8_t primaryImage = 0x01;
+    constexpr uint8_t secondaryImage = 0x02;
+    constexpr const char *secondaryFitImageStartAddr = "22480000";
+
+    uint8_t bootImage = primaryImage;
+
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    auto method = bus->new_method_call(
+        "xyz.openbmc_project.U_Boot.Environment.Manager",
+        "/xyz/openbmc_project/u_boot/environment/mgr",
+        "xyz.openbmc_project.U_Boot.Environment.Manager", "Read");
+    method.append("bootcmd");
+    std::string value;
+    try
+    {
+        auto reply = bus->call(method);
+        reply.read(value);
+    }
+    catch (sdbusplus::exception::SdBusError &e)
+    {
+        std::cerr << "SDBus Error: " << e.what();
+        return ipmi::ccUnspecifiedError;
+    }
+    /* cheking for secondary FitImage Address 22480000  */
+    if (value.find(secondaryFitImageStartAddr) != std::string::npos)
+    {
+        bootImage = secondaryImage;
+    }
+    else
+    {
+        bootImage = primaryImage;
+    }
+
+    return bootImage;
+}
+
+#ifdef INTEL_PFR_ENABLED
+using fwVersionInfoType = std::tuple<uint8_t,   // ID Tag
+                                     uint8_t,   // Major Version Number
+                                     uint8_t,   // Minor Version Number
+                                     uint32_t,  // Build Number
+                                     uint32_t,  // Build Timestamp
+                                     uint32_t>; // Update Timestamp
+ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
+{
+    // Byte 1 - Count (N) Number of devices data is being returned for.
+    // Bytes  2:16 - Device firmare information(fwVersionInfoType)
+    // Bytes - 17:(15xN) - Repeat of 2 through 16
+
+    std::vector<fwVersionInfoType> fwVerInfoList;
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
+    for (const auto &fwDev : fwVersionIdMap)
+    {
+        std::string verStr;
+        try
+        {
+            auto service = ipmi::getService(*busp, versionIntf, fwDev.second);
+
+            ipmi::Value result = ipmi::getDbusProperty(
+                *busp, service, fwDev.second, versionIntf, "Version");
+            verStr = std::get<std::string>(result);
+        }
+        catch (const std::exception &e)
+        {
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Failed to fetch Version property",
+                phosphor::logging::entry("ERROR=%s", e.what()),
+                phosphor::logging::entry("PATH=%s", fwDev.second),
+                phosphor::logging::entry("INTERFACE=%s", versionIntf));
+            continue;
+        }
+
+        if (verStr.empty())
+        {
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Version is empty.",
+                phosphor::logging::entry("PATH=%s", fwDev.second),
+                phosphor::logging::entry("INTERFACE=%s", versionIntf));
+            continue;
+        }
+
+        // BMC Version format: <major>.<minor>-<build bum>-<build hash>
+        std::vector<std::string> splitVer;
+        boost::split(splitVer, verStr, boost::is_any_of(".-"));
+        if (splitVer.size() < 3)
+        {
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Invalid Version format.",
+                phosphor::logging::entry("Version=%s", verStr.c_str()),
+                phosphor::logging::entry("PATH=%s", fwDev.second));
+            continue;
+        }
+
+        uint8_t majorNum = 0;
+        uint8_t minorNum = 0;
+        uint32_t buildNum = 0;
+        try
+        {
+            majorNum = std::stoul(splitVer[0], nullptr, 16);
+            minorNum = std::stoul(splitVer[1], nullptr, 16);
+            buildNum = std::stoul(splitVer[2], nullptr, 16);
+        }
+        catch (const std::exception &e)
+        {
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Failed to convert stoul.",
+                phosphor::logging::entry("ERROR=%s", e.what()));
+            continue;
+        }
+
+        // Build Timestamp - Not supported.
+        // Update Timestamp - TODO: Need to check with CPLD team.
+        fwVerInfoList.emplace_back(
+            fwVersionInfoType(static_cast<uint8_t>(fwDev.first), majorNum,
+                              minorNum, buildNum, 0, 0));
+    }
+
+    return ipmi::responseSuccess(fwVerInfoList.size(), fwVerInfoList);
+}
+using fwSecurityVersionInfoType = std::tuple<uint8_t,  // ID Tag
+                                             uint8_t,  // BKC Version
+                                             uint8_t>; // SVN Version
+ipmi::RspType<uint8_t, std::vector<fwSecurityVersionInfoType>>
+    ipmiGetFwSecurityVersionInfo()
+{
+    // TODO: Need to add support.
+    return ipmi::responseInvalidCommand();
+}
+
+#endif // INTEL_PFR_ENABLED
+
+static constexpr uint8_t channelListSize = 3;
+/** @brief implements Maximum Firmware Transfer size command
+ *  @parameter
+ *   -  none
+ *  @returns IPMI completion code plus response data
+ *   - count - channel count
+ *   - channelList - channel list information
+ */
+ipmi::RspType<uint8_t, // channel count
+              std::array<std::tuple<uint8_t, uint32_t>,
+                         channelListSize> // Channel List
+              >
+    ipmiFirmwareMaxTransferSize()
+{
+    constexpr uint32_t kcsMaxBufSize = 128;
+    constexpr uint32_t rmcpPlusMaxBufSize = 50 * 1024;
+    constexpr uint32_t ipmbMaxBufSize = 4 * 1024;
+    // Byte 1 - Count (N) Number of devices data is being returned for.
+    // Byte 2 - ID Tag 00 – reserved 01 – kcs 02 – rmcp+, 03 - ipmb
+    // Byte 3-6 - transfer size (little endian)
+    // Bytes - 7:(5xN) - Repeat of 2 through 6
+    constexpr std::array<std::tuple<uint8_t, uint32_t>, channelListSize>
+        channelList = {
+            {{static_cast<uint8_t>(ChannelIdTag::kcs), kcsMaxBufSize},
+             {static_cast<uint8_t>(ChannelIdTag::rmcpPlus), rmcpPlusMaxBufSize},
+             {static_cast<uint8_t>(ChannelIdTag::ipmb), ipmbMaxBufSize}}};
+
+    return ipmi::responseSuccess(channelListSize, channelList);
+}
+
+ipmi::RspType<uint8_t, uint8_t> ipmiGetBmcExecutionContext()
+{
+    // Byte 1 - Current execution context
+    //          0x10 - Linux OS, 0x11 - Bootloader, Forced-firmware updat mode
+    // Byte 2 - Partition pointer
+    //          0x01 - primary, 0x02 - secondary
+    uint8_t partitionPtr = getActiveBootImage();
+
+    return ipmi::responseSuccess(
+        static_cast<uint8_t>(BmcExecutionContext::linuxOs), partitionPtr);
+}
+
 static void register_netfn_firmware_functions() __attribute__((constructor));
 
 // oem return code for firmware update control
@@ -97,11 +296,11 @@ constexpr std::size_t operator""_MB(unsigned long long v)
 }
 static constexpr int FIRMWARE_BUFFER_MAX_SIZE = 32_MB;
 
-static constexpr char FIRMWARE_BUFFER_FILE[] = "/tmp/fw-download.bin";
+static constexpr char firmwareBufferFile[] = "/tmp/fw-download.bin";
 static bool local_download_is_active(void)
 {
     struct stat sb;
-    if (stat(FIRMWARE_BUFFER_FILE, &sb) < 0)
+    if (stat(firmwareBufferFile, &sb) < 0)
         return false;
     return true;
 }
@@ -179,7 +378,7 @@ class fw_update_status_cache
     /* API for changing state to ERROR  */
     void firmwareUpdateAbortState()
     {
-        unlink(FIRMWARE_BUFFER_FILE);
+        unlink(firmwareBufferFile);
         // changing the state to error
         _state = FW_STATE_ERROR;
     }
@@ -281,41 +480,28 @@ class fw_update_status_cache
 
 static fw_update_status_cache fw_update_status;
 
-static std::chrono::steady_clock::time_point fw_random_number_timestamp;
-static constexpr int FW_RANDOM_NUMBER_LENGTH = 8;
-static constexpr auto FW_RANDOM_NUMBER_TTL = std::chrono::seconds(30);
-static uint8_t fw_random_number[FW_RANDOM_NUMBER_LENGTH];
-
-static ipmi_ret_t ipmi_firmware_get_fw_random_number(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
+/** @brief Get Firmware Update Random Number
+ *
+ *  This function generate the random number used for
+ *  setting the firmware update mode as authentication key.
+ *
+ *  @parameter : None
+ *  @returns IPMI completion code along with
+ *   - random number
+ **/
+ipmi::RspType<std::array<uint8_t, fwRandomNumLength>>
+    ipmiGetFwUpdateRandomNumber()
 {
     std::random_device rd;
     std::default_random_engine gen(rd());
     std::uniform_int_distribution<> dist{0, 255};
 
-    if (*data_len != 0)
-    {
-        *data_len = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
-    }
+    fwRandomNumGenTs = std::chrono::steady_clock::now();
 
-    fw_random_number_timestamp = std::chrono::steady_clock::now();
+    for (int i = 0; i < fwRandomNumLength; i++)
+        fwRandomNum[i] = dist(gen);
 
-    uint8_t *msg_reply = static_cast<uint8_t *>(response);
-    for (int i = 0; i < FW_RANDOM_NUMBER_LENGTH; i++)
-        fw_random_number[i] = msg_reply[i] = dist(gen);
-
-    if (DEBUG)
-        std::cerr << "FW Rand Num: 0x" << std::hex << (int)msg_reply[0] << " 0x"
-                  << (int)msg_reply[1] << " 0x" << (int)msg_reply[2] << " 0x"
-                  << (int)msg_reply[3] << " 0x" << (int)msg_reply[4] << " 0x"
-                  << (int)msg_reply[5] << " 0x" << (int)msg_reply[6] << " 0x"
-                  << (int)msg_reply[7] << '\n';
-
-    *data_len = FW_RANDOM_NUMBER_LENGTH;
-
-    return IPMI_CC_OK;
+    return ipmi::responseSuccess(fwRandomNum);
 }
 
 /** @brief Set Firmware Update Mode
@@ -328,15 +514,14 @@ static ipmi_ret_t ipmi_firmware_get_fw_random_number(
  *   -  randNum - Random number(token)
  *  @returns IPMI completion code
  **/
-ipmi::RspType<> ipmiSetFirmwareUpdateMode(
-    std::array<uint8_t, FW_RANDOM_NUMBER_LENGTH> &randNum)
+ipmi::RspType<>
+    ipmiSetFirmwareUpdateMode(std::array<uint8_t, fwRandomNumLength> &randNum)
 {
     /* Firmware Update Random number is valid for 30 seconds only */
-    auto timeElapsed =
-        (std::chrono::steady_clock::now() - fw_random_number_timestamp);
+    auto timeElapsed = (std::chrono::steady_clock::now() - fwRandomNumGenTs);
     if (std::chrono::duration_cast<std::chrono::microseconds>(timeElapsed)
             .count() > std::chrono::duration_cast<std::chrono::microseconds>(
-                           FW_RANDOM_NUMBER_TTL)
+                           fwRandomNumExpirySeconds)
                            .count())
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -345,9 +530,9 @@ ipmi::RspType<> ipmiSetFirmwareUpdateMode(
     }
 
     /* Validate random number */
-    for (int i = 0; i < FW_RANDOM_NUMBER_LENGTH; i++)
+    for (int i = 0; i < fwRandomNumLength; i++)
     {
-        if (fw_random_number[i] != randNum[i])
+        if (fwRandomNum[i] != randNum[i])
         {
             phosphor::logging::log<phosphor::logging::level::INFO>(
                 "Invalid random number specified.");
@@ -367,7 +552,7 @@ ipmi::RspType<> ipmiSetFirmwareUpdateMode(
         return ipmi::responseBusy();
     }
     // FIXME? c++ doesn't off an option for exclusive file creation
-    FILE *fp = fopen(FIRMWARE_BUFFER_FILE, "wx");
+    FILE *fp = fopen(firmwareBufferFile, "wx");
     if (!fp)
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -384,7 +569,7 @@ ipmi::RspType<> ipmiSetFirmwareUpdateMode(
  *
  *  @returns IPMI completion code
  */
-ipmi::RspType<> ipmiFirmwareExitFwUpdateMode()
+ipmi::RspType<> ipmiExitFirmwareUpdateMode()
 {
 
     if (DEBUG)
@@ -693,11 +878,11 @@ static int transfer_from_file(const std::string &uri, bool move = true)
         std::cerr << "transfer_from_file(" << uri << ")\n";
     if (move)
     {
-        std::filesystem::rename(uri, FIRMWARE_BUFFER_FILE, ec);
+        std::filesystem::rename(uri, firmwareBufferFile, ec);
     }
     else
     {
-        std::filesystem::copy(uri, FIRMWARE_BUFFER_FILE,
+        std::filesystem::copy(uri, firmwareBufferFile,
                               std::filesystem::copy_options::overwrite_existing,
                               ec);
     }
@@ -758,7 +943,7 @@ static bool transfer_firmware_from_uri(const std::string &uri)
     if (boost::algorithm::starts_with(uri, FW_URI_FILE))
     {
         std::string fname = uri.substr(sizeof(FW_URI_FILE) - 1);
-        if (fname != FIRMWARE_BUFFER_FILE)
+        if (fname != firmwareBufferFile)
         {
             return 0 == transfer_from_file(fname);
         }
@@ -867,9 +1052,9 @@ static ipmi_ret_t ipmi_firmware_control(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         {
             controls |= controls_transfer_started;
             // reset buffer to empty (truncate file)
-            std::ofstream out(FIRMWARE_BUFFER_FILE,
+            std::ofstream out(firmwareBufferFile,
                               std::ofstream::binary | std::ofstream::trunc);
-            fw_xfer_uri = std::string("file://") + FIRMWARE_BUFFER_FILE;
+            fw_xfer_uri = std::string("file://") + firmwareBufferFile;
             if (xfer_hash_check)
             {
                 xfer_hash_check->clear();
@@ -909,7 +1094,7 @@ static ipmi_ret_t ipmi_firmware_control(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                 }
             }
             // start the request
-            if (!request_start_firmware_update(FIRMWARE_BUFFER_FILE))
+            if (!request_start_firmware_update(firmwareBufferFile))
             {
                 if (DEBUG)
                     std::cerr
@@ -984,292 +1169,6 @@ static ipmi_ret_t ipmi_firmware_control(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return rc;
 }
 
-#ifdef INTEL_PFR_ENABLED
-using fwVersionInfoType = std::tuple<uint8_t,   // ID Tag
-                                     uint8_t,   // Major Version Number
-                                     uint8_t,   // Minor Version Number
-                                     uint32_t,  // Build Number
-                                     uint32_t,  // Build Timestamp
-                                     uint32_t>; // Update Timestamp
-ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
-{
-    // Byte 1 - Count (N) Number of devices data is being returned for.
-    // Bytes  2:16 - Device firmare information(fwVersionInfoType)
-    // Bytes - 17:(15xN) - Repeat of 2 through 16
-
-    std::vector<fwVersionInfoType> fwVerInfoList;
-    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
-    for (const auto &fwDev : fwVersionIdMap)
-    {
-        std::string verStr;
-        try
-        {
-            auto service = ipmi::getService(*busp, versionIntf, fwDev.second);
-
-            ipmi::Value result = ipmi::getDbusProperty(
-                *busp, service, fwDev.second, versionIntf, "Version");
-            verStr = std::get<std::string>(result);
-        }
-        catch (const std::exception &e)
-        {
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                "Failed to fetch Version property",
-                phosphor::logging::entry("ERROR=%s", e.what()),
-                phosphor::logging::entry("PATH=%s", fwDev.second),
-                phosphor::logging::entry("INTERFACE=%s", versionIntf));
-            continue;
-        }
-
-        if (verStr.empty())
-        {
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                "Version is empty.",
-                phosphor::logging::entry("PATH=%s", fwDev.second),
-                phosphor::logging::entry("INTERFACE=%s", versionIntf));
-            continue;
-        }
-
-        // BMC Version format: <major>.<minor>-<build bum>-<build hash>
-        std::vector<std::string> splitVer;
-        boost::split(splitVer, verStr, boost::is_any_of(".-"));
-        if (splitVer.size() < 3)
-        {
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                "Invalid Version format.",
-                phosphor::logging::entry("Version=%s", verStr.c_str()),
-                phosphor::logging::entry("PATH=%s", fwDev.second));
-            continue;
-        }
-
-        uint8_t majorNum = 0;
-        uint8_t minorNum = 0;
-        uint32_t buildNum = 0;
-        try
-        {
-            majorNum = std::stoul(splitVer[0], nullptr, 16);
-            minorNum = std::stoul(splitVer[1], nullptr, 16);
-            buildNum = std::stoul(splitVer[2], nullptr, 16);
-        }
-        catch (const std::exception &e)
-        {
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                "Failed to convert stoul.",
-                phosphor::logging::entry("ERROR=%s", e.what()));
-            continue;
-        }
-
-        // Build Timestamp - Not supported.
-        // Update Timestamp - TODO: Need to check with CPLD team.
-        fwVerInfoList.emplace_back(
-            fwVersionInfoType(static_cast<uint8_t>(fwDev.first), majorNum,
-                              minorNum, buildNum, 0, 0));
-    }
-
-    return ipmi::responseSuccess(fwVerInfoList.size(), fwVerInfoList);
-}
-#endif
-
-struct fw_security_revision_info
-{
-    uint8_t id_tag;
-    uint16_t sec_rev;
-} __attribute__((packed));
-
-static ipmi_ret_t ipmi_firmware_get_fw_security_revision(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
-{
-    if (DEBUG)
-        std::cerr << "Get FW security revision info\n";
-
-    // Byte 1 - Count (N) Number of devices data is being returned for.
-    // Byte 2 - ID Tag 00 – reserved 01 – BMC Active Image 02 – BBU Active Image
-    //                 03 – BMC Backup Image 04 – BBU Backup Image 05 – BBR
-    //                 Image
-    // Byte 3 - Major Version Number
-    // Byte 4 - Minor Version Number
-    // Bytes 5:8 - Build Number
-    // Bytes 9:12 - Build Timestamp Format: LSB first, same format as SEL
-    // timestamp
-    // Bytes 13:16 - Update Timestamp
-    // Bytes - 17:(15xN) - Repeat of 2 through 16
-
-    uint8_t count = 0;
-    auto ret_count = reinterpret_cast<uint8_t *>(response);
-    auto info =
-        reinterpret_cast<struct fw_security_revision_info *>(ret_count + 1);
-
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-    for (uint8_t id_tag = 1; id_tag < 6; id_tag++)
-    {
-        const char *fw_path;
-        switch (id_tag)
-        {
-            case 1:
-                fw_path = FW_UPDATE_ACTIVE_INFO_PATH;
-                break;
-            case 2:
-                fw_path = FW_UPDATE_BACKUP_INFO_PATH;
-                break;
-            case 3:
-            case 4:
-            case 5:
-                continue; // skip for now
-                break;
-        }
-        auto method =
-            bus->new_method_call(FW_UPDATE_SERVER_DBUS_NAME, fw_path,
-                                 "org.freedesktop.DBus.Properties", "GetAll");
-        method.append(FW_UPDATE_INFO_INTERFACE, "security_version");
-        ipmi::DbusVariant sec_rev;
-        try
-        {
-            auto reply = bus->call(method);
-
-            if (reply.is_method_error())
-                continue;
-
-            reply.read(sec_rev);
-        }
-        catch (sdbusplus::exception::SdBusError &e)
-        {
-            std::cerr << "SDBus Error: " << e.what();
-            return IPMI_CC_UNSPECIFIED_ERROR;
-        }
-
-        info->id_tag = id_tag;
-        info->sec_rev = std::get<int>(sec_rev);
-        count++;
-        info++;
-    }
-    *ret_count = count;
-
-    // Status code.
-    ipmi_ret_t rc = IPMI_CC_OK;
-    *data_len = sizeof(count) + count * sizeof(*info);
-
-    return rc;
-}
-
-struct fw_channel_size
-{
-    uint8_t channel_id;
-    uint32_t channel_size;
-} __attribute__((packed));
-
-enum
-{
-    CHANNEL_RESVD = 0,
-    CHANNEL_KCS,
-    CHANNEL_RMCP_PLUS,
-    CHANNEL_USB_DATA,
-    CHANNEL_USB_MASS_STORAGE,
-} channel_transfer_type;
-
-static constexpr uint8_t channelListSize = 2;
-/** @brief implements Maximum Firmware Transfer size command
- *  @parameter
- *   -  none
- *  @returns IPMI completion code plus response data
- *   - count - channel count
- *   - channelList - channel list information
- */
-ipmi::RspType<uint8_t, // channel count
-              std::array<std::tuple<uint8_t, uint32_t>,
-                         channelListSize> // channel
-                                          // list
-              >
-    ipmiFirmwareMaxTransferSize()
-{
-    constexpr uint8_t KCSMaxBufSize = 128;
-    constexpr uint32_t RMCPPLUSMaxBufSize = 50 * 1024;
-    if (DEBUG)
-        std::cerr << "Get FW max transfer size\n";
-    // Byte 1 - Count (N) Number of devices data is being returned for.
-    // Byte 2 - ID Tag 00 – reserved 01 – kcs 02 – rmcp+,
-    //                 03 – usb data, 04 – usb mass storage
-    // Byte 3-6 - transfer size (little endian)
-    // Bytes - 7:(5xN) - Repeat of 2 through 6
-    constexpr std::array<std::tuple<uint8_t, uint32_t>, channelListSize>
-        channelList = {{{CHANNEL_KCS, KCSMaxBufSize},
-                        {CHANNEL_RMCP_PLUS, RMCPPLUSMaxBufSize}}};
-    return ipmi::responseSuccess(channelListSize, channelList);
-}
-
-enum
-{
-    EXEC_CTX_RESVD = 0,
-    EXEC_CTX_FULL_LINUX = 0x10,
-    EXEC_CTX_SAFE_MODE_LINUX = 0x11,
-} bmc_execution_context;
-
-struct fw_execution_context
-{
-    uint8_t context;
-    uint8_t image_selection;
-} __attribute__((packed));
-
-static ipmi_ret_t ipmi_firmware_get_fw_execution_context(
-    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_request_t request,
-    ipmi_response_t response, ipmi_data_len_t data_len, ipmi_context_t context)
-{
-    if (DEBUG)
-        std::cerr << "Get FW execution context\n";
-
-    // Byte 1 - execution context
-    //          0x10 - full linux stack, 0x11 - safe-mode linux stack
-    // Byte 2 - current image selection
-    //          1 - primary, 2 - secondary
-
-    auto info = reinterpret_cast<struct fw_execution_context *>(response);
-    info->context = EXEC_CTX_FULL_LINUX;
-
-    info->image_selection = getActiveBootImage();
-
-    // Status code.
-    ipmi_ret_t rc = IPMI_CC_OK;
-    *data_len = sizeof(*info);
-
-    return rc;
-}
-
-uint8_t getActiveBootImage(void)
-{
-    // 0x01 -  primaryImage
-    constexpr uint8_t primaryImage = 0x01;
-    // 0x02 -  secondaryImage
-    constexpr uint8_t secondaryImage = 0x02;
-    uint8_t bootImage = primaryImage;
-
-    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-    auto method = bus->new_method_call(
-        "xyz.openbmc_project.U_Boot.Environment.Manager",
-        "/xyz/openbmc_project/u_boot/environment/mgr",
-        "xyz.openbmc_project.U_Boot.Environment.Manager", "Read");
-    method.append("bootcmd");
-    std::string value;
-    try
-    {
-        auto reply = bus->call(method);
-        reply.read(value);
-    }
-    catch (sdbusplus::exception::SdBusError &e)
-    {
-        std::cerr << "SDBus Error: " << e.what();
-        return IPMI_CC_UNSPECIFIED_ERROR;
-    }
-    /* cheking for secondary FitImage Address 22480000  */
-    if (value.find(secondaryFitImageStartAddr) != std::string::npos)
-    {
-        bootImage = secondaryImage;
-    }
-    else
-    {
-        bootImage = primaryImage;
-    }
-
-    return bootImage;
-}
 /** @brief implements firmware get status command
  *  @parameter
  *   -  none
@@ -1582,7 +1481,7 @@ ipmi::RspType<uint32_t>
         return ipmi::response(ccCmdNotSupportedInPresentState);
     }
 
-    std::ofstream out(FIRMWARE_BUFFER_FILE,
+    std::ofstream out(firmwareBufferFile,
                       std::ofstream::binary | std::ofstream::app);
     if (!out)
     {
@@ -1629,7 +1528,7 @@ ipmi::RspType<uint32_t>
     {
         struct PFRImageBlock0 block0Data = {0};
 
-        std::ifstream inFile(FIRMWARE_BUFFER_FILE,
+        std::ifstream inFile(firmwareBufferFile,
                              std::ios::binary | std::ios::in);
         inFile.read(reinterpret_cast<char *>(&block0Data), sizeof(block0Data));
         inFile.close();
@@ -1684,7 +1583,6 @@ static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_BMC_EXEC_CTX = 0x23;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_ROOT_CERT_INFO = 0x24;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_FW_UPDATE_RAND_NUM = 0x26;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_SET_FW_UPDATE_MODE = 0x27;
-static constexpr ipmi_cmd_t cmdFirmwareExitFirmwareUpdateMode = 0x28;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_UPDATE_CONTROL = 0x29;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_GET_STATUS = 0x2a;
 static constexpr ipmi_cmd_t IPMI_CMD_FW_SET_FW_UPDATE_OPTIONS = 0x2b;
@@ -1698,64 +1596,57 @@ static constexpr ipmi_cmd_t IPMI_CMD_INTC_GET_BUFFER_SIZE = 0x66;
 static void register_netfn_firmware_functions()
 {
     // guarantee that we start with an already timed out timestamp
-    fw_random_number_timestamp =
-        std::chrono::steady_clock::now() - FW_RANDOM_NUMBER_TTL;
+    fwRandomNumGenTs =
+        std::chrono::steady_clock::now() - fwRandomNumExpirySeconds;
 
-    unlink(FIRMWARE_BUFFER_FILE);
-
-    // <Get BT Interface Capabilities>
-    if (DEBUG)
-        std::cerr << "Registering firmware update commands\n";
+    unlink(firmwareBufferFile);
 
 #ifdef INTEL_PFR_ENABLED
     // Following commands are supported only for PFR enabled platforms
     // CMD:0x20 - Get Firmware Version Information
+    // CMD:0x21 - Get Firmware Security Version Information
+    // CMD:0x25 - Get Root Certificate Data
 
     // get firmware version information
     ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnFirmware,
                           ipmi::firmware::cmdGetFwVersionInfo,
                           ipmi::Privilege::Admin, ipmiGetFwVersionInfo);
-#endif
+
     // get firmware security version information
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_SEC_VERSION_INFO,
-                           NULL, ipmi_firmware_get_fw_security_revision,
-                           PRIVILEGE_ADMIN);
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnFirmware,
+                          ipmi::firmware::cmdGetFwSecurityVersionInfo,
+                          ipmi::Privilege::Admin, ipmiGetFwSecurityVersionInfo);
 
-    // get channel information (max transfer sizes)
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
-                          IPMI_CMD_FW_GET_FW_UPD_CHAN_INFO,
-                          ipmi::Privilege::Admin, ipmiFirmwareMaxTransferSize);
-
-    // get bmc execution context
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_BMC_EXEC_CTX, NULL,
-                           ipmi_firmware_get_fw_execution_context,
-                           PRIVILEGE_ADMIN);
-
-    // get root certificate information
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_ROOT_CERT_INFO,
-                           NULL, ipmi_firmware_get_root_cert_info,
-                           PRIVILEGE_ADMIN);
-#ifdef INTEL_PFR_ENABLED
     // get root certificate data
     ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnFirmware,
                           ipmi::firmware::cmdFwGetRootCertData,
                           ipmi::Privilege::Admin, ipmiGetFwRootCertData);
 #endif
 
-    // generate bmc fw update random number (for enter fw tranfer mode)
-    ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_GET_FW_UPDATE_RAND_NUM,
-                           NULL, ipmi_firmware_get_fw_random_number,
-                           PRIVILEGE_ADMIN);
+    // get firmware update channel information (max transfer sizes)
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnFirmware,
+                          ipmi::firmware::cmdGetFwUpdateChannelInfo,
+                          ipmi::Privilege::Admin, ipmiFirmwareMaxTransferSize);
 
-    // Set Firmware Update Mode(0x27)
-    ipmi::registerHandler(ipmi::prioOemBase, NETFUN_FIRMWARE,
-                          IPMI_CMD_FW_SET_FW_UPDATE_MODE,
+    // get bmc execution context
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnFirmware,
+                          ipmi::firmware::cmdGetBmcExecutionContext,
+                          ipmi::Privilege::Admin, ipmiGetBmcExecutionContext);
+
+    // Get Firmwware Update Random number
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnFirmware,
+                          ipmi::firmware::cmdGetFwUpdateRandomNumber,
+                          ipmi::Privilege::Admin, ipmiGetFwUpdateRandomNumber);
+
+    // Set Firmware Update Mode
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnFirmware,
+                          ipmi::firmware::cmdSetFirmwareUpdateMode,
                           ipmi::Privilege::Admin, ipmiSetFirmwareUpdateMode);
 
-    // exit firmware update mode
+    // Exit Firmware Update Mode
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnFirmware,
-                          cmdFirmwareExitFirmwareUpdateMode,
-                          ipmi::Privilege::Admin, ipmiFirmwareExitFwUpdateMode);
+                          ipmi::firmware::cmdExitFirmwareUpdateMode,
+                          ipmi::Privilege::Admin, ipmiExitFirmwareUpdateMode);
 
     // firmware control mechanism (set filename, usb, etc.)
     ipmi_register_callback(NETFUN_FIRMWARE, IPMI_CMD_FW_UPDATE_CONTROL, NULL,
