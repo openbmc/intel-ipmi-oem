@@ -658,7 +658,7 @@ static void registerChassisFunctions(void)
     // <Set Front Panel Enables>
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnChassis,
                           ipmi::chassis::cmdSetFrontPanelButtonEnables,
-                          ipmi::Privilege::User,
+                          ipmi::Privilege::Admin,
                           ipmiSetFrontPanelButtonEnables);
 }
 
