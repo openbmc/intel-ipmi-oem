@@ -52,6 +52,7 @@ static constexpr Cmd cmdSetSpecialUserPassword = 0x5F;
 static constexpr Cmd cmdSetShutdownPolicy = 0x60;
 static constexpr Cmd cmdGetShutdownPolicy = 0x62;
 static constexpr Cmd cmdGetMultiNodePresence = 0x63;
+static constexpr Cmd cmdGetBufferSize = 0x66;
 static constexpr Cmd cmdSetFanConfig = 0x89;
 static constexpr Cmd cmdGetFanConfig = 0x8a;
 static constexpr Cmd cmdSetFanSpeedOffset = 0x8c;
