@@ -3358,6 +3358,25 @@ ipmi::RspType<std::vector<uint8_t>> ipmiOEMGetPSUVersion(ipmi::Context::ptr ctx)
     return ipmi::responseSuccess(result);
 }
 
+/** @brief implements the maximum size of
+ *  bridgeable messages used between KCS and
+ *  IPMB interfacesget security mode command.
+ *
+ *  @returns IPMI completion code with following data
+ *   - KCS Buffer Size (In multiples of four bytes)
+ *   - IPMB Buffer Size (In multiples of four bytes)
+ **/
+ipmi::RspType<uint8_t, uint8_t> ipmiOEMGetBufferSize()
+{
+    // for now this is hard coded; really this number is dependent on
+    // the BMC kcs driver as well as the host kcs driver....
+    // we can't know the latter.
+    uint8_t kcsMaxBufferSize = 63 / 4;
+    uint8_t ipmbMaxBufferSize = 128 / 4;
+
+    return ipmi::responseSuccess(kcsMaxBufferSize, ipmbMaxBufferSize);
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -3523,6 +3542,10 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetPSUVersion, Privilege::User,
                     ipmiOEMGetPSUVersion);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetBufferSize, Privilege::User,
+                    ipmiOEMGetBufferSize);
 }
 
 } // namespace ipmi
