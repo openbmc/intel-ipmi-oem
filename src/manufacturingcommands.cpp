@@ -621,6 +621,10 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
             {
                 return ipmi::ccInvalidCommand;
             }
+        case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdDeleteSelEntry):
+        {
+            return ipmi::ccInvalidCommand;
+        }
     }
     return ipmi::ccSuccess;
 }
