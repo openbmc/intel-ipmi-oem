@@ -673,7 +673,7 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
                     return ipmi::ccInsufficientPrivilege;
                 }
             }
-            break;
+            return ipmi::ccSuccess;
         case makeCmdKey(ipmi::netFnOemOne,
                         ipmi::intel::general::cmdGetSmSignal):
         case makeCmdKey(ipmi::netFnOemOne,
@@ -691,8 +691,12 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
             {
                 return ipmi::ccInvalidCommand;
             }
+            return ipmi::ccSuccess;
+        case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdDeleteSelEntry):
+        {
+            return ipmi::ccInvalidCommand;
+        }
     }
-    return ipmi::ccSuccess;
 }
 
 static constexpr uint8_t maxEthSize = 6;
