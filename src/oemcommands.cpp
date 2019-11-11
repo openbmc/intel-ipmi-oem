@@ -2605,7 +2605,12 @@ ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr ctx)
  *  @returns IPMI completion code
  */
 ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
+#ifdef BMC_VALIDATION_UNSECURE_FEATURE
+                                    uint8_t restrictionMode,
+                                    std::optional<uint8_t> specialMode)
+#else
                                     uint8_t restrictionMode)
+#endif
 {
     namespace securityNameSpace =
         sdbusplus::xyz::openbmc_project::Control::Security::server;
@@ -2672,6 +2677,29 @@ ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
             phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
         return ipmi::responseUnspecifiedError();
     }
+
+#ifdef BMC_VALIDATION_UNSECURE_FEATURE
+    if (specialMode)
+    {
+        ec.clear();
+        ctx->bus->yield_method_call<>(
+            ctx->yield, ec, specialModeService, specialModeBasePath,
+            dBusPropertyIntf, dBusPropertySetMethod, specialModeIntf,
+            specialModeProperty,
+            static_cast<std::variant<std::string>>(
+                securityNameSpace::convertForMessage(
+                    static_cast<securityNameSpace::SpecialMode::Modes>(
+                        specialMode.value()))));
+
+        if (ec)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiSetSecurityMode: failed to set SpecialMode property",
+                phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+            return ipmi::responseUnspecifiedError();
+        }
+    }
+#endif
     return ipmi::responseSuccess();
 }
 
