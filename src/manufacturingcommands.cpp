@@ -668,7 +668,7 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
             if (request->payload.size() > 4)
             {
                 // Allow write data count > 1, only if it is in MFG mode
-                if (mtm.getAccessLvl() != MtmLvl::mtmAvailable)
+                if (!mtm.isMfgMode())
                 {
                     return ipmi::ccInsufficientPrivilege;
                 }
@@ -687,7 +687,7 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
         case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdWriteFruData):
 
             // Check for MTM mode
-            if (mtm.getAccessLvl() != MtmLvl::mtmAvailable)
+            if (!mtm.isMfgMode())
             {
                 return ipmi::ccInvalidCommand;
             }
@@ -820,7 +820,7 @@ ipmi::RspType<std::vector<uint8_t>>
     // only in MFG mode.
     if (writeCount > 1)
     {
-        if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
+        if (!mtm.isMfgMode())
         {
             return ipmi::responseInsufficientPrivilege();
         }
@@ -861,8 +861,7 @@ ipmi::RspType<> clearCMOS()
     std::vector<uint8_t> writeData = {0x60, 0x1};
     std::vector<uint8_t> readBuf(0);
 
-    // TODO Needs to enhance the below security checking
-    if (mtm.getAccessLvl() < MtmLvl::mtmAvailable)
+    if (!mtm.isMfgMode())
     {
         return ipmi::responseInsufficientPrivilege();
     }

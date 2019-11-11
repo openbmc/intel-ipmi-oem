@@ -63,17 +63,6 @@ static constexpr const char* specialModeObjPath =
 static constexpr const char* specialModeIntf =
     "xyz.openbmc_project.Security.SpecialMode";
 
-/** @enum MtmLvl
-.*
- *  Manufacturing command access levels
- */
-enum class MtmLvl
-{
-    mtmNotRunning = 0x00,
-    mtmExpired = 0x01,
-    mtmAvailable = 0x02,
-};
-
 enum class SmActionGet : uint8_t
 {
     sample = 0,
@@ -244,21 +233,21 @@ class Manufacturing
 
     void revertTimerHandler();
 
-    MtmLvl getAccessLvl(void)
+    bool isMfgMode(void)
     {
-        static MtmLvl mtmMode = MtmLvl::mtmNotRunning;
-        if (mtmMode != MtmLvl::mtmExpired)
+        ipmi::Value mode;
+        if (getProperty(specialModeService, specialModeObjPath, specialModeIntf,
+                        "SpecialMode", &mode) != 0)
         {
-            ipmi::Value mode;
-            if (getProperty(specialModeService, specialModeObjPath,
-                            specialModeIntf, "SpecialMode", &mode) != 0)
-            {
-                mtmMode = MtmLvl::mtmExpired;
-                return mtmMode;
-            }
-            mtmMode = static_cast<MtmLvl>(std::get<std::uint8_t>(mode));
+            return false;
         }
-        return mtmMode;
+        if (std::get<std::string>(mode) ==
+            "xyz.openbmc_project.Control.Security.SpecialMode.Modes."
+            "Manufacturing")
+        {
+            return true;
+        }
+        return false;
     }
 
     bool revertFanPWM = false;
