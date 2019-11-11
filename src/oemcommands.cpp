@@ -44,6 +44,7 @@
 #include <xyz/openbmc_project/Control/Boot/Source/server.hpp>
 #include <xyz/openbmc_project/Control/PowerSupplyRedundancy/server.hpp>
 #include <xyz/openbmc_project/Control/Security/RestrictionMode/server.hpp>
+#include <xyz/openbmc_project/Control/Security/SpecialMode/server.hpp>
 
 namespace ipmi
 {
@@ -2573,10 +2574,11 @@ ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr ctx)
     restrictionModeValue = static_cast<uint8_t>(
         securityNameSpace::RestrictionMode::convertModesFromString(
             std::get<std::string>(varRestrMode)));
-    auto varSpecialMode = ctx->bus->yield_method_call<std::variant<uint8_t>>(
-        ctx->yield, ec, specialModeService, specialModeBasePath,
-        dBusPropertyIntf, dBusPropertyGetMethod, specialModeIntf,
-        specialModeProperty);
+    auto varSpecialMode =
+        ctx->bus->yield_method_call<std::variant<std::string>>(
+            ctx->yield, ec, specialModeService, specialModeBasePath,
+            dBusPropertyIntf, dBusPropertyGetMethod, specialModeIntf,
+            specialModeProperty);
     if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -2587,7 +2589,9 @@ ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr ctx)
     }
     else
     {
-        specialModeValue = std::get<uint8_t>(varSpecialMode);
+        specialModeValue = static_cast<uint8_t>(
+            securityNameSpace::SpecialMode::convertModesFromString(
+                std::get<std::string>(varSpecialMode)));
     }
     return ipmi::responseSuccess(restrictionModeValue, specialModeValue);
 }
