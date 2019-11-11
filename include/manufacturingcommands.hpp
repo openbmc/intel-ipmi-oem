@@ -247,6 +247,14 @@ class Manufacturing
         {
             return true;
         }
+#ifdef BMC_VALIDATION_UNSECURE_FEATURE
+        if (std::get<std::string>(mode) ==
+            "xyz.openbmc_project.Control.Security.SpecialMode.Modes."
+            "ValidationUnsecure")
+        {
+            return true;
+        }
+#endif
         return false;
     }
 
