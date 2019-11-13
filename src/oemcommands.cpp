@@ -1938,11 +1938,12 @@ int setCRConfig(ipmi::Context::ptr ctx, const std::string& property,
 
 int getCRConfig(ipmi::Context::ptr ctx, const std::string& property,
                 crConfigVariant& value,
+                const std::string& service = "xyz.openbmc_project.Settings",
                 std::chrono::microseconds timeout = ipmi::IPMI_DBUS_TIMEOUT)
 {
     boost::system::error_code ec;
     value = ctx->bus->yield_method_call<crConfigVariant>(
-        ctx->yield, ec, "xyz.openbmc_project.Settings",
+        ctx->yield, ec, service,
         "/xyz/openbmc_project/control/power_supply_redundancy",
         "org.freedesktop.DBus.Properties", "Get",
         "xyz.openbmc_project.Control.PowerSupplyRedundancy", property);
@@ -2275,7 +2276,8 @@ ipmi::RspType<uint8_t, std::variant<uint8_t, uint32_t, std::vector<uint8_t>>>
                     return ipmi::responseResponseError();
             }
 
-            if (getCRConfig(ctx, "RotationRankOrder", value))
+            if (getCRConfig(ctx, "RotationRankOrder", value,
+                            "xyz.openbmc_project.PSURedundancy"))
             {
                 return ipmi::responseResponseError();
             }
