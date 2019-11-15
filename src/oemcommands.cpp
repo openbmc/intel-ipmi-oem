@@ -79,6 +79,12 @@ enum class NmiSource : uint8_t
     chipset = 7,
 };
 
+enum class SpecialUserIndex : uint8_t
+{
+    rootUser = 0,
+    atScaleDebugUser = 1
+};
+
 static constexpr const char* restricionModeService =
     "xyz.openbmc_project.RestrictionMode.Manager";
 static constexpr const char* restricionModeBasePath =
@@ -1084,6 +1090,38 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
     return ipmi::response(ipmi::ccCommandNotAvailable);
 }
 
+/** @brief implementes executing the linux command
+ *  @param[in] linux command
+ *  @returns status
+ */
+
+static uint8_t executeCmd(const char* path)
+{
+    boost::process::child execProg(path);
+    execProg.wait();
+
+    int retCode = execProg.exit_code();
+    if (retCode)
+    {
+        return ipmi::ccUnspecifiedError;
+    }
+    return ipmi::ccSuccess;
+}
+
+/** @brief implementes ASD Security event logging
+ *  @param[in] Event message string
+ *  @param[in] Event Severity
+ *  @returns status
+ */
+
+static void atScaleDebugEventlog(std::string msg, int severity)
+{
+    std::string eventStr = "OpenBMC.0.1." + msg;
+    sd_journal_send("MESSAGE=Security Event: %s", eventStr.c_str(),
+                    "PRIORITY=%i", severity, "REDFISH_MESSAGE_ID=%s",
+                    eventStr.c_str(), NULL);
+}
+
 /** @brief implementes setting password for special user
  *  @param[in] specialUserIndex
  *  @param[in] userPassword - new password in 20 bytes
@@ -1094,6 +1132,8 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
                                               std::vector<uint8_t> userPassword)
 {
     ChannelInfo chInfo;
+    ipmi_ret_t status = ipmi::ccSuccess;
+
     try
     {
         getChannelInfo(ctx->channel, chInfo);
@@ -1113,22 +1153,59 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
             "interface");
         return ipmi::responseCommandNotAvailable();
     }
-    if (specialUserIndex != 0)
+
+    // 0 for root user  and 1 for AtScaleDebug is allowed
+    if (specialUserIndex >
+        static_cast<uint8_t>(SpecialUserIndex::atScaleDebugUser))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMSetSpecialUserPassword: Invalid user account");
         return ipmi::responseParmOutOfRange();
     }
-    constexpr uint8_t minPasswordSizeRequired = 6;
-    if (userPassword.size() < minPasswordSizeRequired ||
-        userPassword.size() > ipmi::maxIpmi20PasswordSize)
+    if (userPassword.size() != 0)
     {
-        return ipmi::responseReqDataLenInvalid();
+        constexpr uint8_t minPasswordSizeRequired = 6;
+        std::string passwd;
+        if (userPassword.size() < minPasswordSizeRequired ||
+            userPassword.size() > ipmi::maxIpmi20PasswordSize)
+        {
+            return ipmi::responseReqDataLenInvalid();
+        }
+        passwd.assign(reinterpret_cast<const char*>(userPassword.data()),
+                      userPassword.size());
+        if (specialUserIndex ==
+            static_cast<uint8_t>(SpecialUserIndex::atScaleDebugUser))
+        {
+            status = ipmiSetSpecialUserPassword("asdbg", passwd);
+
+            atScaleDebugEventlog("AtScaleDebugSpecialUserEnabled", LOG_CRIT);
+        }
+        else
+        {
+            status = ipmiSetSpecialUserPassword("root", passwd);
+        }
+        return ipmi::response(status);
     }
-    std::string passwd;
-    passwd.assign(reinterpret_cast<const char*>(userPassword.data()),
-                  userPassword.size());
-    return ipmi::response(ipmiSetSpecialUserPassword("root", passwd));
+    else
+    {
+        if (specialUserIndex ==
+            static_cast<uint8_t>(SpecialUserIndex::rootUser))
+        {
+            status = executeCmd("passwd -d root");
+        }
+        else
+        {
+
+            status = executeCmd("passwd -d asdbg");
+
+            if (status == 0)
+            {
+                atScaleDebugEventlog("AtScaleDebugSpecialUserDisabled",
+                                     LOG_INFO);
+            }
+        }
+        return ipmi::response(status);
+    }
 }
 
 namespace ledAction
