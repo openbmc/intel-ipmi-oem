@@ -25,140 +25,273 @@ static constexpr int16_t minInt10 = -0x200;
 static constexpr int8_t maxInt4 = 7;
 static constexpr int8_t minInt4 = -8;
 
+// Scales down floating-point number and provides exponent
+// Returns true if successful, modifies values in-place
+static inline bool scaleFloatExp(double& base, int8_t& exp)
+{
+    auto min10 = static_cast<double>(minInt10);
+    auto max10 = static_cast<double>(maxInt10);
+
+    // The provided exponent must not already be scaled
+    if (exp != 0)
+    {
+        std::cerr << "IPMI scaling failed, value was already scaled\n";
+        return false;
+    }
+
+    // Comparing with zero should be OK, zero is special in floating-point
+    // If base is exactly zero, no adjustment of the exponent is necessary
+    if (base == 0.0)
+    {
+        return true;
+    }
+
+    // As long as value is within base range, expand precision
+    // This will help to avoid loss when later rounding to integer
+    while ((base > min10) && (base < max10))
+    {
+        // Expand for maximum precision
+        base *= 10.0;
+        --exp;
+
+        // It is OK for exp to equal (minInt4 - 1), another test is below
+        // This is allowed here only because the shrinking step comes next
+        if (exp < (minInt4 - 1))
+        {
+            std::cerr << "IPMI scaling failed, exponent is too small\n";
+            return false;
+        }
+    }
+
+    // As long as value is *not* within range, shrink precision
+    // This should eventually pull the value closer to zero, thus within range
+    while (!((base > min10) && (base < max10)))
+    {
+        // Back it down until it falls within bounds again
+        base /= 10.0;
+        ++exp;
+
+        if (exp > maxInt4)
+        {
+            std::cerr << "IPMI scaling failed, exponent is too large\n";
+            return false;
+        }
+    }
+
+    // This is the "another test", as promised above
+    if (exp < minInt4)
+    {
+        std::cerr << "IPMI scaling failed, exponent is too small\n";
+        return false;
+    }
+
+    return true;
+}
+
+// Normalize integer (base,exponent) tuples
+// For exact powers of 10, this provides more consistent results
+// Example (100,-2) --> divide by 100 but add 2 to exp --> (1,0)
+// Example (-1000,-5) --> divide by 1000 but add 3 to exp --> (-1,-2)
+// Always successful, modifies values in-place
+static inline void normalizeIntExp(int16_t& ibase, int8_t& exp, double& dbase)
+{
+    for (;;)
+    {
+        // If zero, already normalized, ensure exponent also zero
+        if (ibase == 0)
+        {
+            exp = 0;
+            break;
+        }
+
+        // If not cleanly divisible by 10, already normalized
+        if ((ibase % 10) != 0)
+        {
+            break;
+        }
+
+        // If exponent already at max, already normalized
+        if (!(exp < maxInt4))
+        {
+            break;
+        }
+
+        // Bring values closer to zero, correspondingly shift exponent
+        // The floating-point base must be kept in sync with the integer base,
+        // as both floating-point and integer share the same exponent.
+        ibase /= 10;
+        dbase /= 10.0;
+        ++exp;
+    }
+}
+
+// The IPMI equation:
+// y = (Mx + (B * 10^(bExp))) * 10^(rExp)
+// Section 36.3 of this document:
+// https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/ipmi-second-gen-interface-spec-v2-rev1-1.pdf
+//
+// The goal is to exactly match the math done by the ipmitool command,
+// at the other side of the interface:
+// https://github.com/ipmitool/ipmitool/blob/42a023ff0726c80e8cc7d30315b987fe568a981d/lib/ipmi_sdr.c#L360
+//
+// To use with Wolfram Alpha, make all variables single letters
+// bExp becomes E, rExp becomes R
+// https://www.wolframalpha.com/input/?i=y%3D%28%28M*x%29%2B%28B*%2810%5EE%29%29%29*%2810%5ER%29
 static inline bool getSensorAttributes(const double max, const double min,
                                        int16_t& mValue, int8_t& rExp,
                                        int16_t& bValue, int8_t& bExp,
                                        bool& bSigned)
 {
-    // computing y = (10^rRexp) * (Mx + (B*(10^Bexp)))
-    // check for 0, assume always positive
-    double mDouble;
-    double bDouble;
-    if (max <= min)
+    // Given min and max, we must solve for M, B, bExp, rExp
+    // y comes in from D-Bus (the actual sensor reading)
+    // x is calculated from y by scaleIPMIValueFromDouble() below
+    // If y is min, x should equal = 0 (or -128 if signed)
+    // If y is max, x should equal 255 (or 127 if signed)
+    if (!(min < max))
     {
         std::cerr << "getSensorAttributes: Max must be greater than min\n";
         return false;
     }
 
-    mDouble = (max - min) / 0xFF;
+    double fullRange = max - min;
+    double lowestX;
 
-    if (min < 0)
+    rExp = 0;
+    bExp = 0;
+
+    // FUTURE: The IPMI document is ambiguous, as to whether
+    // the resulting byte should be signed or unsigned,
+    // essentially leaving it up to the caller.
+    // The document just refers to it as "raw reading",
+    // or "byte of reading", without giving further details.
+    // Previous code set it signed if min was less than zero,
+    // so I'm sticking with that, until I learn otherwise.
+    if (min < 0.0)
     {
+        // FUTURE: It would be worth experimenting with the range (-127,127),
+        // instead of the range (-128,127), because this
+        // would give good symmetry around zero, and make results look better.
+        // Divide by 254 instead of 255, and change -128 to -127 elsewhere.
         bSigned = true;
-        bDouble = floor(0.5 + ((max + min) / 2));
+        lowestX = -128.0;
     }
     else
     {
         bSigned = false;
-        bDouble = min;
+        lowestX = 0.0;
     }
 
-    rExp = 0;
+    // Step 1: Set y to (max - min), set x to 255, set B to 0, solve for M
+    // This works, regardless of signed or unsigned, because total range same
+    double dM = fullRange / 255.0;
 
-    // M too big for 10 bit variable
-    while (mDouble > maxInt10)
+    // Step 2: Constrain M, and set rExp accordingly
+    if (!(scaleFloatExp(dM, rExp)))
     {
-        if (rExp >= maxInt4)
-        {
-            std::cerr << "rExp Too big, Max and Min range too far REXP=" << rExp
-                      << "\n";
-            return false;
-        }
-        mDouble /= 10;
-        rExp++;
+        std::cerr << "IPMI scaling failed, range is out of bounds\n";
+        return false;
     }
 
-    // M too small, loop until we lose less than 1 eight bit count of precision
-    while (((mDouble - floor(mDouble)) / mDouble) > (1.0 / 255))
+    mValue = static_cast<int16_t>(std::round(dM));
+
+    normalizeIntExp(mValue, rExp, dM);
+
+    // Step 3: set y to min, set x to min, keep M and rExp, solve for B
+    // If negative, x will be -128 (the most negative possible byte), not 0
+
+    // Solve the IPMI equation for B, instead of y
+    // https://www.wolframalpha.com/input/?i=solve+y%3D%28%28M*x%29%2B%28B*%2810%5EE%29%29%29*%2810%5ER%29+for+B
+    // B = 10^(-rExp - bExp) (y - M 10^rExp x)
+    double dB = std::pow(10.0, ((0 - rExp) - bExp)) *
+                (min - ((dM * std::pow(10.0, rExp) * lowestX)));
+
+    // Step 4: Constrain B, and set bExp accordingly
+    if (!(scaleFloatExp(dB, bExp)))
     {
-        if (rExp <= minInt4)
-        {
-            std::cerr << "rExp Too Small, Max and Min range too close\n";
-            return false;
-        }
-        // check to see if we reached the limit of where we can adjust back the
-        // B value
-        if (bDouble / std::pow(10, rExp + minInt4 - 1) > bDouble)
-        {
-            if (mDouble < 1.0)
-            {
-                std::cerr << "Could not find mValue and B value with enough "
-                             "precision.\n";
-                return false;
-            }
-            break;
-        }
-        // can't multiply M any more, max precision reached
-        else if (mDouble * 10 > maxInt10)
-        {
-            break;
-        }
-        mDouble *= 10;
-        rExp--;
+        std::cerr << "IPMI scaling failed, offset is out of bounds\n";
+        return false;
     }
 
-    bDouble /= std::pow(10, rExp);
-    bExp = 0;
+    bValue = static_cast<int16_t>(std::round(dB));
 
-    // B too big for 10 bit variable
-    while (bDouble > maxInt10 || bDouble < minInt10)
-    {
-        if (bExp >= maxInt4)
-        {
-            std::cerr
-                << "bExp Too Big, Max and Min range need to be adjusted\n";
-            return false;
-        }
-        bDouble /= 10;
-        bExp++;
-    }
-
-    while (((fabs(bDouble) - floor(fabs(bDouble))) / fabs(bDouble)) >
-           (1.0 / 255))
-    {
-        if (bExp <= minInt4)
-        {
-            std::cerr
-                << "bExp Too Small, Max and Min range need to be adjusted\n";
-            return false;
-        }
-        bDouble *= 10;
-        bExp -= 1;
-    }
-
-    mValue = static_cast<int16_t>(std::round(mDouble)) & maxInt10;
-    bValue = static_cast<int16_t>(bDouble) & maxInt10;
+    normalizeIntExp(bValue, bExp, dB);
 
     return true;
 }
 
 static inline uint8_t
-    scaleIPMIValueFromDouble(const double value, const uint16_t mValue,
-                             const int8_t rExp, const uint16_t bValue,
+    scaleIPMIValueFromDouble(const double value, const int16_t mValue,
+                             const int8_t rExp, const int16_t bValue,
                              const int8_t bExp, const bool bSigned)
 {
-    double scaledValue =
-        (value - (bValue * std::pow(10, bExp) * std::pow(10, rExp))) /
-        (mValue * std::pow(10, rExp));
+    // Avoid division by zero below
+    if (mValue == 0)
+    {
+        std::cerr << "IPMI multiplier must not be zero\n";
+        throw std::out_of_range("IPMI scaling error");
+    }
 
+    auto dM = static_cast<double>(mValue);
+    auto dB = static_cast<double>(bValue);
+
+    // Solve the IPMI equation for x, instead of y
+    // https://www.wolframalpha.com/input/?i=solve+y%3D%28%28M*x%29%2B%28B*%2810%5EE%29%29%29*%2810%5ER%29+for+x
+    // x = (10^(-rExp) (y - B 10^(rExp + bExp)))/M and M 10^rExp!=0
+    double dX = (std::pow(10.0, 0 - rExp) *
+                 (value - (dB * std::pow(10.0, rExp + bExp)))) /
+                dM;
+
+    // Discard wild values early, before running into int truncation issues
+    if ((dX < -1000.0) || (dX > 1000.0))
+    {
+        std::cerr << "IPMI scaling corrupt\n";
+        throw std::out_of_range("IPMI scaling corrupt");
+    }
+
+    auto scaledValue = static_cast<int32_t>(std::round(dX));
+
+    int32_t minClamp;
+    int32_t maxClamp;
+
+    // Because of rounding and integer truncation of scaling factors,
+    // sometimes the resulting byte is slightly out of range.
+    // Still allow this, but clamp the values to range.
     if (bSigned)
     {
-        if (scaledValue > std::numeric_limits<int8_t>::max() ||
-            scaledValue < std::numeric_limits<int8_t>::lowest())
-        {
-            throw std::out_of_range("Value out of range");
-        }
-        return static_cast<int8_t>(std::round(scaledValue));
+        minClamp = std::numeric_limits<int8_t>::lowest();
+        maxClamp = std::numeric_limits<int8_t>::max();
     }
     else
     {
-        if (scaledValue > std::numeric_limits<uint8_t>::max() ||
-            scaledValue < std::numeric_limits<uint8_t>::lowest())
-        {
-            throw std::out_of_range("Value out of range");
-        }
-        return static_cast<uint8_t>(std::round(scaledValue));
+        minClamp = std::numeric_limits<uint8_t>::lowest();
+        maxClamp = std::numeric_limits<uint8_t>::max();
     }
+
+    auto clampedValue = scaledValue;
+
+    if (clampedValue < minClamp)
+    {
+        clampedValue = minClamp;
+    }
+    if (clampedValue > maxClamp)
+    {
+        clampedValue = maxClamp;
+    }
+
+    uint8_t byteValue;
+
+    // Although the resulting byte is the same storage,
+    // the signed flag changes the interpretation, and thus the casting.
+    if (bSigned)
+    {
+        byteValue = static_cast<int8_t>(clampedValue);
+    }
+    else
+    {
+        byteValue = static_cast<uint8_t>(clampedValue);
+    }
+
+    return byteValue;
 }
 
 static inline uint8_t getScaledIPMIValue(const double value, const double max,
@@ -168,15 +301,19 @@ static inline uint8_t getScaledIPMIValue(const double value, const double max,
     int8_t rExp = 0;
     int16_t bValue = 0;
     int8_t bExp = 0;
-    bool bSigned = 0;
-    bool result = 0;
+    bool bSigned = false;
 
-    result = getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned);
+    bool result =
+        getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned);
     if (!result)
     {
-        throw std::runtime_error("Illegal sensor attributes");
+        std::cerr << "IPMI scaling error, unable to get value\n";
+        throw std::runtime_error("IPMI scaling failure");
     }
-    return scaleIPMIValueFromDouble(value, mValue, rExp, bValue, bExp, bSigned);
+
+    uint8_t scaledValue =
+        scaleIPMIValueFromDouble(value, mValue, rExp, bValue, bExp, bSigned);
+    return scaledValue;
 }
 
 } // namespace ipmi
