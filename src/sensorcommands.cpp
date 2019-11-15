@@ -651,8 +651,8 @@ ipmi::RspType<> ipmiSenSetSensorThresholds(
     {
         // from section 36.3 in the IPMI Spec, assume all linear
         double valueToSet = ((mValue * std::get<thresholdValue>(property)) +
-                             (bValue * std::pow(10, bExp))) *
-                            std::pow(10, rExp);
+                             (bValue * std::pow(10.0, bExp))) *
+                            std::pow(10.0, rExp);
         setDbusProperty(
             *getSdBus(), connection, path, std::get<interface>(property),
             std::get<propertyName>(property), ipmi::Value(valueToSet));
