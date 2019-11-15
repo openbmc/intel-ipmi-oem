@@ -1083,6 +1083,74 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
     return ipmi::response(ipmi::ccCommandNotAvailable);
 }
 
+/** @brief implementes executing the linux command
+ *  @param[in] linux command
+ *  @returns status
+ */
+
+static int executeCmd(const char* path)
+{
+    boost::process::child execProg(path);
+    execProg.wait();
+    return execProg.exit_code();
+}
+
+/** @brief implementes ASD Security event logging
+ *  @param[in] Event message string
+ *  @returns status
+ */
+
+static void AtScaleDebugEventlog(std::string msg)
+{
+    sd_journal_send("MESSAGE=ASD Security Event: %s", msg.c_str(),
+                    "PRIORITY=%i", LOG_CRIT, "REDFISH_MESSAGE_ID=%s",
+                    "OpenBMC.0.1.AtScaleDebugSecurityEvent",
+                    "REDFISH_MESSAGE_ARGS=%s", msg.c_str(), NULL);
+}
+
+/** @brief implementes ASD service control based on input
+ *  @param[in] enable or disable flag
+ *  @returns status
+ */
+
+static int8_t controlAtScaleDebugService(const bool flag)
+{
+
+    const static constexpr char* systemDService = "org.freedesktop.systemd1";
+    const static constexpr char* systemDObjPath = "/org/freedesktop/systemd1";
+    const static constexpr char* systemDMgrIntf =
+        "org.freedesktop.systemd1.Manager";
+    const static constexpr char* atScaleDebugService =
+        "com.intel.AtScaleDebug.service";
+
+    try
+    {
+        auto dbus = getSdBus();
+        auto method = dbus->new_method_call(systemDService, systemDObjPath,
+                                            systemDMgrIntf,
+                                            flag ? "StartUnit" : "StopUnit");
+        method.append(atScaleDebugService, "replace");
+        auto reply = dbus->call(method);
+    }
+    catch (const sdbusplus::exception::SdBusError& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "ERROR: At-ScaleDebug  service start or stop failed");
+        return -1;
+    }
+
+    if (flag)
+    {
+        AtScaleDebugEventlog("AtScaleDebug Enabled");
+    }
+    else
+    {
+        AtScaleDebugEventlog("AtScaleDebug Disabled");
+    }
+
+    return 0;
+}
+
 /** @brief implementes setting password for special user
  *  @param[in] specialUserIndex
  *  @param[in] userPassword - new password in 20 bytes
@@ -1093,6 +1161,8 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
                                               std::vector<uint8_t> userPassword)
 {
     ChannelInfo chInfo;
+    ipmi_ret_t status = ipmi::ccSuccess;
+
     try
     {
         getChannelInfo(ctx->channel, chInfo);
@@ -1112,22 +1182,59 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
             "interface");
         return ipmi::responseCommandNotAvailable();
     }
-    if (specialUserIndex != 0)
+
+    // 0 for root user  and 1 for AtScaleDebug is allowed
+    if (specialUserIndex >= 2)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMSetSpecialUserPassword: Invalid user account");
         return ipmi::responseParmOutOfRange();
     }
-    constexpr uint8_t minPasswordSizeRequired = 6;
-    if (userPassword.size() < minPasswordSizeRequired ||
-        userPassword.size() > ipmi::maxIpmi20PasswordSize)
+    if (userPassword.size() != 0)
     {
-        return ipmi::responseReqDataLenInvalid();
+        constexpr uint8_t minPasswordSizeRequired = 6;
+        std::string passwd;
+        if (userPassword.size() < minPasswordSizeRequired ||
+            userPassword.size() > ipmi::maxIpmi20PasswordSize)
+        {
+            return ipmi::responseReqDataLenInvalid();
+        }
+        passwd.assign(reinterpret_cast<const char*>(userPassword.data()),
+                      userPassword.size());
+        if (specialUserIndex == 1)
+        {
+            // start the ASD service and log the ASD security Event
+            status = ipmiSetSpecialUserPassword("asdbg", passwd);
+
+            AtScaleDebugEventlog("Special User Password Enabled");
+            controlAtScaleDebugService(true);
+        }
+        else
+        {
+            status = ipmiSetSpecialUserPassword("root", passwd);
+        }
+        return ipmi::response(status);
     }
-    std::string passwd;
-    passwd.assign(reinterpret_cast<const char*>(userPassword.data()),
-                  userPassword.size());
-    return ipmi::response(ipmiSetSpecialUserPassword("root", passwd));
+    else
+    {
+        if (specialUserIndex == 0)
+        {
+            status = executeCmd("passwd -d root");
+        }
+        else
+        {
+
+            status = executeCmd("passwd -d asdbg");
+
+            if (status == 0)
+            {
+                // Stop the ASD service and log the ASD security Event
+                AtScaleDebugEventlog("Special User Password Disabled");
+                controlAtScaleDebugService(false);
+            }
+        }
+        return ipmi::response(status);
+    }
 }
 
 namespace ledAction
