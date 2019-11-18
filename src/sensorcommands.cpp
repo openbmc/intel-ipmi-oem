@@ -1300,8 +1300,11 @@ ipmi::RspType<uint16_t,            // next record ID
 
     auto maxObject = sensorObject->second.find("MaxValue");
     auto minObject = sensorObject->second.find("MinValue");
-    double max = 128;
-    double min = -127;
+
+    // If min and/or max are left unpopulated,
+    // then default to what a signed byte would be, namely (-128,127) range.
+    auto max = static_cast<double>(std::numeric_limits<int8_t>::max());
+    auto min = static_cast<double>(std::numeric_limits<int8_t>::lowest());
     if (maxObject != sensorObject->second.end())
     {
         max = std::visit(VariantToDoubleVisitor(), maxObject->second);
