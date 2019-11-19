@@ -357,25 +357,50 @@ ipmi::RspType<uint8_t>
     {
         FRUHeader* header = reinterpret_cast<FRUHeader*>(fruCache.data());
 
-        int lastRecordStart = std::max(
-            header->internalOffset,
-            std::max(header->chassisOffset,
-                     std::max(header->boardOffset, header->productOffset)));
-        // TODO: Handle Multi-Record FRUs?
-
+        int areaLength = 0;
+        int lastRecordStart =
+            std::max(header->internalOffset,
+                     std::max(header->chassisOffset,
+                              std::max(header->boardOffset,
+                                       std::max(header->productOffset,
+                                                header->multiRecordOffset))));
         lastRecordStart *= 8; // header starts in are multiples of 8 bytes
 
-        // get the length of the area in multiples of 8 bytes
-        if (lastWriteAddr > (lastRecordStart + 1))
+        if (header->multiRecordOffset)
         {
-            // second byte in record area is the length
-            int areaLength(fruCache[lastRecordStart + 1]);
-            areaLength *= 8; // it is in multiples of 8 bytes
-
-            if (lastWriteAddr >= (areaLength + lastRecordStart))
+            // This FRU has a MultiRecord Area
+            uint8_t endOfList = 0;
+            // Walk the MultiRecord headers until the last record
+            while (!endOfList)
             {
-                atEnd = true;
+                // The MSB in the second byte of the MultiRecord header signals
+                // "End of list"
+                endOfList = fruCache[lastRecordStart + 1] & 0x80;
+                // Third byte in the MultiRecord header is the length
+                areaLength = fruCache[lastRecordStart + 2];
+                // This length is in bytes (not 8 bytes like other headers)
+                areaLength += 5; // The length omits the 5 byte header
+                if (!endOfList)
+                {
+                    // Next MultiRecord header
+                    lastRecordStart += areaLength;
+                }
             }
+        }
+        else
+        {
+            // This FRU does not have a MultiRecord Area
+            // Get the length of the area in multiples of 8 bytes
+            if (lastWriteAddr > (lastRecordStart + 1))
+            {
+                // second byte in record area is the length
+                areaLength = fruCache[lastRecordStart + 1];
+                areaLength *= 8; // it is in multiples of 8 bytes
+            }
+        }
+        if (lastWriteAddr >= (areaLength + lastRecordStart))
+        {
+            atEnd = true;
         }
     }
     uint8_t countWritten = 0;
