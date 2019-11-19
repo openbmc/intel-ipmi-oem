@@ -627,6 +627,39 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
             }
         }
         break;
+        case SmSignalSet::smDiskFaultLed:
+        {
+            std::string diskObjPath =
+                "/xyz/openbmc_project/inventory/item/drive/Drive_" +
+                std::to_string(instance + 1);
+            bool diskLedState = false;
+            switch (action)
+            {
+                case SmActionSet::forceAsserted:
+                {
+                    diskLedState = true;
+                }
+                // fall-through
+                case SmActionSet::revert:
+                case SmActionSet::forceDeasserted:
+                {
+                    ret = mtm.setProperty("xyz.openbmc_project.HsbpManager",
+                                          diskObjPath,
+                                          "xyz.openbmc_project.Led.Group",
+                                          "Asserted", diskLedState);
+                    if (ret < 0)
+                    {
+                        return ipmi::responseUnspecifiedError();
+                    }
+                }
+                break;
+                default:
+                {
+                    return ipmi::responseInvalidFieldRequest();
+                }
+            }
+        }
+        break;
         default:
         {
             return ipmi::responseInvalidFieldRequest();
