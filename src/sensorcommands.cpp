@@ -1323,49 +1323,55 @@ ipmi::RspType<uint16_t,            // next record ID
         return ipmi::responseResponseError();
     }
 
+    // The record.body is a struct SensorDataFullRecordBody
+    // from sensorhandler.hpp in phosphor-ipmi-host.
+    // The meaning of these bits appears to come from
+    // table 43.1 of the IPMI spec.
+    // The above 5 sensor attributes are stuffed in as follows:
+    // Byte 21 = AA000000 = analog interpretation, 10 signed, 00 unsigned
+    // Byte 22-24 are for other purposes
+    // Byte 25 = MMMMMMMM = LSB of M
+    // Byte 26 = MMTTTTTT = MSB of M (signed), and Tolerance
+    // Byte 27 = BBBBBBBB = LSB of B
+    // Byte 28 = BBAAAAAA = MSB of B (signed), and LSB of Accuracy
+    // Byte 29 = AAAAEE00 = MSB of Accuracy, exponent of Accuracy
+    // Byte 30 = RRRRBBBB = rExp (signed), bExp (signed)
+
     // apply M, B, and exponents, M and B are 10 bit values, exponents are 4
     record.body.m_lsb = mValue & 0xFF;
 
+    uint8_t mBitSign = (mValue < 0) ? 1 : 0;
+    uint8_t mBitNine = (mValue & 0x0100) >> 8;
+
     // move the smallest bit of the MSB into place (bit 9)
     // the MSbs are bits 7:8 in m_msb_and_tolerance
-    uint8_t mMsb = (mValue & (1 << 8)) > 0 ? (1 << 6) : 0;
-
-    // assign the negative
-    if (mValue < 0)
-    {
-        mMsb |= (1 << 7);
-    }
-    record.body.m_msb_and_tolerance = mMsb;
+    record.body.m_msb_and_tolerance = (mBitSign << 7) | (mBitNine << 6);
 
     record.body.b_lsb = bValue & 0xFF;
 
-    // move the smallest bit of the MSB into place
+    uint8_t bBitSign = (bValue < 0) ? 1 : 0;
+    uint8_t bBitNine = (bValue & 0x0100) >> 8;
+
+    // move the smallest bit of the MSB into place (bit 9)
     // the MSbs are bits 7:8 in b_msb_and_accuracy_lsb
-    uint8_t bMsb = (bValue & (1 << 8)) > 0 ? (1 << 6) : 0;
+    record.body.b_msb_and_accuracy_lsb = (bBitSign << 7) | (bBitNine << 6);
 
-    // assign the negative
-    if (bValue < 0)
-    {
-        bMsb |= (1 << 7);
-    }
-    record.body.b_msb_and_accuracy_lsb = bMsb;
+    uint8_t rExpSign = (rExp < 0) ? 1 : 0;
+    uint8_t rExpBits = rExp & 0x07;
 
-    record.body.r_b_exponents = bExp & 0x7;
-    if (bExp < 0)
-    {
-        record.body.r_b_exponents |= 1 << 3;
-    }
-    record.body.r_b_exponents = (rExp & 0x7) << 4;
-    if (rExp < 0)
-    {
-        record.body.r_b_exponents |= 1 << 7;
-    }
+    uint8_t bExpSign = (bExp < 0) ? 1 : 0;
+    uint8_t bExpBits = bExp & 0x07;
 
-    // todo fill out rest of units
-    if (bSigned)
-    {
-        record.body.sensor_units_1 = 1 << 7;
-    }
+    // move rExp and bExp into place
+    record.body.r_b_exponents =
+        (rExpSign << 7) | (rExpBits << 4) | (bExpSign << 3) | bExpBits;
+
+    // Set the analog reading byte interpretation accordingly
+    record.body.sensor_units_1 = (bSigned ? 1 : 0) << 7;
+
+    // TODO(): Perhaps care about Tolerance, Accuracy, and so on
+    // These seem redundant, but derivable from the above 5 attributes
+    // Original comment said "todo fill out rest of units"
 
     // populate sensor name from path
     std::string name;
