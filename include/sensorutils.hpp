@@ -15,6 +15,7 @@
 */
 
 #pragma once
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 
@@ -25,140 +26,293 @@ static constexpr int16_t minInt10 = -0x200;
 static constexpr int8_t maxInt4 = 7;
 static constexpr int8_t minInt4 = -8;
 
+// Helper function to avoid repeated complicated expression
+// TODO(): Refactor to add a proper sensorutils.cpp file,
+// instead of putting everything in this header as it is now,
+// so that helper functions can be correctly hidden from callers.
+static inline bool baseInRange(double base)
+{
+    auto min10 = static_cast<double>(minInt10);
+    auto max10 = static_cast<double>(maxInt10);
+
+    return ((base >= min10) && (base <= max10));
+}
+
+// Helper function for internal use by getSensorAttributes()
+// Ensures floating-point "base" is within bounds,
+// and adjusts integer exponent "expShift" accordingly.
+// To minimize data loss when later truncating to integer,
+// the floating-point "base" will be as large as possible,
+// but still within the bounds (minInt10,maxInt10).
+// The bounds of "expShift" are (minInt4,maxInt4).
+// Consider this equation: n = base * (10.0 ** expShift)
+// This function will try to maximize "base",
+// adjusting "expShift" to keep the value "n" unchanged,
+// while keeping base and expShift within bounds.
+// Returns true if successful, modifies values in-place
+static inline bool scaleFloatExp(double& base, int8_t& expShift)
+{
+    auto min10 = static_cast<double>(minInt10);
+    auto max10 = static_cast<double>(maxInt10);
+
+    // Comparing with zero should be OK, zero is special in floating-point
+    // If base is exactly zero, no adjustment of the exponent is necessary
+    if (base == 0.0)
+    {
+        return true;
+    }
+
+    // As long as base value is within allowed range, expand precision
+    // This will help to avoid loss when later rounding to integer
+    while (baseInRange(base))
+    {
+        if (expShift <= minInt4)
+        {
+            // Already at the minimum expShift, can not decrement it more
+            break;
+        }
+
+        // Multiply by 10, but shift decimal point to the left, no net change
+        base *= 10.0;
+        --expShift;
+    }
+
+    // As long as base value is *not* within range, shrink precision
+    // This will pull base value closer to zero, thus within range
+    while (!(baseInRange(base)))
+    {
+        if (expShift >= maxInt4)
+        {
+            // Already at the maximum expShift, can not increment it more
+            break;
+        }
+
+        // Divide by 10, but shift decimal point to the right, no net change
+        base /= 10.0;
+        ++expShift;
+    }
+
+    // If the above loop was not able to pull it back within range,
+    // the base value is beyond what expShift can represent, return false.
+    return baseInRange(base);
+}
+
+// Helper function for internal use by getSensorAttributes()
+// Ensures integer "ibase" is no larger than necessary,
+// by normalizing it so that the decimal point shift is in the exponent,
+// whenever possible.
+// This provides more consistent results,
+// as many equivalent solutions are collapsed into one consistent solution.
+// If integer "ibase" is a clean multiple of 10,
+// divide it by 10 (this is lossless), so it is closer to zero.
+// Also modify floating-point "dbase" at the same time,
+// as both integer and floating-point base share the same expShift.
+// Example: (ibase=300, expShift=2) becomes (ibase=3, expShift=4)
+// because the underlying value is the same: 200*(10**2) == 2*(10**4)
+// Always successful, modifies values in-place
+static inline void normalizeIntExp(int16_t& ibase, int8_t& expShift,
+                                   double& dbase)
+{
+    for (;;)
+    {
+        // If zero, already normalized, ensure exponent also zero
+        if (ibase == 0)
+        {
+            expShift = 0;
+            break;
+        }
+
+        // If not cleanly divisible by 10, already normalized
+        if ((ibase % 10) != 0)
+        {
+            break;
+        }
+
+        // If exponent already at max, already normalized
+        if (expShift >= maxInt4)
+        {
+            break;
+        }
+
+        // Bring values closer to zero, correspondingly shift exponent,
+        // without changing the underlying number that this all represents,
+        // similar to what is done by scaleFloatExp().
+        // The floating-point base must be kept in sync with the integer base,
+        // as both floating-point and integer share the same exponent.
+        ibase /= 10;
+        dbase /= 10.0;
+        ++expShift;
+    }
+}
+
+// The IPMI equation:
+// y = (Mx + (B * 10^(bExp))) * 10^(rExp)
+// Section 36.3 of this document:
+// https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/ipmi-second-gen-interface-spec-v2-rev1-1.pdf
+//
+// The goal is to exactly match the math done by the ipmitool command,
+// at the other side of the interface:
+// https://github.com/ipmitool/ipmitool/blob/42a023ff0726c80e8cc7d30315b987fe568a981d/lib/ipmi_sdr.c#L360
+//
+// To use with Wolfram Alpha, make all variables single letters
+// bExp becomes E, rExp becomes R
+// https://www.wolframalpha.com/input/?i=y%3D%28%28M*x%29%2B%28B*%2810%5EE%29%29%29*%2810%5ER%29
 static inline bool getSensorAttributes(const double max, const double min,
                                        int16_t& mValue, int8_t& rExp,
                                        int16_t& bValue, int8_t& bExp,
                                        bool& bSigned)
 {
-    // computing y = (10^rRexp) * (Mx + (B*(10^Bexp)))
-    // check for 0, assume always positive
-    double mDouble;
-    double bDouble;
+    if (!(std::isfinite(min)))
+    {
+        std::cerr << "getSensorAttributes: Min value is unusable\n";
+        return false;
+    }
+    if (!(std::isfinite(max)))
+    {
+        std::cerr << "getSensorAttributes: Max value is unusable\n";
+        return false;
+    }
+
+    // Because NAN has already been tested for, this comparison works
     if (max <= min)
     {
         std::cerr << "getSensorAttributes: Max must be greater than min\n";
         return false;
     }
 
-    mDouble = (max - min) / 0xFF;
+    // Given min and max, we must solve for M, B, bExp, rExp
+    // y comes in from D-Bus (the actual sensor reading)
+    // x is calculated from y by scaleIPMIValueFromDouble() below
+    // If y is min, x should equal = 0 (or -128 if signed)
+    // If y is max, x should equal 255 (or 127 if signed)
+    double fullRange = max - min;
+    double lowestX;
 
-    if (min < 0)
+    rExp = 0;
+    bExp = 0;
+
+    // TODO(): The IPMI document is ambiguous, as to whether
+    // the resulting byte should be signed or unsigned,
+    // essentially leaving it up to the caller.
+    // The document just refers to it as "raw reading",
+    // or "byte of reading", without giving further details.
+    // Previous code set it signed if min was less than zero,
+    // so I'm sticking with that, until I learn otherwise.
+    if (min < 0.0)
     {
+        // TODO(): It would be worth experimenting with the range (-127,127),
+        // instead of the range (-128,127), because this
+        // would give good symmetry around zero, and make results look better.
+        // Divide by 254 instead of 255, and change -128 to -127 elsewhere.
         bSigned = true;
-        bDouble = floor(0.5 + ((max + min) / 2));
+        lowestX = -128.0;
     }
     else
     {
         bSigned = false;
-        bDouble = min;
+        lowestX = 0.0;
     }
 
-    rExp = 0;
+    // Step 1: Set y to (max - min), set x to 255, set B to 0, solve for M
+    // This works, regardless of signed or unsigned,
+    // because total range is the same.
+    double dM = fullRange / 255.0;
 
-    // M too big for 10 bit variable
-    while (mDouble > maxInt10)
+    // Step 2: Constrain M, and set rExp accordingly
+    if (!(scaleFloatExp(dM, rExp)))
     {
-        if (rExp >= maxInt4)
-        {
-            std::cerr << "rExp Too big, Max and Min range too far REXP=" << rExp
-                      << "\n";
-            return false;
-        }
-        mDouble /= 10;
-        rExp++;
+        std::cerr << "getSensorAttributes: Multiplier range exceeds scale (M="
+                  << dM << ", rExp=" << (int)rExp << ")\n";
+        return false;
     }
 
-    // M too small, loop until we lose less than 1 eight bit count of precision
-    while (((mDouble - floor(mDouble)) / mDouble) > (1.0 / 255))
+    mValue = static_cast<int16_t>(std::round(dM));
+
+    normalizeIntExp(mValue, rExp, dM);
+
+    // The multiplier can not be zero, for obvious reasons
+    if (mValue == 0)
     {
-        if (rExp <= minInt4)
-        {
-            std::cerr << "rExp Too Small, Max and Min range too close\n";
-            return false;
-        }
-        // check to see if we reached the limit of where we can adjust back the
-        // B value
-        if (bDouble / std::pow(10, rExp + minInt4 - 1) > bDouble)
-        {
-            if (mDouble < 1.0)
-            {
-                std::cerr << "Could not find mValue and B value with enough "
-                             "precision.\n";
-                return false;
-            }
-            break;
-        }
-        // can't multiply M any more, max precision reached
-        else if (mDouble * 10 > maxInt10)
-        {
-            break;
-        }
-        mDouble *= 10;
-        rExp--;
+        std::cerr << "getSensorAttributes: Multiplier range below scale\n";
+        return false;
     }
 
-    bDouble /= std::pow(10, rExp);
-    bExp = 0;
+    // Step 3: set y to min, set x to min, keep M and rExp, solve for B
+    // If negative, x will be -128 (the most negative possible byte), not 0
 
-    // B too big for 10 bit variable
-    while (bDouble > maxInt10 || bDouble < minInt10)
+    // Solve the IPMI equation for B, instead of y
+    // https://www.wolframalpha.com/input/?i=solve+y%3D%28%28M*x%29%2B%28B*%2810%5EE%29%29%29*%2810%5ER%29+for+B
+    // B = 10^(-rExp - bExp) (y - M 10^rExp x)
+    // TODO(): Compare with this alternative solution from SageMathCell
+    // https://sagecell.sagemath.org/?z=eJyrtC1LLNJQr1TX5KqAMCuATF8I0xfIdIIwnYDMIteKAggPxAIKJMEFkiACxfk5Zaka0ZUKtrYKGhq-CloKFZoK2goaTkCWhqGBgpaWAkilpqYmQgBklmasjoKTJgDAECTH&lang=sage&interacts=eJyLjgUAARUAuQ==
+    double dB = std::pow(10.0, ((-rExp) - bExp)) *
+                (min - ((dM * std::pow(10.0, rExp) * lowestX)));
+
+    // Step 4: Constrain B, and set bExp accordingly
+    if (!(scaleFloatExp(dB, bExp)))
     {
-        if (bExp >= maxInt4)
-        {
-            std::cerr
-                << "bExp Too Big, Max and Min range need to be adjusted\n";
-            return false;
-        }
-        bDouble /= 10;
-        bExp++;
+        std::cerr << "getSensorAttributes: Offset (B=" << dB
+                  << ", bExp=" << (int)bExp
+                  << ") exceeds multiplier scale (M=" << dM
+                  << ", rExp=" << (int)rExp << ")\n";
+        return false;
     }
 
-    while (((fabs(bDouble) - floor(fabs(bDouble))) / fabs(bDouble)) >
-           (1.0 / 255))
-    {
-        if (bExp <= minInt4)
-        {
-            std::cerr
-                << "bExp Too Small, Max and Min range need to be adjusted\n";
-            return false;
-        }
-        bDouble *= 10;
-        bExp -= 1;
-    }
+    bValue = static_cast<int16_t>(std::round(dB));
 
-    mValue = static_cast<int16_t>(std::round(mDouble)) & maxInt10;
-    bValue = static_cast<int16_t>(bDouble) & maxInt10;
+    normalizeIntExp(bValue, bExp, dB);
 
+    // Unlike the multiplier, it is perfectly OK for bValue to be zero
     return true;
 }
 
 static inline uint8_t
-    scaleIPMIValueFromDouble(const double value, const uint16_t mValue,
-                             const int8_t rExp, const uint16_t bValue,
+    scaleIPMIValueFromDouble(const double value, const int16_t mValue,
+                             const int8_t rExp, const int16_t bValue,
                              const int8_t bExp, const bool bSigned)
 {
-    double scaledValue =
-        (value - (bValue * std::pow(10, bExp) * std::pow(10, rExp))) /
-        (mValue * std::pow(10, rExp));
+    // Avoid division by zero below
+    if (mValue == 0)
+    {
+        throw std::out_of_range("Scaling multiplier is uninitialized");
+    }
 
+    auto dM = static_cast<double>(mValue);
+    auto dB = static_cast<double>(bValue);
+
+    // Solve the IPMI equation for x, instead of y
+    // https://www.wolframalpha.com/input/?i=solve+y%3D%28%28M*x%29%2B%28B*%2810%5EE%29%29%29*%2810%5ER%29+for+x
+    // x = (10^(-rExp) (y - B 10^(rExp + bExp)))/M and M 10^rExp!=0
+    // TODO(): Compare with this alternative solution from SageMathCell
+    // https://sagecell.sagemath.org/?z=eJyrtC1LLNJQr1TX5KqAMCuATF8I0xfIdIIwnYDMIteKAggPxAIKJMEFkiACxfk5Zaka0ZUKtrYKGhq-CloKFZoK2goaTkCWhqGBgpaWAkilpqYmQgBklmasDlAlAMB8JP0=&lang=sage&interacts=eJyLjgUAARUAuQ==
+    double dX =
+        (std::pow(10.0, -rExp) * (value - (dB * std::pow(10.0, rExp + bExp)))) /
+        dM;
+
+    auto scaledValue = static_cast<int32_t>(std::round(dX));
+
+    int32_t minClamp;
+    int32_t maxClamp;
+
+    // Because of rounding and integer truncation of scaling factors,
+    // sometimes the resulting byte is slightly out of range.
+    // Still allow this, but clamp the values to range.
     if (bSigned)
     {
-        if (scaledValue > std::numeric_limits<int8_t>::max() ||
-            scaledValue < std::numeric_limits<int8_t>::lowest())
-        {
-            throw std::out_of_range("Value out of range");
-        }
-        return static_cast<int8_t>(std::round(scaledValue));
+        minClamp = std::numeric_limits<int8_t>::lowest();
+        maxClamp = std::numeric_limits<int8_t>::max();
     }
     else
     {
-        if (scaledValue > std::numeric_limits<uint8_t>::max() ||
-            scaledValue < std::numeric_limits<uint8_t>::lowest())
-        {
-            throw std::out_of_range("Value out of range");
-        }
-        return static_cast<uint8_t>(std::round(scaledValue));
+        minClamp = std::numeric_limits<uint8_t>::lowest();
+        maxClamp = std::numeric_limits<uint8_t>::max();
     }
+
+    auto clampedValue = std::clamp(scaledValue, minClamp, maxClamp);
+
+    // This works for both signed and unsigned,
+    // because it is the same underlying byte storage.
+    return static_cast<uint8_t>(clampedValue);
 }
 
 static inline uint8_t getScaledIPMIValue(const double value, const double max,
@@ -168,14 +322,15 @@ static inline uint8_t getScaledIPMIValue(const double value, const double max,
     int8_t rExp = 0;
     int16_t bValue = 0;
     int8_t bExp = 0;
-    bool bSigned = 0;
-    bool result = 0;
+    bool bSigned = false;
 
-    result = getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned);
+    bool result =
+        getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned);
     if (!result)
     {
         throw std::runtime_error("Illegal sensor attributes");
     }
+
     return scaleIPMIValueFromDouble(value, mValue, rExp, bValue, bExp, bSigned);
 }
 
