@@ -627,6 +627,61 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
             }
         }
         break;
+        case SmSignalSet::smDiskFaultLed:
+        {
+            boost::system::error_code ec;
+            using objFlatMap = boost::container::flat_map<
+                std::string, boost::container::flat_map<
+                                 std::string, std::vector<std::string>>>;
+            constexpr const char* driveBasePath =
+                "/xyz/openbmc_project/inventory/item/drive/";
+            constexpr const char* driveLedIntf =
+                "xyz.openbmc_project.Led.Group";
+            constexpr const char* hsbpService =
+                "xyz.openbmc_project.HsbpManager";
+
+            auto flatMap = ctx->bus->yield_method_call<objFlatMap>(
+                ctx->yield, ec, "xyz.openbmc_project.ObjectMapper",
+                "/xyz/openbmc_project/object_mapper",
+                "xyz.openbmc_project.ObjectMapper", "GetSubTree", driveBasePath,
+                0, std::array<const char*, 1>{driveLedIntf});
+            if (ec)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to query HSBP drive sub tree objects");
+                return ipmi::responseUnspecifiedError();
+            }
+            if (instance >= flatMap.size())
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            auto itr = flatMap.nth(instance);
+            bool driveLedState = false;
+            switch (action)
+            {
+                case SmActionSet::forceAsserted:
+                {
+                    driveLedState = true;
+                }
+                // fall-through
+                case SmActionSet::revert:
+                case SmActionSet::forceDeasserted:
+                {
+                    ret = mtm.setProperty(hsbpService, itr->first, driveLedIntf,
+                                          "Asserted", driveLedState);
+                    if (ret < 0)
+                    {
+                        return ipmi::responseUnspecifiedError();
+                    }
+                }
+                break;
+                default:
+                {
+                    return ipmi::responseInvalidFieldRequest();
+                }
+            }
+        }
+        break;
         default:
         {
             return ipmi::responseInvalidFieldRequest();
