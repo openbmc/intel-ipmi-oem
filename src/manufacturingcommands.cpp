@@ -627,6 +627,59 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
             }
         }
         break;
+        case SmSignalSet::smDiskFaultLed:
+        {
+            boost::system::error_code ec;
+            using objPaths = std::vector<std::string>;
+            std::string driveBasePath =
+                "/xyz/openbmc_project/inventory/item/drive/";
+            static constexpr const char* driveLedIntf =
+                "xyz.openbmc_project.Led.Group";
+            static constexpr const char* hsbpService =
+                "xyz.openbmc_project.HsbpManager";
+
+            auto driveList = ctx->bus->yield_method_call<objPaths>(
+                ctx->yield, ec, "xyz.openbmc_project.ObjectMapper",
+                "/xyz/openbmc_project/object_mapper",
+                "xyz.openbmc_project.ObjectMapper", "GetSubTreePaths",
+                driveBasePath, 0, std::array<const char*, 1>{driveLedIntf});
+            if (ec)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to query HSBP drive sub tree objects");
+                return ipmi::responseUnspecifiedError();
+            }
+            std::string driveObjPath =
+                driveBasePath + "Drive_" + std::to_string(instance + 1);
+            if (std::find(driveList.begin(), driveList.end(), driveObjPath) ==
+                driveList.end())
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            bool driveLedState = false;
+            switch (action)
+            {
+                case SmActionSet::forceAsserted:
+                {
+                    driveLedState = true;
+                }
+                // fall-through
+                case SmActionSet::revert:
+                case SmActionSet::forceDeasserted:
+                    break;
+                default:
+                {
+                    return ipmi::responseInvalidFieldRequest();
+                }
+            }
+            ret = mtm.setProperty(hsbpService, driveObjPath, driveLedIntf,
+                                  "Asserted", driveLedState);
+            if (ret < 0)
+            {
+                return ipmi::responseUnspecifiedError();
+            }
+        }
+        break;
         default:
         {
             return ipmi::responseInvalidFieldRequest();
