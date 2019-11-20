@@ -23,6 +23,7 @@
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/bus/match.hpp>
 #include <sdbusplus/message.hpp>
+#include <storagecommands.hpp>
 #include <vector>
 
 static constexpr const char *wdtService = "xyz.openbmc_project.Watchdog";
@@ -37,6 +38,7 @@ static constexpr const char *ipmbObj = "/xyz/openbmc_project/Ipmi/Channel/Ipmb";
 static constexpr const char *ipmbIntf = "org.openbmc.Ipmb";
 
 static Bridging bridging;
+static bool eventMessageBufferFlag = false;
 
 void Bridging::clearResponseQueue()
 {
@@ -487,7 +489,15 @@ ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags()
 {
     std::bitset<8> getMsgFlagsRes;
 
-    getMsgFlagsRes.set(getMsgFlagEventMessageBit);
+    // set event message buffer bit
+    if (!eventMessageBufferFlag)
+    {
+        getMsgFlagsRes.set(getMsgFlagEventMessageBit);
+    }
+    else
+    {
+        getMsgFlagsRes.reset(getMsgFlagEventMessageBit);
+    }
 
     // set message fields
     if (bridging.getResponseQueueSize() > 0)
@@ -546,7 +556,70 @@ ipmi::RspType<> ipmiAppClearMessageFlags(bool receiveMessage,
     {
         bridging.clearResponseQueue();
     }
+
+    if (eventMessageBufferFlag != true && eventMsgBufFull == true)
+    {
+        eventMessageBufferFlag = true;
+    }
+
     return ipmi::responseSuccess();
+}
+
+using systemEventType = std::tuple<
+    uint16_t, // Generator ID
+    uint32_t, // Timestamp
+    uint8_t,  // Sensor Type
+    uint8_t,  // EvM Rev
+    uint8_t,  // Sensor Number
+    uint7_t,  // Event Type
+    bool,     // Event Direction
+    std::array<uint8_t, intel_oem::ipmi::sel::systemEventSize>>; // Event Data
+using oemTsEventType = std::tuple<
+    uint32_t,                                                   // Timestamp
+    std::array<uint8_t, intel_oem::ipmi::sel::oemTsEventSize>>; // Event Data
+using oemEventType =
+    std::array<uint8_t, intel_oem::ipmi::sel::oemEventSize>; // Event Data
+
+/** @brief implements of Read event message buffer command
+ *
+ *  @returns IPMI completion code plus response data
+ *   - recordID - SEL Record ID
+ *   - recordType - Record Type
+ *   - generatorID - Generator ID
+ *   - timeStamp - Timestamp
+ *   - sensorType - Sensor Type
+ *   - eventMsgFormatRev - Event Message format version
+ *   - sensorNumber - Sensor Number
+ *   - eventType - Event Type
+ *   - eventDir - Event Direction
+ *   - eventData - Event Data field
+ */
+ipmi::RspType<uint16_t, // Record ID
+              uint8_t,  // Record Type
+              std::variant<systemEventType, oemTsEventType,
+                           oemEventType>> // Record Content
+    ipmiAppReadEventMessageBuffer()
+{
+    uint16_t recordId =
+        static_cast<uint16_t>(0x5555); // recordId: 0x55 << 8 | 0x55
+    uint16_t generatorId =
+        static_cast<uint16_t>(0xA741); // generatorId: 0xA7 << 8 | 0x41
+    constexpr uint8_t recordType = 0xC0;
+    constexpr uint8_t eventMsgFormatRev = 0x3A;
+    constexpr uint8_t sensorNumber = 0xFF;
+
+    // TODO need to be implemented.
+    std::array<uint8_t, intel_oem::ipmi::sel::systemEventSize> eventData{};
+    // All '0xFF' since unused.
+    eventData.fill(0xFF);
+
+    // Set the event message buffer flag
+    eventMessageBufferFlag = true;
+
+    return ipmi::responseSuccess(
+        recordId, recordType,
+        systemEventType{generatorId, 0, 0, eventMsgFormatRev, sensorNumber,
+                        static_cast<uint7_t>(0), false, eventData});
 }
 
 static void register_bridging_functions() __attribute__((constructor));
@@ -567,6 +640,10 @@ static void register_bridging_functions()
     ipmi_register_callback(NETFUN_APP,
                            Bridging::IpmiAppBridgingCmds::ipmiCmdSendMessage,
                            NULL, ipmiAppSendMessage, PRIVILEGE_USER);
+
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnApp,
+                          ipmi::app::cmdReadEventMessageBuffer,
+                          ipmi::Privilege::User, ipmiAppReadEventMessageBuffer);
 
     return;
 }
