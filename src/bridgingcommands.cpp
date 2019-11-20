@@ -186,6 +186,48 @@ void IpmbRequest::prepareRequest(sdbusplus::message::message &mesg)
     mesg.append(ipmbMeChannelNum, netFn, rqLun, cmd, data);
 }
 
+static constexpr unsigned int makeCmdKey(unsigned int netFn, unsigned int cmd)
+{
+    return (netFn << 8) | cmd;
+}
+
+static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
+{
+    constexpr uint8_t netFnMeOEM = 0x2E;
+    constexpr uint8_t cmdMeOemSendRawPeci = 0x40;
+    constexpr uint8_t cmdMeOemAggSendRawPeci = 0x41;
+    constexpr uint8_t cmdMeOemCpuPkgConfWrite = 0x43;
+    constexpr uint8_t cmdMeOemCpuPciConfWrite = 0x45;
+    constexpr uint8_t cmdMeOemReadMemSmbus = 0x47;
+    constexpr uint8_t cmdMeOemWriteMemSmbus = 0x48;
+    constexpr uint8_t cmdMeOemSlotIpmb = 0x51;
+    constexpr uint8_t cmdMeOemSlotI2cMasterWriteRead = 0x52;
+    constexpr uint8_t cmdMeOemSendRawPmbus = 0xD9;
+    constexpr uint8_t cmdMeOemUnlockMeRegion = 0xE7;
+    constexpr uint8_t cmdMeOemAggSendRawPmbus = 0xEC;
+
+    switch (makeCmdKey(netFn, cmd))
+    {
+        // Restrict ME Master write command
+        case makeCmdKey(ipmi::netFnApp, ipmi::app::cmdMasterWriteRead):
+        // Restrict ME OEM commands
+        case makeCmdKey(netFnMeOEM, cmdMeOemSendRawPeci):
+        case makeCmdKey(netFnMeOEM, cmdMeOemAggSendRawPeci):
+        case makeCmdKey(netFnMeOEM, cmdMeOemCpuPkgConfWrite):
+        case makeCmdKey(netFnMeOEM, cmdMeOemCpuPciConfWrite):
+        case makeCmdKey(netFnMeOEM, cmdMeOemReadMemSmbus):
+        case makeCmdKey(netFnMeOEM, cmdMeOemWriteMemSmbus):
+        case makeCmdKey(netFnMeOEM, cmdMeOemSlotIpmb):
+        case makeCmdKey(netFnMeOEM, cmdMeOemSlotI2cMasterWriteRead):
+        case makeCmdKey(netFnMeOEM, cmdMeOemSendRawPmbus):
+        case makeCmdKey(netFnMeOEM, cmdMeOemUnlockMeRegion):
+        case makeCmdKey(netFnMeOEM, cmdMeOemAggSendRawPmbus):
+            return false;
+        default:
+            return true;
+    }
+}
+
 ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
                                               ipmi_response_t response,
                                               ipmi_data_len_t dataLen)
@@ -208,6 +250,13 @@ ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
             "handleIpmbChannel, IPMB address invalid");
         *dataLen = 0;
         return IPMI_CC_PARM_OUT_OF_RANGE;
+    }
+
+    constexpr uint8_t shiftLUN = 2;
+    if (!isMeCmdAllowed((sendMsgReqData->Header.Req.rsNetFnLUN >> shiftLUN),
+                        sendMsgReqData->Header.Req.cmd))
+    {
+        return IPMI_CC_INVALID_FIELD_REQUEST;
     }
 
     // check allowed modes
