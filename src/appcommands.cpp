@@ -310,6 +310,7 @@ RspType<uint8_t,  // Device ID
                 devId.revision = data.value("revision", 0);
                 devId.addnDevSupport = data.value("addn_dev_support", 0);
                 devId.manufId = data.value("manuf_id", 0);
+                dev_id_initialized = true;
 
                 try
                 {
@@ -327,14 +328,14 @@ RspType<uint8_t,  // Device ID
                 }
                 catch (std::exception& e)
                 {
-                    devId.prodId = data.value("prod_id", 0);
+                    // For any exception send out platform id as 0,
+                    // and make sure to re-query the device id.
+                    dev_id_initialized = false;
+                    devId.prodId = 0;
                 }
 
                 // Set the availablitity of the BMC.
                 defaultActivationSetting = data.value("availability", true);
-
-                // Don't read the file every time if successful
-                dev_id_initialized = true;
             }
             else
             {
