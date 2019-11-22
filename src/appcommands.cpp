@@ -324,17 +324,18 @@ RspType<uint8_t,  // Device ID
                         "ProductId");
                     devId.prodId =
                         static_cast<uint8_t>(std::get<uint64_t>(propValue));
+                    dev_id_initialized = true;
                 }
                 catch (std::exception& e)
                 {
-                    devId.prodId = data.value("prod_id", 0);
+                    // For any exception send out platform id as 0,
+                    // and make sure to re-query the device id.
+                    dev_id_initialized = false;
+                    devId.prodId = 0;
                 }
 
                 // Set the availablitity of the BMC.
                 defaultActivationSetting = data.value("availability", true);
-
-                // Don't read the file every time if successful
-                dev_id_initialized = true;
             }
             else
             {
