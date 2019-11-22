@@ -63,6 +63,13 @@ const static boost::container::flat_map<FWDeviceIDTag, const char *>
 
 #endif
 
+static constexpr const char *bmcStateIntf = "xyz.openbmc_project.State.BMC";
+static constexpr const char *bmcStatePath = "/xyz/openbmc_project/state/bmc0";
+static constexpr const char *bmcStateReady =
+    "xyz.openbmc_project.State.BMC.BMCState.Ready";
+static constexpr const char *bmcStateUpdateInProgress =
+    "xyz.openbmc_project.State.BMC.BMCState.UpdateInProgress";
+
 static constexpr const char *secondaryFitImageStartAddr = "22480000";
 static uint8_t getActiveBootImage(void);
 static void register_netfn_firmware_functions() __attribute__((constructor));
@@ -318,6 +325,51 @@ static ipmi_ret_t ipmi_firmware_get_fw_random_number(
     return IPMI_CC_OK;
 }
 
+static bool getFirmwareUpdateMode()
+{
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
+    try
+    {
+        auto service = ipmi::getService(*busp, bmcStateIntf, bmcStatePath);
+        ipmi::Value state = ipmi::getDbusProperty(
+            *busp, service, bmcStatePath, bmcStateIntf, "CurrentBMCState");
+        std::string bmcState = std::get<std::string>(state);
+        return (bmcState == bmcStateUpdateInProgress);
+    }
+    catch (const std::exception &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Exception caught while getting BMC state.",
+            phosphor::logging::entry("EXCEPTION=%s", e.what()));
+        throw;
+    }
+}
+
+static void setFirmwareUpdateMode(const bool mode)
+{
+
+    std::string bmcState(bmcStateReady);
+    if (mode)
+    {
+        bmcState = bmcStateUpdateInProgress;
+    }
+
+    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
+    try
+    {
+        auto service = ipmi::getService(*busp, bmcStateIntf, bmcStatePath);
+        ipmi::setDbusProperty(*busp, service, bmcStatePath, bmcStateIntf,
+                              "CurrentBMCState", bmcState);
+    }
+    catch (const std::exception &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Exception caught while setting BMC state.",
+            phosphor::logging::entry("EXCEPTION=%s", e.what()));
+        throw;
+    }
+}
+
 /** @brief Set Firmware Update Mode
  *
  *  This function sets BMC into firmware update mode
@@ -355,17 +407,20 @@ ipmi::RspType<> ipmiSetFirmwareUpdateMode(
         }
     }
 
-    if (fw_update_status.state() != fw_update_status_cache::FW_STATE_IDLE
-        // TODO: Allowing FW_STATE_INIT here to let image activation available
-        // without being in FW_STATE_IDLE, need to fix/adjust the state machine
-        // to match xyz.openbmc_project.Software.BMC.Updater service activation
-        // mechanism at finer grain
-        && fw_update_status.state() != fw_update_status_cache::FW_STATE_INIT)
+    try
     {
-        phosphor::logging::log<phosphor::logging::level::INFO>(
-            "Already firmware update is in progress.");
-        return ipmi::responseBusy();
+        if (getFirmwareUpdateMode())
+        {
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Already firmware update is in progress.");
+            return ipmi::responseBusy();
+        }
     }
+    catch (const std::exception &e)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+
     // FIXME? c++ doesn't off an option for exclusive file creation
     FILE *fp = fopen(FIRMWARE_BUFFER_FILE, "wx");
     if (!fp)
@@ -375,6 +430,16 @@ ipmi::RspType<> ipmiSetFirmwareUpdateMode(
         return ipmi::responseUnspecifiedError();
     }
     fclose(fp);
+
+    try
+    {
+        setFirmwareUpdateMode(true);
+    }
+    catch (const std::exception &e)
+    {
+        unlink(FIRMWARE_BUFFER_FILE);
+        return ipmi::responseUnspecifiedError();
+    }
 
     return ipmi::responseSuccess();
 }
@@ -410,6 +475,16 @@ ipmi::RspType<> ipmiFirmwareExitFwUpdateMode()
             break;
     }
     fw_update_status.firmwareUpdateAbortState();
+
+    try
+    {
+        setFirmwareUpdateMode(false);
+    }
+    catch (const std::exception &e)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+
     return ipmi::responseSuccess();
 }
 
