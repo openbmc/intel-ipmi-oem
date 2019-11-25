@@ -546,6 +546,21 @@ ipmi::RspType<> ipmiAppClearMessageFlags(bool receiveMessage,
     {
         bridging.clearResponseQueue();
     }
+
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        ipmi::setDbusProperty(*dbus, wdtService, wdtObjPath, wdtInterface,
+                              wdtInterruptFlagProp, false);
+    }
+    catch (const sdbusplus::exception::SdBusError &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppClearMessageFlags: can't Clear/Set "
+            "PreTimeoutInterruptOccurFlag");
+        return ipmi::responseUnspecifiedError();
+    }
+
     return ipmi::responseSuccess();
 }
 
