@@ -492,7 +492,19 @@ ipmi_ret_t ipmiAppClearMessageFlags(ipmi_netfn_t netFn, ipmi_cmd_t cmd,
 {
     ipmi_ret_t retCode = IPMI_CC_OK;
     retCode = bridging.clearMessageFlagsHandler(request, response, dataLen);
-
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        ipmi::setDbusProperty(*dbus, wdtService, wdtObjPath, wdtInterface,
+                              wdtInterruptFlagProp, false);
+    }
+    catch (const sdbusplus::exception::SdBusError &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppGetMessageFlags: can't Clear/Set "
+            "PreTimeoutInterruptOccurFlag");
+        return IPMI_CC_UNSPECIFIED_ERROR;
+    }
     *dataLen = 0;
 
     return retCode;
