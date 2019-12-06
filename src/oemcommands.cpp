@@ -28,6 +28,7 @@
 #include <commandutils.hpp>
 #include <filesystem>
 #include <iostream>
+#include <gpiod.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <nlohmann/json.hpp>
@@ -1366,45 +1367,45 @@ bool getFanProfileInterface(
     return true;
 }
 
-/**@brief implements the OEM set fan config.
- * @param selectedFanProfile - fan profile to enable
- * @param reserved1
- * @param performanceMode - Performance/Acoustic mode
- * @param reserved2
- * @param setPerformanceMode - set Performance/Acoustic mode
- * @param setFanProfile - set fan profile
- *
- * @return IPMI completion code.
- **/
-ipmi::RspType<> ipmiOEMSetFanConfig(uint8_t selectedFanProfile,
-
-                                    uint2_t reserved1, bool performanceMode,
-                                    uint3_t reserved2, bool setPerformanceMode,
-                                    bool setFanProfile)
+ipmi_ret_t ipmiOEMSetFanConfig(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+                               ipmi_request_t request, ipmi_response_t response,
+                               ipmi_data_len_t dataLen, ipmi_context_t context)
 {
-    if (reserved1 || reserved2)
+
+    if (*dataLen < 2 || *dataLen > 7)
     {
-        return ipmi::responseInvalidFieldRequest();
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetFanConfig: invalid input len!");
+        *dataLen = 0;
+        return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
+
     // todo: tell bios to only send first 2 bytes
+
+    SetFanConfigReq* req = reinterpret_cast<SetFanConfigReq*>(request);
     boost::container::flat_map<
         std::string, std::variant<std::vector<std::string>, std::string>>
         profileData;
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     if (!getFanProfileInterface(*dbus, profileData))
     {
-        return ipmi::responseUnspecifiedError();
+        return IPMI_CC_UNSPECIFIED_ERROR;
     }
 
     std::vector<std::string>* supported =
         std::get_if<std::vector<std::string>>(&profileData["Supported"]);
     if (supported == nullptr)
     {
-        return ipmi::responseInvalidFieldRequest();
+        return IPMI_CC_INVALID_FIELD_REQUEST;
     }
     std::string mode;
-    if (setPerformanceMode)
+    if (req->flags &
+        (1 << static_cast<uint8_t>(setFanProfileFlags::setPerfAcousMode)))
     {
+        bool performanceMode =
+            (req->flags & (1 << static_cast<uint8_t>(
+                               setFanProfileFlags::performAcousSelect))) > 0;
+
         if (performanceMode)
         {
 
@@ -1416,6 +1417,7 @@ ipmi::RspType<> ipmiOEMSetFanConfig(uint8_t selectedFanProfile,
         }
         else
         {
+
             if (std::find(supported->begin(), supported->end(), "Acoustic") !=
                 supported->end())
             {
@@ -1424,24 +1426,13 @@ ipmi::RspType<> ipmiOEMSetFanConfig(uint8_t selectedFanProfile,
         }
         if (mode.empty())
         {
-            return ipmi::responseInvalidFieldRequest();
+            return IPMI_CC_INVALID_FIELD_REQUEST;
         }
-
-        try
-        {
-            setDbusProperty(*dbus, settingsBusName, thermalModePath,
-                            thermalModeInterface, "Current", mode);
-        }
-        catch (sdbusplus::exception_t& e)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "ipmiOEMSetFanConfig: can't set thermal mode!",
-                phosphor::logging::entry("EXCEPTION=%s", e.what()));
-            return ipmi::responseResponseError();
-        }
+        setDbusProperty(*dbus, settingsBusName, thermalModePath,
+                        thermalModeInterface, "Current", mode);
     }
 
-    return ipmi::responseSuccess();
+    return IPMI_CC_OK;
 }
 
 ipmi::RspType<uint8_t, // profile support map
@@ -2340,135 +2331,132 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
                                           uint8_t faultGroup,
                                           std::array<uint8_t, 8>& ledStateData)
 {
-    static constexpr const char* objpath = "/xyz/openbmc_project/EntityManager";
-    static constexpr const char* intf = "xyz.openbmc_project.EntityManager";
     constexpr auto maxFaultType = static_cast<size_t>(RemoteFaultType::max);
     static const std::array<std::string, maxFaultType> faultNames = {
         "faultFan",       "faultTemp",     "faultPower",
         "faultDriveSlot", "faultSoftware", "faultMemory"};
-    static constexpr const char* sysGpioPath = "/sys/class/gpio/gpio";
-    static constexpr const char* postfixValue = "/value";
-
+    
     constexpr uint8_t maxFaultSource = 0x4;
     constexpr uint8_t skipLEDs = 0xFF;
     constexpr uint8_t pinSize = 64;
     constexpr uint8_t groupSize = 16;
+    constexpr uint8_t groupNum = 5; //4 for fault memory, 1 for faultFan
+    
+    //same pin names need to be defined in dts file
+    static const std::array < std::array < std::string, groupSize >, groupNum > faultLedPinNames = {
+        { 
+            "LED_CPU1_CH1_DIMM1_FAULT", 
+            "LED_CPU1_CH1_DIMM2_FAULT", 
+            "LED_CPU1_CH2_DIMM1_FAULT", 
+            "LED_CPU1_CH2_DIMM2_FAULT", 
+            "LED_CPU1_CH3_DIMM1_FAULT", 
+            "LED_CPU1_CH3_DIMM2_FAULT", 
+            "LED_CPU1_CH4_DIMM1_FAULT", 
+            "LED_CPU1_CH4_DIMM2_FAULT", 
+            "LED_CPU1_CH5_DIMM1_FAULT", 
+            "LED_CPU1_CH5_DIMM2_FAULT", 
+            "LED_CPU1_CH6_DIMM1_FAULT", 
+            "LED_CPU1_CH6_DIMM2_FAULT",
+            "", 
+            "", 
+            "", 
+            "", //end of group1
+            "LED_CPU2_CH1_DIMM1_FAULT", 
+            "LED_CPU2_CH1_DIMM2_FAULT", 
+            "LED_CPU2_CH2_DIMM1_FAULT", 
+            "LED_CPU2_CH2_DIMM2_FAULT", 
+            "LED_CPU2_CH3_DIMM1_FAULT", 
+            "LED_CPU2_CH3_DIMM2_FAULT", 
+            "LED_CPU2_CH4_DIMM1_FAULT", 
+            "LED_CPU2_CH4_DIMM2_FAULT", 
+            "LED_CPU2_CH5_DIMM1_FAULT", 
+            "LED_CPU2_CH5_DIMM2_FAULT", 
+            "LED_CPU2_CH6_DIMM1_FAULT", 
+            "LED_CPU2_CH6_DIMM2_FAULT",
+            "",
+            "",
+            "",
+            "", //endof group2
+            "LED_CPU3_CH1_DIMM1_FAULT", 
+            "LED_CPU3_CH1_DIMM2_FAULT", 
+            "LED_CPU3_CH2_DIMM1_FAULT", 
+            "LED_CPU3_CH2_DIMM2_FAULT", 
+            "LED_CPU3_CH3_DIMM1_FAULT", 
+            "LED_CPU3_CH3_DIMM2_FAULT", 
+            "LED_CPU3_CH4_DIMM1_FAULT", 
+            "LED_CPU3_CH4_DIMM2_FAULT", 
+            "LED_CPU3_CH5_DIMM1_FAULT", 
+            "LED_CPU3_CH5_DIMM2_FAULT", 
+            "LED_CPU3_CH6_DIMM1_FAULT", 
+            "LED_CPU3_CH6_DIMM2_FAULT",
+            "",
+            "",
+            "",
+            "", //end of group3
+            "LED_CPU4_CH1_DIMM1_FAULT", 
+            "LED_CPU4_CH1_DIMM2_FAULT", 
+            "LED_CPU4_CH2_DIMM1_FAULT", 
+            "LED_CPU4_CH2_DIMM2_FAULT", 
+            "LED_CPU4_CH3_DIMM1_FAULT", 
+            "LED_CPU4_CH3_DIMM2_FAULT", 
+            "LED_CPU4_CH4_DIMM1_FAULT", 
+            "LED_CPU4_CH4_DIMM2_FAULT", 
+            "LED_CPU4_CH5_DIMM1_FAULT", 
+            "LED_CPU4_CH5_DIMM2_FAULT", 
+            "LED_CPU4_CH6_DIMM1_FAULT", 
+            "LED_CPU4_CH6_DIMM2_FAULT",
+            "",
+            "",
+            "",
+            "",  //end of group4
+            "LED_FAN1_FAULT", 
+            "LED_FAN2_FAULT", 
+            "LED_FAN3_FAULT", 
+            "LED_FAN4_FAULT", 
+            "LED_FAN5_FAULT", 
+            "LED_FAN6_FAULT", 
+            "LED_FAN7_FAULT", 
+            "LED_FAN8_FAULT",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""  //end of group5
+        }    
+    };
 
-    std::vector<uint16_t> ledFaultPins(pinSize, 0xFFFF);
-    uint64_t resFIndex = 0;
-    std::string resFType;
-    std::string service;
-    ObjectValueTree valueTree;
-
-    // Validate the source, fault type
-    if ((sourceId >= maxFaultSource) ||
-        (faultType >= static_cast<int8_t>(RemoteFaultType::max)) ||
-        (faultState >= static_cast<int8_t>(RemoteFaultState::maxFaultState)) ||
-        (faultGroup >= static_cast<int8_t>(DimmFaultType::maxFaultGroup)))
+    // Validate the source, fault type -- 
+    // (Byte 1) sourceId: Unspecified, Hot-Swap Controller 0, Hot-Swap Controller 1, BIOS           
+    // (Byte 2) fault type: fan, temperature, power, driveslot, software, memory  
+    // (Byte 3) FaultState: OK, Degraded, Non-Critical, Critical, Non-Recoverable,  
+    // (Byte 4) is faultGroup, definition differs based on fault type (Byte 2)
+    //          Type Fan=> Group: 0=FanGroupID, FF-not used 
+    //                  Byte 5-11 00h, not used
+    //                  Byte12 FanLedState [7:0]-Fans 7:0
+    //          Type Memory=> Group: 0 = DIMM GroupID, FF-not used
+    //                  Byte 5:12 - DIMM LED state (64bit field, LS Byte first)
+    //                  [63:48] = CPU4 channels 7:0, 2 bits per channel
+    //                  [47:32] = CPU3 channels 7:0, 2 bits per channel
+    //                  [31:16] = CPU2 channels 7:0, 2 bits per channel
+    //                  [15:0] =  CPU1 channels 7:0, 2 bits per channel
+    //          Type Other=> Component Fault LED Group ID, not used set to 0xFF
+    //                  Byte[5:12]: reserved 0x00h
+    if ((sourceId >= maxFaultSource) ||   
+        (faultType >= static_cast<int8_t>(RemoteFaultType::max)) ||   
+        (faultState >= static_cast<int8_t>(RemoteFaultState::maxFaultState)) ||   
+        (faultGroup >= static_cast<int8_t>(DimmFaultType::maxFaultGroup)))        
     {
         return ipmi::responseParmOutOfRange();
     }
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    try
-    {
-        service = getService(*dbus, intf, objpath);
-        valueTree = getManagedObjects(*dbus, service, "/");
-    }
-    catch (const std::exception& e)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "No object implements interface",
-            phosphor::logging::entry("SERVICE=%s", service.c_str()),
-            phosphor::logging::entry("INTF=%s", intf));
-        return ipmi::responseResponseError();
-    }
-
-    if (valueTree.empty())
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "No object implements interface",
-            phosphor::logging::entry("INTF=%s", intf));
-        return ipmi::responseResponseError();
-    }
-
-    for (const auto& item : valueTree)
-    {
-        // find LedFault configuration
-        auto interface =
-            item.second.find("xyz.openbmc_project.Configuration.LedFault");
-        if (interface == item.second.end())
-        {
-            continue;
-        }
-
-        // find matched fault type: faultMemmory / faultFan
-        // find LedGpioPins/FaultIndex configuration
-        auto propertyFaultType = interface->second.find("FaultType");
-        auto propertyFIndex = interface->second.find("FaultIndex");
-        auto ledIndex = interface->second.find("LedGpioPins");
-
-        if (propertyFaultType == interface->second.end() ||
-            propertyFIndex == interface->second.end() ||
-            ledIndex == interface->second.end())
-        {
-            continue;
-        }
-
-        try
-        {
-            Value valIndex = propertyFIndex->second;
-            resFIndex = std::get<uint64_t>(valIndex);
-
-            Value valFType = propertyFaultType->second;
-            resFType = std::get<std::string>(valFType);
-        }
-        catch (const std::bad_variant_access& e)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-            return ipmi::responseResponseError();
-        }
-        // find the matched requested fault type: faultMemmory or faultFan
-        if (resFType != faultNames[faultType])
-        {
-            continue;
-        }
-
-        // read LedGpioPins data
-        std::vector<uint64_t> ledgpios;
-        std::variant<std::vector<uint64_t>> message;
-
-        auto method = dbus->new_method_call(
-            service.c_str(), (std::string(item.first)).c_str(),
-            "org.freedesktop.DBus.Properties", "Get");
-
-        method.append("xyz.openbmc_project.Configuration.LedFault",
-                      "LedGpioPins");
-
-        try
-        {
-            auto reply = dbus->call(method);
-            reply.read(message);
-            ledgpios = std::get<std::vector<uint64_t>>(message);
-        }
-        catch (std::exception& e)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-            return ipmi::responseResponseError();
-        }
-
-        // Check the size to be sure it will never overflow on groupSize
-        if (ledgpios.size() > groupSize)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "Fault gpio Pins out of range!");
-            return ipmi::responseParmOutOfRange();
-        }
-        // Store data, according to command data bit index order
-        for (int i = 0; i < ledgpios.size(); i++)
-        {
-            ledFaultPins[i + groupSize * resFIndex] = ledgpios[i];
-        }
+    uint8_t pinGroupOffset = 0;
+    uint8_t pinGroupMax = pinSize/groupSize;
+    if ( RemoteFaultType::fan == RemoteFaultType(faultType) ) {
+        pinGroupOffset = 4;
+        pinGroupMax = groupNum - pinSize/groupSize;     
     }
 
     switch (RemoteFaultType(faultType))
@@ -2476,47 +2464,64 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
         case (RemoteFaultType::fan):
         case (RemoteFaultType::memory):
         {
+            // handle faultFan and faultMemory 
             if (faultGroup == skipLEDs)
             {
                 return ipmi::responseSuccess();
             }
-
-            uint64_t ledState = 0;
             // calculate led state bit filed count, each byte has 8bits
             // the maximum bits will be 8 * 8 bits
             constexpr uint8_t size = sizeof(ledStateData) * 8;
+            
+            // assemble ledState
+            uint64_t ledState = 0;
+            bool hasError = false;
             for (int i = 0; i < sizeof(ledStateData); i++)
             {
                 ledState = (uint64_t)(ledState << 8);
                 ledState = (uint64_t)(ledState | (uint64_t)ledStateData[i]);
             }
-
             std::bitset<size> ledStateBits(ledState);
-            std::string gpioValue;
-            for (int i = 0; i < size; i++)
-            { // skip invalid value
-                if (ledFaultPins[i] == 0xFFFF)
-                {
-                    continue;
-                }
 
-                std::string device = sysGpioPath +
-                                     std::to_string(ledFaultPins[i]) +
-                                     postfixValue;
-                std::fstream gpioFile;
-
-                gpioFile.open(device, std::ios::out);
-
-                if (!gpioFile.good())
-                {
-                    phosphor::logging::log<phosphor::logging::level::ERR>(
-                        "Not Find Led Gpio Device!",
-                        phosphor::logging::entry("DEVICE=%s", device.c_str()));
-                    return ipmi::responseResponseError();
-                }
-                gpioFile << std::to_string(
-                    static_cast<uint8_t>(ledStateBits[i]));
-                gpioFile.close();
+            for (int group = 0; group < pinGroupMax; group++) {
+                for (int i = 0; i < groupSize; i++) {   // skip non-existing pins
+                    if (0==faultLedPinNames[group+pinGroupOffset][i].size())
+                    {
+                        continue;
+                    }
+                
+                    auto line = gpiod::find_line(faultLedPinNames[group+pinGroupOffset][i]);
+                    if (!line)
+                    {
+                        phosphor::logging::log<phosphor::logging::level::ERR>(
+                            "Not Find Led Gpio Device!",
+                            phosphor::logging::entry("DEVICE=%s", faultLedPinNames[group+pinGroupOffset][i].c_str()));
+                        hasError = true;
+                        continue;
+                    } 
+                    //
+                    //debug prints 
+                    //std::cerr << "Success requesting gpio: " << faultLedPinNames[group+pinGroupOffset][i] << "\n";
+                    //GPIO pin should already be configured correctly 
+                    bool activeHigh = (line.active_state() == gpiod::line::ACTIVE_HIGH);
+                    try
+                    {
+                        line.request({"faultLed", gpiod::line_request::DIRECTION_OUTPUT,
+                            activeHigh ? 0 : gpiod::line_request::FLAG_ACTIVE_LOW});
+                        line.set_value(ledStateBits[i + group * groupSize]);
+                    }
+                    catch (std::system_error&)
+                    {
+                         phosphor::logging::log<phosphor::logging::level::ERR>(
+                            "Error write Led Gpio Device!",
+                            phosphor::logging::entry("DEVICE=%s", faultLedPinNames[group+pinGroupOffset][i].c_str()));
+                        hasError = true;
+                        continue;
+                    }
+                } //for int i
+            }
+            if (hasError) {
+                return ipmi::responseResponseError();
             }
             break;
         }
@@ -2525,8 +2530,7 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
             // now only support two fault types
             return ipmi::responseParmOutOfRange();
         }
-    }
-
+    } //switch
     return ipmi::responseSuccess();
 }
 
@@ -2615,15 +2619,8 @@ ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr ctx)
  *  @returns IPMI completion code
  */
 ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
-                                    uint8_t restrictionMode,
-                                    std::optional<uint8_t> specialMode)
+                                    uint8_t restrictionMode)
 {
-#ifndef BMC_VALIDATION_UNSECURE_FEATURE
-    if (specialMode)
-    {
-        return ipmi::responseReqDataLenInvalid();
-    }
-#endif
     namespace securityNameSpace =
         sdbusplus::xyz::openbmc_project::Control::Security::server;
 
@@ -2689,29 +2686,6 @@ ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
             phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
         return ipmi::responseUnspecifiedError();
     }
-
-#ifdef BMC_VALIDATION_UNSECURE_FEATURE
-    if (specialMode)
-    {
-        ec.clear();
-        ctx->bus->yield_method_call<>(
-            ctx->yield, ec, specialModeService, specialModeBasePath,
-            dBusPropertyIntf, dBusPropertySetMethod, specialModeIntf,
-            specialModeProperty,
-            static_cast<std::variant<std::string>>(
-                securityNameSpace::convertForMessage(
-                    static_cast<securityNameSpace::SpecialMode::Modes>(
-                        specialMode.value()))));
-
-        if (ec)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "ipmiSetSecurityMode: failed to set SpecialMode property",
-                phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
-            return ipmi::responseUnspecifiedError();
-        }
-    }
-#endif
     return ipmi::responseSuccess();
 }
 
@@ -3448,9 +3422,8 @@ static void registerOEMFunctions(void)
                          intel::general::cmdGetShutdownPolicy, NULL,
                          ipmiOEMGetShutdownPolicy, PRIVILEGE_ADMIN);
 
-    registerHandler(prioOemBase, intel::netFnGeneral,
-                    intel::general::cmdSetFanConfig, Privilege::User,
-                    ipmiOEMSetFanConfig);
+    ipmiPrintAndRegister(intel::netFnGeneral, intel::general::cmdSetFanConfig,
+                         NULL, ipmiOEMSetFanConfig, PRIVILEGE_USER);
 
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetFanConfig, Privilege::User,
