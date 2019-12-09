@@ -437,14 +437,25 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
     int8_t rExp = 0;
     int8_t bExp = 0;
     bool bSigned = false;
+    uint8_t value = 0;
 
     if (!getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned))
     {
         return ipmi::responseResponseError();
     }
+    try
+    {
+        value = scaleIPMIValueFromDouble(reading, mValue, rExp, bValue, bExp,
+                                         bSigned);
+    }
+    catch (const std::exception &e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiSenGetSensorReading: error in getting sensor threshold value",
+            phosphor::logging::entry("EXCEPTION=%s", e.what()));
+        return ipmi::responseResponseError();
+    }
 
-    uint8_t value =
-        scaleIPMIValueFromDouble(reading, mValue, rExp, bValue, bExp, bSigned);
     uint8_t operation =
         static_cast<uint8_t>(IPMISensorReadingByte2::sensorScanningEnable);
     operation |=
@@ -703,18 +714,37 @@ IPMIThresholds getIPMIThresholds(const SensorMap &sensorMap)
 
             if (warningHigh != warningMap.end())
             {
-
                 double value =
                     std::visit(VariantToDoubleVisitor(), warningHigh->second);
-                resp.warningHigh = scaleIPMIValueFromDouble(
-                    value, mValue, rExp, bValue, bExp, bSigned);
+                try
+                {
+                    resp.warningHigh = scaleIPMIValueFromDouble(
+                        value, mValue, rExp, bValue, bExp, bSigned);
+                }
+                catch (const std::exception &e)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "getIPMIThresholds: error in getting sensor threshold "
+                        "value",
+                        phosphor::logging::entry("EXCEPTION=%s", e.what()));
+                }
             }
             if (warningLow != warningMap.end())
             {
                 double value =
                     std::visit(VariantToDoubleVisitor(), warningLow->second);
-                resp.warningLow = scaleIPMIValueFromDouble(
-                    value, mValue, rExp, bValue, bExp, bSigned);
+                try
+                {
+                    resp.warningLow = scaleIPMIValueFromDouble(
+                        value, mValue, rExp, bValue, bExp, bSigned);
+                }
+                catch (const std::exception &e)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "getIPMIThresholds: error in getting sensor threshold "
+                        "value",
+                        phosphor::logging::entry("EXCEPTION=%s", e.what()));
+                }
             }
         }
         if (criticalInterface != sensorMap.end())
@@ -728,15 +758,35 @@ IPMIThresholds getIPMIThresholds(const SensorMap &sensorMap)
             {
                 double value =
                     std::visit(VariantToDoubleVisitor(), criticalHigh->second);
-                resp.criticalHigh = scaleIPMIValueFromDouble(
-                    value, mValue, rExp, bValue, bExp, bSigned);
+                try
+                {
+                    resp.criticalHigh = scaleIPMIValueFromDouble(
+                        value, mValue, rExp, bValue, bExp, bSigned);
+                }
+                catch (const std::exception &e)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "getIPMIThresholds: error in getting sensor threshold "
+                        "value",
+                        phosphor::logging::entry("EXCEPTION=%s", e.what()));
+                }
             }
             if (criticalLow != criticalMap.end())
             {
                 double value =
                     std::visit(VariantToDoubleVisitor(), criticalLow->second);
-                resp.criticalLow = scaleIPMIValueFromDouble(
-                    value, mValue, rExp, bValue, bExp, bSigned);
+                try
+                {
+                    resp.criticalLow = scaleIPMIValueFromDouble(
+                        value, mValue, rExp, bValue, bExp, bSigned);
+                }
+                catch (const std::exception &e)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "getIPMIThresholds: error in getting sensor threshold "
+                        "value",
+                        phosphor::logging::entry("EXCEPTION=%s", e.what()));
+                }
             }
         }
     }
