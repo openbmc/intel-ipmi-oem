@@ -1136,7 +1136,7 @@ namespace ledAction
 using namespace sdbusplus::xyz::openbmc_project::Led::server;
 std::map<Physical::Action, uint8_t> actionDbusToIpmi = {
     {Physical::Action::Off, 0x00},
-    {Physical::Action::On, 0x10},
+    {Physical::Action::On, 0x02},
     {Physical::Action::Blink, 0x01}};
 
 std::map<uint8_t, std::string> offsetObjPath = {
