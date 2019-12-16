@@ -296,8 +296,9 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     std::string idString((char*)data->biosId, data->biosIDLength);
 
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    std::string service = getService(*dbus, biosIntf, biosObjPath);
-    setDbusProperty(*dbus, service, biosObjPath, biosIntf, biosProp, idString);
+    std::string service = getService(*dbus, biosVersionIntf, biosObjPath);
+    setDbusProperty(*dbus, service, biosObjPath, biosVersionIntf,
+                    biosVersionProp, idString);
     uint8_t* bytesWritten = static_cast<uint8_t*>(response);
     *bytesWritten =
         data->biosIDLength; // how many bytes are written into storage
@@ -387,11 +388,13 @@ ipmi::RspType<
         case OEMDevEntityType::biosId:
         {
             std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-            std::string service = getService(*dbus, biosIntf, biosObjPath);
+            std::string service =
+                getService(*dbus, biosVersionIntf, biosObjPath);
             try
             {
-                Value variant = getDbusProperty(*dbus, service, biosObjPath,
-                                                biosIntf, biosProp);
+                Value variant =
+                    getDbusProperty(*dbus, service, biosObjPath,
+                                    biosVersionIntf, biosVersionProp);
                 std::string& idString = std::get<std::string>(variant);
                 if (offset >= idString.size())
                 {

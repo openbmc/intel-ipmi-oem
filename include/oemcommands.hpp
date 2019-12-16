@@ -154,10 +154,10 @@ enum class IPMIReturnCodeExt
 
 static constexpr const uint8_t maxBIOSIDLength = 0xFF;
 static constexpr const uint8_t maxCPUNum = 4;
-static constexpr const char* biosObjPath = "/xyz/openbmc_project/bios";
-static constexpr const char* biosIntf =
-    "xyz.openbmc_project.Inventory.Item.Bios";
-static constexpr const char* biosProp = "BiosId";
+static constexpr const char* biosObjPath = "/xyz/openbmc_project/software/bios";
+static constexpr const char* biosVersionIntf =
+    "xyz.openbmc_project.Software.Version";
+static constexpr const char* biosVersionProp = "Version";
 
 static constexpr const char* powerRestoreDelayObjPath =
     "/xyz/openbmc_project/control/power_restore_delay";
