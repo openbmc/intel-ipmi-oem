@@ -63,6 +63,10 @@ static constexpr const char* specialModeObjPath =
 static constexpr const char* specialModeIntf =
     "xyz.openbmc_project.Security.SpecialMode";
 
+static constexpr uint8_t specialModeNone = 0;
+static constexpr uint8_t specialModeMfg = 1;
+static constexpr uint8_t specialModeValUnsecure = 2;
+
 enum class SmActionGet : uint8_t
 {
     sample = 0,
@@ -233,29 +237,29 @@ class Manufacturing
 
     void revertTimerHandler();
 
-    bool isMfgMode(void)
+    uint8_t getMfgMode(void)
     {
         ipmi::Value mode;
         if (getProperty(specialModeService, specialModeObjPath, specialModeIntf,
                         "SpecialMode", &mode) != 0)
         {
-            return false;
+            return specialModeNone;
         }
         if (std::get<std::string>(mode) ==
             "xyz.openbmc_project.Control.Security.SpecialMode.Modes."
             "Manufacturing")
         {
-            return true;
+            return specialModeMfg;
         }
 #ifdef BMC_VALIDATION_UNSECURE_FEATURE
         if (std::get<std::string>(mode) ==
             "xyz.openbmc_project.Control.Security.SpecialMode.Modes."
             "ValidationUnsecure")
         {
-            return true;
+            return specialModeValUnsecure;
         }
 #endif
-        return false;
+        return specialModeNone;
     }
 
     bool revertFanPWM = false;
