@@ -88,7 +88,7 @@ include_directories (SYSTEM ${OPENSSL_INCLUDE_DIR})
 add_library (zinteloemcmds
              SHARED src/oemcommands.cpp src/sensorcommands.cpp
              src/storagecommands.cpp src/multinodecommands.cpp
-             src/firmware-update.cpp src/appcommands.cpp src/smbioshandler.cpp
+             src/firmware-update.cpp src/appcommands.cpp
              src/smbiosmdrv2handler.cpp src/manufacturingcommands.cpp
              src/bmccontrolservices.cpp src/bridgingcommands.cpp
              src/ipmi_to_redfish_hooks.cpp src/chassiscommands.cpp)
