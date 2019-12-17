@@ -176,6 +176,14 @@ void Manufacturing::initData()
 
 void Manufacturing::revertTimerHandler()
 {
+
+#ifdef BMC_VALIDATION_UNSECURE_FEATURE
+    if (mtm.getMfgMode() == SpecialMode::valUnsecure)
+    {
+        // Don't revert the behaviour for validation unsecure mode.
+        return;
+    }
+#endif
     if (revertFanPWM)
     {
         revertFanPWM = false;
@@ -762,8 +770,8 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
         case makeCmdKey(ipmi::netFnApp, ipmi::app::cmdMasterWriteRead):
             if (request->payload.size() > 4)
             {
-                // Allow write data count > 1, only if it is in MFG mode
-                if (!mtm.isMfgMode())
+                // Allow write data count > 1 only in Special mode
+                if (mtm.getMfgMode() == SpecialMode::none)
                 {
                     return ipmi::ccInsufficientPrivilege;
                 }
@@ -781,8 +789,8 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
                         ipmi::intel::general::cmdGetManufacturingData):
         case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdWriteFruData):
 
-            // Check for MTM mode
-            if (!mtm.isMfgMode())
+            // Check for Special mode
+            if (mtm.getMfgMode() == SpecialMode::none)
             {
                 return ipmi::ccInvalidCommand;
             }
@@ -917,10 +925,10 @@ ipmi::RspType<std::vector<uint8_t>>
     }
 
     // Allow single byte write as it is offset byte to read the data, rest allow
-    // only in MFG mode.
+    // only in Special mode.
     if (writeCount > 1)
     {
-        if (!mtm.isMfgMode())
+        if (mtm.getMfgMode() == SpecialMode::none)
         {
             return ipmi::responseInsufficientPrivilege();
         }
@@ -961,7 +969,7 @@ ipmi::RspType<> clearCMOS()
     std::vector<uint8_t> writeData = {0x60, 0x1};
     std::vector<uint8_t> readBuf(0);
 
-    if (!mtm.isMfgMode())
+    if (mtm.getMfgMode() == SpecialMode::none)
     {
         return ipmi::responseInsufficientPrivilege();
     }
