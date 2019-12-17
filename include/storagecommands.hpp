@@ -111,16 +111,37 @@ struct Type12Record
 };
 #pragma pack(pop)
 
+#pragma pack(push, 1)
+struct NMDiscoveryRecord
+{
+    get_sdr::SensorDataRecordHeader header;
+    uint8_t oemID0;
+    uint8_t oemID1;
+    uint8_t oemID2;
+    uint8_t subType;
+    uint8_t version;
+    uint8_t slaveAddress;
+    uint8_t channelNumber;
+    uint8_t healthEventSensor;
+    uint8_t exceptionEventSensor;
+    uint8_t operationalCapSensor;
+    uint8_t thresholdExceededSensor;
+};
+#pragma pack(pop)
+
 namespace ipmi
 {
 namespace storage
 {
 
 constexpr const size_t type12Count = 2;
+constexpr const size_t NMDiscoverySDRCount = 1;
+
 ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp);
 
 ipmi_ret_t getFruSdrCount(size_t& count);
 
 std::vector<uint8_t> getType12SDRs(uint16_t index, uint16_t recordId);
+std::vector<uint8_t> getNMDiscoverySDR(uint16_t index, uint16_t recordId);
 } // namespace storage
 } // namespace ipmi
