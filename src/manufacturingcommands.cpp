@@ -176,6 +176,14 @@ void Manufacturing::initData()
 
 void Manufacturing::revertTimerHandler()
 {
+
+#ifdef BMC_VALIDATION_UNSECURE_FEATURE
+    if (mtm.getMfgMode() == SpecialMode::valUnsecure)
+    {
+        // Don't revert the behaviour for validation unsecure mode.
+        return;
+    }
+#endif
     if (revertFanPWM)
     {
         revertFanPWM = false;
@@ -728,7 +736,7 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
             if (request->payload.size() > 4)
             {
                 // Allow write data count > 1, only if it is in MFG mode
-                if (!mtm.isMfgMode())
+                if (!static_cast<bool>(mtm.getMfgMode()))
                 {
                     return ipmi::ccInsufficientPrivilege;
                 }
@@ -747,7 +755,7 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
         case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdWriteFruData):
 
             // Check for MTM mode
-            if (!mtm.isMfgMode())
+            if (!static_cast<bool>(mtm.getMfgMode()))
             {
                 return ipmi::ccInvalidCommand;
             }
@@ -885,7 +893,7 @@ ipmi::RspType<std::vector<uint8_t>>
     // only in MFG mode.
     if (writeCount > 1)
     {
-        if (!mtm.isMfgMode())
+        if (!static_cast<bool>(mtm.getMfgMode()))
         {
             return ipmi::responseInsufficientPrivilege();
         }
@@ -926,7 +934,7 @@ ipmi::RspType<> clearCMOS()
     std::vector<uint8_t> writeData = {0x60, 0x1};
     std::vector<uint8_t> readBuf(0);
 
-    if (!mtm.isMfgMode())
+    if (!static_cast<bool>(mtm.getMfgMode()))
     {
         return ipmi::responseInsufficientPrivilege();
     }
