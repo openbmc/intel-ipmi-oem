@@ -856,8 +856,21 @@ ipmi::RspType<uint8_t, std::vector<fwSecurityVersionInfoType>>
 
 ipmi::RspType<std::array<uint8_t, certKeyLen>,
               std::optional<std::array<uint8_t, cskSignatureLen>>>
-    ipmiGetFwRootCertData(uint8_t certId)
+    ipmiGetFwRootCertData(const ipmi::Context::ptr ctx, uint8_t certId)
 {
+    bool isIPMBChannel = false;
+
+    if (checkIPMBChannel(ctx, isIPMBChannel) != ipmi::ccSuccess)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+    if (isIPMBChannel)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Command not supported. Failed to get root certificate data.");
+        return ipmi::responseCommandNotAvailable();
+    }
+
     size_t certKeyOffset = 0;
     size_t cskSigOffset = 0;
     std::string mtdDev;
@@ -939,7 +952,6 @@ ipmi::RspType<uint8_t, // channel count
 {
     constexpr size_t kcsMaxBufSize = 128;
     constexpr size_t rmcpPlusMaxBufSize = 50 * 1024;
-    constexpr size_t ipmbMaxBufSize = 4 * 1024;
     // Byte 1 - Count (N) Number of devices data is being returned for.
     // Byte 2 - ID Tag 00 – reserved 01 – kcs 02 – rmcp+, 03 - ipmb
     // Byte 3-6 - transfer size (little endian)
@@ -947,7 +959,6 @@ ipmi::RspType<uint8_t, // channel count
     constexpr std::array<std::tuple<uint8_t, uint32_t>, channelListSize>
         channelList = {
             {{static_cast<uint8_t>(ChannelIdTag::kcs), kcsMaxBufSize},
-             {static_cast<uint8_t>(ChannelIdTag::ipmb), ipmbMaxBufSize},
              {static_cast<uint8_t>(ChannelIdTag::rmcpPlus),
               rmcpPlusMaxBufSize}}};
 
@@ -966,21 +977,58 @@ ipmi::RspType<uint8_t, uint8_t>
     return ipmi::responseSuccess(
         static_cast<uint8_t>(BmcExecutionContext::linuxOs), partitionPtr);
 }
+/** @brief check if channel IPMB
+ *
+ *  This function checks if the command is from IPMB
+ *
+ * @param[in] ctx - context of current session.
+ *  @returns true if the medium is IPMB else return true.
+ **/
+ipmi::Cc checkIPMBChannel(const ipmi::Context::ptr &ctx, bool &isIPMBChannel)
+{
+    ipmi::ChannelInfo chInfo;
 
+    if (ipmi::getChannelInfo(ctx->channel, chInfo) != ipmi::ccSuccess)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Failed to get Channel Info",
+            phosphor::logging::entry("CHANNEL=%d", ctx->channel));
+        return ipmi::ccUnspecifiedError;
+    }
+
+    if (static_cast<ipmi::EChannelMediumType>(chInfo.mediumType) ==
+        ipmi::EChannelMediumType::ipmb)
+    {
+        isIPMBChannel = true;
+    }
+    return ipmi::ccSuccess;
+}
 /** @brief Get Firmware Update Random Number
  *
  *  This function generate the random number used for
  *  setting the firmware update mode as authentication key.
  *
- *  @parameter : None
+ * @param[in] ctx - context of current session
  *  @returns IPMI completion code along with
  *   - random number
  **/
 ipmi::RspType<std::array<uint8_t, fwRandomNumLength>>
-    ipmiGetFwUpdateRandomNumber()
+    ipmiGetFwUpdateRandomNumber(const ipmi::Context::ptr ctx)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Generate FW update random number");
+    bool isIPMBChannel = false;
+
+    if (checkIPMBChannel(ctx, isIPMBChannel) != ipmi::ccSuccess)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+    if (isIPMBChannel)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Channel not supported. Failed to fetch FW update random number");
+        return ipmi::responseCommandNotAvailable();
+    }
     std::random_device rd;
     std::default_random_engine gen(rd());
     std::uniform_int_distribution<> dist{0, 255};
@@ -1001,15 +1049,29 @@ ipmi::RspType<std::array<uint8_t, fwRandomNumLength>>
  *  after validating Random number obtained from the Get
  *  Firmware Update Random Number command
  *
- *  @parameter
- *   -  randNum - Random number(token)
- *  @returns IPMI completion code
+ * @param[in] ctx - context of current session
+ * @parameter randNum - Random number(token)
+ * @returns IPMI completion code
  **/
 ipmi::RspType<>
-    ipmiSetFirmwareUpdateMode(std::array<uint8_t, fwRandomNumLength> &randNum)
+    ipmiSetFirmwareUpdateMode(const ipmi::Context::ptr ctx,
+                              std::array<uint8_t, fwRandomNumLength> &randNum)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Start FW update mode");
+
+    bool isIPMBChannel = false;
+
+    if (checkIPMBChannel(ctx, isIPMBChannel) != ipmi::ccSuccess)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+    if (isIPMBChannel)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Channel not supported. Failed to set FW update mode");
+        return ipmi::responseCommandNotAvailable();
+    }
     /* Firmware Update Random number is valid for 30 seconds only */
     auto timeElapsed = (std::chrono::steady_clock::now() - fwRandomNumGenTs);
     if (std::chrono::duration_cast<std::chrono::microseconds>(timeElapsed)
@@ -1075,10 +1137,23 @@ ipmi::RspType<>
  *
  *  @returns IPMI completion code
  */
-ipmi::RspType<> ipmiExitFirmwareUpdateMode()
+ipmi::RspType<> ipmiExitFirmwareUpdateMode(const ipmi::Context::ptr ctx)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Exit FW update mode");
+    bool isIPMBChannel = false;
+
+    if (checkIPMBChannel(ctx, isIPMBChannel) != ipmi::ccSuccess)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+    if (isIPMBChannel)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Command not supported. Failed to exit firmware update mode");
+        return ipmi::responseCommandNotAvailable();
+    }
+
     switch (fwUpdateStatus.getState())
     {
         case FwUpdateStatusCache::fwStateInit:
@@ -1112,6 +1187,7 @@ ipmi::RspType<> ipmiExitFirmwareUpdateMode()
 }
 
 /** @brief implements Get/Set Firmware Update Control
+ *  @param[in] ctx - context of current session
  *  @parameter
  *   - Byte 1: Control Byte
  *   - Byte 2: Firmware filename length (Optional)
@@ -1120,9 +1196,23 @@ ipmi::RspType<> ipmiExitFirmwareUpdateMode()
  *   - Byte 2: Current control status
  **/
 ipmi::RspType<bool, bool, bool, bool, uint4_t>
-    ipmiGetSetFirmwareUpdateControl(const uint8_t controlReq,
+    ipmiGetSetFirmwareUpdateControl(const ipmi::Context::ptr ctx,
+                                    const uint8_t controlReq,
                                     const std::optional<std::string> &fileName)
 {
+    bool isIPMBChannel = false;
+
+    if (checkIPMBChannel(ctx, isIPMBChannel) != ipmi::ccSuccess)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+    if (isIPMBChannel)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Channel not supported. Failed to get or set FW update control");
+        return ipmi::responseCommandNotAvailable();
+    }
+
     static std::string fwXferUriPath;
     static bool imageTransferStarted = false;
     static bool imageTransferCompleted = false;
@@ -1311,12 +1401,25 @@ ipmi::RspType<uint8_t, // status
 }
 
 ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
-    bool noDowngradeMask, bool deferRestartMask, bool sha2CheckMask,
-    uint5_t reserved1, bool noDowngrade, bool deferRestart, bool sha2Check,
-    uint5_t reserved2, std::optional<std::vector<uint8_t>> integrityCheckVal)
+    const ipmi::Context::ptr ctx, bool noDowngradeMask, bool deferRestartMask,
+    bool sha2CheckMask, uint5_t reserved1, bool noDowngrade, bool deferRestart,
+    bool sha2Check, uint5_t reserved2,
+    std::optional<std::vector<uint8_t>> integrityCheckVal)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Set firmware update options.");
+    bool isIPMBChannel = false;
+
+    if (checkIPMBChannel(ctx, isIPMBChannel) != ipmi::ccSuccess)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+    if (isIPMBChannel)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Channel not supported. Failed to set firmware update options");
+        return ipmi::responseCommandNotAvailable();
+    }
     bool noDowngradeState = fwUpdateStatus.getInhibitDowngrade();
     bool deferRestartState = fwUpdateStatus.getDeferRestart();
     bool sha2CheckState = xferHashCheck ? true : false;
