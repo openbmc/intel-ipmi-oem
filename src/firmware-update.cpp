@@ -966,21 +966,46 @@ ipmi::RspType<uint8_t, uint8_t>
     return ipmi::responseSuccess(
         static_cast<uint8_t>(BmcExecutionContext::linuxOs), partitionPtr);
 }
+/** @brief check if channel IPMD
+ *
+ *  This function checks if the command is from IPMB
+ *
+ * @param[in] ctx - context of current session.
+ *  @returns true if the medium id IPMB else returns true.
+ **/
+bool isChannelIPMB(const ipmi::Context::ptr &ctx)
+{
+    ipmi::ChannelInfo chInfo;
+    ipmi::getChannelInfo(ctx->channel, chInfo);
 
+    if (static_cast<ipmi::EChannelMediumType>(chInfo.mediumType) ==
+        ipmi::EChannelMediumType::ipmb)
+    {
+        return true;
+    }
+    return false;
+}
 /** @brief Get Firmware Update Random Number
  *
  *  This function generate the random number used for
  *  setting the firmware update mode as authentication key.
  *
- *  @parameter : None
+ * @param[in] ctx - context of current session
  *  @returns IPMI completion code along with
  *   - random number
  **/
 ipmi::RspType<std::array<uint8_t, fwRandomNumLength>>
-    ipmiGetFwUpdateRandomNumber()
+    ipmiGetFwUpdateRandomNumber(const ipmi::Context::ptr ctx)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Generate FW update random number");
+
+    if (isChannelIPMB(ctx))
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Insufficient privelege failed to fetch FW update random number");
+        return ipmi::responseInsufficientPrivilege();
+    }
     std::random_device rd;
     std::default_random_engine gen(rd());
     std::uniform_int_distribution<> dist{0, 255};
@@ -1001,15 +1026,23 @@ ipmi::RspType<std::array<uint8_t, fwRandomNumLength>>
  *  after validating Random number obtained from the Get
  *  Firmware Update Random Number command
  *
- *  @parameter
- *   -  randNum - Random number(token)
- *  @returns IPMI completion code
+ * @param[in] ctx - context of current session
+ * @parameter randNum - Random number(token)
+ * @returns IPMI completion code
  **/
 ipmi::RspType<>
-    ipmiSetFirmwareUpdateMode(std::array<uint8_t, fwRandomNumLength> &randNum)
+    ipmiSetFirmwareUpdateMode(const ipmi::Context::ptr ctx,
+                              std::array<uint8_t, fwRandomNumLength> &randNum)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Start FW update mode");
+
+    if (isChannelIPMB(ctx))
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Insufficient privelege failed to start FW update moder");
+        return ipmi::responseInsufficientPrivilege();
+    }
     /* Firmware Update Random number is valid for 30 seconds only */
     auto timeElapsed = (std::chrono::steady_clock::now() - fwRandomNumGenTs);
     if (std::chrono::duration_cast<std::chrono::microseconds>(timeElapsed)
@@ -1112,6 +1145,7 @@ ipmi::RspType<> ipmiExitFirmwareUpdateMode()
 }
 
 /** @brief implements Get/Set Firmware Update Control
+ *  @param[in] ctx - context of current session
  *  @parameter
  *   - Byte 1: Control Byte
  *   - Byte 2: Firmware filename length (Optional)
@@ -1120,9 +1154,16 @@ ipmi::RspType<> ipmiExitFirmwareUpdateMode()
  *   - Byte 2: Current control status
  **/
 ipmi::RspType<bool, bool, bool, bool, uint4_t>
-    ipmiGetSetFirmwareUpdateControl(const uint8_t controlReq,
+    ipmiGetSetFirmwareUpdateControl(const ipmi::Context::ptr ctx,
+                                    const uint8_t controlReq,
                                     const std::optional<std::string> &fileName)
 {
+    if (isChannelIPMB(ctx))
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Insufficient privelege failed to get or set FW update control");
+        return ipmi::responseInsufficientPrivilege();
+    }
     static std::string fwXferUriPath;
     static bool imageTransferStarted = false;
     static bool imageTransferCompleted = false;
@@ -1311,12 +1352,19 @@ ipmi::RspType<uint8_t, // status
 }
 
 ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
-    bool noDowngradeMask, bool deferRestartMask, bool sha2CheckMask,
-    uint5_t reserved1, bool noDowngrade, bool deferRestart, bool sha2Check,
-    uint5_t reserved2, std::optional<std::vector<uint8_t>> integrityCheckVal)
+    const ipmi::Context::ptr ctx, bool noDowngradeMask, bool deferRestartMask,
+    bool sha2CheckMask, uint5_t reserved1, bool noDowngrade, bool deferRestart,
+    bool sha2Check, uint5_t reserved2,
+    std::optional<std::vector<uint8_t>> integrityCheckVal)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Set firmware update options.");
+    if (isChannelIPMB(ctx))
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Insufficient privelege failed to set firmware update options");
+        return ipmi::responseInsufficientPrivilege();
+    }
     bool noDowngradeState = fwUpdateStatus.getInhibitDowngrade();
     bool deferRestartState = fwUpdateStatus.getDeferRestart();
     bool sha2CheckState = xferHashCheck ? true : false;
