@@ -243,17 +243,19 @@ RspType<uint8_t,  // Device ID
         uint8_t id;
         uint8_t revision;
         uint8_t fw[2];
-        uint8_t ipmiVer;
+        uint8_t ipmiVer = 2;
         uint8_t addnDevSupport;
         uint24_t manufId;
         uint16_t prodId;
         uint32_t aux;
     } devId;
     static bool dev_id_initialized = false;
-    static bool defaultActivationSetting = true;
+    static bool defaultActivationSetting = false;
     const char* filename = "/usr/share/ipmi-providers/dev_id.json";
+    const char* prodIdFilename = "/var/cache/private/prodID";
     constexpr auto ipmiDevIdStateShift = 7;
     constexpr auto ipmiDevIdFw1Mask = ~(1 << ipmiDevIdStateShift);
+    constexpr auto ipmiDevIdBusy = (1 << ipmiDevIdStateShift);
 
     if (!dev_id_initialized)
     {
@@ -297,9 +299,6 @@ RspType<uint8_t,  // Device ID
             }
         }
 
-        // IPMI Spec version 2.0
-        devId.ipmiVer = 2;
-
         std::ifstream devIdFile(filename);
         if (devIdFile.is_open())
         {
@@ -310,32 +309,6 @@ RspType<uint8_t,  // Device ID
                 devId.revision = data.value("revision", 0);
                 devId.addnDevSupport = data.value("addn_dev_support", 0);
                 devId.manufId = data.value("manuf_id", 0);
-
-                try
-                {
-                    auto busp = getSdBus();
-                    const ipmi::DbusObjectInfo& object = ipmi::getDbusObject(
-                        *busp, "xyz.openbmc_project.Inventory.Item.Board",
-                        "/xyz/openbmc_project/inventory/system/board/",
-                        "Baseboard");
-                    const ipmi::Value& propValue = ipmi::getDbusProperty(
-                        *busp, object.second, object.first,
-                        "xyz.openbmc_project.Inventory.Item.Board",
-                        "ProductId");
-                    devId.prodId =
-                        static_cast<uint8_t>(std::get<uint64_t>(propValue));
-                    dev_id_initialized = true;
-                }
-                catch (std::exception& e)
-                {
-                    // For any exception send out platform id as 0,
-                    // and make sure to re-query the device id.
-                    dev_id_initialized = false;
-                    devId.prodId = 0;
-                }
-
-                // Set the availablitity of the BMC.
-                defaultActivationSetting = data.value("availability", true);
             }
             else
             {
@@ -348,13 +321,65 @@ RspType<uint8_t,  // Device ID
             Log::log<Log::level::ERR>("Device ID file not found");
             return ipmi::responseUnspecifiedError();
         }
+
+        // Determine the Product ID. Using the DBus system is painfully slow at
+        // boot time. Avoid using DBus to get the Product ID. The Product ID is
+        // stored in a non-volatile file now. If the file does not exist, the
+        // DBus scheme is used to populate it. When the non-volatile file is
+        // present, read the product ID from the file, avoiding the slow access
+        // time present with the DBus method.
+        std::fstream prodIdFile(prodIdFilename);
+        if (!prodIdFile.is_open())
+        {
+            try
+            {
+                auto busp = getSdBus();
+                const ipmi::DbusObjectInfo& object = ipmi::getDbusObject(
+                    *busp, "xyz.openbmc_project.Inventory.Item.Board",
+                    "/xyz/openbmc_project/inventory/system/board/",
+                    "Baseboard");
+                const ipmi::Value& propValue = ipmi::getDbusProperty(
+                    *busp, object.second, object.first,
+                    "xyz.openbmc_project.Inventory.Item.Board", "ProductId");
+                devId.prodId =
+                    static_cast<uint8_t>(std::get<uint64_t>(propValue));
+                // write the product ID to the file
+                prodIdFile.open(prodIdFilename, std::ios::out);
+                if (prodIdFile.is_open())
+                {
+                    prodIdFile << "0x" << std::hex << devId.prodId;
+                    prodIdFile.flush();
+                    prodIdFile.close();
+                }
+                else
+                {
+                    throw;
+                }
+                dev_id_initialized = true;
+            }
+            catch (std::exception& e)
+            {
+                // For any exception send out platform id as 0,
+                // and make sure to re-query the device id.
+                dev_id_initialized = false;
+                devId.prodId = 0;
+            }
+        }
+        else
+        {
+            std::string id = "0x00";
+            char* end;
+            prodIdFile.getline(&id[0], id.size() + 1);
+            devId.prodId = std::strtol(&id[0], &end, 0);
+            dev_id_initialized = true;
+        }
     }
 
     // Set availability to the actual current BMC state
     devId.fw[0] &= ipmiDevIdFw1Mask;
     if (!getCurrentBmcStateWithFallback(defaultActivationSetting))
     {
-        devId.fw[0] |= (1 << ipmiDevIdStateShift);
+        devId.fw[0] |= ipmiDevIdBusy;
     }
 
     return ipmi::responseSuccess(
