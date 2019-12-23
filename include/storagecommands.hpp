@@ -117,9 +117,10 @@ namespace storage
 {
 
 constexpr const size_t type12Count = 2;
-ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp);
+ipmi_ret_t getFruSdrs(boost::asio::yield_context yield, size_t index,
+                      get_sdr::SensorDataFruRecord& resp);
 
-ipmi_ret_t getFruSdrCount(size_t& count);
+ipmi_ret_t getFruSdrCount(boost::asio::yield_context yield, size_t& count);
 
 std::vector<uint8_t> getType12SDRs(uint16_t index, uint16_t recordId);
 } // namespace storage
