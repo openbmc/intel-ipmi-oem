@@ -8,6 +8,9 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
+option (USING_ENTITY_MANAGER_DECORATORS
+        "Enable using EM decorators to map FRUs to map entity IDs" ON)
+
 set (
     CMAKE_CXX_FLAGS
     "${CMAKE_CXX_FLAGS} \
@@ -105,13 +108,16 @@ target_link_libraries (zinteloemcmds ${OPENSSL_CRYPTO_LIBRARY})
 
 install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
 option (INTEL_PFR_ENABLED "Intel PFR Enabled" OFF)
-option (BMC_VALIDATION_UNSECURE_FEATURE
-        "Enables unsecure features required by validation. Note: must
+option (
+    BMC_VALIDATION_UNSECURE_FEATURE
+    "Enables unsecure features required by validation. Note: must
         be turned off for production images."
-        OFF)
-target_compile_definitions (
-    zinteloemcmds PRIVATE
-    $<$<BOOL:${INTEL_PFR_ENABLED}>: -DINTEL_PFR_ENABLED>
-    $<$<BOOL:${BMC_VALIDATION_UNSECURE_FEATURE}>:
-    -DBMC_VALIDATION_UNSECURE_FEATURE>
+    OFF
 )
+target_compile_definitions (zinteloemcmds PRIVATE
+                            $<$<BOOL:${INTEL_PFR_ENABLED}>:
+                            -DINTEL_PFR_ENABLED>
+                            $<$<BOOL:${BMC_VALIDATION_UNSECURE_FEATURE}>:
+                            -DBMC_VALIDATION_UNSECURE_FEATURE>
+                            $<$<BOOL:${USING_ENTITY_MANAGER_DECORATORS}>:
+                            -DUSING_ENTITY_MANAGER_DECORATORS>)
