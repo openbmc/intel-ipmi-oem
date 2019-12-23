@@ -27,6 +27,7 @@
 #include <functional>
 #include <iostream>
 #include <ipmid/api.hpp>
+#include <ipmid/message.hpp>
 #include <phosphor-ipmi-host/selutility.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/message/types.hpp>
@@ -103,7 +104,8 @@ constexpr static const char* fruDeviceServiceName =
     "xyz.openbmc_project.FruDevice";
 constexpr static const char* entityManagerServiceName =
     "xyz.openbmc_project.EntityManager";
-constexpr static const size_t cacheTimeoutSeconds = 10;
+constexpr static const size_t cacheTimeoutSeconds = 30;
+constexpr static const size_t writeTimeoutSeconds = 10;
 
 // event direction is bit[7] of eventType where 1b = Deassertion event
 constexpr static const uint8_t deassertionEvent = 0x80;
@@ -112,7 +114,13 @@ static std::vector<uint8_t> fruCache;
 static uint8_t cacheBus = 0xFF;
 static uint8_t cacheAddr = 0XFF;
 
+static uint8_t writeBus = 0xFF;
+static uint8_t writeAddr = 0XFF;
+
+std::unique_ptr<phosphor::Timer> writeTimer = nullptr;
 std::unique_ptr<phosphor::Timer> cacheTimer = nullptr;
+
+ManagedObjectType frus;
 
 // we unfortunately have to build a map of hashes in case there is a
 // collision to verify our dev-id
@@ -122,11 +130,15 @@ void registerStorageFunctions() __attribute__((constructor));
 
 bool writeFru()
 {
+    if (writeBus == 0xFF && writeAddr == 0xFF)
+    {
+        return true;
+    }
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     sdbusplus::message::message writeFru = dbus->new_method_call(
         fruDeviceServiceName, "/xyz/openbmc_project/FruDevice",
         "xyz.openbmc_project.FruDeviceManager", "WriteFru");
-    writeFru.append(cacheBus, cacheAddr, fruCache);
+    writeFru.append(writeBus, writeAddr, fruCache);
     try
     {
         sdbusplus::message::message writeFruResp = dbus->call(writeFru);
@@ -138,18 +150,19 @@ bool writeFru()
             "error writing fru");
         return false;
     }
+    writeBus = 0xFF;
+    writeAddr = 0xFF;
     return true;
 }
 
-void createTimer()
+void createTimers()
 {
-    if (cacheTimer == nullptr)
-    {
-        cacheTimer = std::make_unique<phosphor::Timer>(writeFru);
-    }
+
+    writeTimer = std::make_unique<phosphor::Timer>(writeFru);
+    cacheTimer = std::make_unique<phosphor::Timer>([]() { return; });
 }
 
-ipmi_ret_t replaceCacheFru(uint8_t devId)
+ipmi::Cc replaceCacheFru(ipmi::Context::ptr ctx, uint8_t devId)
 {
     static uint8_t lastDevId = 0xFF;
 
@@ -162,24 +175,23 @@ ipmi_ret_t replaceCacheFru(uint8_t devId)
     else if (timerRunning)
     {
         cacheTimer->stop();
-        writeFru();
     }
 
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    sdbusplus::message::message getObjects = dbus->new_method_call(
-        fruDeviceServiceName, "/", "org.freedesktop.DBus.ObjectManager",
-        "GetManagedObjects");
-    ManagedObjectType frus;
-    try
-    {
-        sdbusplus::message::message resp = dbus->call(getObjects);
-        resp.read(frus);
-    }
-    catch (sdbusplus::exception_t&)
+    cacheTimer->start(std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::seconds(cacheTimeoutSeconds)));
+
+    boost::system::error_code ec;
+
+    frus = ctx->bus->yield_method_call<ManagedObjectType>(
+        ctx->yield, ec, fruDeviceServiceName, "/",
+        "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
+    if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "replaceCacheFru: error getting managed objects");
-        return IPMI_CC_RESPONSE_ERROR;
+            "GetMangagedObjects for getSensorMap failed",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+
+        return ipmi::ccResponseError;
     }
 
     deviceHashes.clear();
@@ -245,27 +257,29 @@ ipmi_ret_t replaceCacheFru(uint8_t devId)
     }
 
     fruCache.clear();
-    sdbusplus::message::message getRawFru = dbus->new_method_call(
-        fruDeviceServiceName, "/xyz/openbmc_project/FruDevice",
-        "xyz.openbmc_project.FruDeviceManager", "GetRawFru");
+    ec.clear();
+
     cacheBus = deviceFind->second.first;
     cacheAddr = deviceFind->second.second;
-    getRawFru.append(cacheBus, cacheAddr);
-    try
+
+    fruCache = ctx->bus->yield_method_call<std::vector<uint8_t>>(
+        ctx->yield, ec, fruDeviceServiceName, "/xyz/openbmc_project/FruDevice",
+        "xyz.openbmc_project.FruDeviceManager", "GetRawFru", cacheBus,
+        cacheAddr);
+    if (ec)
     {
-        sdbusplus::message::message getRawResp = dbus->call(getRawFru);
-        getRawResp.read(fruCache);
-    }
-    catch (sdbusplus::exception_t&)
-    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Couldn't get raw fru",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+
         lastDevId = 0xFF;
         cacheBus = 0xFF;
         cacheAddr = 0xFF;
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::ccResponseError;
     }
 
     lastDevId = devId;
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 /** @brief implements the read FRU data command
@@ -279,15 +293,15 @@ ipmi_ret_t replaceCacheFru(uint8_t devId)
 ipmi::RspType<uint8_t,             // Count
               std::vector<uint8_t> // Requested data
               >
-    ipmiStorageReadFruData(uint8_t fruDeviceId, uint16_t fruInventoryOffset,
-                           uint8_t countToRead)
+    ipmiStorageReadFruData(ipmi::Context::ptr ctx, uint8_t fruDeviceId,
+                           uint16_t fruInventoryOffset, uint8_t countToRead)
 {
     if (fruDeviceId == 0xFF)
     {
         return ipmi::responseInvalidFieldRequest();
     }
 
-    ipmi::Cc status = replaceCacheFru(fruDeviceId);
+    ipmi::Cc status = replaceCacheFru(ctx, fruDeviceId);
 
     if (status != ipmi::ccSuccess)
     {
@@ -327,7 +341,8 @@ ipmi::RspType<uint8_t,             // Count
  *   - countWritten  - Count written
  */
 ipmi::RspType<uint8_t>
-    ipmiStorageWriteFruData(uint8_t fruDeviceId, uint16_t fruInventoryOffset,
+    ipmiStorageWriteFruData(ipmi::Context::ptr ctx, uint8_t fruDeviceId,
+                            uint16_t fruInventoryOffset,
                             std::vector<uint8_t>& dataToWrite)
 {
     if (fruDeviceId == 0xFF)
@@ -337,7 +352,7 @@ ipmi::RspType<uint8_t>
 
     size_t writeLen = dataToWrite.size();
 
-    ipmi::Cc status = replaceCacheFru(fruDeviceId);
+    ipmi::Cc status = replaceCacheFru(ctx, fruDeviceId);
     if (status != ipmi::ccSuccess)
     {
         return ipmi::response(status);
@@ -379,10 +394,13 @@ ipmi::RspType<uint8_t>
         }
     }
     uint8_t countWritten = 0;
+
+    writeBus = cacheBus;
+    writeAddr = cacheAddr;
     if (atEnd)
     {
         // cancel timer, we're at the end so might as well send it
-        cacheTimer->stop();
+        writeTimer->stop();
         if (!writeFru())
         {
             return ipmi::responseInvalidFieldRequest();
@@ -391,11 +409,10 @@ ipmi::RspType<uint8_t>
     }
     else
     {
-        // start a timer, if no further data is sent in cacheTimeoutSeconds
-        // seconds, check to see if it is valid
-        createTimer();
-        cacheTimer->start(std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::seconds(cacheTimeoutSeconds)));
+        // start a timer, if no further data is sent  to check to see if it is
+        // valid
+        writeTimer->start(std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::seconds(writeTimeoutSeconds)));
         countWritten = 0;
     }
 
@@ -411,14 +428,14 @@ ipmi::RspType<uint8_t>
  */
 ipmi::RspType<uint16_t, // inventorySize
               uint8_t>  // accessType
-    ipmiStorageGetFruInvAreaInfo(uint8_t fruDeviceId)
+    ipmiStorageGetFruInvAreaInfo(ipmi::Context::ptr ctx, uint8_t fruDeviceId)
 {
     if (fruDeviceId == 0xFF)
     {
         return ipmi::responseInvalidFieldRequest();
     }
 
-    ipmi::Cc status = replaceCacheFru(fruDeviceId);
+    ipmi::Cc status = replaceCacheFru(ctx, fruDeviceId);
 
     if (status != IPMI_CC_OK)
     {
@@ -431,9 +448,9 @@ ipmi::RspType<uint16_t, // inventorySize
     return ipmi::responseSuccess(fruCache.size(), accessType);
 }
 
-ipmi_ret_t getFruSdrCount(size_t& count)
+ipmi_ret_t getFruSdrCount(ipmi::Context::ptr ctx, size_t& count)
 {
-    ipmi_ret_t ret = replaceCacheFru(0);
+    ipmi_ret_t ret = replaceCacheFru(ctx, 0);
     if (ret != IPMI_CC_OK)
     {
         return ret;
@@ -442,9 +459,10 @@ ipmi_ret_t getFruSdrCount(size_t& count)
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
+ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
+                      get_sdr::SensorDataFruRecord& resp)
 {
-    ipmi_ret_t ret = replaceCacheFru(0); // this will update the hash list
+    ipmi_ret_t ret = replaceCacheFru(ctx, 0); // this will update the hash list
     if (ret != IPMI_CC_OK)
     {
         return ret;
@@ -457,21 +475,6 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     uint8_t& bus = device->second.first;
     uint8_t& address = device->second.second;
 
-    ManagedObjectType frus;
-
-    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    sdbusplus::message::message getObjects = dbus->new_method_call(
-        fruDeviceServiceName, "/", "org.freedesktop.DBus.ObjectManager",
-        "GetManagedObjects");
-    try
-    {
-        sdbusplus::message::message resp = dbus->call(getObjects);
-        resp.read(frus);
-    }
-    catch (sdbusplus::exception_t&)
-    {
-        return IPMI_CC_RESPONSE_ERROR;
-    }
     boost::container::flat_map<std::string, DbusVariant>* fruData = nullptr;
     auto fru =
         std::find_if(frus.begin(), frus.end(),
@@ -506,74 +509,73 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
         return IPMI_CC_RESPONSE_ERROR;
     }
 
+#ifdef USING_ENTITY_MANAGER_DECORATORS
+
     boost::container::flat_map<std::string, DbusVariant>* entityData = nullptr;
-    ManagedObjectType entities;
 
-    try
+    // todo: this should really use caching, this is a very inefficient lookup
+    boost::system::error_code ec;
+    ManagedObjectType entities = ctx->bus->yield_method_call<ManagedObjectType>(
+        ctx->yield, ec, entityManagerServiceName, "/",
+        "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
+
+    if (ec)
     {
-        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "GetMangagedObjects for getSensorMap failed",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
 
-        sdbusplus::message::message getObjects = dbus->new_method_call(
-            entityManagerServiceName, "/", "org.freedesktop.DBus.ObjectManager",
-            "GetManagedObjects");
+        return ipmi::ccResponseError;
+    }
 
-        sdbusplus::message::message resp = dbus->call(getObjects);
-        resp.read(entities);
-
-        auto entity = std::find_if(
-            entities.begin(), entities.end(),
-            [bus, address, &entityData](ManagedEntry& entry) {
-                auto findFruDevice = entry.second.find(
-                    "xyz.openbmc_project.Inventory.Decorator.FruDevice");
-                if (findFruDevice == entry.second.end())
-                {
-                    return false;
-                }
-
-                // Integer fields added via Entity-Manager json are uint64_ts by
-                // default.
-                auto findBus = findFruDevice->second.find("Bus");
-                auto findAddress = findFruDevice->second.find("Address");
-
-                if (findBus == findFruDevice->second.end() ||
-                    findAddress == findFruDevice->second.end())
-                {
-                    return false;
-                }
-                if ((std::get<uint64_t>(findBus->second) != bus) ||
-                    (std::get<uint64_t>(findAddress->second) != address))
-                {
-                    return false;
-                }
-
-                // At this point we found the device entry and should return
-                // true.
-                auto findIpmiDevice = entry.second.find(
-                    "xyz.openbmc_project.Inventory.Decorator.Ipmi");
-                if (findIpmiDevice != entry.second.end())
-                {
-                    entityData = &(findIpmiDevice->second);
-                }
-
-                return true;
-            });
-
-        if (entity == entities.end())
-        {
-            if constexpr (DEBUG)
+    auto entity = std::find_if(
+        entities.begin(), entities.end(),
+        [bus, address, &entityData](ManagedEntry& entry) {
+            auto findFruDevice = entry.second.find(
+                "xyz.openbmc_project.Inventory.Decorator.FruDevice");
+            if (findFruDevice == entry.second.end())
             {
-                std::fprintf(stderr, "Ipmi or FruDevice Decorator interface "
-                                     "not found for Fru\n");
+                return false;
             }
+
+            // Integer fields added via Entity-Manager json are uint64_ts by
+            // default.
+            auto findBus = findFruDevice->second.find("Bus");
+            auto findAddress = findFruDevice->second.find("Address");
+
+            if (findBus == findFruDevice->second.end() ||
+                findAddress == findFruDevice->second.end())
+            {
+                return false;
+            }
+            if ((std::get<uint64_t>(findBus->second) != bus) ||
+                (std::get<uint64_t>(findAddress->second) != address))
+            {
+                return false;
+            }
+
+            // At this point we found the device entry and should return
+            // true.
+            auto findIpmiDevice = entry.second.find(
+                "xyz.openbmc_project.Inventory.Decorator.Ipmi");
+            if (findIpmiDevice != entry.second.end())
+            {
+                entityData = &(findIpmiDevice->second);
+            }
+
+            return true;
+        });
+
+    if (entity == entities.end())
+    {
+        if constexpr (DEBUG)
+        {
+            std::fprintf(stderr, "Ipmi or FruDevice Decorator interface "
+                                 "not found for Fru\n");
         }
     }
-    catch (const std::exception& e)
-    {
-        std::fprintf(
-            stderr,
-            "Search for FruDevice+Ipmi Decorator Interface excepted: '%s'\n",
-            e.what());
-    }
+
+#endif
 
     std::string name;
     auto findProductName = fruData->find("BOARD_PRODUCT_NAME");
@@ -612,6 +614,7 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
     uint8_t entityID = 0;
     uint8_t entityInstance = 0x1;
 
+#ifdef USING_ENTITY_MANAGER_DECORATORS
     if (entityData)
     {
         auto entityIdProperty = entityData->find("EntityId");
@@ -628,6 +631,7 @@ ipmi_ret_t getFruSdrs(size_t index, get_sdr::SensorDataFruRecord& resp)
                 std::get<uint64_t>(entityInstanceProperty->second));
         }
     }
+#endif
 
     resp.body.entityID = entityID;
     resp.body.entityInstance = entityInstance;
@@ -1173,6 +1177,7 @@ std::vector<uint8_t> getType12SDRs(uint16_t index, uint16_t recordId)
 
 void registerStorageFunctions()
 {
+    createTimers();
     // <Get FRU Inventory Area Info>
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnStorage,
                           ipmi::storage::cmdGetFruInventoryAreaInfo,
