@@ -48,8 +48,7 @@ using ManagedObjectType =
     std::map<sdbusplus::message::object_path,
              std::map<std::string, std::map<std::string, DbusVariant>>>;
 
-static constexpr int sensorListUpdatePeriod = 10;
-static constexpr int sensorMapUpdatePeriod = 2;
+static constexpr int sensorMapUpdatePeriod = 10;
 
 constexpr size_t maxSDRTotalSize =
     76; // Largest SDR Record Size (type 01) + SDR Overheader Size
@@ -210,7 +209,8 @@ static void getSensorMaxMin(const SensorMap &sensorMap, double &max,
     }
 }
 
-static bool getSensorMap(std::string sensorConnection, std::string sensorPath,
+static bool getSensorMap(boost::asio::yield_context yield,
+                         std::string sensorConnection, std::string sensorPath,
                          SensorMap &sensorMap)
 {
     static boost::container::flat_map<
@@ -232,22 +232,16 @@ static bool getSensorMap(std::string sensorConnection, std::string sensorPath,
         updateTimeMap[sensorConnection] = now;
 
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        auto managedObj = dbus->new_method_call(
-            sensorConnection.c_str(), "/", "org.freedesktop.DBus.ObjectManager",
-            "GetManagedObjects");
-
-        ManagedObjectType managedObjects;
-        try
-        {
-            auto reply = dbus->call(managedObj);
-            reply.read(managedObjects);
-        }
-        catch (sdbusplus::exception_t &)
+        boost::system::error_code ec;
+        auto managedObjects = dbus->yield_method_call<ManagedObjectType>(
+            yield, ec, sensorConnection.c_str(), "/",
+            "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
+        if (ec)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
-                "Error getting managed objects from connection",
-                phosphor::logging::entry("CONNECTION=%s",
-                                         sensorConnection.c_str()));
+                "GetMangagedObjects for getSensorMap failed",
+                phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+
             return false;
         }
 
@@ -402,7 +396,7 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload &p)
 }
 
 ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
-    ipmiSenGetSensorReading(uint8_t sensnum)
+    ipmiSenGetSensorReading(boost::asio::yield_context yield, uint8_t sensnum)
 {
     std::string connection;
     std::string path;
@@ -414,7 +408,7 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
     }
 
     SensorMap sensorMap;
-    if (!getSensorMap(connection, path, sensorMap))
+    if (!getSensorMap(yield, connection, path, sensorMap))
     {
         return ipmi::responseResponseError();
     }
@@ -523,13 +517,13 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
  *  @returns IPMI completion code
  */
 ipmi::RspType<> ipmiSenSetSensorThresholds(
-    uint8_t sensorNum, bool lowerNonCriticalThreshMask,
-    bool lowerCriticalThreshMask, bool lowerNonRecovThreshMask,
-    bool upperNonCriticalThreshMask, bool upperCriticalThreshMask,
-    bool upperNonRecovThreshMask, uint2_t reserved, uint8_t lowerNonCritical,
-    uint8_t lowerCritical, uint8_t lowerNonRecoverable,
-    uint8_t upperNonCritical, uint8_t upperCritical,
-    uint8_t upperNonRecoverable)
+    boost::asio::yield_context yield, uint8_t sensorNum,
+    bool lowerNonCriticalThreshMask, bool lowerCriticalThreshMask,
+    bool lowerNonRecovThreshMask, bool upperNonCriticalThreshMask,
+    bool upperCriticalThreshMask, bool upperNonRecovThreshMask,
+    uint2_t reserved, uint8_t lowerNonCritical, uint8_t lowerCritical,
+    uint8_t lowerNonRecoverable, uint8_t upperNonCritical,
+    uint8_t upperCritical, uint8_t upperNonRecoverable)
 {
     constexpr uint8_t thresholdMask = 0xFF;
 
@@ -561,7 +555,7 @@ ipmi::RspType<> ipmiSenSetSensorThresholds(
         return ipmi::response(status);
     }
     SensorMap sensorMap;
-    if (!getSensorMap(connection, path, sensorMap))
+    if (!getSensorMap(yield, connection, path, sensorMap))
     {
         return ipmi::responseResponseError();
     }
@@ -750,7 +744,8 @@ ipmi::RspType<uint8_t, // readable
               uint8_t, // upperNC
               uint8_t, // upperCrit
               uint8_t> // upperNRecoverable
-    ipmiSenGetSensorThresholds(uint8_t sensorNumber)
+    ipmiSenGetSensorThresholds(boost::asio::yield_context yield,
+                               uint8_t sensorNumber)
 {
     std::string connection;
     std::string path;
@@ -762,7 +757,7 @@ ipmi::RspType<uint8_t, // readable
     }
 
     SensorMap sensorMap;
-    if (!getSensorMap(connection, path, sensorMap))
+    if (!getSensorMap(yield, connection, path, sensorMap))
     {
         return ipmi::responseResponseError();
     }
@@ -832,7 +827,8 @@ ipmi::RspType<uint8_t, // enabled
               uint8_t, // assertionEnabledMsb
               uint8_t, // deassertionEnabledLsb
               uint8_t> // deassertionEnabledMsb
-    ipmiSenGetSensorEventEnable(uint8_t sensorNum)
+    ipmiSenGetSensorEventEnable(boost::asio::yield_context yield,
+                                uint8_t sensorNum)
 {
     std::string connection;
     std::string path;
@@ -850,7 +846,7 @@ ipmi::RspType<uint8_t, // enabled
     }
 
     SensorMap sensorMap;
-    if (!getSensorMap(connection, path, sensorMap))
+    if (!getSensorMap(yield, connection, path, sensorMap))
     {
         return ipmi::responseResponseError();
     }
@@ -926,7 +922,8 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
               std::bitset<16>, // assertions
               std::bitset<16>  // deassertion
               >
-    ipmiSenGetSensorEventStatus(uint8_t sensorNum)
+    ipmiSenGetSensorEventStatus(boost::asio::yield_context yield,
+                                uint8_t sensorNum)
 {
     if (sensorNum == 0xFF)
     {
@@ -945,7 +942,7 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
     }
 
     SensorMap sensorMap;
-    if (!getSensorMap(connection, path, sensorMap))
+    if (!getSensorMap(yield, connection, path, sensorMap))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiSenGetSensorEventStatus: Sensor Mapping Error",
@@ -1070,7 +1067,7 @@ ipmi::RspType<uint8_t,  // sdr version
               uint32_t, // most recent erase
               uint8_t   // operationSupport
               >
-    ipmiStorageGetSDRRepositoryInfo(void)
+    ipmiStorageGetSDRRepositoryInfo(boost::asio::yield_context yield)
 {
     constexpr const uint16_t unspecifiedFreeSpace = 0xFFFF;
     if (sensorTree.empty() && !getSensorSubtree(sensorTree))
@@ -1079,7 +1076,7 @@ ipmi::RspType<uint8_t,  // sdr version
     }
 
     size_t fruCount = 0;
-    ipmi::Cc ret = ipmi::storage::getFruSdrCount(fruCount);
+    ipmi::Cc ret = ipmi::storage::getFruSdrCount(yield, fruCount);
     if (ret != ipmi::ccSuccess)
     {
         return ipmi::response(ret);
@@ -1147,8 +1144,8 @@ ipmi::RspType<uint16_t> ipmiStorageReserveSDR()
 ipmi::RspType<uint16_t,            // next record ID
               std::vector<uint8_t> // payload
               >
-    ipmiStorageGetSDR(uint16_t reservationID, uint16_t recordID, uint8_t offset,
-                      uint8_t bytesToRead)
+    ipmiStorageGetSDR(boost::asio::yield_context yield, uint16_t reservationID,
+                      uint16_t recordID, uint8_t offset, uint8_t bytesToRead)
 {
     constexpr uint16_t lastRecordIndex = 0xFFFF;
 
@@ -1165,7 +1162,7 @@ ipmi::RspType<uint16_t,            // next record ID
     }
 
     size_t fruCount = 0;
-    ipmi::Cc ret = ipmi::storage::getFruSdrCount(fruCount);
+    ipmi::Cc ret = ipmi::storage::getFruSdrCount(yield, fruCount);
     if (ret != ipmi::ccSuccess)
     {
         return ipmi::response(ret);
@@ -1215,7 +1212,7 @@ ipmi::RspType<uint16_t,            // next record ID
             {
                 return ipmi::responseInvalidFieldRequest();
             }
-            ret = ipmi::storage::getFruSdrs(fruIndex, data);
+            ret = ipmi::storage::getFruSdrs(yield, fruIndex, data);
             if (ret != IPMI_CC_OK)
             {
                 return ipmi::response(ret);
@@ -1253,7 +1250,7 @@ ipmi::RspType<uint16_t,            // next record ID
     }
 
     SensorMap sensorMap;
-    if (!getSensorMap(connection, path, sensorMap))
+    if (!getSensorMap(yield, connection, path, sensorMap))
     {
         return ipmi::responseResponseError();
     }
