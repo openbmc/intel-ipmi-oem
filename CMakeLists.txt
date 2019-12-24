@@ -110,9 +110,12 @@ option (BMC_VALIDATION_UNSECURE_FEATURE
         "Enables unsecure features required by validation. Note: must
         be turned off for production images."
         OFF)
+option (MDR_V1_SUPPORT "Support these MDR Verseion 1 IPMI OEM commands" OFF)
+
 target_compile_definitions (
     zinteloemcmds PRIVATE
     $<$<BOOL:${INTEL_PFR_ENABLED}>: -DINTEL_PFR_ENABLED>
     $<$<BOOL:${BMC_VALIDATION_UNSECURE_FEATURE}>:
     -DBMC_VALIDATION_UNSECURE_FEATURE>
+    $<$<BOOL:${MDR_V1_SUPPORT}>: -DMDR_V1_SUPPORT>
 )
