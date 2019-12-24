@@ -477,6 +477,7 @@ ipmi_ret_t cmd_region_lock(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 
 static void register_netfn_smbios_functions(void)
 {
+#ifdef MDR_V1_SUPPORT
     // MDR V1 Command
     // <Get MDR Status Command>
     ipmi_register_callback(ipmi::intel::netFnApp,
@@ -499,4 +500,5 @@ static void register_netfn_smbios_functions(void)
     // <Lock MDR Command>
     ipmi_register_callback(ipmi::intel::netFnApp, ipmi::intel::app::cmdMdrLock,
                            NULL, cmd_region_lock, PRIVILEGE_OPERATOR);
+#endif
 }
