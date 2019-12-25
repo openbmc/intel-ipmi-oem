@@ -102,6 +102,7 @@ target_link_libraries (zinteloemcmds intel_dbus)
 target_link_libraries (zinteloemcmds -luserlayer)
 target_link_libraries (zinteloemcmds -lchannellayer)
 target_link_libraries (zinteloemcmds ${OPENSSL_CRYPTO_LIBRARY})
+target_link_libraries (zinteloemcmds gpiodcxx)
 
 install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
 option (INTEL_PFR_ENABLED "Intel PFR Enabled" OFF)
