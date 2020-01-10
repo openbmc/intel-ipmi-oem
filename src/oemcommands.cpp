@@ -2665,7 +2665,8 @@ ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
             "/xyz/openbmc_project/inventory/system/board/", "Baseboard");
         const Value& propValue = getDbusProperty(
             *dbus, object.second, object.first,
-            "xyz.openbmc_project.Inventory.Item.Board", "ProductId");
+            "xyz.openbmc_project.Inventory.Item.Board.Motherboard",
+            "ProductId");
         prodId = static_cast<uint8_t>(std::get<uint64_t>(propValue));
     }
     catch (std::exception& e)
