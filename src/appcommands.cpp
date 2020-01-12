@@ -283,7 +283,7 @@ RspType<uint8_t,  // Device ID
             devId.fw[0] = revision.major & ipmiDevIdFw1Mask;
 
             revision.minor = (revision.minor > 99 ? 99 : revision.minor);
-            devId.fw[1] = revision.minor % 10 + (revision.minor / 10) * 16;
+            devId.fw[1] = revision.minor;
             try
             {
                 uint32_t hash = std::stoul(revision.metaHash, 0, 16);
