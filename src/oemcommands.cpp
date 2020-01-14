@@ -1532,6 +1532,18 @@ ipmi::RspType<uint8_t, // profile support map
               >
     ipmiOEMGetFanConfig(uint8_t dimmGroupId)
 {
+    if (dimmGroupId >= maxCPUNum)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    bool cpuStatus = cpuPresent("CPU_" + std::to_string(dimmGroupId + 1));
+
+    if (!cpuStatus)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
     boost::container::flat_map<
         std::string, std::variant<std::vector<std::string>, std::string>>
         profileData;
