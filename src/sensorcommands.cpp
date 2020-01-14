@@ -1170,8 +1170,9 @@ ipmi::RspType<uint16_t,            // next record ID
         return ipmi::response(ret);
     }
 
-    size_t lastRecord =
-        sensorTree.size() + fruCount + ipmi::storage::type12Count - 1;
+    size_t lastRecord = sensorTree.size() + fruCount +
+                        ipmi::storage::type12Count +
+                        ipmi::storage::NMDiscoverySDRCount - 1;
     if (recordID == lastRecordIndex)
     {
         recordID = lastRecord;
@@ -1194,17 +1195,44 @@ ipmi::RspType<uint16_t,            // next record ID
             if (type12Index >= ipmi::storage::type12Count ||
                 offset > sizeof(Type12Record))
             {
-                return ipmi::responseInvalidFieldRequest();
-            }
-            std::vector<uint8_t> record =
-                ipmi::storage::getType12SDRs(type12Index, recordID);
-            if (record.size() < (offset + bytesToRead))
-            {
-                bytesToRead = record.size() - offset;
-            }
+                // check NM discovery SDR
+                if (type12Index >= ipmi::storage::type12Count)
+                {
+                    if (offset > sizeof(NMDiscoveryRecord))
+                    {
+                        return ipmi::responseInvalidFieldRequest();
+                    }
+                }
+                if (offset > sizeof(Type12Record))
+                {
+                    if (type12Index < ipmi::storage::type12Count ||
+                        offset > sizeof(NMDiscoveryRecord))
+                    {
+                        return ipmi::responseInvalidFieldRequest();
+                    }
+                }
 
-            recordData.insert(recordData.end(), record.begin() + offset,
-                              record.begin() + offset + bytesToRead);
+                std::vector<uint8_t> record = ipmi::storage::getNMDiscoverySDR(
+                    type12Index - ipmi::storage::type12Count, recordID);
+                if (record.size() < (offset + bytesToRead))
+                {
+                    bytesToRead = record.size() - offset;
+                }
+                recordData.insert(recordData.end(), record.begin() + offset,
+                                  record.begin() + offset + bytesToRead);
+            }
+            else
+            {
+                std::vector<uint8_t> record =
+                    ipmi::storage::getType12SDRs(type12Index, recordID);
+                if (record.size() < (offset + bytesToRead))
+                {
+                    bytesToRead = record.size() - offset;
+                }
+
+                recordData.insert(recordData.end(), record.begin() + offset,
+                                  record.begin() + offset + bytesToRead);
+            }
         }
         else
         {
