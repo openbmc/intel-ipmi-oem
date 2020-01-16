@@ -391,6 +391,10 @@ ipmi::RspType<uint8_t>
             {
                 atEnd = true;
             }
+            if (fruCache.size() > lastWriteAddr)
+            {
+                return ipmi::responseReqDataLenExceeded();
+            }
         }
     }
     uint8_t countWritten = 0;
