@@ -249,7 +249,8 @@ RspType<uint8_t,  // Device ID
         uint16_t prodId;
         uint32_t aux;
     } devId;
-    static bool dev_id_initialized = false;
+    static bool fwVerInitialized = false;
+    static bool devIdInitialized = false;
     static bool defaultActivationSetting = false;
     const char* filename = "/usr/share/ipmi-providers/dev_id.json";
     const char* prodIdFilename = "/var/cache/private/prodID";
@@ -257,7 +258,7 @@ RspType<uint8_t,  // Device ID
     constexpr auto ipmiDevIdFw1Mask = ~(1 << ipmiDevIdStateShift);
     constexpr auto ipmiDevIdBusy = (1 << ipmiDevIdStateShift);
 
-    if (!dev_id_initialized)
+    if (!fwVerInitialized)
     {
         std::optional<MetaRevision> rev;
         try
@@ -291,6 +292,7 @@ RspType<uint8_t,  // Device ID
                        ((hash & 0x00FF0000) >> 8) | ((hash & 0x0000FF00) << 8) |
                        ((hash & 0xFF) << 24);
                 devId.aux = (revision.buildNo & 0xFF) + (hash & 0xFFFFFF00);
+                fwVerInitialized = true;
             }
             catch (const std::exception& e)
             {
@@ -298,7 +300,10 @@ RspType<uint8_t,  // Device ID
                                           Log::entry("ERROR=%s", e.what()));
             }
         }
+    }
 
+    if (!devIdInitialized)
+    {
         std::ifstream devIdFile(filename);
         if (devIdFile.is_open())
         {
@@ -333,13 +338,13 @@ RspType<uint8_t,  // Device ID
             char* end;
             prodIdFile.getline(&id[0], id.size() + 1);
             devId.prodId = std::strtol(&id[0], &end, 0);
-            dev_id_initialized = true;
+            devIdInitialized = true;
         }
         else
         {
             // For any exception send out platform id as 0,
             // and make sure to re-query the device id.
-            dev_id_initialized = false;
+            devIdInitialized = false;
             devId.prodId = 0;
         }
     }
