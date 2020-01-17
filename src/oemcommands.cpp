@@ -327,37 +327,21 @@ bool getSwVerInfo(ipmi::Context::ptr ctx, uint8_t& bmcMajor, uint8_t& bmcMinor,
     }
 
     // step 2 : get ME Major and Minor numbers from its DBUS property
-    try
+    std::string meVersion;
+    if (getActiveSoftwareVersionInfo(ctx, versionPurposeME, meVersion))
     {
-        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        std::string service =
-            getService(*dbus, "xyz.openbmc_project.Software.Version",
-                       "/xyz/openbmc_project/software/me");
-        Value variant =
-            getDbusProperty(*dbus, service, "/xyz/openbmc_project/software/me",
-                            "xyz.openbmc_project.Software.Version", "Version");
-
-        std::string& meVersion = std::get<std::string>(variant);
-
-        // get ME major number
-        std::regex pattern1("(\\d+?).(\\d+?).(\\d+?).(\\d+?).(\\d+?)");
-        constexpr size_t matchedPhosphor = 6;
-        std::smatch results;
-        if (std::regex_match(meVersion, results, pattern1))
-        {
-            if (results.size() == matchedPhosphor)
-            {
-                meMajor = static_cast<uint8_t>(std::stoi(results[1]));
-                meMinor = static_cast<uint8_t>(std::stoi(results[2]));
-            }
-        }
-    }
-    catch (sdbusplus::exception::SdBusError& e)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Exception caught in ME version conversion",
-            phosphor::logging::entry("MSG=%s", e.what()));
         return false;
+    }
+    std::regex pattern1("(\\d+?).(\\d+?).(\\d+?).(\\d+?).(\\d+?)");
+    constexpr size_t matchedPhosphor = 6;
+    std::smatch results;
+    if (std::regex_match(meVersion, results, pattern1))
+    {
+        if (results.size() == matchedPhosphor)
+        {
+            meMajor = static_cast<uint8_t>(std::stoi(results[1]));
+            meMinor = static_cast<uint8_t>(std::stoi(results[2]));
+        }
     }
     return true;
 }
