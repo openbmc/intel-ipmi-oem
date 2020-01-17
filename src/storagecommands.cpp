@@ -1175,6 +1175,41 @@ std::vector<uint8_t> getType12SDRs(uint16_t index, uint16_t recordId)
     return resp;
 }
 
+std::vector<uint8_t> getNMDiscoverySDR(uint16_t index, uint16_t recordId)
+{
+    std::vector<uint8_t> resp;
+    if (index == 0)
+    {
+        NMDiscoveryRecord nm = {};
+        nm.header.record_id_lsb = recordId;
+        nm.header.record_id_msb = recordId >> 8;
+        nm.header.sdr_version = ipmiSdrVersion;
+        nm.header.record_type = 0xC0;
+        nm.header.record_length = 0xB;
+        nm.oemID0 = 0x57;
+        nm.oemID1 = 0x1;
+        nm.oemID2 = 0x0;
+        nm.subType = 0x0D;
+        nm.version = 0x1;
+        nm.slaveAddress = 0x2C;
+        nm.channelNumber = 0x60;
+        nm.healthEventSensor = 0x19;
+        nm.exceptionEventSensor = 0x18;
+        nm.operationalCapSensor = 0x1A;
+        nm.thresholdExceededSensor = 0x1B;
+
+        uint8_t* nmPtr = reinterpret_cast<uint8_t*>(&nm);
+        resp.insert(resp.end(), nmPtr, nmPtr + sizeof(NMDiscoveryRecord));
+    }
+    else
+    {
+        throw std::runtime_error("getNMDiscoverySDR:: Illegal index " +
+                                 std::to_string(index));
+    }
+
+    return resp;
+}
+
 void registerStorageFunctions()
 {
     createTimers();

@@ -1170,8 +1170,9 @@ ipmi::RspType<uint16_t,            // next record ID
         return ipmi::response(ret);
     }
 
-    size_t lastRecord =
-        sensorTree.size() + fruCount + ipmi::storage::type12Count - 1;
+    size_t lastRecord = sensorTree.size() + fruCount +
+                        ipmi::storage::type12Count +
+                        ipmi::storage::nmDiscoverySDRCount - 1;
     if (recordID == lastRecordIndex)
     {
         recordID = lastRecord;
@@ -1187,7 +1188,28 @@ ipmi::RspType<uint16_t,            // next record ID
     {
         std::vector<uint8_t> recordData;
         size_t fruIndex = recordID - sensorTree.size();
-        if (fruIndex >= fruCount)
+        size_t type12End = fruCount + ipmi::storage::type12Count;
+
+        if (fruIndex >= type12End)
+        {
+            // NM discovery SDR
+            size_t nmDiscoveryIndex = fruIndex - type12End;
+            if (nmDiscoveryIndex >= ipmi::storage::nmDiscoverySDRCount ||
+                offset > sizeof(NMDiscoveryRecord))
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+
+            std::vector<uint8_t> record =
+                ipmi::storage::getNMDiscoverySDR(nmDiscoveryIndex, recordID);
+            if (record.size() < (offset + bytesToRead))
+            {
+                bytesToRead = record.size() - offset;
+            }
+            recordData.insert(recordData.end(), record.begin() + offset,
+                              record.begin() + offset + bytesToRead);
+        }
+        else if (fruIndex >= fruCount)
         {
             // handle type 12 hardcoded records
             size_t type12Index = fruIndex - fruCount;
