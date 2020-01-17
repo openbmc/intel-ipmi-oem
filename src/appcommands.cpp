@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
-#include "xyz/openbmc_project/Common/error.hpp"
-
 #include <appcommands.hpp>
 #include <fstream>
 #include <ipmid/api.hpp>
@@ -22,142 +20,179 @@
 #include <nlohmann/json.hpp>
 #include <phosphor-logging/log.hpp>
 #include <regex>
-#include <xyz/openbmc_project/Software/Activation/server.hpp>
-#include <xyz/openbmc_project/Software/Version/server.hpp>
-#include <xyz/openbmc_project/State/BMC/server.hpp>
 
 namespace ipmi
 {
 
 static void registerAPPFunctions() __attribute__((constructor));
 
-namespace Log = phosphor::logging;
-namespace Error = sdbusplus::xyz::openbmc_project::Common::Error;
-using Version = sdbusplus::xyz::openbmc_project::Software::server::Version;
-using Activation =
-    sdbusplus::xyz::openbmc_project::Software::server::Activation;
-using BMC = sdbusplus::xyz::openbmc_project::State::server::BMC;
+using GetObjectType =
+    std::vector<std::pair<std::string, std::vector<std::string>>>;
+using GetSubTreeType = std::vector<std::pair<std::string, GetObjectType>>;
+using PropertyMapType =
+    boost::container::flat_map<std::string, std::variant<std::string>>;
 
-constexpr auto bmc_state_interface = "xyz.openbmc_project.State.BMC";
-constexpr auto bmc_state_property = "CurrentBMCState";
-
-static constexpr auto redundancyIntf =
-    "xyz.openbmc_project.Software.RedundancyPriority";
-static constexpr auto versionIntf = "xyz.openbmc_project.Software.Version";
-static constexpr auto activationIntf =
+static constexpr const char* objMapperService =
+    "xyz.openbmc_project.ObjectMapper";
+static constexpr const char* objMapperPath =
+    "/xyz/openbmc_project/object_mapper";
+static constexpr const char* objMapperIntf = "xyz.openbmc_project.ObjectMapper";
+static constexpr const char* dbusPropIntf = "org.freedesktop.DBus.Properties";
+static constexpr const char* bmcStateIntf = "xyz.openbmc_project.State.BMC";
+static constexpr const char* softwareVerIntf =
+    "xyz.openbmc_project.Software.Version";
+static constexpr const char* softwareActivationIntf =
     "xyz.openbmc_project.Software.Activation";
-static constexpr auto softwareRoot = "/xyz/openbmc_project/software";
+static constexpr const char* associationIntf =
+    "xyz.openbmc_project.Association";
+static constexpr const char* softwareFunctionalPath =
+    "/xyz/openbmc_project/software/functional";
 
-bool getCurrentBmcState()
+static constexpr const char* currentBmcStateProp = "CurrentBMCState";
+static constexpr const char* bmcStateReadyStr =
+    "xyz.openbmc_project.State.BMC.BMCState.Ready";
+
+bool isBMCBusy(ipmi::Context::ptr ctx)
 {
-    sdbusplus::bus::bus bus{ipmid_get_sd_bus_connection()};
-
-    // Get the Inventory object implementing the BMC interface
-    ipmi::DbusObjectInfo bmcObject =
-        ipmi::getDbusObject(bus, bmc_state_interface);
-    auto variant =
-        ipmi::getDbusProperty(bus, bmcObject.second, bmcObject.first,
-                              bmc_state_interface, bmc_state_property);
-
-    return std::holds_alternative<std::string>(variant) &&
-           BMC::convertBMCStateFromString(std::get<std::string>(variant)) ==
-               BMC::BMCState::Ready;
-}
-
-bool getCurrentBmcStateWithFallback(const bool fallbackAvailability)
-{
-    try
+    boost::system::error_code ec;
+    GetSubTreeType subtree = ctx->bus->yield_method_call<GetSubTreeType>(
+        ctx->yield, ec, objMapperService, objMapperPath, objMapperIntf,
+        "GetSubTree", "/", 5, std::array<const char*, 1>{bmcStateIntf});
+    if (ec)
     {
-        return getCurrentBmcState();
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "isBMCBusy: Failed to perform GetSubTree action",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()),
+            phosphor::logging::entry("INTERFACE=%s", bmcStateIntf));
+        return false;
     }
-    catch (...)
+
+    if (subtree.size() != 1)
     {
-        // Nothing provided the BMC interface, therefore return whatever was
-        // configured as the default.
-        return fallbackAvailability;
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "isBMCBusy: Invalid size of objects returned");
+        return false;
     }
+
+    std::variant<std::string> bmcState =
+        ctx->bus->yield_method_call<std::variant<std::string>>(
+            ctx->yield, ec, subtree[0].second[0].first, subtree[0].first,
+            dbusPropIntf, "Get", bmcStateIntf, currentBmcStateProp);
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "isBMCBusy: Failed to get CurrentBMCState property",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+        return false;
+    }
+
+    const std::string* state = std::get_if<std::string>(&bmcState);
+    if (!state)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "isBMCBusy: Get CurrentBMCState property type mismatch");
+        return false;
+    }
+    return (*state != bmcStateReadyStr);
 }
 
 /**
- * @brief Returns the Version info from primary software object
+ * @brief Returns the functional firmware version information.
  *
- * Get the Version info from the active s/w object which is having high
- * "Priority" value(a smaller number is a higher priority) and "Purpose"
- * is "BMC" from the list of all s/w objects those are implementing
- * RedundancyPriority interface from the given softwareRoot path.
+ * It reads the active firmware versions by checking functional
+ * endpoints association and matching the input version purpose string.
+ * ctx[in]                - ipmi context.
+ * reqVersionPurpose[in]  - Version purpose which need to be read.
+ * version[out]           - Output Version string.
  *
- * @return On success returns the Version info from primary software object.
+ * @return Returns '0' on success and '-1' on failure.
  *
  */
-std::string getActiveSoftwareVersionInfo()
+int getActiveSoftwareVersionInfo(ipmi::Context::ptr ctx,
+                                 const std::string& reqVersionPurpose,
+                                 std::string& version)
 {
-    auto busp = getSdBus();
-
-    std::string revision{};
-    ipmi::ObjectTree objectTree;
-    try
+    boost::system::error_code ec;
+    std::variant<std::vector<std::string>> vActiveEndPoints =
+        ctx->bus->yield_method_call<std::variant<std::vector<std::string>>>(
+            ctx->yield, ec, objMapperService, softwareFunctionalPath,
+            dbusPropIntf, "Get", associationIntf, "endpoints");
+    if (ec)
     {
-        objectTree =
-            ipmi::getAllDbusObjects(*busp, softwareRoot, redundancyIntf);
-    }
-    catch (sdbusplus::exception::SdBusError& e)
-    {
-        Log::log<Log::level::ERR>("Failed to fetch redundancy object from dbus",
-                                  Log::entry("INTERFACE=%s", redundancyIntf),
-                                  Log::entry("ERRMSG=%s", e.what()));
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to get Active firmware version endpoints.");
+        return -1;
     }
 
-    auto objectFound = false;
-    for (auto& softObject : objectTree)
+    const std::vector<std::string>* activeEndPoints =
+        std::get_if<std::vector<std::string>>(&vActiveEndPoints);
+    if ((activeEndPoints == nullptr))
     {
-        auto service =
-            ipmi::getService(*busp, redundancyIntf, softObject.first);
-        auto objValueTree =
-            ipmi::getManagedObjects(*busp, service, softwareRoot);
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to get Active firmware version endpoints.");
+        return -1;
+    }
 
-        auto minPriority = 0xFF;
-        for (const auto& objIter : objValueTree)
+    for (auto& activeEndPoint : *activeEndPoints)
+    {
+        GetObjectType objInfo = ctx->bus->yield_method_call<GetObjectType>(
+            ctx->yield, ec, objMapperService, objMapperPath, objMapperIntf,
+            "GetObject", activeEndPoint,
+            std::array<const char*, 1>{softwareActivationIntf});
+        if (ec)
         {
-            try
-            {
-                auto& intfMap = objIter.second;
-                auto& redundancyPriorityProps = intfMap.at(redundancyIntf);
-                auto& versionProps = intfMap.at(versionIntf);
-                auto& activationProps = intfMap.at(activationIntf);
-                auto priority =
-                    std::get<uint8_t>(redundancyPriorityProps.at("Priority"));
-                auto purpose =
-                    std::get<std::string>(versionProps.at("Purpose"));
-                auto activation =
-                    std::get<std::string>(activationProps.at("Activation"));
-                auto version =
-                    std::get<std::string>(versionProps.at("Version"));
-                if ((Version::convertVersionPurposeFromString(purpose) ==
-                     Version::VersionPurpose::BMC) &&
-                    (Activation::convertActivationsFromString(activation) ==
-                     Activation::Activations::Active))
-                {
-                    if (priority < minPriority)
-                    {
-                        minPriority = priority;
-                        objectFound = true;
-                        revision = std::move(version);
-                    }
-                }
-            }
-            catch (const std::exception& e)
-            {
-                Log::log<Log::level::ERR>(e.what());
-            }
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Failed to perform GetObject.",
+                phosphor::logging::entry("OBJPATH=%s", activeEndPoint.c_str()));
+            continue;
+        }
+        // There should be only single object with given path and interface.
+        if (objInfo.size() != 1)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Multiple objects found for end point.");
+            continue;
+        }
+
+        PropertyMapType propMap = ctx->bus->yield_method_call<PropertyMapType>(
+            ctx->yield, ec, objInfo[0].first, activeEndPoint, dbusPropIntf,
+            "GetAll", softwareVerIntf);
+        if (ec)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Failed to perform GetAll on Version interface.",
+                phosphor::logging::entry("SERVICE=%s",
+                                         objInfo[0].first.c_str()),
+                phosphor::logging::entry("PATH=%s", activeEndPoint.c_str()));
+            continue;
+        }
+
+        std::string* purposeProp =
+            std::get_if<std::string>(&propMap["Purpose"]);
+        std::string* versionProp =
+            std::get_if<std::string>(&propMap["Version"]);
+        if (!purposeProp || !versionProp)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Failed to get version or purpose property");
+            continue;
+        }
+
+        // Check for requested version information and return if found.
+        if (*purposeProp == reqVersionPurpose)
+        {
+            version = *versionProp;
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "Found the version information.",
+                phosphor::logging::entry("VERSION=%s", version.c_str()));
+            return 0;
         }
     }
 
-    if (!objectFound)
-    {
-        Log::log<Log::level::ERR>("Could not find an BMC software object");
-    }
-
-    return revision;
+    phosphor::logging::log<phosphor::logging::level::INFO>(
+        "Failed to find version information.",
+        phosphor::logging::entry("PURPOSE=%s", reqVersionPurpose.c_str()));
+    return -1;
 }
 
 // Support both 2 solutions:
@@ -194,9 +229,9 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
                 rev.platform + ":" + std::to_string(rev.major) + ":" +
                 std::to_string(rev.minor) + ":" + std::to_string(rev.buildNo) +
                 ":" + rev.openbmcHash + ":" + rev.metaHash;
-            Log::log<Log::level::INFO>(
+            phosphor::logging::log<phosphor::logging::level::INFO>(
                 "Get BMC version",
-                Log::entry("VERSION=%s", versionString.c_str()));
+                phosphor::logging::entry("VERSION=%s", versionString.c_str()));
             return rev;
         }
     }
@@ -216,9 +251,9 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
                 rev.platform + ":" + std::to_string(rev.major) + ":" +
                 std::to_string(rev.minor) + ":" + std::to_string(rev.buildNo) +
                 ":" + rev.openbmcHash + ":" + rev.metaHash;
-            Log::log<Log::level::INFO>(
+            phosphor::logging::log<phosphor::logging::level::INFO>(
                 "Get BMC version",
-                Log::entry("VERSION=%s", versionString.c_str()));
+                phosphor::logging::entry("VERSION=%s", versionString.c_str()));
             return rev;
         }
     }
@@ -228,7 +263,8 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
 
 RspType<uint8_t,  // Device ID
         uint8_t,  // Device Revision
-        uint8_t,  // Firmware Revision Major
+        uint7_t,  // Firmware Revision Major
+        bool,     // Device available(0=NormalMode,1=DeviceFirmware)
         uint8_t,  // Firmware Revision minor
         uint8_t,  // IPMI version
         uint8_t,  // Additional device support
@@ -236,13 +272,15 @@ RspType<uint8_t,  // Device ID
         uint16_t, // Product ID
         uint32_t  // AUX info
         >
-    ipmiAppGetDeviceId()
+    ipmiAppGetDeviceId(ipmi::Context::ptr ctx)
 {
     static struct
     {
         uint8_t id;
         uint8_t revision;
-        uint8_t fw[2];
+        uint7_t fwMajor;
+        bool devBusy;
+        uint8_t fwMinor;
         uint8_t ipmiVer = 2;
         uint8_t addnDevSupport;
         uint24_t manufId;
@@ -251,53 +289,49 @@ RspType<uint8_t,  // Device ID
     } devId;
     static bool fwVerInitialized = false;
     static bool devIdInitialized = false;
-    static bool defaultActivationSetting = false;
     const char* filename = "/usr/share/ipmi-providers/dev_id.json";
     const char* prodIdFilename = "/var/cache/private/prodID";
-    constexpr auto ipmiDevIdStateShift = 7;
-    constexpr auto ipmiDevIdFw1Mask = ~(1 << ipmiDevIdStateShift);
-    constexpr auto ipmiDevIdBusy = (1 << ipmiDevIdStateShift);
-
     if (!fwVerInitialized)
     {
-        std::optional<MetaRevision> rev;
-        try
+        std::string versionString;
+        if (!getActiveSoftwareVersionInfo(ctx, versionPurposeBMC,
+                                          versionString))
         {
-            auto version = getActiveSoftwareVersionInfo();
-            rev = convertIntelVersion(version);
-        }
-        catch (const std::exception& e)
-        {
-            Log::log<Log::level::ERR>("Failed to get active version info",
-                                      Log::entry("ERROR=%s", e.what()));
-        }
-
-        if (rev.has_value())
-        {
-            // bit7 identifies if the device is available
-            // 0=normal operation
-            // 1=device firmware, SDR update,
-            // or self-initialization in progress.
-            // The availability may change in run time, so mask here
-            // and initialize later.
-            MetaRevision revision = rev.value();
-            devId.fw[0] = revision.major & ipmiDevIdFw1Mask;
-
-            revision.minor = (revision.minor > 99 ? 99 : revision.minor);
-            devId.fw[1] = revision.minor % 10 + (revision.minor / 10) * 16;
+            std::optional<MetaRevision> rev;
             try
             {
-                uint32_t hash = std::stoul(revision.metaHash, 0, 16);
-                hash = ((hash & 0xff000000) >> 24) |
-                       ((hash & 0x00FF0000) >> 8) | ((hash & 0x0000FF00) << 8) |
-                       ((hash & 0xFF) << 24);
-                devId.aux = (revision.buildNo & 0xFF) + (hash & 0xFFFFFF00);
-                fwVerInitialized = true;
+                rev = convertIntelVersion(versionString);
             }
             catch (const std::exception& e)
             {
-                Log::log<Log::level::ERR>("Failed to convert git hash",
-                                          Log::entry("ERROR=%s", e.what()));
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to get active version info",
+                    phosphor::logging::entry("ERROR=%s", e.what()));
+            }
+
+            if (rev.has_value())
+            {
+                MetaRevision revision = rev.value();
+                devId.fwMajor = static_cast<uint7_t>(revision.major);
+
+                revision.minor = (revision.minor > 99 ? 99 : revision.minor);
+                devId.fwMinor =
+                    revision.minor % 10 + (revision.minor / 10) * 16;
+                try
+                {
+                    uint32_t hash = std::stoul(revision.metaHash, 0, 16);
+                    hash = ((hash & 0xff000000) >> 24) |
+                           ((hash & 0x00FF0000) >> 8) |
+                           ((hash & 0x0000FF00) << 8) | ((hash & 0xFF) << 24);
+                    devId.aux = (revision.buildNo & 0xFF) + (hash & 0xFFFFFF00);
+                    fwVerInitialized = true;
+                }
+                catch (const std::exception& e)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "Failed to convert git hash",
+                        phosphor::logging::entry("ERROR=%s", e.what()));
+                }
             }
         }
     }
@@ -317,13 +351,15 @@ RspType<uint8_t,  // Device ID
             }
             else
             {
-                Log::log<Log::level::ERR>("Device ID JSON parser failure");
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Device ID JSON parser failure");
                 return ipmi::responseUnspecifiedError();
             }
         }
         else
         {
-            Log::log<Log::level::ERR>("Device ID file not found");
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Device ID file not found");
             return ipmi::responseUnspecifiedError();
         }
 
@@ -349,21 +385,18 @@ RspType<uint8_t,  // Device ID
         }
     }
 
-    // Set availability to the actual current BMC state
-    devId.fw[0] &= ipmiDevIdFw1Mask;
-    if (!getCurrentBmcStateWithFallback(defaultActivationSetting))
-    {
-        devId.fw[0] |= ipmiDevIdBusy;
-    }
+    // Set availability to the actual current BMC state.
+    // The availability may change in run time so don't cache.
+    bool bmcDevBusy = isBMCBusy(ctx);
 
-    return ipmi::responseSuccess(
-        devId.id, devId.revision, devId.fw[0], devId.fw[1], devId.ipmiVer,
-        devId.addnDevSupport, devId.manufId, devId.prodId, devId.aux);
+    return ipmi::responseSuccess(devId.id, devId.revision, devId.fwMajor,
+                                 bmcDevBusy, devId.fwMinor, devId.ipmiVer,
+                                 devId.addnDevSupport, devId.manufId,
+                                 devId.prodId, devId.aux);
 }
 
 static void registerAPPFunctions(void)
 {
-    Log::log<Log::level::INFO>("Registering App commands");
     // <Get Device ID>
     registerHandler(prioOemBase, netFnApp, app::cmdGetDeviceId, Privilege::User,
                     ipmiAppGetDeviceId);
