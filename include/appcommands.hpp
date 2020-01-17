@@ -33,6 +33,8 @@ typedef struct
 
 static constexpr const char *versionPurposeBMC =
     "xyz.openbmc_project.Software.Version.VersionPurpose.BMC";
+static constexpr const char *versionPurposeME =
+    "xyz.openbmc_project.Software.Version.VersionPurpose.ME";
 
 extern int getActiveSoftwareVersionInfo(ipmi::Context::ptr ctx,
                                         const std::string &reqVersionPurpose,
