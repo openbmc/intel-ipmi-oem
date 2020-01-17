@@ -306,18 +306,25 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-bool getSwVerInfo(uint8_t& bmcMajor, uint8_t& bmcMinor, uint8_t& meMajor,
-                  uint8_t& meMinor)
+bool getSwVerInfo(ipmi::Context::ptr ctx, uint8_t& bmcMajor, uint8_t& bmcMinor,
+                  uint8_t& meMajor, uint8_t& meMinor)
 {
     // step 1 : get BMC Major and Minor numbers from its DBUS property
+    std::string bmcVersion;
+    if (getActiveSoftwareVersionInfo(ctx, versionPurposeBMC, bmcVersion))
+    {
+        return false;
+    }
     std::optional<MetaRevision> rev{};
     try
     {
-        std::string version = getActiveSoftwareVersionInfo();
-        rev = convertIntelVersion(version);
+        rev = convertIntelVersion(bmcVersion);
     }
     catch (const std::exception& e)
     {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Exception caught in Intel version conversion",
+            phosphor::logging::entry("MSG=%s", e.what()));
         return false;
     }
 
@@ -358,6 +365,9 @@ bool getSwVerInfo(uint8_t& bmcMajor, uint8_t& bmcMinor, uint8_t& meMajor,
     }
     catch (sdbusplus::exception::SdBusError& e)
     {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Exception caught in ME version conversion",
+            phosphor::logging::entry("MSG=%s", e.what()));
         return false;
     }
     return true;
@@ -369,8 +379,8 @@ ipmi::RspType<
                             std::array<uint8_t, 2>, std::array<uint8_t, 2>,
                             std::array<uint8_t, 2>, std::array<uint8_t, 2>>,
                  std::tuple<uint8_t, std::array<uint8_t, 2>>>>
-    ipmiOEMGetDeviceInfo(uint8_t entityType, uint8_t countToRead,
-                         uint8_t offset)
+    ipmiOEMGetDeviceInfo(ipmi::Context::ptr ctx, uint8_t entityType,
+                         uint8_t countToRead, uint8_t offset)
 {
     if (countToRead == 0)
     {
@@ -434,7 +444,8 @@ ipmi::RspType<
             std::array<uint8_t, verLen> hsc2Buf = {0xff, 0xff};
             // data0/1: BMC version number; data6/7: ME version number
             // the others: HSC0/1/2 version number, not avaible.
-            if (true != getSwVerInfo(bmcBuf[0], bmcBuf[1], meBuf[0], meBuf[1]))
+            if (true !=
+                getSwVerInfo(ctx, bmcBuf[0], bmcBuf[1], meBuf[0], meBuf[1]))
             {
                 return ipmi::responseUnspecifiedError();
             }
