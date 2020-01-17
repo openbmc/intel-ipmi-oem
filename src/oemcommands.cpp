@@ -338,18 +338,13 @@ bool getSwVerInfo(ipmi::Context::ptr ctx, uint8_t& bmcMajor, uint8_t& bmcMinor,
     }
 
     // step 2 : get ME Major and Minor numbers from its DBUS property
+    std::string meVersion;
+    if (getActiveSoftwareVersionInfo(ctx, versionPurposeME, meVersion))
+    {
+        return false;
+    }
     try
     {
-        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        std::string service =
-            getService(*dbus, "xyz.openbmc_project.Software.Version",
-                       "/xyz/openbmc_project/software/me");
-        Value variant =
-            getDbusProperty(*dbus, service, "/xyz/openbmc_project/software/me",
-                            "xyz.openbmc_project.Software.Version", "Version");
-
-        std::string& meVersion = std::get<std::string>(variant);
-
         // get ME major number
         std::regex pattern1("(\\d+?).(\\d+?).(\\d+?).(\\d+?).(\\d+?)");
         constexpr size_t matchedPhosphor = 6;
