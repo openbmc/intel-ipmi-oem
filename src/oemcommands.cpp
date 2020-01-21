@@ -36,7 +36,10 @@
 #include <phosphor-logging/log.hpp>
 #include <regex>
 #include <sdbusplus/bus.hpp>
-#include <sdbusplus/message/types.hpp>
+#include <sdbusplus/
+
+
+ssage/types.hpp>
 #include <string>
 #include <variant>
 #include <vector>
@@ -336,18 +339,18 @@ bool getSwVerInfo(uint8_t& bmcMajor, uint8_t& bmcMinor, uint8_t& meMajor,
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         std::string service =
             getService(*dbus, "xyz.openbmc_project.Software.Version",
-                       "/xyz/openbmc_project/me_version");
+                       "/xyz/openbmc_project/software/me");
         Value variant =
-            getDbusProperty(*dbus, service, "/xyz/openbmc_project/me_version",
+            getDbusProperty(*dbus, service, "/xyz/openbmc_project/software/me",
                             "xyz.openbmc_project.Software.Version", "Version");
 
-        std::string& meString = std::get<std::string>(variant);
+        std::string& meVersion = std::get<std::string>(variant);
 
         // get ME major number
         std::regex pattern1("(\\d+?).(\\d+?).(\\d+?).(\\d+?).(\\d+?)");
         constexpr size_t matchedPhosphor = 6;
         std::smatch results;
-        if (std::regex_match(meString, results, pattern1))
+        if (std::regex_match(meVersion, results, pattern1))
         {
             if (results.size() == matchedPhosphor)
             {
@@ -369,14 +372,9 @@ ipmi::RspType<
                             std::array<uint8_t, 2>, std::array<uint8_t, 2>,
                             std::array<uint8_t, 2>, std::array<uint8_t, 2>>,
                  std::tuple<uint8_t, std::array<uint8_t, 2>>>>
-    ipmiOEMGetDeviceInfo(uint8_t entityType, uint8_t countToRead,
-                         uint8_t offset)
+    ipmiOEMGetDeviceInfo(uint8_t entityType, std::optional<uint8_t> countToRead,
+                         std::optional<uint8_t> offset)
 {
-    if (countToRead == 0)
-    {
-        return ipmi::responseReqDataLenInvalid();
-    }
-
     if (entityType > static_cast<uint8_t>(OEMDevEntityType::sdrVer))
     {
         return ipmi::responseInvalidFieldRequest();
@@ -387,6 +385,12 @@ ipmi::RspType<
     {
         case OEMDevEntityType::biosId:
         {
+            // Byte 2&3, Only used with selecting BIOS
+            if (!countToRead || !offset)
+            {
+                return ipmi::responseReqDataLenInvalid();
+            }
+
             std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
             std::string service =
                 getService(*dbus, biosVersionIntf, biosObjPath);
@@ -396,23 +400,23 @@ ipmi::RspType<
                     getDbusProperty(*dbus, service, biosObjPath,
                                     biosVersionIntf, biosVersionProp);
                 std::string& idString = std::get<std::string>(variant);
-                if (offset >= idString.size())
+                if (*offset >= idString.size())
                 {
                     return ipmi::responseParmOutOfRange();
                 }
                 size_t length = 0;
-                if (countToRead > (idString.size() - offset))
+                if (*countToRead > (idString.size() - *offset))
                 {
-                    length = idString.size() - offset;
+                    length = idString.size() - *offset;
                 }
                 else
                 {
-                    length = countToRead;
+                    length = *countToRead;
                 }
 
                 std::string readBuf = {0};
                 readBuf.resize(length);
-                std::copy_n(idString.begin() + offset, length,
+                std::copy_n(idString.begin() + *offset, length,
                             (readBuf.begin()));
                 return ipmi::responseSuccess(readBuf);
             }
@@ -425,6 +429,12 @@ ipmi::RspType<
 
         case OEMDevEntityType::devVer:
         {
+            // Byte 2&3, Only used with selecting BIOS
+            if (countToRead || offset)
+            {
+                return ipmi::responseReqDataLenInvalid();
+            }
+
             constexpr const size_t verLen = 2;
             constexpr const size_t verTotalLen = 10;
             std::array<uint8_t, verLen> bmcBuf = {0xff, 0xff};
@@ -449,6 +459,12 @@ ipmi::RspType<
 
         case OEMDevEntityType::sdrVer:
         {
+            // Byte 2&3, Only used with selecting BIOS
+            if (countToRead || offset)
+            {
+                return ipmi::responseReqDataLenInvalid();
+            }
+
             constexpr const size_t sdrLen = 2;
             std::array<uint8_t, sdrLen> readBuf = {0x01, 0x0};
             return ipmi::responseSuccess(
