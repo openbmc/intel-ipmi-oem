@@ -392,7 +392,7 @@ class FwUpdateStatusCache
             "activationTimerTimeout: Increase percentage...",
             phosphor::logging::entry("PERCENT:%d", progressPercent));
         progressPercent = progressPercent + 5;
-        if (progressPercent >= 95)
+        if (progressPercent > 95)
         {
             /*changing the state to ready to update firmware utility */
             fwUpdateState = fwStateUpdateSuccess;
@@ -548,7 +548,7 @@ static void postTransferCompleteHandler(
         [&fwUpdateMatchSignal]() { fwUpdateMatchSignal = nullptr; });
 
     static phosphor::Timer activationStatusTimer([]() {
-        if (fwUpdateStatus.activationTimerTimeout() >= 95)
+        if (fwUpdateStatus.activationTimerTimeout() > 95)
         {
             activationStatusTimer.stop();
             fwUpdateStatus.setState(
