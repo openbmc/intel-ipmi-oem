@@ -68,6 +68,16 @@ enum class IPMISensorEventEnableByte2 : uint8_t
     sensorScanningEnable = (1 << 6),
 };
 
+enum class IPMISensorThresholdComparison : uint8_t
+{
+    upperNonRecoverableThreshold = (1 << 6),
+    upperCriticalThreshold = (1 << 5),
+    upperNonCriticalThreshold = (1 << 4),
+    lowerNonRecoverableThreshold = (1 << 6),
+    lowerCriticalThreshold = (1 << 5),
+    lowerNonCriticalThreshold = (1 << 4),
+};
+
 enum class IPMISensorEventEnableThresholds : uint8_t
 {
     upperNonRecoverableGoingHigh = (1 << 3),
