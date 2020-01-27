@@ -1474,12 +1474,27 @@ ipmi::RspType<> ipmiOEMSetFanConfig(uint8_t selectedFanProfile,
 
                                     uint2_t reserved1, bool performanceMode,
                                     uint3_t reserved2, bool setPerformanceMode,
-                                    bool setFanProfile)
+                                    bool setFanProfile,
+                                    std::optional<uint8_t> dimmGroupId,
+                                    std::optional<uint32_t> dimmPresenceBitmap)
 {
     if (reserved1 || reserved2)
     {
         return ipmi::responseInvalidFieldRequest();
     }
+
+    if (dimmGroupId)
+    {
+        if (*dimmGroupId >= maxCPUNum)
+        {
+            return ipmi::responseInvalidFieldRequest();
+        }
+        if (!cpuPresent("CPU_" + std::to_string(*dimmGroupId + 1)))
+        {
+            return ipmi::responseInvalidFieldRequest();
+        }
+    }
+
     // todo: tell bios to only send first 2 bytes
     boost::container::flat_map<
         std::string, std::variant<std::vector<std::string>, std::string>>
