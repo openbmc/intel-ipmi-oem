@@ -513,6 +513,33 @@ static void setFirmwareUpdateMode(const bool mode)
     }
 }
 
+/** @brief check if channel IPMB
+ *
+ *  This function checks if the command is from IPMB
+ *
+ * @param[in] ctx - context of current session.
+ *  @returns true if the medium is IPMB else return true.
+ **/
+ipmi::Cc checkIPMBChannel(const ipmi::Context::ptr &ctx, bool &isIPMBChannel)
+{
+    ipmi::ChannelInfo chInfo;
+
+    if (ipmi::getChannelInfo(ctx->channel, chInfo) != ipmi::ccSuccess)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to get Channel Info",
+            phosphor::logging::entry("CHANNEL=%d", ctx->channel));
+        return ipmi::ccUnspecifiedError;
+    }
+
+    if (static_cast<ipmi::EChannelMediumType>(chInfo.mediumType) ==
+        ipmi::EChannelMediumType::ipmb)
+    {
+        isIPMBChannel = true;
+    }
+    return ipmi::ccSuccess;
+}
+
 static void postTransferCompleteHandler(
     std::unique_ptr<sdbusplus::bus::match::match> &fwUpdateMatchSignal)
 {
@@ -976,32 +1003,6 @@ ipmi::RspType<uint8_t, uint8_t>
 
     return ipmi::responseSuccess(
         static_cast<uint8_t>(BmcExecutionContext::linuxOs), partitionPtr);
-}
-/** @brief check if channel IPMB
- *
- *  This function checks if the command is from IPMB
- *
- * @param[in] ctx - context of current session.
- *  @returns true if the medium is IPMB else return true.
- **/
-ipmi::Cc checkIPMBChannel(const ipmi::Context::ptr &ctx, bool &isIPMBChannel)
-{
-    ipmi::ChannelInfo chInfo;
-
-    if (ipmi::getChannelInfo(ctx->channel, chInfo) != ipmi::ccSuccess)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Failed to get Channel Info",
-            phosphor::logging::entry("CHANNEL=%d", ctx->channel));
-        return ipmi::ccUnspecifiedError;
-    }
-
-    if (static_cast<ipmi::EChannelMediumType>(chInfo.mediumType) ==
-        ipmi::EChannelMediumType::ipmb)
-    {
-        isIPMBChannel = true;
-    }
-    return ipmi::ccSuccess;
 }
 /** @brief Get Firmware Update Random Number
  *
