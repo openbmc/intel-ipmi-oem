@@ -88,13 +88,22 @@ endif ()
 find_package (OpenSSL REQUIRED)
 include_directories (SYSTEM ${OPENSSL_INCLUDE_DIR})
 
+include_directories (SYSTEM ${CMAKE_BINARY_DIR})
+add_custom_command(OUTPUT include/ipmi-whitelist.hpp
+                  COMMAND ./generate-whitelist.py
+                  ARGS ipmi-whitelist.conf ${CMAKE_BINARY_DIR}/ipmi-whitelist.hpp
+                  MAIN_DEPENDENCY ipmi-whitelist.conf
+                  DEPENDS generate-whitelist.py
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_library (zinteloemcmds
              SHARED src/oemcommands.cpp src/sensorcommands.cpp
              src/storagecommands.cpp src/multinodecommands.cpp
              src/firmware-update.cpp src/appcommands.cpp src/smbioshandler.cpp
              src/smbiosmdrv2handler.cpp src/manufacturingcommands.cpp
              src/bmccontrolservices.cpp src/bridgingcommands.cpp
-             src/ipmi_to_redfish_hooks.cpp src/chassiscommands.cpp)
+             src/ipmi_to_redfish_hooks.cpp src/chassiscommands.cpp
+             src/whitelist-filter.cpp include/ipmi-whitelist.hpp)
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
 target_link_libraries (zinteloemcmds stdc++fs)
