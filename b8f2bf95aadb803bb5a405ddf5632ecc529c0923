@@ -1,0 +1,11 @@
+Ok-To-Test+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Verified+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Code-Review+1: AppaRao Puli <apparao.puli@linux.intel.com>
+Code-Review+1: <raja.sekhar.reddy.gade@linux.intel.com>
+Code-Review+1: Arun P M <arun.p.m@linux.intel.com>
+Code-Review+2: Vernon Mauery <vernon.mauery@linux.intel.com>
+Submitted-by: Jayaprakash Mutyala <mutyalax.jayaprakash@intel.com>
+Submitted-at: Tue, 04 Feb 2020 18:49:12 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/28806
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
