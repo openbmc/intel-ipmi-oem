@@ -158,17 +158,6 @@ int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
     return -1;
 }
 
-ipmi_ret_t ipmiOEMWildcard(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                           ipmi_request_t request, ipmi_response_t response,
-                           ipmi_data_len_t dataLen, ipmi_context_t context)
-{
-    printCommand(+netfn, +cmd);
-    // Status code.
-    ipmi_ret_t rc = IPMI_CC_INVALID;
-    *dataLen = 0;
-    return rc;
-}
-
 // Returns the Chassis Identifier (serial #)
 ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                        ipmi_request_t request,
@@ -3562,14 +3551,6 @@ static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Registering OEM commands");
-    ipmiPrintAndRegister(intel::netFnGeneral, IPMI_CMD_WILDCARD, NULL,
-                         ipmiOEMWildcard,
-                         PRIVILEGE_USER); // wildcard default handler
-
-    ipmiPrintAndRegister(intel::netFnApp, IPMI_CMD_WILDCARD, NULL,
-                         ipmiOEMWildcard,
-                         PRIVILEGE_USER); // wildcard default handler
-
     ipmiPrintAndRegister(intel::netFnGeneral,
                          intel::general::cmdGetChassisIdentifier, NULL,
                          ipmiOEMGetChassisIdentifier,
