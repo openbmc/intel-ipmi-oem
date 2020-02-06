@@ -263,17 +263,6 @@ static bool getSensorMap(boost::asio::yield_context yield,
 }
 
 /* sensor commands */
-ipmi_ret_t ipmiSensorWildcardHandler(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                     ipmi_request_t request,
-                                     ipmi_response_t response,
-                                     ipmi_data_len_t dataLen,
-                                     ipmi_context_t context)
-{
-    *dataLen = 0;
-    printCommand(+netfn, +cmd);
-    return IPMI_CC_INVALID;
-}
-
 namespace meHealth
 {
 constexpr const char *busname = "xyz.openbmc_project.NodeManagerProxy";
@@ -1501,19 +1490,6 @@ ipmi::RspType<uint16_t,            // next record ID
 
 void registerSensorFunctions()
 {
-    // get firmware version information
-    ipmiPrintAndRegister(NETFUN_SENSOR, IPMI_CMD_WILDCARD, nullptr,
-                         ipmiSensorWildcardHandler, PRIVILEGE_USER);
-
-    // <Get Sensor Type>
-    ipmiPrintAndRegister(NETFUN_SENSOR, ipmi::sensor_event::cmdGetSensorType,
-                         nullptr, ipmiSensorWildcardHandler, PRIVILEGE_USER);
-
-    // <Set Sensor Reading and Event Status>
-    ipmiPrintAndRegister(
-        NETFUN_SENSOR, ipmi::sensor_event::cmdSetSensorReadingAndEvtSts,
-        nullptr, ipmiSensorWildcardHandler, PRIVILEGE_OPERATOR);
-
     // <Platform Event>
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
                           ipmi::sensor_event::cmdPlatformEvent,
