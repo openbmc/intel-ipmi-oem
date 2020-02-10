@@ -758,6 +758,7 @@ static int detachUsbDevice()
 }
 static uint8_t getActiveBootImage(ipmi::Context::ptr ctx)
 {
+    constexpr uint8_t undefinedImage = 0x00;
     constexpr uint8_t primaryImage = 0x01;
     constexpr uint8_t secondaryImage = 0x02;
     constexpr const char *secondaryFitImageStartAddr = "22480000";
@@ -772,11 +773,12 @@ static uint8_t getActiveBootImage(ipmi::Context::ptr ctx)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Failed to read the bootcmd value");
-        return ipmi::ccUnspecifiedError;
+        /* don't fail, just give back undefined until it is ready */
+        bootImage = undefinedImage;
     }
 
     /* cheking for secondary FitImage Address 22480000  */
-    if (value.find(secondaryFitImageStartAddr) != std::string::npos)
+    else if (value.find(secondaryFitImageStartAddr) != std::string::npos)
     {
         bootImage = secondaryImage;
     }
