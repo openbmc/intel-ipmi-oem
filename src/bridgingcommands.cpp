@@ -237,7 +237,8 @@ static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
 
 ipmi::Cc Bridging::handleIpmbChannel(const uint8_t tracking,
                                      const std::vector<uint8_t> &msgData,
-                                     std::vector<uint8_t> &rspData)
+                                     std::vector<uint8_t> &rspData,
+                                     size_t *dataLength)
 {
     auto sendMsgReqData = (ipmbHeader *)&msgData[0];
     // TODO: check privilege lvl. Bridging to ME requires Administrator lvl
@@ -327,9 +328,8 @@ ipmi::Cc Bridging::handleIpmbChannel(const uint8_t tracking,
         }
         case modeTrackRequest:
         {
-            size_t dataLength = 0;
             respReceived.ipmbToi2cConstruct(
-                reinterpret_cast<uint8_t *>(rspData.data()), &dataLength);
+                reinterpret_cast<uint8_t *>(rspData.data()), dataLength);
             return ipmi::ccSuccess;
         }
         default:
@@ -374,7 +374,7 @@ ipmi::RspType<std::vector<uint8_t> // responseData
     ipmiAppSendMessage(const uint4_t channelNumber,
                        const bool authenticationEnabled,
                        const bool encryptionEnabled, const uint2_t tracking,
-                       const std::vector<uint8_t> msg)
+                       ipmi::message::Payload &msg)
 {
     // check message fields:
     // encryption not supported
@@ -394,8 +394,11 @@ ipmi::RspType<std::vector<uint8_t> // responseData
     }
 
     ipmi::Cc returnVal;
-    std::vector<uint8_t> rspData;
-    rspData.resize(sizeof(ipmbHeader));
+    std::vector<uint8_t> rspData(ipmbMaxFrameLength);
+    size_t dataLength = 0;
+    int msgLen = msg.size();
+    // std::vector<uint8_t> unpackMsg(msgLen);
+    std::vector<uint8_t> unpackMsg;
 
     auto channelNo = static_cast<const uint8_t>(channelNumber);
     // Get the channel number
@@ -404,8 +407,17 @@ ipmi::RspType<std::vector<uint8_t> // responseData
         // we only handle ipmb for now
         case targetChannelIpmb:
         case targetChannelOtherLan:
-            returnVal = bridging.handleIpmbChannel(
-                static_cast<const uint8_t>(tracking), msg, rspData);
+            if (msg.unpack(unpackMsg) != 0 || !msg.fullyUnpacked())
+            {
+                return ipmi::responseReqDataLenInvalid();
+            }
+
+            // Since Payload message contain first byte also.
+            unpackMsg.resize(msgLen - 1);
+
+            returnVal =
+                bridging.handleIpmbChannel(static_cast<const uint8_t>(tracking),
+                                           unpackMsg, rspData, &dataLength);
             break;
         // fall through to default
         case targetChannelIcmb10:
@@ -426,7 +438,10 @@ ipmi::RspType<std::vector<uint8_t> // responseData
         return ipmi::response(returnVal);
     }
 
-    return ipmi::responseSuccess(rspData);
+    std::vector<uint8_t> rspVector(dataLength);
+    std::copy_n(rspData.begin(), dataLength, rspVector.begin());
+
+    return ipmi::responseSuccess(rspVector);
 }
 
 /**
