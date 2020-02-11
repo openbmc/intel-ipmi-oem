@@ -1583,7 +1583,7 @@ ipmi::RspType<uint8_t, // profile support map
         flags |= 1 << 2;
     }
 
-    return ipmi::responseSuccess(0, 0, flags, 0);
+    return ipmi::responseSuccess(0x80, 0, flags, 0);
 }
 constexpr const char* cfmLimitSettingPath =
     "/xyz/openbmc_project/control/cfm_limit";
