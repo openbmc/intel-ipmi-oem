@@ -1598,7 +1598,13 @@ ipmi::RspType<uint8_t, // profile support map
         flags |= 1 << 2;
     }
 
-    return ipmi::responseSuccess(0, 0, flags, 0);
+    constexpr uint8_t fanControlDefaultProfile = 0x80;
+    constexpr uint8_t fanControlProfileState = 0x00;
+    constexpr uint32_t dimmPresenceBitmap = 0x00;
+
+    return ipmi::responseSuccess(fanControlDefaultProfile,
+                                 fanControlProfileState, flags,
+                                 dimmPresenceBitmap);
 }
 constexpr const char* cfmLimitSettingPath =
     "/xyz/openbmc_project/control/cfm_limit";
