@@ -3537,6 +3537,103 @@ ipmi::RspType<uint8_t, uint8_t> ipmiOEMGetBufferSize()
     return ipmi::responseSuccess(kcsMaxBufferSize, ipmbMaxBufferSize);
 }
 
+static constexpr const char* oemSpdMuxIntf = "com.intel.Control.SpdMuxCtrl";
+static constexpr const char* oemSpdMuxObjPath = "/com/intel/control/SpdMuxCtrl";
+static constexpr const char* oemSpdMuxProp = "Enabled";
+
+/*********
+ *  1. This is GPIO output Pin, set it as output with value.
+ *  2 . As for GPIO pin status, it's need to keep its value local
+ *  after it's set.
+ ***********/
+static bool setGPIOOutput(const std::string& name, const int value,
+                          gpiod::line& gpioLine)
+{
+    // Find the GPIO line
+    gpioLine = gpiod::find_line(name);
+    if (!gpioLine)
+    {
+        std::cerr << "Failed to find the " << name << " line.\n";
+        return false;
+    }
+
+    // Request GPIO output to specified value
+    try
+    {
+        gpioLine.request({__FUNCTION__, gpiod::line_request::DIRECTION_OUTPUT},
+                         value);
+    }
+    catch (std::exception&)
+    {
+        std::cerr << "Failed to request " << name << " output\n";
+        return false;
+    }
+
+    return true;
+}
+
+ipmi::RspType<> ipmiOEMSetSpdMux(uint8_t spdMuxState)
+{
+    static constexpr const char* spdMuxName = "FM_SPD_SWITCH_CTRL_N";
+    static gpiod::line spdMuxLine;
+    bool ret = false;
+
+    // Set SPD Mux GPIO.
+    ret = setGPIOOutput(spdMuxName, spdMuxState, spdMuxLine);
+    if (ret == false)
+    {
+        return ipmi::responseResponseError();
+    }
+
+    // keep the GPIO value to local D-Bus property
+    try
+    {
+        // keep SPD Mux GPIO status
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        std::string service =
+            getService(*dbus, oemSpdMuxIntf, oemSpdMuxObjPath);
+        setDbusProperty(*dbus, service, oemSpdMuxObjPath, oemSpdMuxIntf,
+                        oemSpdMuxProp, static_cast<bool>(spdMuxState));
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
+/**********
+ *  read the GPIO pin status from local after setting its output vaule
+ *  since it's output pin.
+ *****************/
+ipmi::RspType<uint8_t> ipmiOEMGetSpdMux()
+{
+    uint8_t gpioStatus = 0;
+
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        std::string service =
+            getService(*dbus, oemSpdMuxIntf, oemSpdMuxObjPath);
+        Value variant = getDbusProperty(*dbus, service, oemSpdMuxObjPath,
+                                        oemSpdMuxIntf, oemSpdMuxProp);
+        auto pTmp = std::get_if<bool>(&variant);
+        if (pTmp != nullptr)
+        {
+            gpioStatus = static_cast<uint8_t>(*pTmp);
+        }
+    }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess(gpioStatus);
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -3707,6 +3804,13 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetBufferSize, Privilege::User,
                     ipmiOEMGetBufferSize);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetSpdMux, Privilege::User,
+                    ipmiOEMSetSpdMux);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetSpdMux, Privilege::User,
+                    ipmiOEMGetSpdMux);
 }
 
 } // namespace ipmi
