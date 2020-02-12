@@ -307,7 +307,8 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
         });
 
     // no special handling for non-system-interface channels
-    if (request->ctx->channel != ipmi::channelSystemIface)
+    if (!(request->ctx->channel == ipmi::channelSystemIface ||
+          request->ctx->channel == ipmi::channelSMM))
     {
         if (!whitelisted)
         {
