@@ -54,6 +54,7 @@ class WhitelistFilter
 
     RestrictionMode::Modes restrictionMode = restrictionModeRestricted;
     bool postCompleted = false;
+    int channelSMM = -1;
     std::shared_ptr<sdbusplus::asio::connection> bus;
     std::unique_ptr<sdbusplus::bus::match::match> modeChangeMatch;
     std::unique_ptr<sdbusplus::bus::match::match> modeIntfAddedMatch;
@@ -66,6 +67,27 @@ class WhitelistFilter
         "xyz.openbmc_project.State.OperatingSystem.Status";
 };
 
+static inline uint8_t getSMMChannel()
+{
+    ipmi::ChannelInfo chInfo;
+
+    for (int channel = 0; channel < ipmi::maxIpmiChannels; channel++)
+    {
+        if (ipmi::getChannelInfo(channel, chInfo) != ipmi::ccSuccess)
+        {
+            continue;
+        }
+
+        if (static_cast<ipmi::EChannelMediumType>(chInfo.mediumType) ==
+                ipmi::EChannelMediumType::systemInterface &&
+            channel != ipmi::channelSystemIface)
+        {
+            return channel;
+        }
+    }
+    return -1;
+}
+
 WhitelistFilter::WhitelistFilter()
 {
     bus = getSdBus();
@@ -76,6 +98,16 @@ WhitelistFilter::WhitelistFilter()
                          [this](ipmi::message::Request::ptr request) {
                              return filterMessage(request);
                          });
+
+    channelSMM = getSMMChannel();
+    if (channelSMM == -1)
+    {
+        log<level::ERR>("Unable to find SMM Channel Info");
+    }
+    else
+    {
+        log<level::INFO>("SMM channel number", entry("CHANNEL=%d", channelSMM));
+    }
 
     // wait until io->run is going to fetch RestrictionMode
     post_work([this]() { postInit(); });
@@ -307,7 +339,8 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
         });
 
     // no special handling for non-system-interface channels
-    if (request->ctx->channel != ipmi::channelSystemIface)
+    if (!(request->ctx->channel == ipmi::channelSystemIface ||
+          request->ctx->channel == channelSMM))
     {
         if (!whitelisted)
         {
