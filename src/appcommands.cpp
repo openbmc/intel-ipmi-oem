@@ -22,7 +22,6 @@
 #include <nlohmann/json.hpp>
 #include <phosphor-logging/log.hpp>
 #include <regex>
-#include <xyz/openbmc_project/State/BMC/server.hpp>
 
 namespace ipmi
 {
@@ -39,38 +38,79 @@ static constexpr const char* associationIntf =
 static constexpr const char* softwareFunctionalPath =
     "/xyz/openbmc_project/software/functional";
 
-using BMC = sdbusplus::xyz::openbmc_project::State::server::BMC;
-constexpr auto bmc_state_interface = "xyz.openbmc_project.State.BMC";
-constexpr auto bmc_state_property = "CurrentBMCState";
+static constexpr const char* currentBmcStateProp = "CurrentBMCState";
+static constexpr const char* bmcStateReadyStr =
+    "xyz.openbmc_project.State.BMC.BMCState.Ready";
 
-bool getCurrentBmcState()
+static std::unique_ptr<sdbusplus::bus::match::match> bmcStateChangedSignal;
+static uint8_t bmcDeviceBusy = true;
+
+int initBMCDeviceState(ipmi::Context::ptr ctx)
 {
-    sdbusplus::bus::bus bus{ipmid_get_sd_bus_connection()};
-
-    // Get the Inventory object implementing the BMC interface
-    ipmi::DbusObjectInfo bmcObject =
-        ipmi::getDbusObject(bus, bmc_state_interface);
-    auto variant =
-        ipmi::getDbusProperty(bus, bmcObject.second, bmcObject.first,
-                              bmc_state_interface, bmc_state_property);
-
-    return std::holds_alternative<std::string>(variant) &&
-           BMC::convertBMCStateFromString(std::get<std::string>(variant)) ==
-               BMC::BMCState::Ready;
-}
-
-bool getCurrentBmcStateWithFallback(const bool fallbackAvailability)
-{
-    try
+    DbusObjectInfo objInfo;
+    boost::system::error_code ec =
+        ipmi::getDbusObject(ctx, bmcStateIntf, "/", "bmc0", objInfo);
+    if (ec)
     {
-        return getCurrentBmcState();
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "initBMCDeviceState: Failed to perform GetSubTree action",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()),
+            phosphor::logging::entry("INTERFACE=%s", bmcStateIntf));
+        return -1;
     }
-    catch (...)
+
+    std::string bmcState;
+    ec = ipmi::getDbusProperty(ctx, objInfo.second, objInfo.first, bmcStateIntf,
+                               currentBmcStateProp, bmcState);
+    if (ec)
     {
-        // Nothing provided the BMC interface, therefore return whatever was
-        // configured as the default.
-        return fallbackAvailability;
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "initBMCDeviceState: Failed to get CurrentBMCState property",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+        return -1;
     }
+
+    bmcDeviceBusy = (bmcState != bmcStateReadyStr);
+
+    phosphor::logging::log<phosphor::logging::level::INFO>(
+        "BMC device state updated");
+
+    // BMC state may change runtime while doing firmware udpate.
+    // Register for property change signal to update state.
+    bmcStateChangedSignal = std::make_unique<sdbusplus::bus::match::match>(
+        *(ctx->bus),
+        sdbusplus::bus::match::rules::propertiesChanged(objInfo.first,
+                                                        bmcStateIntf),
+        [](sdbusplus::message::message& msg) {
+            std::map<std::string, sdbusplus::message::variant<std::string>>
+                props;
+            std::vector<std::string> inVal;
+            std::string iface;
+            try
+            {
+                msg.read(iface, props, inVal);
+            }
+            catch (const std::exception& e)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Exception caught in Get CurrentBMCState");
+                return;
+            }
+
+            auto it = props.find(currentBmcStateProp);
+            if (it != props.end())
+            {
+                std::string* state = std::get_if<std::string>(&it->second);
+                if (state)
+                {
+                    bmcDeviceBusy = (*state != bmcStateReadyStr);
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "BMC device state updated");
+                }
+            }
+        });
+
+    return 0;
 }
 
 /**
@@ -244,7 +284,7 @@ RspType<uint8_t,  // Device ID
     } devId;
     static bool fwVerInitialized = false;
     static bool devIdInitialized = false;
-    static bool defaultActivationSetting = false;
+    static bool bmcStateInitialized = false;
     const char* filename = "/usr/share/ipmi-providers/dev_id.json";
     const char* prodIdFilename = "/var/cache/private/prodID";
     if (!fwVerInitialized)
@@ -329,12 +369,16 @@ RspType<uint8_t,  // Device ID
         }
     }
 
-    // Set availability to the actual current BMC state.
-    // The availability may change in run time so don't cache.
-    bool bmcDevBusy = getCurrentBmcStateWithFallback(defaultActivationSetting);
+    if (!bmcStateInitialized)
+    {
+        if (!initBMCDeviceState(ctx))
+        {
+            bmcStateInitialized = true;
+        }
+    }
 
     return ipmi::responseSuccess(devId.id, devId.revision, devId.fwMajor,
-                                 bmcDevBusy, devId.fwMinor, devId.ipmiVer,
+                                 bmcDeviceBusy, devId.fwMinor, devId.ipmiVer,
                                  devId.addnDevSupport, devId.manufId,
                                  devId.prodId, devId.aux);
 }
