@@ -319,7 +319,7 @@ ipmi::RspType<uint8_t,             // Count
     }
     else
     {
-        return ipmi::responseInvalidFieldRequest();
+        return ipmi::responseReqDataLenExceeded();
     }
 
     std::vector<uint8_t> requestedData;
