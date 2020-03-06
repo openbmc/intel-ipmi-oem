@@ -19,6 +19,7 @@
 #include <cstring>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
+#include <manufacturingcommands.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/bus/match.hpp>
@@ -201,6 +202,7 @@ static constexpr unsigned int makeCmdKey(unsigned int netFn, unsigned int cmd)
 static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
 {
     constexpr uint8_t netFnMeOEM = 0x2E;
+    constexpr uint8_t netFnMeOEMGeneral = 0x3E;
     constexpr uint8_t cmdMeOemSendRawPeci = 0x40;
     constexpr uint8_t cmdMeOemAggSendRawPeci = 0x41;
     constexpr uint8_t cmdMeOemCpuPkgConfWrite = 0x43;
@@ -224,8 +226,8 @@ static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
         case makeCmdKey(netFnMeOEM, cmdMeOemCpuPciConfWrite):
         case makeCmdKey(netFnMeOEM, cmdMeOemReadMemSmbus):
         case makeCmdKey(netFnMeOEM, cmdMeOemWriteMemSmbus):
-        case makeCmdKey(netFnMeOEM, cmdMeOemSlotIpmb):
-        case makeCmdKey(netFnMeOEM, cmdMeOemSlotI2cMasterWriteRead):
+        case makeCmdKey(netFnMeOEMGeneral, cmdMeOemSlotIpmb):
+        case makeCmdKey(netFnMeOEMGeneral, cmdMeOemSlotI2cMasterWriteRead):
         case makeCmdKey(netFnMeOEM, cmdMeOemSendRawPmbus):
         case makeCmdKey(netFnMeOEM, cmdMeOemUnlockMeRegion):
         case makeCmdKey(netFnMeOEM, cmdMeOemAggSendRawPmbus):
@@ -239,6 +241,8 @@ ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
                                               ipmi_response_t response,
                                               ipmi_data_len_t dataLen)
 {
+    ipmi::Manufacturing mtm;
+
     if ((*dataLen < (sizeof(sSendMessageReq) + ipmbMinFrameLength)) ||
         (*dataLen > (sizeof(sSendMessageReq) + ipmbMaxFrameLength)))
     {
@@ -260,10 +264,13 @@ ipmi_return_codes Bridging::handleIpmbChannel(sSendMessageReq *sendMsgReq,
     }
 
     constexpr uint8_t shiftLUN = 2;
-    if (!isMeCmdAllowed((sendMsgReqData->Header.Req.rsNetFnLUN >> shiftLUN),
-                        sendMsgReqData->Header.Req.cmd))
+    if (mtm.getMfgMode() == ipmi::SpecialMode::none)
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        if (!isMeCmdAllowed((sendMsgReqData->Header.Req.rsNetFnLUN >> shiftLUN),
+                            sendMsgReqData->Header.Req.cmd))
+        {
+            return IPMI_CC_INSUFFICIENT_PRIVILEGE;
+        }
     }
 
     // check allowed modes
