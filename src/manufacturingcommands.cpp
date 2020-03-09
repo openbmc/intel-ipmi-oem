@@ -962,11 +962,11 @@ ipmi::RspType<std::vector<uint8_t>>
 ipmi::RspType<> clearCMOS()
 {
     // There is an i2c device on bus 4, the slave address is 0x38. Based on the
-    // spec, writing 0x1 to address 0x60 on this device, will trigger the clear
+    // spec, writing 0x1 to address 0x61 on this device, will trigger the clear
     // CMOS action.
     constexpr uint8_t slaveAddr = 0x38;
     std::string i2cBus = "/dev/i2c-4";
-    std::vector<uint8_t> writeData = {0x60, 0x1};
+    std::vector<uint8_t> writeData = {0x61, 0x1};
     std::vector<uint8_t> readBuf(0);
 
     if (mtm.getMfgMode() == SpecialMode::none)
