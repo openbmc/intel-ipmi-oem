@@ -3558,6 +3558,54 @@ ipmi::RspType<uint8_t, uint8_t> ipmiOEMGetBufferSize()
     return ipmi::responseSuccess(kcsMaxBufferSize, ipmbMaxBufferSize);
 }
 
+ipmi::RspType<> ipmiOEMSetSlaveAddr(ipmi::Context::ptr ctx, uint8_t addr)
+{
+    boost::system::error_code ec;
+    ctx->bus->yield_method_call<>(ctx->yield, ec, "xyz.openbmc_project.modular",
+                                  "/xyz/openbmc_project/modular/master",
+                                  "xyz.openbmc_project.modular.master",
+                                  "setSlaveAddr", addr);
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to call D-Bus to set slave addr");
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
+static constexpr const uint8_t maxNodeId = 4;
+static constexpr const int bufferSize = 255;
+ipmi::RspType<> ipmiOEMRecvEvt(const std::vector<uint8_t> event)
+{
+    char* log = new char[bufferSize];
+    uint8_t id = event[0];
+    if (id >= maxNodeId)
+    {
+        std::cerr << "Node ID is invalid\n";
+        return ipmi::responseResponseError();
+    }
+    if (event.size() > (bufferSize - 1))
+    {
+        std::cerr << "Node log data length out of range\n";
+        return ipmi::responseReqDataLenInvalid();
+    }
+    std::copy(event.begin() + 1, event.end(), log);
+    std::string nodeRedfishLogFile =
+        "/var/log/redfishNode" + std::to_string(id);
+    std::ofstream file(nodeRedfishLogFile, std::ios_base::app);
+    if (!file.good())
+    {
+        std::cerr << "Error writing node redfish log file\n";
+        return ipmi::responseResponseError();
+    }
+    file.write(log, event.size());
+    file.put('\n');
+    file.close();
+    return ipmi::responseSuccess();
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -3728,6 +3776,13 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetBufferSize, Privilege::User,
                     ipmiOEMGetBufferSize);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetSlaveAddr, Privilege::User,
+                    ipmiOEMSetSlaveAddr);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdReceiveEvent, Privilege::User,
+                    ipmiOEMRecvEvt);
 }
 
 } // namespace ipmi
