@@ -966,7 +966,7 @@ ipmi::RspType<> clearCMOS()
     // CMOS action.
     constexpr uint8_t slaveAddr = 0x38;
     std::string i2cBus = "/dev/i2c-4";
-    std::vector<uint8_t> writeData = {0x60, 0x1};
+    std::vector<uint8_t> writeData = {0x61, 0x1};
     std::vector<uint8_t> readBuf(0);
 
     if (mtm.getMfgMode() == SpecialMode::none)
