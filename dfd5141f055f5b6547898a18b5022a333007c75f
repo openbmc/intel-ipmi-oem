@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1860fa27_3105aec4",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3561,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-03-09T10:39:55Z",
+      "side": 1,
+      "message": "const reference (const ipmi::Context::ptr\u0026 ctx)",
+      "range": {
+        "startLine": 3561,
+        "startChar": 36,
+        "endLine": 3561,
+        "endChar": 58
+      },
+      "revId": "dfd5141f055f5b6547898a18b5022a333007c75f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b6369de1_87e88dfb",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3566,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-03-09T10:39:55Z",
+      "side": 1,
+      "message": "Is this interface defined in phosphor-dbus-insterfaces? If not, Please do push that and get that merged first.",
+      "range": {
+        "startLine": 3566,
+        "startChar": 35,
+        "endLine": 3566,
+        "endChar": 70
+      },
+      "revId": "dfd5141f055f5b6547898a18b5022a333007c75f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c8b722b2_721fe52f",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3581,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-03-09T10:39:55Z",
+      "side": 1,
+      "message": "We need to validate this node id for correct and max ranges.",
+      "range": {
+        "startLine": 3581,
+        "startChar": 17,
+        "endLine": 3581,
+        "endChar": 26
+      },
+      "revId": "dfd5141f055f5b6547898a18b5022a333007c75f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e92307f8_67298226",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3582,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-03-09T10:39:55Z",
+      "side": 1,
+      "message": "Is it needs max check? supported 254( Leaving one byte for id)",
+      "range": {
+        "startLine": 3582,
+        "startChar": 33,
+        "endLine": 3582,
+        "endChar": 44
+      },
+      "revId": "dfd5141f055f5b6547898a18b5022a333007c75f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1496826f_4cc417c3",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3585,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-03-09T10:39:55Z",
+      "side": 1,
+      "message": "Isn\u0027t the Redfish log file data will have some format? How this raw data can be decoded for Redfish event logs?\n\nSince you are not logging Log time stamp, how that will be calculated?",
+      "range": {
+        "startLine": 3583,
+        "startChar": 4,
+        "endLine": 3585,
+        "endChar": 63
+      },
+      "revId": "dfd5141f055f5b6547898a18b5022a333007c75f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    }
+  ]
+}
