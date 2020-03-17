@@ -197,7 +197,7 @@ class Bridging
 
     void clearResponseQueue();
 
-    ipmi::Cc handleIpmbChannel(const uint8_t tracking,
+    ipmi::Cc handleIpmbChannel(ipmi::Context::ptr ctx, const uint8_t tracking,
                                const std::vector<uint8_t> &msgData,
                                std::vector<uint8_t> &rspData);
 
