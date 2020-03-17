@@ -238,7 +238,8 @@ static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
     }
 }
 
-ipmi::Cc Bridging::handleIpmbChannel(const uint8_t tracking,
+ipmi::Cc Bridging::handleIpmbChannel(ipmi::Context::ptr ctx,
+                                     const uint8_t tracking,
                                      const std::vector<uint8_t> &msgData,
                                      std::vector<uint8_t> &rspData)
 {
@@ -291,20 +292,17 @@ ipmi::Cc Bridging::handleIpmbChannel(const uint8_t tracking,
 
     auto ipmbRequest = IpmbRequest(sendMsgReqData, msgLen);
 
-    std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
-        ipmbResponse;
+    typedef std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t,
+                       std::vector<uint8_t>>
+        IPMBResponse;
 
     // send request to IPMB
-    try
-    {
-        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        auto mesg =
-            dbus->new_method_call(ipmbBus, ipmbObj, ipmbIntf, "sendRequest");
-        ipmbRequest.prepareRequest(mesg);
-        auto ret = dbus->call(mesg);
-        ret.read(ipmbResponse);
-    }
-    catch (sdbusplus::exception::SdBusError &e)
+    boost::system::error_code ec;
+    auto ipmbResponse = ctx->bus->yield_method_call<IPMBResponse>(
+        ctx->yield, ec, ipmbBus, ipmbObj, ipmbIntf, "sendRequest",
+        ipmbMeChannelNum, ipmbRequest.netFn, ipmbRequest.rqLun, ipmbRequest.cmd,
+        ipmbRequest.data);
+    if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "handleIpmbChannel, dbus call exception");
@@ -387,7 +385,7 @@ IpmbResponse Bridging::getMessageFromQueue()
  **/
 ipmi::RspType<std::vector<uint8_t> // responseData
               >
-    ipmiAppSendMessage(const uint4_t channelNumber,
+    ipmiAppSendMessage(ipmi::Context::ptr ctx, const uint4_t channelNumber,
                        const bool authenticationEnabled,
                        const bool encryptionEnabled, const uint2_t tracking,
                        ipmi::message::Payload &msg)
@@ -427,7 +425,7 @@ ipmi::RspType<std::vector<uint8_t> // responseData
             }
 
             returnVal = bridging.handleIpmbChannel(
-                static_cast<const uint8_t>(tracking), unpackMsg, rspData);
+                ctx, static_cast<const uint8_t>(tracking), unpackMsg, rspData);
             break;
         // fall through to default
         case targetChannelIcmb10:
