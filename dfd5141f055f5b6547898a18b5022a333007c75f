@@ -96,6 +96,30 @@
     },
     {
       "key": {
+        "uuid": "3dc0613f_c86aed61",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3566,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-03-17T11:12:32Z",
+      "side": 1,
+      "message": "Hmmm Since we don\u0027t have separate phosphor-dbus-interface and its not interest for upstream, that may be best option we can take. Thanks for clarification.",
+      "parentUuid": "b9bc87b0_9c682e43",
+      "range": {
+        "startLine": 3566,
+        "startChar": 35,
+        "endLine": 3566,
+        "endChar": 70
+      },
+      "revId": "dfd5141f055f5b6547898a18b5022a333007c75f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c8b722b2_721fe52f",
         "filename": "src/oemcommands.cpp",
         "patchSetId": 2
@@ -225,6 +249,30 @@
       "side": 1,
       "message": "I am still working on the display of the node redfish log in BMCWEB, this command is only for ipmbbridge to transfer slave logs to master.",
       "parentUuid": "1496826f_4cc417c3",
+      "range": {
+        "startLine": 3583,
+        "startChar": 4,
+        "endLine": 3585,
+        "endChar": 63
+      },
+      "revId": "dfd5141f055f5b6547898a18b5022a333007c75f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1b86df34_ec1c1d9c",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3585,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-03-17T11:12:32Z",
+      "side": 1,
+      "message": "May be some comment there will help for TODO.",
+      "parentUuid": "4c749132_3f7c1d18",
       "range": {
         "startLine": 3583,
         "startChar": 4,
