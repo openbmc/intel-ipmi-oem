@@ -3008,6 +3008,26 @@ ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
     return ipmi::responseSuccess();
 }
 
+ipmi::RspType<> ipmiOEMSetNICEnable(uint8_t nicID, bool value, uint7_t rsv)
+{
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        std::string objPath = networkRoot;
+        objPath += "/eth" + std::to_string(nicID);
+        std::string service = getService(*dbus, ethernetIntf, objPath);
+        setDbusProperty(*dbus, service, objPath, ethernetIntf, "NICEnabled",
+                        value);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
 namespace dimmOffset
 {
 constexpr const char* dimmPower = "DimmPower";
@@ -3670,6 +3690,10 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetBufferSize, Privilege::User,
                     ipmiOEMGetBufferSize);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetNICEnable, Privilege::Admin,
+                    ipmiOEMSetNICEnable);
 }
 
 } // namespace ipmi
