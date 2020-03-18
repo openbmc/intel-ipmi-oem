@@ -42,6 +42,8 @@ class WhitelistFilter
     void updatePostComplete(const std::string& value);
     void updateRestrictionMode(const std::string& value);
     ipmi::Cc filterMessage(ipmi::message::Request::ptr request);
+    void handlCoreBiosDoneChange(sdbusplus::message::message& m);
+    void cacheCoreBiosDone();
 
     // the BMC KCS Policy Control Modes document uses different names
     // than the RestrictionModes D-Bus interface; use aliases
@@ -53,18 +55,23 @@ class WhitelistFilter
         RestrictionMode::Modes::ProvisionedHostDisabled;
 
     RestrictionMode::Modes restrictionMode = restrictionModeRestricted;
-    bool postCompleted = false;
+    bool postCompleted = true;
+    bool coreBIOSDone = true;
     int channelSMM = -1;
     std::shared_ptr<sdbusplus::asio::connection> bus;
     std::unique_ptr<sdbusplus::bus::match::match> modeChangeMatch;
     std::unique_ptr<sdbusplus::bus::match::match> modeIntfAddedMatch;
     std::unique_ptr<sdbusplus::bus::match::match> postCompleteMatch;
     std::unique_ptr<sdbusplus::bus::match::match> postCompleteIntfAddedMatch;
+    std::unique_ptr<sdbusplus::bus::match::match> platStateChangeMatch;
+    std::unique_ptr<sdbusplus::bus::match::match> platStateIntfAddedMatch;
 
     static constexpr const char restrictionModeIntf[] =
         "xyz.openbmc_project.Control.Security.RestrictionMode";
     static constexpr const char* systemOsStatusIntf =
         "xyz.openbmc_project.State.OperatingSystem.Status";
+    static constexpr const char* hostMiscIntf =
+        "xyz.openbmc_project.State.Host.Misc";
 };
 
 static inline uint8_t getSMMChannel()
@@ -272,6 +279,84 @@ void WhitelistFilter::handlePostCompleteChange(sdbusplus::message::message& m)
         updatePostComplete(std::get<std::string>(itr->second));
     }
 }
+
+void WhitelistFilter::cacheCoreBiosDone()
+{
+    std::string coreBiosDonePath;
+    std::string coreBiosDoneService;
+    try
+    {
+        ipmi::DbusObjectInfo coreBiosDoneObj =
+            ipmi::getDbusObject(*bus, hostMiscIntf);
+
+        coreBiosDonePath = coreBiosDoneObj.first;
+        coreBiosDoneService = coreBiosDoneObj.second;
+    }
+    catch (const std::exception&)
+    {
+        coreBIOSDone = true;
+        log<level::ERR>("Could not initialize CoreBiosDone , setting "
+                        "CoreBiosDone = true as default");
+        return;
+    }
+
+    bus->async_method_call(
+        [this](boost::system::error_code ec, const ipmi::Value& v) {
+            if (ec)
+            {
+                coreBIOSDone = true;
+                log<level::ERR>("async call failed, Setting CoreBiosDone = "
+                                "true as default");
+                return;
+            }
+            coreBIOSDone = std::get<bool>(v);
+            log<level::INFO>("Read CoreBiosDone",
+                             entry("VALUE=%d", static_cast<int>(coreBIOSDone)));
+        },
+        coreBiosDoneService, coreBiosDonePath,
+        "org.freedesktop.DBus.Properties", "Get", hostMiscIntf, "CoreBiosDone");
+}
+
+void WhitelistFilter::handlCoreBiosDoneChange(sdbusplus::message::message& m)
+{
+    std::string signal = m.get_member();
+    if (signal == "PropertiesChanged")
+    {
+        std::string intf;
+        std::vector<std::pair<std::string, ipmi::Value>> propertyList;
+        m.read(intf, propertyList);
+        for (const auto& property : propertyList)
+        {
+            if (property.first == "CoreBiosDone")
+            {
+                coreBIOSDone = std::get<bool>(property.second);
+                log<level::INFO>(coreBIOSDone ? "Updated to coreBIOSDone"
+                                              : "Updated to !coreBIOSDone");
+            }
+        }
+    }
+    else if (signal == "InterfacesAdded")
+    {
+        sdbusplus::message::object_path path;
+        DbusInterfaceMap eSpiresetObj;
+        m.read(path, eSpiresetObj);
+        auto intfItr = eSpiresetObj.find(hostMiscIntf);
+        if (intfItr == eSpiresetObj.end())
+        {
+            return;
+        }
+        PropertyMap& propertyList = intfItr->second;
+        auto itr = propertyList.find("CoreBiosDone");
+        if (itr == propertyList.end())
+        {
+            return;
+        }
+        coreBIOSDone = std::get<bool>(itr->second);
+        log<level::INFO>(coreBIOSDone ? "Updated to coreBIOSDone"
+                                      : "Updated to !coreBIOSDone");
+    }
+}
+
 void WhitelistFilter::postInit()
 {
     // Wait for changes on Restricted mode
@@ -295,6 +380,15 @@ void WhitelistFilter::postInit()
         rules::interfacesAdded() +
         rules::argNpath(0, "/xyz/openbmc_project/state/os");
 
+    const std::string filterStrPlatStateChange =
+        rules::type::signal() + rules::member("PropertiesChanged") +
+        rules::interface("org.freedesktop.DBus.Properties") +
+        rules::argN(0, hostMiscIntf);
+
+    const std::string filterStrPlatStateIntfAdd =
+        rules::interfacesAdded() +
+        rules::argNpath(0, "/xyz/openbmc_project/misc/platform_state");
+
     modeChangeMatch = std::make_unique<sdbusplus::bus::match::match>(
         *bus, filterStrModeChange, [this](sdbusplus::message::message& m) {
             handleRestrictedModeChange(m);
@@ -314,8 +408,18 @@ void WhitelistFilter::postInit()
             handlePostCompleteChange(m);
         });
 
+    platStateChangeMatch = std::make_unique<sdbusplus::bus::match::match>(
+        *bus, filterStrPlatStateChange,
+        [this](sdbusplus::message::message& m) { handlCoreBiosDoneChange(m); });
+
+    platStateIntfAddedMatch = std::make_unique<sdbusplus::bus::match::match>(
+        *bus, filterStrPlatStateIntfAdd,
+        [this](sdbusplus::message::message& m) { handlCoreBiosDoneChange(m); });
+
     // Initialize restricted mode
     cacheRestrictedAndPostCompleteMode();
+    // Initialize CoreBiosDone
+    cacheCoreBiosDone();
 }
 
 ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
@@ -353,9 +457,9 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
     //                  ( whitelist ? ccSuccess : // ccCommandNotAvailable )
     // Deny All:   preboot ? ccSuccess : ccCommandNotAvailable
 
-    if (!postCompleted)
+    if (!(postCompleted || coreBIOSDone))
     {
-        // Allow all commands, till POST is not completed
+        // Allow all commands, till POST or CoreBiosDone is completed
         return ipmi::ccSuccess;
     }
 
