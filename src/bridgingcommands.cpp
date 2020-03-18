@@ -253,8 +253,13 @@ ipmi::Cc Bridging::handleIpmbChannel(ipmi::Context::ptr ctx,
         return ipmi::ccReqDataLenInvalid;
     }
 
+    // Bridging to ME requires Administrator lvl
+    if ((ctx->priv) != ipmi::Privilege::Admin)
+    {
+        return ipmi::ccInsufficientPrivilege;
+    }
+
     auto sendMsgReqData = reinterpret_cast<const ipmbHeader *>(msgData.data());
-    // TODO: check privilege lvl. Bridging to ME requires Administrator lvl
 
     // allow bridging to ME only
     if (sendMsgReqData->Header.Req.address != ipmbMeSlaveAddress)
