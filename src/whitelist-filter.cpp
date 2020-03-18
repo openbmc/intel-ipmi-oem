@@ -42,6 +42,14 @@ class WhitelistFilter
     void updatePostComplete(const std::string& value);
     void updateRestrictionMode(const std::string& value);
     ipmi::Cc filterMessage(ipmi::message::Request::ptr request);
+    void initAsyncRead();
+    void asyncReadeSPI();
+    void processMessageeSPI(const boost::system::error_code& ecRd, size_t rlen);
+    void asyncReadMailbox();
+    void processMessageMailbox(const boost::system::error_code& ecRd,
+                               size_t rlen);
+    void clearMboxDataRegB();
+    void channelAbort(const char* msg, const boost::system::error_code& ec);
 
     // the BMC KCS Policy Control Modes document uses different names
     // than the RestrictionModes D-Bus interface; use aliases
@@ -51,20 +59,29 @@ class WhitelistFilter
         RestrictionMode::Modes::ProvisionedHostWhitelist;
     static constexpr RestrictionMode::Modes restrictionModeDenyAll =
         RestrictionMode::Modes::ProvisionedHostDisabled;
+    static constexpr size_t espiMessageSize = 1;
+    static constexpr size_t mboxMessageSize = 16;
 
     RestrictionMode::Modes restrictionMode = restrictionModeRestricted;
     bool postCompleted = false;
+    bool coreBIOSDone = false;
+    int mboxfd;
     int channelSMM = -1;
     std::shared_ptr<sdbusplus::asio::connection> bus;
     std::unique_ptr<sdbusplus::bus::match::match> modeChangeMatch;
     std::unique_ptr<sdbusplus::bus::match::match> modeIntfAddedMatch;
     std::unique_ptr<sdbusplus::bus::match::match> postCompleteMatch;
     std::unique_ptr<sdbusplus::bus::match::match> postCompleteIntfAddedMatch;
+    std::array<uint8_t, espiMessageSize> eSPIBuffer;
+    std::array<uint8_t, mboxMessageSize> mboxBuffer;
+    std::shared_ptr<boost::asio::io_context> io;
 
     static constexpr const char restrictionModeIntf[] =
         "xyz.openbmc_project.Control.Security.RestrictionMode";
     static constexpr const char* systemOsStatusIntf =
         "xyz.openbmc_project.State.OperatingSystem.Status";
+    std::unique_ptr<boost::asio::posix::stream_descriptor> eSPIDev = nullptr;
+    std::unique_ptr<boost::asio::posix::stream_descriptor> mboxDev = nullptr;
 };
 
 static inline uint8_t getSMMChannel()
@@ -316,6 +333,144 @@ void WhitelistFilter::postInit()
 
     // Initialize restricted mode
     cacheRestrictedAndPostCompleteMode();
+    // Initialize eSPI and Mailbox asyncRead
+    initAsyncRead();
+}
+
+void WhitelistFilter::initAsyncRead()
+{
+    io = getIoContext();
+
+    std::string eSPIdevName = "/dev/espi-pltrstn";
+    int eSPIfd = open(eSPIdevName.c_str(), O_RDONLY | O_NONBLOCK);
+    if (eSPIfd < 0)
+    {
+        log<level::ERR>("Couldn't open eSPI dev",
+                        entry("FILENAME=%s", eSPIdevName.c_str()),
+                        entry("ERROR=%s", strerror(errno)));
+        return;
+    }
+    else
+    {
+        eSPIDev = std::make_unique<boost::asio::posix::stream_descriptor>(
+            *io, eSPIfd);
+    }
+    asyncReadeSPI();
+
+    std::string mboxDevName = "/dev/aspeed-mbox";
+    mboxfd = open(mboxDevName.c_str(), O_RDWR | O_NONBLOCK | O_SYNC);
+    if (mboxfd < 0)
+    {
+        log<level::ERR>("Couldn't open Mailbox dev",
+                        entry("FILENAME=%s", mboxDevName.c_str()),
+                        entry("ERROR=%s", strerror(errno)));
+        return;
+    }
+    else
+    {
+        mboxDev = std::make_unique<boost::asio::posix::stream_descriptor>(
+            *io, mboxfd);
+    }
+    asyncReadMailbox();
+}
+
+void WhitelistFilter::channelAbort(const char* msg,
+                                   const boost::system::error_code& ec)
+{
+    log<level::ERR>(msg, entry("ERROR=%s", ec.message().c_str()));
+    // bail; maybe a restart from systemd can clear the error
+    io->stop();
+}
+
+void WhitelistFilter::processMessageeSPI(const boost::system::error_code& ecRd,
+                                         size_t rlen)
+{
+    if (ecRd || rlen < 1)
+    {
+        channelAbort("Failed to read eSPI", ecRd);
+        return;
+    }
+
+    uint8_t eSPIReset = 0;
+    eSPIReset = std::get<0>(eSPIBuffer);
+    log<level::INFO>("Received eSPI reset", entry("ESPIVALUE=0x%x", eSPIReset));
+
+    if (0 != eSPIReset && coreBIOSDone)
+    {
+        coreBIOSDone = false;
+        log<level::INFO>(coreBIOSDone ? "Updated to coreBIOSDone"
+                                      : "Updated to !coreBIOSDone");
+        clearMboxDataRegB();
+    }
+    asyncReadeSPI();
+}
+
+void WhitelistFilter::asyncReadeSPI()
+{
+    boost::asio::async_read(
+        *eSPIDev, boost::asio::buffer(eSPIBuffer, eSPIBuffer.size()),
+        boost::asio::transfer_at_least(1),
+        [this](const boost::system::error_code& ec, size_t rlen) {
+            processMessageeSPI(ec, rlen);
+        });
+}
+
+void WhitelistFilter::processMessageMailbox(
+    const boost::system::error_code& ecRd, size_t rlen)
+{
+    if (ecRd || rlen < 1)
+    {
+        channelAbort("Failed to read Mailbox", ecRd);
+        return;
+    }
+
+    static uint8_t mboxDataRegBValue;
+    static uint8_t newMboxDataRegBValue;
+    constexpr unsigned int mboxDataRegB = 0x0B;
+
+    newMboxDataRegBValue = std::get<mboxDataRegB>(mboxBuffer);
+    if (mboxDataRegBValue != newMboxDataRegBValue)
+    {
+        mboxDataRegBValue = newMboxDataRegBValue;
+        log<level::INFO>("Mailbox value modified",
+                         entry("MBOXVALUE=0x%x", mboxDataRegBValue));
+
+        if (!coreBIOSDone && mboxDataRegBValue == 0x02)
+        {
+            coreBIOSDone = true;
+            log<level::INFO>("Updated to coreBIOSDone");
+        }
+        else if (coreBIOSDone &&
+                 (mboxDataRegBValue == 0x00 || mboxDataRegBValue == 0x01))
+        {
+            coreBIOSDone = false;
+            log<level::INFO>("Updated to !coreBIOSDone");
+        }
+    }
+    asyncReadMailbox();
+}
+
+void WhitelistFilter::asyncReadMailbox()
+{
+    boost::asio::async_read(
+        *mboxDev, boost::asio::buffer(mboxBuffer, mboxBuffer.size()),
+        boost::asio::transfer_at_least(mboxMessageSize),
+        [this](const boost::system::error_code& ec, size_t rlen) {
+            processMessageMailbox(ec, rlen);
+        });
+}
+
+void WhitelistFilter::clearMboxDataRegB()
+{
+    const uint8_t mboxDataRegBVal = 0x00;
+    const unsigned int mboxDataRegB = 0x0B;
+    size_t rc;
+
+    rc = pwrite(mboxfd, &mboxDataRegBVal, 1, mboxDataRegB);
+    if (rc == 1)
+        log<level::INFO>("MBXDATA_B cleared");
+    else
+        log<level::ERR>("Error clearing MBXDATA_B");
 }
 
 ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
@@ -352,6 +507,12 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
     // Restricted: preboot ? ccSuccess :
     //                  ( whitelist ? ccSuccess : // ccCommandNotAvailable )
     // Deny All:   preboot ? ccSuccess : ccCommandNotAvailable
+
+    if (!coreBIOSDone)
+    {
+        // Allow all command, till CORE-BIOS-DONE
+        return ipmi::ccSuccess;
+    }
 
     if (!postCompleted)
     {
