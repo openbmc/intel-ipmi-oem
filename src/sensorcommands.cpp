@@ -211,7 +211,7 @@ static void getSensorMaxMin(const SensorMap &sensorMap, double &max,
 
 static bool getSensorMap(boost::asio::yield_context yield,
                          std::string sensorConnection, std::string sensorPath,
-                         SensorMap &sensorMap)
+                         SensorMap &sensorMap, const bool refreshNow = false)
 {
     static boost::container::flat_map<
         std::string, std::chrono::time_point<std::chrono::steady_clock>>
@@ -226,8 +226,9 @@ static bool getSensorMap(boost::asio::yield_context yield,
 
     auto now = std::chrono::steady_clock::now();
 
-    if (std::chrono::duration_cast<std::chrono::seconds>(now - lastUpdate)
-            .count() > sensorMapUpdatePeriod)
+    if (refreshNow ||
+        (std::chrono::duration_cast<std::chrono::seconds>(now - lastUpdate)
+             .count() > sensorMapUpdatePeriod))
     {
         updateTimeMap[sensorConnection] = now;
 
@@ -746,7 +747,7 @@ ipmi::RspType<uint8_t, // readable
     }
 
     SensorMap sensorMap;
-    if (!getSensorMap(yield, connection, path, sensorMap))
+    if (!getSensorMap(yield, connection, path, sensorMap, true))
     {
         return ipmi::responseResponseError();
     }
