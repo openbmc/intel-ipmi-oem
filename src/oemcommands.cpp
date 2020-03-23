@@ -606,6 +606,54 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
     return ipmi::responseSuccess();
 }
 
+ipmi::RspType<uint8_t, std::vector<uint8_t>>
+    ipmiOEMSlotIpmb(uint6_t reserved1, uint2_t slotNumber,
+                    uint3_t baseBoardSlotNum, uint3_t riserSlotNum,
+                    uint2_t reserved2, uint8_t slaveAddr, uint8_t netFn,
+                    uint8_t cmd, std::optional<std::vector<uint8_t>> writeData)
+{
+    if (reserved1 || reserved2)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+    constexpr const char* ipmbBus = "xyz.openbmc_project.Ipmi.Channel.Ipmb";
+    constexpr const char* ipmbObj = "/xyz/openbmc_project/Ipmi/Channel/Ipmb";
+    constexpr const char* ipmbIntf = "org.openbmc.Ipmb";
+
+    // send request to IPMB
+    std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
+        ipmbResponse;
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        auto mesg = dbus->new_method_call(ipmbBus, ipmbObj, ipmbIntf,
+                                          "SlotIpmbRequest");
+        mesg.append(static_cast<uint8_t>(slotNumber),
+                    static_cast<uint8_t>(baseBoardSlotNum), slaveAddr, netFn,
+                    cmd, *writeData);
+        auto ret = dbus->call(mesg);
+        ret.read(ipmbResponse);
+    }
+    catch (sdbusplus::exception::SdBusError& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "handleIpmbChannel, dbus call exception");
+        return ipmi::responseResponseError();
+    }
+
+    std::vector<uint8_t> dataReceived(0);
+    int status = -1;
+    uint8_t resNetFn = 0, resLun = 0, resCmd = 0, cc = 0;
+
+    std::tie(status, resNetFn, resLun, resCmd, cc, dataReceived) = ipmbResponse;
+
+    if (!status)
+        return ipmi::responseSuccess(cc, dataReceived);
+
+    else
+        return ipmi::responseResponseError();
+}
+
 ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                        ipmi_request_t request,
                                        ipmi_response_t response,
@@ -3544,6 +3592,9 @@ static void registerOEMFunctions(void)
     registerHandler(prioOpenBmcBase, intel::netFnGeneral,
                     intel::general::cmdSendEmbeddedFWUpdStatus,
                     Privilege::Operator, ipmiOEMSendEmbeddedFwUpdStatus);
+
+    registerHandler(prioOpenBmcBase, intel::netFnApp, intel::app::cmdSlotIpmb,
+                    Privilege::Admin, ipmiOEMSlotIpmb);
 
     ipmiPrintAndRegister(intel::netFnGeneral,
                          intel::general::cmdSetPowerRestoreDelay, NULL,

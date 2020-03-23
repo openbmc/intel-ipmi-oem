@@ -106,6 +106,7 @@ static constexpr Cmd cmdMdrIISendDataInfo = 0x3a;
 static constexpr Cmd cmdMdrIIDataStart = 0x3b;
 static constexpr Cmd cmdMdrIIDataDone = 0x3c;
 static constexpr Cmd cmdMdrIISendDataBlock = 0x3d;
+static constexpr Cmd cmdSlotIpmb = 0x51;
 } // namespace app
 
 } // namespace intel
