@@ -40,6 +40,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <xyz/openbmc_project/BIOSConfig/BIOSConfigMgr/server.hpp>
 #include <xyz/openbmc_project/Chassis/Control/NMISource/server.hpp>
 #include <xyz/openbmc_project/Control/Boot/Mode/server.hpp>
 #include <xyz/openbmc_project/Control/Boot/Source/server.hpp>
@@ -3507,6 +3508,209 @@ ipmi::RspType<uint8_t, uint8_t> ipmiOEMGetBufferSize()
     return ipmi::responseSuccess(kcsMaxBufferSize, ipmbMaxBufferSize);
 }
 
+namespace biosPayloadStatus
+{
+using namespace sdbusplus::xyz::openbmc_project::BIOSConfig::server;
+std::map<BIOSConfigMgr::PayloadStatus, uint8_t> payloadStatusDbusToIpmi = {
+    {BIOSConfigMgr::PayloadStatus::StartTransfer, 0},
+    {BIOSConfigMgr::PayloadStatus::InProgress, 1},
+    {BIOSConfigMgr::PayloadStatus::EndTransfer, 2},
+    {BIOSConfigMgr::PayloadStatus::UserAbort, 3},
+    {BIOSConfigMgr::PayloadStatus::Valid, 4},
+    {BIOSConfigMgr::PayloadStatus::Corrupted, 5}};
+std::map<BIOSConfigMgr::PayloadType, uint8_t> payloadTypeDbusToIpmi = {
+    {BIOSConfigMgr::PayloadType::Payload0, 0},
+    {BIOSConfigMgr::PayloadType::Payload1, 1},
+    {BIOSConfigMgr::PayloadType::Payload2, 2},
+    {BIOSConfigMgr::PayloadType::Payload3, 3},
+    {BIOSConfigMgr::PayloadType::Payload4, 4},
+    {BIOSConfigMgr::PayloadType::Payload5, 5},
+    {BIOSConfigMgr::PayloadType::Payload6, 6}};
+} // namespace biosPayloadStatus
+
+int setBiosPayload(ipmi::Context::ptr ctx, std::vector<uint32_t>& retValue,
+                   sdbusplus::xyz::openbmc_project::BIOSConfig::server::
+                       BIOSConfigMgr::PayloadStatus payloadStatus,
+                   sdbusplus::xyz::openbmc_project::BIOSConfig::server::
+                       BIOSConfigMgr::PayloadType payloadType,
+                   uint32_t reservationID, uint16_t payloadVersion,
+                   uint32_t payloadSize, uint32_t payloadChecksum,
+                   uint32_t totalSize, uint32_t totalChecksum,
+                   std::vector<uint8_t> data,
+                   std::chrono::microseconds timeout = ipmi::IPMI_DBUS_TIMEOUT)
+{
+    boost::system::error_code ec;
+    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+    std::string service = getService(*dbus, rbcCapIntf, rbcObjPath);
+    retValue = ctx->bus->yield_method_call<std::vector<uint32_t>>(
+        ctx->yield, ec, service, rbcObjPath, rbcCapIntf, "SetPayload",
+        payloadStatus, payloadType, payloadVersion, payloadSize,
+        payloadChecksum, totalSize, totalChecksum, data);
+
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to setBiosPayload");
+        return -1;
+    }
+    return 0;
+}
+
+int getBiosCap(uint32_t& biosCapProp,
+               std::chrono::microseconds timeout = ipmi::IPMI_DBUS_TIMEOUT)
+{
+    boost::system::error_code ec;
+    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+    std::string service = getService(*dbus, rbcCapIntf, rbcObjPath);
+
+    Value variant =
+        getDbusProperty(*dbus, service, rbcObjPath, rbcCapIntf, rbcCapProp);
+    biosCapProp = std::get<std::uint32_t>(variant);
+
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to getBiosCap");
+        return -1;
+    }
+    return 0;
+}
+
+/** @brief implements
+ *
+ *  .
+ *
+ *  @returns IPMI completion code with following data
+ *   - OOB BIOS Feature Capability
+ *   - Byte 3-5 - Reserved
+ **/
+ipmi::RspType<uint8_t, uint8_t, uint8_t, uint8_t> ipmiOEMGetBIOSCap()
+{
+    uint8_t biosCap = 0;
+    uint8_t reserved1 = 0;
+    uint8_t reserved2 = 0;
+    uint8_t reserved3 = 0;
+    uint8_t biosCapOffsetBits =
+        24; // (sizeof(reserved1) + sizeof(reserved2) + sizeof(reserved3)) * 8;
+    std::uint32_t biosCapProp = 0;
+
+    if (getBiosCap(biosCapProp))
+    {
+        return ipmi::responseResponseError();
+    }
+    biosCap = biosCapProp >> biosCapOffsetBits;
+
+    return ipmi::responseSuccess(biosCap, reserved1, reserved2, reserved3);
+}
+
+/** @brief implements
+ *
+ *  .
+ *
+ *  @returns
+ **/
+ipmi::RspType<> ipmiOEMSetBIOSCap(uint8_t capability, uint8_t reserved1,
+                                  uint8_t reserved2, uint8_t reserved3)
+{
+    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+    std::string service = getService(*dbus, rbcCapIntf, rbcObjPath);
+    try
+    {
+        setDbusProperty(*dbus, service, rbcObjPath, rbcCapIntf, rbcCapProp,
+                        capability);
+    }
+    catch (std::bad_variant_access& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseUnspecifiedError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
+/** @brief implements the BIOS set payload command
+ *
+ *
+ *  @param ctx - ctx pointer
+ *  @param .
+ *
+ *  @returns
+ */
+ipmi::RspType<uint32_t, uint32_t, uint32_t>
+    ipmiOEMSetPayload(ipmi::Context::ptr ctx, std::vector<uint8_t> payload)
+{
+    using namespace sdbusplus::xyz::openbmc_project::BIOSConfig::server;
+    using namespace biosPayloadStatus;
+    uint8_t biosCap = 0; // BIT:1 0-OOB BIOS config not supported
+                         //      1-OOB BIOS config is supported
+                         // BIT:2 0-OOB BIOS Update not supported
+                         //      1-OOB BIOS Update is supported
+    uint8_t biosConfigBit = 2;
+    uint8_t biosUpdateBit = 4;
+    uint8_t biosCapOffsetBits = 24;
+    uint32_t biosCapProp = 0;
+    PayloadStartTransfer* pPayloadStartTransfer =
+        (PayloadStartTransfer*)payload.data();
+
+    if (getBiosCap(biosCapProp))
+    {
+        return ipmi::responseResponseError();
+    }
+    biosCap = biosCapProp >> biosCapOffsetBits;
+
+    if (!(biosCap & biosConfigBit) || !(biosCap & biosUpdateBit))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "BIOS capability is not supported");
+        return ipmi::responseUnspecifiedError();
+    }
+    switch (BIOSConfigMgr::PayloadStatus(pPayloadStartTransfer->paramSel))
+    {
+        case BIOSConfigMgr::PayloadStatus::StartTransfer:
+        {
+            if (BIOSConfigMgr::PayloadType(
+                    pPayloadStartTransfer->payloadType) ==
+                    BIOSConfigMgr::PayloadType::Payload0 &&
+                payload.size() < 13)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "BiosPayloadType::biosXmlType0 but payload is less than 13 "
+                    "byes");
+                return ipmi::responseUnspecifiedError();
+            }
+            std::vector<uint32_t> retValue;
+            if (setBiosPayload(
+                    ctx, retValue, BIOSConfigMgr::PayloadStatus::StartTransfer,
+                    BIOSConfigMgr::PayloadType(
+                        pPayloadStartTransfer->payloadType),
+                    0, pPayloadStartTransfer->payloadVersion, 0, 0,
+                    pPayloadStartTransfer->payloadTotalSize,
+                    pPayloadStartTransfer->payloadTotalChecksum, payload))
+            {
+                return ipmi::responseResponseError();
+            }
+            if (retValue.size() < 3)
+            {
+                return ipmi::responseUnspecifiedError();
+            }
+            SetPayloadRetValue* pSetPayloadRetValue =
+                (SetPayloadRetValue*)retValue.data();
+            return ipmi::responseSuccess(
+                pSetPayloadRetValue->reservationToken,
+                pSetPayloadRetValue->actualPayloadWritten,
+                pSetPayloadRetValue->actualTotalPayloadWritten);
+        }
+        case BIOSConfigMgr::PayloadStatus::InProgress:
+            break;
+        case BIOSConfigMgr::PayloadStatus::EndTransfer:
+            break;
+        case BIOSConfigMgr::PayloadStatus::UserAbort:
+            break;
+        default:
+            return ipmi::responseInvalidFieldRequest();
+    }
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -3670,6 +3874,14 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetBufferSize, Privilege::User,
                     ipmiOEMGetBufferSize);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetBIOSCap, Privilege::Admin,
+                    ipmiOEMGetBIOSCap);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetPayload, Privilege::Admin,
+                    ipmiOEMSetPayload);
 }
 
 } // namespace ipmi
