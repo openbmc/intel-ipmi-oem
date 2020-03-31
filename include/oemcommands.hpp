@@ -73,6 +73,12 @@ static constexpr Cmd cmdGetBmcServiceStatus = 0xB2;
 static constexpr Cmd cmdGetSecurityMode = 0xB3;
 static constexpr Cmd cmdSetSecurityMode = 0xB4;
 static constexpr Cmd cmdMtmKeepAlive = 0xB5;
+static constexpr Cmd cmdSetBIOSCap = 0xD3;
+static constexpr Cmd cmdGetBIOSCap = 0xD4;
+static constexpr Cmd cmdSetPayload = 0xD5;
+static constexpr Cmd cmdGetPayload = 0xD6;
+static constexpr Cmd cmdSetBIOSPwdHashInfo = 0xD7;
+static constexpr Cmd cmdGetBIOSPwdHash = 0xD8;
 static constexpr Cmd cmdGetNmiStatus = 0xE5;
 static constexpr Cmd cmdSetEfiBootOptions = 0xEA;
 static constexpr Cmd cmdGetEfiBootOptions = 0xEB;
@@ -158,6 +164,12 @@ static constexpr const char* biosObjPath = "/xyz/openbmc_project/software/bios";
 static constexpr const char* biosVersionIntf =
     "xyz.openbmc_project.Software.Version";
 static constexpr const char* biosVersionProp = "Version";
+
+static constexpr const char* rbcObjPath =
+    "/xyz/openbmc_project/BIOSConfig/BIOSConfigMgr";
+static constexpr const char* rbcCapIntf =
+    "xyz.openbmc_project.BIOSConfig.BIOSConfigMgr";
+static constexpr const char* rbcCapProp = "RBCCapability";
 
 static constexpr const char* powerRestoreDelayObjPath =
     "/xyz/openbmc_project/control/power_restore_delay";
@@ -318,6 +330,23 @@ struct CfgHostSerialReq
 {
     uint8_t command;
     uint8_t parameter;
+};
+
+struct PayloadStartTransfer
+{
+    uint8_t paramSel;
+    uint8_t payloadType;
+    uint16_t payloadVersion;
+    uint32_t payloadSize;
+    uint32_t payloadChecksum;
+    uint32_t payloadFlag;
+};
+
+struct SetPayloadRetValue
+{
+    uint32_t reservationToken;
+    uint32_t actualPayloadWritten;
+    uint32_t actualTotalPayloadWritten;
 };
 #pragma pack(pop)
 
