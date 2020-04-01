@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "50836bd1_75a8b675",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3618,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-04-01T17:54:21Z",
+      "side": 1,
+      "message": "Response should be 4 bytes (based on the parameter-StartTransfer returns ReservationID)",
+      "revId": "19f3bce33ecbecd4cd600f663df0ef3aaf08abf7",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
