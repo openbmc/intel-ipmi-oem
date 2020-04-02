@@ -97,7 +97,7 @@ add_custom_command(OUTPUT include/ipmi-whitelist.hpp
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library (zinteloemcmds
-             SHARED src/oemcommands.cpp src/sensorcommands.cpp
+             SHARED src/oemcommands.cpp src/sensorcommands.cpp src/biosconfigcommands.cpp
              src/storagecommands.cpp src/multinodecommands.cpp
              src/firmware-update.cpp src/appcommands.cpp src/smbioshandler.cpp
              src/smbiosmdrv2handler.cpp src/manufacturingcommands.cpp
@@ -116,6 +116,9 @@ target_link_libraries (zinteloemcmds -luserlayer)
 target_link_libraries (zinteloemcmds -lchannellayer)
 target_link_libraries (zinteloemcmds ${OPENSSL_CRYPTO_LIBRARY})
 target_link_libraries (zinteloemcmds gpiodcxx)
+
+find_package (tinyxml2 REQUIRED)
+target_link_libraries (zinteloemcmds tinyxml2)
 
 install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
 option (INTEL_PFR_ENABLED "Intel PFR Enabled" OFF)
