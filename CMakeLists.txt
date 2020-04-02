@@ -30,6 +30,7 @@ add_definitions (-DBOOST_NO_TYPEID)
 add_definitions (-DBOOST_ASIO_DISABLE_THREADS)
 add_definitions (-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 add_definitions (-Wno-psabi)
+add_definitions (-Wno-deprecated)
 
 if (NOT YOCTO) # headers that can't be built without yocto
     include_directories (SYSTEM non-yocto)
@@ -97,7 +98,7 @@ add_custom_command(OUTPUT include/ipmi-whitelist.hpp
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library (zinteloemcmds
-             SHARED src/oemcommands.cpp src/sensorcommands.cpp
+             SHARED src/oemcommands.cpp src/sensorcommands.cpp src/biosconfigcommands.cpp
              src/storagecommands.cpp src/multinodecommands.cpp
              src/firmware-update.cpp src/appcommands.cpp src/smbioshandler.cpp
              src/smbiosmdrv2handler.cpp src/manufacturingcommands.cpp
