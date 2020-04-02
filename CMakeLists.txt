@@ -23,7 +23,7 @@ set (
 project (intel-ipmi-oem CXX)
 
 add_definitions (-DBOOST_ERROR_CODE_HEADER_ONLY)
-add_definitions (-DBOOST_SYSTEM_NO_DEPRECATED)
+#add_definitions (-DBOOST_SYSTEM_NO_DEPRECATED)
 add_definitions (-DBOOST_ALL_NO_LIB)
 add_definitions (-DBOOST_NO_RTTI)
 add_definitions (-DBOOST_NO_TYPEID)
@@ -97,7 +97,7 @@ add_custom_command(OUTPUT include/ipmi-whitelist.hpp
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library (zinteloemcmds
-             SHARED src/oemcommands.cpp src/sensorcommands.cpp
+             SHARED src/oemcommands.cpp src/sensorcommands.cpp src/biosconfigcommands.cpp
              src/storagecommands.cpp src/multinodecommands.cpp
              src/firmware-update.cpp src/appcommands.cpp src/smbioshandler.cpp
              src/smbiosmdrv2handler.cpp src/manufacturingcommands.cpp
