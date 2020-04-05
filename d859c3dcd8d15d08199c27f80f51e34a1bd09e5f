@@ -56,6 +56,29 @@
       "revId": "d859c3dcd8d15d08199c27f80f51e34a1bd09e5f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ffcab694_9d1f489e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 521,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-04-05T00:50:57Z",
+      "side": 1,
+      "message": "case GetPayloadParameter::GetPayloadStatus:\n        {\n            \n            return responseSuccess(res.payloadStatus);\n        }",
+      "range": {
+        "startLine": 517,
+        "startChar": 1,
+        "endLine": 521,
+        "endChar": 9
+      },
+      "revId": "d859c3dcd8d15d08199c27f80f51e34a1bd09e5f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
