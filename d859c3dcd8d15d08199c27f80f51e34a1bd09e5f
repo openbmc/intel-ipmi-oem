@@ -19,6 +19,29 @@
     },
     {
       "key": {
+        "uuid": "a34df9d1_8367fe5f",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 290,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-04-05T21:56:18Z",
+      "side": 1,
+      "message": "Error handling Need to check the data length",
+      "range": {
+        "startLine": 288,
+        "startChar": 12,
+        "endLine": 290,
+        "endChar": 60
+      },
+      "revId": "d859c3dcd8d15d08199c27f80f51e34a1bd09e5f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6b420348_3b9c9e2f",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 13
@@ -76,6 +99,23 @@
         "endLine": 521,
         "endChar": 9
       },
+      "revId": "d859c3dcd8d15d08199c27f80f51e34a1bd09e5f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2eb7407d_7ff2c54f",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 522,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-04-05T21:56:18Z",
+      "side": 1,
+      "message": "Need to fix this. Its returning  more than one bytes  for get payload - payloadstatus\nipmitool raw 0x30 0xd6 0x0 0x2 - response should be \u003cpayload status\u003e",
       "revId": "d859c3dcd8d15d08199c27f80f51e34a1bd09e5f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
