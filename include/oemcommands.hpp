@@ -155,7 +155,8 @@ enum class IPMIReturnCodeExt
 
 static constexpr const uint8_t maxBIOSIDLength = 0xFF;
 static constexpr const uint8_t maxCPUNum = 4;
-static constexpr const char* biosObjPath = "/xyz/openbmc_project/software/bios";
+static constexpr const char* biosObjPath =
+    "/xyz/openbmc_project/software/bios_active";
 static constexpr const char* biosVersionIntf =
     "xyz.openbmc_project.Software.Version";
 static constexpr const char* biosVersionProp = "Version";
