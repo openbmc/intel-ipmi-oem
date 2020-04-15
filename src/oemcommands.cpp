@@ -285,8 +285,8 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     std::string idString((char*)data->biosId, data->biosIDLength);
 
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    std::string service = getService(*dbus, biosVersionIntf, biosObjPath);
-    setDbusProperty(*dbus, service, biosObjPath, biosVersionIntf,
+    std::string service = getService(*dbus, biosVersionIntf, biosActiveObjPath);
+    setDbusProperty(*dbus, service, biosActiveObjPath, biosVersionIntf,
                     biosVersionProp, idString);
     uint8_t* bytesWritten = static_cast<uint8_t*>(response);
     *bytesWritten =
@@ -363,11 +363,11 @@ ipmi::RspType<
 
             std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
             std::string service =
-                getService(*dbus, biosVersionIntf, biosObjPath);
+                getService(*dbus, biosVersionIntf, biosActiveObjPath);
             try
             {
                 Value variant =
-                    getDbusProperty(*dbus, service, biosObjPath,
+                    getDbusProperty(*dbus, service, biosActiveObjPath,
                                     biosVersionIntf, biosVersionProp);
                 std::string& idString = std::get<std::string>(variant);
                 if (*offset >= idString.size())
