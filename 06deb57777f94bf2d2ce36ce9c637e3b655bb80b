@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d212d655_cdbb5d42",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-04-15T16:01:19Z",
+      "side": 1,
+      "message": "Please remove this. Make this independent of dbus interface",
+      "revId": "06deb57777f94bf2d2ce36ce9c637e3b655bb80b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "abd77583_2c0351e8",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-04-15T16:01:19Z",
+      "side": 1,
+      "message": "Please define the needed enum in our code. Similar to the BIOSConfig Manager daemon",
+      "revId": "06deb57777f94bf2d2ce36ce9c637e3b655bb80b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
