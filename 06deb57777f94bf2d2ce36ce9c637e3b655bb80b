@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "f92ea711_1b164f7b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 20
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000218
+      },
+      "writtenOn": "2020-04-16T05:36:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e86c08a3_ca7a06f7",
+      "revId": "06deb57777f94bf2d2ce36ce9c637e3b655bb80b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d212d655_cdbb5d42",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 20
@@ -30,6 +48,24 @@
       "writtenOn": "2020-04-15T16:01:19Z",
       "side": 1,
       "message": "Please remove this. Make this independent of dbus interface",
+      "revId": "06deb57777f94bf2d2ce36ce9c637e3b655bb80b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9c148c7b_0410822a",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000218
+      },
+      "writtenOn": "2020-04-16T05:36:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d212d655_cdbb5d42",
       "revId": "06deb57777f94bf2d2ce36ce9c637e3b655bb80b",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
