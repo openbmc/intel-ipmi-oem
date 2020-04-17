@@ -15,6 +15,8 @@
 */
 
 #pragma once
+#include <boost/algorithm/string/join.hpp>
+#include <phosphor-logging/log.hpp>
 #include <storagecommands.hpp>
 
 namespace intel_oem::ipmi::sel
@@ -74,5 +76,29 @@ enum class BIOSEventTypes
     reservedA0 = 0xa0,
     reservedF0 = 0xf0,
 };
+
+static inline bool defaultMessageHook(const std::string& ipmiRaw)
+{
+    // Log the record as a default Redfish message instead of a SEL record
+
+    static const std::string openBMCMessageRegistryVersion("0.1");
+    std::string messageID =
+        "OpenBMC." + openBMCMessageRegistryVersion + ".SELEntryAdded";
+
+    std::vector<std::string> messageArgs;
+    messageArgs.push_back(ipmiRaw);
+
+    // Log the Redfish message to the journal with the appropriate metadata
+    std::string journalMsg = "SEL Entry Added: " + ipmiRaw;
+    std::string messageArgsString = boost::algorithm::join(messageArgs, ",");
+    phosphor::logging::log<phosphor::logging::level::INFO>(
+        journalMsg.c_str(),
+        phosphor::logging::entry("REDFISH_MESSAGE_ID=%s", messageID.c_str()),
+        phosphor::logging::entry("REDFISH_MESSAGE_ARGS=%s",
+                                 messageArgsString.c_str()));
+
+    return true;
+}
+
 } // namespace redfish_hooks
 } // namespace intel_oem::ipmi::sel

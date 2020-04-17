@@ -14,11 +14,10 @@
 // limitations under the License.
 */
 
-#include <boost/algorithm/string/join.hpp>
 #include <boost/beast/core/span.hpp>
 #include <iomanip>
 #include <ipmi_to_redfish_hooks.hpp>
-#include <phosphor-logging/log.hpp>
+#include <me_to_redfish_hooks.hpp>
 #include <sstream>
 #include <storagecommands.hpp>
 #include <string_view>
@@ -38,29 +37,6 @@ static void toHexStr(const boost::beast::span<uint8_t> bytes,
         stream << std::setw(2) << static_cast<int>(byte);
     }
     hexStr = stream.str();
-}
-
-static bool defaultMessageHook(const std::string& ipmiRaw)
-{
-    // Log the record as a default Redfish message instead of a SEL record
-
-    static const std::string openBMCMessageRegistryVersion("0.1");
-    std::string messageID =
-        "OpenBMC." + openBMCMessageRegistryVersion + ".SELEntryAdded";
-
-    std::vector<std::string> messageArgs;
-    messageArgs.push_back(ipmiRaw);
-
-    // Log the Redfish message to the journal with the appropriate metadata
-    std::string journalMsg = "SEL Entry Added: " + ipmiRaw;
-    std::string messageArgsString = boost::algorithm::join(messageArgs, ",");
-    phosphor::logging::log<phosphor::logging::level::INFO>(
-        journalMsg.c_str(),
-        phosphor::logging::entry("REDFISH_MESSAGE_ID=%s", messageID.c_str()),
-        phosphor::logging::entry("REDFISH_MESSAGE_ARGS=%s",
-                                 messageArgsString.c_str()));
-
-    return true;
 }
 
 // Record a BIOS message as a Redfish message instead of a SEL record
@@ -866,6 +842,10 @@ static bool startRedfishHook(const SELData& selData, const std::string& ipmiRaw)
         case 0x33: // Check if this message is from the BIOS SMI Generator ID
             // Let the BIOS SMI hook handle this request
             return biosSMIMessageHook(selData, ipmiRaw);
+            break;
+
+        case 0x2C: // Message from Intel ME
+            return me::messageHook(selData, ipmiRaw);
             break;
     }
 
