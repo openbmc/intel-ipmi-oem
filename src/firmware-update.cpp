@@ -100,7 +100,8 @@ static constexpr size_t cskKeyOffsetInPfm = 0x124;
 static constexpr size_t cskSignatureOffsetInPfm = 0x19c;
 static constexpr size_t certKeyLen = 96;
 static constexpr size_t cskSignatureLen = 96;
-
+static constexpr size_t svnVerOffsetInPfm = 0x04;
+static constexpr size_t bkcVerOffsetInPfm = 0x05;
 static constexpr const char *versionIntf =
     "xyz.openbmc_project.Software.Version";
 
@@ -802,7 +803,6 @@ ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
     // Byte 1 - Count (N) Number of devices data is being returned for.
     // Bytes  2:16 - Device firmare information(fwVersionInfoType)
     // Bytes - 17:(15xN) - Repeat of 2 through 16
-
     std::vector<fwVersionInfoType> fwVerInfoList;
     std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
     for (const auto &fwDev : fwVersionIdMap)
@@ -873,14 +873,39 @@ ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
 
     return ipmi::responseSuccess(fwVerInfoList.size(), fwVerInfoList);
 }
-using fwSecurityVersionInfoType = std::tuple<uint8_t,  // ID Tag
-                                             uint8_t,  // BKC Version
-                                             uint8_t>; // SVN Version
-ipmi::RspType<uint8_t, std::vector<fwSecurityVersionInfoType>>
-    ipmiGetFwSecurityVersionInfo()
+
+ipmi::RspType<uint8_t, std::vector<uint8_t>> ipmiGetFwSecurityVersionInfo()
+
 {
-    // TODO: Need to add support.
-    return ipmi::responseInvalidCommand();
+    constexpr uint8_t bufLength = 1;
+    constexpr uint8_t deviceID = 2;
+    std::vector<const char *> imageBuf = {bmcActivePfmMTDDev,
+                                          bmcRecoveryImgMTDDev};
+    std::vector<FWDeviceIDTag> fwTagID = {FWDeviceIDTag::bmcActiveImage,
+                                          FWDeviceIDTag::bmcRecoveryImage};
+    std::vector<uint8_t> fwSecurityVersionBuf;
+    std::array<uint8_t, 2> secVer;
+
+    for (int i = 0; i < imageBuf.size(); i++)
+    {
+        try
+        {
+            fwSecurityVersionBuf.push_back((uint8_t)fwTagID[i]);
+            SPIDev spiDev(imageBuf[i]);
+            spiDev.spiReadData(svnVerOffsetInPfm, bufLength, secVer.data());
+            fwSecurityVersionBuf.push_back(secVer[0]);
+            spiDev.spiReadData(bkcVerOffsetInPfm, bufLength, secVer.data());
+            fwSecurityVersionBuf.push_back(secVer[0]);
+        }
+        catch (const std::exception &e)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Exception caught in fwSecurityVersionInfoType",
+                phosphor::logging::entry("MSG=%s", e.what()));
+            return ipmi::responseUnspecifiedError();
+        }
+    }
+    return ipmi::responseSuccess(deviceID, fwSecurityVersionBuf);
 }
 
 ipmi::RspType<std::array<uint8_t, certKeyLen>,
