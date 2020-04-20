@@ -3550,6 +3550,103 @@ ipmi::RspType<uint8_t, uint8_t> ipmiOEMGetBufferSize()
     return ipmi::responseSuccess(kcsMaxBufferSize, ipmbMaxBufferSize);
 }
 
+ipmi::RspType<> ipmiOEMSetSlaveAddr(ipmi::Context::ptr ctx, uint8_t addr)
+{
+    boost::system::error_code ec;
+    ctx->bus->yield_method_call<>(ctx->yield, ec, "xyz.openbmc_project.modular",
+                                  "/xyz/openbmc_project/modular/master",
+                                  "xyz.openbmc_project.modular.master",
+                                  "setSlaveAddr", addr);
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to call D-Bus to set slave addr");
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
+static constexpr const uint8_t maxNodeId = 3;
+static constexpr const int bufferSize = 255;
+ipmi::RspType<> ipmiOEMRecvSensor(ipmi::Context::ptr ctx,
+                                  const std::vector<uint8_t> event)
+{
+    uint8_t nodeId = event[0];
+    uint8_t pathSize = event[1];
+    uint8_t skipSize = sizeof(nodeId) + sizeof(pathSize);
+    if ((nodeId > maxNodeId) || (pathSize > (bufferSize - skipSize)))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Invalid sensors are sent to master from slave");
+        return ipmi::responseReqDataLenInvalid();
+    }
+    std::string path;
+    std::string value;
+    path.resize(pathSize);
+    std::copy(&event[skipSize], &event[skipSize + pathSize], path.data());
+    uint8_t valueSize = event[skipSize + pathSize];
+    value.resize(valueSize);
+    skipSize += sizeof(valueSize);
+    if (valueSize > (bufferSize - pathSize - skipSize))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Invalid sensor values are sent to master from slave");
+        return ipmi::responseReqDataLenInvalid();
+    }
+    std::copy(&event[skipSize + pathSize],
+              &event[skipSize + pathSize + valueSize], value.data());
+    std::string id = "_Node" + std::to_string(nodeId);
+    path = path + id;
+    boost::system::error_code ec;
+    ctx->bus->yield_method_call<>(
+        ctx->yield, ec, "xyz.openbmc_project.modular",
+        "/xyz/openbmc_project/modular/master",
+        "xyz.openbmc_project.modular.master", "RegisterSensor", path,
+        "xyz.openbmc_project.Sensor.Value", "Value", value);
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to register sensor");
+        return ipmi::responseResponseError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
+ipmi::RspType<> ipmiOEMRecvEvt(const std::vector<uint8_t> event)
+{
+    char* log = new char[bufferSize];
+    uint8_t id = event[0];
+    uint8_t len = event[1];
+    if (id >= maxNodeId)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Node ID is invalid");
+        return ipmi::responseInvalidFieldRequest();
+    }
+    uint8_t skipSize = sizeof(id) + sizeof(len);
+    if (event.size() > (bufferSize - skipSize))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Node log data length out of range");
+        return ipmi::responseReqDataLenInvalid();
+    }
+    std::copy(event.begin() + skipSize, event.begin() + len + skipSize, log);
+    std::string nodeRedfishLogFile =
+        "/var/log/nodeLog/redfishNode" + std::to_string(id);
+    std::ofstream file(nodeRedfishLogFile, std::ios_base::app);
+    if (!file.good())
+    {
+        std::cerr << "Error writing node redfish log file\n";
+        return ipmi::responseResponseError();
+    }
+    file.write(log, len);
+    file.put('\n');
+    file.close();
+    return ipmi::responseSuccess();
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -3716,6 +3813,16 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetBufferSize, Privilege::User,
                     ipmiOEMGetBufferSize);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdSetSlaveAddr, Privilege::User,
+                    ipmiOEMSetSlaveAddr);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdReceiveEvent, Privilege::User,
+                    ipmiOEMRecvEvt);
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdReceiveSensor, Privilege::User,
+                    ipmiOEMRecvSensor);
 }
 
 } // namespace ipmi
