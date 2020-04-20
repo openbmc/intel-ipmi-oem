@@ -282,6 +282,30 @@
       "revId": "dfd5141f055f5b6547898a18b5022a333007c75f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "816eaffb_54427d76",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3585,
+      "author": {
+        "id": 1000304
+      },
+      "writtenOn": "2020-04-20T06:15:08Z",
+      "side": 1,
+      "message": "Here the format meet the redfish log requirement. The timestamp was sent by slave to master through string.",
+      "parentUuid": "1b86df34_ec1c1d9c",
+      "range": {
+        "startLine": 3583,
+        "startChar": 4,
+        "endLine": 3585,
+        "endChar": 63
+      },
+      "revId": "dfd5141f055f5b6547898a18b5022a333007c75f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
