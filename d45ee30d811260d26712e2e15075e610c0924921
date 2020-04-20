@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "13269828_9af3d629",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 3586,
+      "author": {
+        "id": 1000304
+      },
+      "writtenOn": "2020-04-20T06:15:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "92aa1ae7_8495d774",
+      "range": {
+        "startLine": 3586,
+        "startChar": 8,
+        "endLine": 3586,
+        "endChar": 18
+      },
+      "revId": "d45ee30d811260d26712e2e15075e610c0924921",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4c0ecf29_e04fa704",
         "filename": "src/oemcommands.cpp",
         "patchSetId": 3
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "08d6b264_b22c8cfd",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 3587,
+      "author": {
+        "id": 1000304
+      },
+      "writtenOn": "2020-04-20T06:15:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4c0ecf29_e04fa704",
+      "range": {
+        "startLine": 3587,
+        "startChar": 21,
+        "endLine": 3587,
+        "endChar": 42
+      },
+      "revId": "d45ee30d811260d26712e2e15075e610c0924921",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e6ba61de_eaec45ab",
         "filename": "src/oemcommands.cpp",
         "patchSetId": 3
@@ -59,6 +107,30 @@
       "writtenOn": "2020-03-17T11:12:32Z",
       "side": 1,
       "message": "It should be event.size()-1 right?",
+      "range": {
+        "startLine": 3603,
+        "startChar": 20,
+        "endLine": 3603,
+        "endChar": 32
+      },
+      "revId": "d45ee30d811260d26712e2e15075e610c0924921",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3db7df24_d5210b32",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 3603,
+      "author": {
+        "id": 1000304
+      },
+      "writtenOn": "2020-04-20T06:15:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e6ba61de_eaec45ab",
       "range": {
         "startLine": 3603,
         "startChar": 20,
