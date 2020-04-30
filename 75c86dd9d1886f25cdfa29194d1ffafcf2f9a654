@@ -1,0 +1,469 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c1a6d805_29b3603b",
+        "filename": "include/biosconfigcommands.hpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "all of these should be parsed using the ipmi::message::Payload class rather than a dynamic_cast",
+      "range": {
+        "startLine": 21,
+        "startChar": 0,
+        "endLine": 62,
+        "endChar": 2
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2afd5fc0_7e52066e",
+        "filename": "include/oemcommands.hpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "these are not mentioned in the commit message.",
+      "range": {
+        "startLine": 80,
+        "startChar": 22,
+        "endLine": 81,
+        "endChar": 39
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d3b0d2ed_6ba7849a",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "I don\u0027t think it is necessary to include both of these. api.hpp should be sufficient.",
+      "range": {
+        "startLine": 27,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 24
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "26831bc3_111c7211",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 161,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "not needed; ctx-\u003ebus",
+      "range": {
+        "startLine": 161,
+        "startChar": 0,
+        "endLine": 161,
+        "endChar": 67
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "43c8ad31_0a7bbd28",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "use the yielding variant of getService",
+      "range": {
+        "startLine": 163,
+        "startChar": 0,
+        "endLine": 163,
+        "endChar": 65
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fd81703d_785af194",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "this looks like debug. should it be removed? Better to just log all info via phosphor::logging::log.",
+      "range": {
+        "startLine": 173,
+        "startChar": 8,
+        "endLine": 178,
+        "endChar": 19
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "580405c3_fb7862ea",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "this could be extended to contain the pertinent info from above:\n\nlog\u003cERR\u003e(\"Failed to setBiosPayload\",\n         entry(\"ERROR\u003d%s\", ec.message().c_str()),\n         entry(\"STATUS\u003d%x\", payloadTState),\n         entry(\"SIZE\u003d%d\", payloadSize),\n         entry(\"TOTAL\u003d%d\", totalSize));",
+      "range": {
+        "startLine": 180,
+        "startChar": 0,
+        "endLine": 180,
+        "endChar": 40
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "215d793f_7229edbd",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 186,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "ipmi::Context::ptr for yielding util functions.",
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "635c62fd_3793c346",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 202,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "same logging comments here",
+      "range": {
+        "startLine": 202,
+        "startChar": 0,
+        "endLine": 202,
+        "endChar": 62
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9c39d179_d431a7e3",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 215,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "no need for this; ctx-\u003ebus is available.",
+      "range": {
+        "startLine": 215,
+        "startChar": 0,
+        "endLine": 215,
+        "endChar": 67
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a14ee7eb_203a75f7",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 217,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "use the yielding variant of this (defined in utils.hpp):\n\nstd::string service;\nboost::system::error_code ec \u003d getService(ctx, BiosConfigIntf, BiosConfigBaseMgrPath, service);",
+      "range": {
+        "startLine": 217,
+        "startChar": 0,
+        "endLine": 217,
+        "endChar": 65
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "91683a8e_546eab2d",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "there is a yielding variant of setProperty. That should make this cleaner.",
+      "range": {
+        "startLine": 227,
+        "startChar": 4,
+        "endLine": 227,
+        "endChar": 32
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c58b516f_9fb4da4e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 299,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "nope.\n\nInstead of requesting a std::vector\u003cuint8_t\u003e, request a ipmi::message::Payload object as the last parameter. It will unpack everything up to that point and then allow you to manually unpack things from the payload object safely. \n\nDo the same thing that is done in ipmiOemGetPayload.",
+      "range": {
+        "startLine": 298,
+        "startChar": 12,
+        "endLine": 299,
+        "endChar": 72
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ea7a77cb_c0bc237e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 328,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "uint32_t payloadReservationID;\nuint32_t payloadOffset;\nuint32_t payloadCurrentSize;\nuint32_t payloadCurrentChecksum;\nstd::vector\u003cuint8_t\u003e data;\nint ret \u003d payload.unpack(payloadReservationID, payloadOffset, payloadCurrentSize, payloadChecksum, data);\nif (!ret || !payload.fullyUnpacked() || data.size !\u003d payloadCurrentSize)\n{\n  // invalid arguments\n}",
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "21be2d61_04dfda51",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 359,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "use phosphor::logging::log",
+      "range": {
+        "startLine": 352,
+        "startChar": 17,
+        "endLine": 359,
+        "endChar": 27
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c5ee7cdf_3dc24a69",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 434,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "this function should require an ipmi::Context::ptr so all the util functions (getService, getAllDbusProperties) can be done with the yielding variants.",
+      "range": {
+        "startLine": 434,
+        "startChar": 37,
+        "endLine": 434,
+        "endChar": 42
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "357d2224_e42bbb32",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 441,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "not needed, this function needs a ipmi::Context::ptr, which has a dbus pointer already.",
+      "range": {
+        "startLine": 441,
+        "startChar": 0,
+        "endLine": 441,
+        "endChar": 71
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3c9c487c_56fca584",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "This should be the model function. It unpacks using the Payload and packs using the Payload.",
+      "range": {
+        "startLine": 469,
+        "startChar": 1,
+        "endLine": 472,
+        "endChar": 76
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "40ef38f3_8599567d",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 530,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "just unpack the two values. This will not return an error if three uint32_t values are passed in, but clearly, they are unused.\n\nuint32_t offset;\nuint32_t length;\nif (payload.unpack(offset, length) || !payload.fullyUnpacked())",
+      "range": {
+        "startLine": 524,
+        "startChar": 16,
+        "endLine": 530,
+        "endChar": 48
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "11341d29_c3b19bfe",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 542,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "need to check that length \u003c\u003d maxGetPayloadDataSize or you have a possible buffer overflow in the read.",
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d785427a_c70c9c3c",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 555,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2020-04-30T01:40:17Z",
+      "side": 1,
+      "message": "if it makes it easier to read, it is possible to pack more than one thing at a time:\n\nretValue.pack(payloadType, readCount, chkSum);",
+      "range": {
+        "startLine": 553,
+        "startChar": 32,
+        "endLine": 555,
+        "endChar": 32
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
