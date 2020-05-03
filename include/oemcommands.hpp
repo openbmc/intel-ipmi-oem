@@ -73,6 +73,7 @@ static constexpr Cmd cmdGetBmcServiceStatus = 0xB2;
 static constexpr Cmd cmdGetSecurityMode = 0xB3;
 static constexpr Cmd cmdSetSecurityMode = 0xB4;
 static constexpr Cmd cmdMtmKeepAlive = 0xB5;
+static constexpr Cmd cmdOEMGetReading = 0xE2;
 static constexpr Cmd cmdGetNmiStatus = 0xE5;
 static constexpr Cmd cmdSetEfiBootOptions = 0xEA;
 static constexpr Cmd cmdGetEfiBootOptions = 0xEB;
