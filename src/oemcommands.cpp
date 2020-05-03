@@ -68,6 +68,10 @@ static constexpr const char* oemNmiBmcSourceObjPathProp = "BMCSource";
 static constexpr const char* oemNmiEnabledObjPathProp = "Enabled";
 
 static constexpr const char* dimmOffsetFile = "/var/lib/ipmi/ipmi_dimms.json";
+static constexpr const char* multiNodeObjPath =
+    "/xyz/openbmc_project/MultiNode/Status";
+static constexpr const char* multiNodeIntf =
+    "xyz.openbmc_project.Chassis.MultiNode";
 
 enum class NmiSource : uint8_t
 {
@@ -3534,6 +3538,105 @@ ipmi::RspType<std::vector<uint8_t>> ipmiOEMGetPSUVersion(ipmi::Context::ptr ctx)
     return ipmi::responseSuccess(result);
 }
 
+std::optional<uint8_t> getMultiNodeInfoPresence(ipmi::Context::ptr ctx,
+                                                const std::string& name)
+{
+    Value dbusValue = 0;
+    std::string serviceName;
+
+    boost::system::error_code ec =
+        ipmi::getService(ctx, multiNodeIntf, multiNodeObjPath, serviceName);
+
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to perform Multinode getService.");
+        return std::nullopt;
+    }
+
+    ec = ipmi::getDbusProperty(ctx, serviceName, multiNodeObjPath,
+                               multiNodeIntf, name, dbusValue);
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to perform Multinode get property");
+        return std::nullopt;
+    }
+
+    auto multiNodeVal = std::get_if<uint8_t>(&dbusValue);
+    if (!multiNodeVal)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getMultiNodeInfoPresence: error to get multinode");
+        return std::nullopt;
+    }
+    return *multiNodeVal;
+}
+
+/** @brief implements OEM get reading command
+ *  @param domain ID
+ *  @param reading Type
+ *    - 00h = platform Power Consumption
+ *    - 01h = inlet Air Temp
+ *    - 02h = icc_TDC from PECI
+ *  @param reserved, write as 0000h
+ *
+ *  @returns IPMI completion code plus response data
+ *  - response
+ *     - domain ID
+ *     - reading Type
+ *       - 00h = platform Power Consumption
+ *       - 01h = inlet Air Temp
+ *       - 02h = icc_TDC from PECI
+ *     - reading
+ */
+ipmi::RspType<uint4_t, // domain ID
+              uint4_t, // reading Type
+              uint16_t // reading Value
+              >
+    ipmiOEMGetReading(ipmi::Context::ptr ctx, uint4_t domainId,
+                      uint4_t readingType, uint16_t reserved)
+{
+    constexpr uint8_t platformPower = 0;
+    constexpr uint8_t inletAirTemp = 1;
+    constexpr uint8_t iccTdc = 2;
+
+    if ((static_cast<uint8_t>(readingType) > iccTdc) || domainId || reserved)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    // This command should run only from multi-node product.
+    // For all other platforms this command will return invalid.
+
+    std::optional<uint8_t> nodeInfo =
+        getMultiNodeInfoPresence(ctx, "NodePresence");
+    if (!nodeInfo || !*nodeInfo)
+    {
+        return ipmi::responseInvalidCommand();
+    }
+
+    uint16_t oemReadingValue = 0;
+    if (static_cast<uint8_t>(readingType) == inletAirTemp)
+    {
+        double value = 0;
+        boost::system::error_code ec = ipmi::getDbusProperty(
+            ctx, "xyz.openbmc_project.HwmonTempSensor",
+            "/xyz/openbmc_project/sensors/temperature/Inlet_BRD_Temp",
+            "xyz.openbmc_project.Sensor.Value", "Value", value);
+        if (ec)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+               "Failed to get BMC Get OEM temperature",
+               phosphor::logging::entry("EXCEPTION=%s", ec.message().c_str()));
+            return ipmi::responseUnspecifiedError();
+        }
+        // Take the Inlet temperature
+        oemReadingValue = static_cast<uint16_t>(value);
+    }
+    return ipmi::responseSuccess(domainId, readingType, oemReadingValue);
+}
+
 /** @brief implements the maximum size of
  *  bridgeable messages used between KCS and
  *  IPMB interfacesget security mode command.
@@ -3719,6 +3822,10 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetBufferSize, Privilege::User,
                     ipmiOEMGetBufferSize);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdOEMGetReading, Privilege::User,
+                    ipmiOEMGetReading);
 }
 
 } // namespace ipmi
