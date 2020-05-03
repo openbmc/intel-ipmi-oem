@@ -67,6 +67,10 @@ static constexpr const char* oemNmiBmcSourceObjPathProp = "BMCSource";
 static constexpr const char* oemNmiEnabledObjPathProp = "Enabled";
 
 static constexpr const char* dimmOffsetFile = "/var/lib/ipmi/ipmi_dimms.json";
+static constexpr const char* multiNodeObjPath =
+    "/xyz/openbmc_project/MultiNode/Status";
+static constexpr const char* multiNodeIntf =
+    "xyz.openbmc_project.Chassis.MultiNode";
 
 enum class NmiSource : uint8_t
 {
@@ -3531,6 +3535,90 @@ ipmi::RspType<std::vector<uint8_t>> ipmiOEMGetPSUVersion(ipmi::Context::ptr ctx)
     return ipmi::responseSuccess(result);
 }
 
+std::optional<uint8_t> getMultiNodeInfoPresence(std::string name)
+{
+    auto pdbus = getSdBus();
+    try
+    {
+        std::string service =
+            getService(*pdbus, multiNodeIntf, multiNodeObjPath);
+        Value dbusValue = getDbusProperty(*pdbus, service, multiNodeObjPath,
+                                          multiNodeIntf, name);
+        return std::get<uint8_t>(dbusValue);
+    }
+    catch (const std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getMultiNodeInfoPresence: can't get multi node info from dbus!",
+            phosphor::logging::entry("ERR=%s", e.what()));
+        return std::nullopt;
+    }
+}
+
+/** @brief implements OEM get reading command
+ *  @param domain ID
+ *  @param reading Type
+ *    - 00h = platform Power Consumption
+ *    - 01h = inlet Air Temp
+ *    - 02h = icc_TDC from PECI
+ *  @param reserved, write as 0000h
+ *
+ *  @returns IPMI completion code plus response data
+ *  - response
+ *     - domain ID
+ *     - reading Type
+ *       - 00h = platform Power Consumption
+ *       - 01h = inlet Air Temp
+ *       - 02h = icc_TDC from PECI
+ *     - reading
+ */
+ipmi::RspType<uint4_t, // domain ID
+              uint4_t, // reading Type
+              uint16_t // reading Value
+              >
+    ipmiOEMGetReading(ipmi::Context::ptr ctx, uint4_t domainId,
+                      uint4_t readingType, uint16_t reserved)
+{
+    // This command should run only from multi-node product.
+    // For all other platforms this command will return invalid.
+
+    std::optional<uint8_t> nodeInfo = getMultiNodeInfoPresence("NodePresence");
+    if (!nodeInfo)
+    {
+        return ipmi::responseInvalidCommand();
+    }
+
+    constexpr uint8_t platformPower = 0;
+    constexpr uint8_t inletAirTemp = 1;
+    constexpr uint8_t iccTdc = 2;
+
+    if ((static_cast<uint8_t>(readingType) > iccTdc) || domainId || reserved)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+    uint16_t readingValue = 0;
+    if (static_cast<uint8_t>(readingType) == inletAirTemp)
+    {
+        boost::system::error_code ec;
+        auto value = ctx->bus->yield_method_call<std::variant<double>>(
+            ctx->yield, ec, "xyz.openbmc_project.HwmonTempSensor",
+            "/xyz/openbmc_project/sensors/temperature/Inlet_BRD_Temp",
+            "org.freedesktop.DBus.Properties", "Get",
+            "xyz.openbmc_project.Sensor.Value", "Value");
+        if (ec)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMGetReading: failed to get Inlet temperature",
+                phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+            return ipmi::responseUnspecifiedError();
+        }
+
+        readingValue = static_cast<uint16_t>(std::get<double>(value));
+    }
+
+    return ipmi::responseSuccess(domainId, readingType, readingValue);
+}
+
 /** @brief implements the maximum size of
  *  bridgeable messages used between KCS and
  *  IPMB interfacesget security mode command.
@@ -3716,6 +3804,10 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdGetBufferSize, Privilege::User,
                     ipmiOEMGetBufferSize);
+
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdOEMGetReading, Privilege::User,
+                    ipmiOEMGetReading);
 }
 
 } // namespace ipmi
