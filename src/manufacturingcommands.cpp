@@ -835,7 +835,7 @@ ipmi::RspType<> setManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType,
     }
 
     oEthFile << reinterpret_cast<char*>(buff.data());
-    oEthFile << fflush;
+    oEthFile.flush();
     oEthFile.close();
 
     resetMtmTimer(ctx);
