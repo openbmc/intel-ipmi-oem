@@ -89,9 +89,9 @@ ipmi_ret_t cmd_region_status(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-int sdplus_mdrv1_get_property(
-    const std::string& name,
-    sdbusplus::message::variant<uint8_t, uint16_t>& value, std::string& service)
+int sdplus_mdrv1_get_property(const std::string& name,
+                              std::variant<uint8_t, uint16_t>& value,
+                              std::string& service)
 {
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
@@ -114,7 +114,7 @@ static int set_regionId(uint8_t regionId, std::string& service)
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     auto method = bus->new_method_call(service.c_str(), MDRV1_PATH,
                                        DBUS_PROPERTIES, "Set");
-    sdbusplus::message::variant<uint8_t> value{regionId};
+    std::variant<uint8_t> value{regionId};
     method.append(MDRV1_INTERFACE, "RegionId", value);
     auto region = bus->call(method);
     if (region.is_method_error())
@@ -133,7 +133,7 @@ ipmi_ret_t cmd_region_complete(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     auto requestData = reinterpret_cast<const RegionCompleteRequest*>(request);
     uint8_t status;
 
-    sdbusplus::message::variant<uint8_t, uint16_t> value;
+    std::variant<uint8_t, uint16_t> value;
 
     if (*data_len != sizeof(RegionCompleteRequest))
     {
@@ -209,8 +209,8 @@ ipmi_ret_t cmd_region_read(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 {
     auto requestData = reinterpret_cast<const RegionReadRequest*>(request);
     auto responseData = reinterpret_cast<RegionReadResponse*>(response);
-    sdbusplus::message::variant<uint8_t, uint16_t> regUsedVal;
-    sdbusplus::message::variant<uint8_t, uint16_t> lockPolicyVal;
+    std::variant<uint8_t, uint16_t> regUsedVal;
+    std::variant<uint8_t, uint16_t> lockPolicyVal;
     std::vector<uint8_t> res;
 
     if (*data_len < sizeof(RegionReadRequest))
@@ -316,7 +316,7 @@ ipmi_ret_t cmd_region_write(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
 
-    sdbusplus::message::variant<uint8_t, uint16_t> value;
+    std::variant<uint8_t, uint16_t> value;
 
     *data_len = 0;
 
@@ -399,7 +399,7 @@ ipmi_ret_t cmd_region_lock(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 {
     auto requestData = reinterpret_cast<const RegionLockRequest*>(request);
     uint8_t regionId = requestData->regionId - 1;
-    sdbusplus::message::variant<uint8_t, uint16_t> value;
+    std::variant<uint8_t, uint16_t> value;
     auto res = reinterpret_cast<uint8_t*>(response);
     uint8_t lockResponse;
 

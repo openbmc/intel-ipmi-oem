@@ -21,7 +21,6 @@
 namespace ipmi
 {
 
-using DbusVariant =
-    sdbusplus::message::variant<std::string, bool, uint8_t, uint16_t, int16_t,
-                                uint32_t, int32_t, uint64_t, int64_t, double>;
+using DbusVariant = std::variant<std::string, bool, uint8_t, uint16_t, int16_t,
+                                 uint32_t, int32_t, uint64_t, int64_t, double>;
 } // namespace ipmi

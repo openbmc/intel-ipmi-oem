@@ -59,7 +59,7 @@ int MDRV2::agentLookup(const uint16_t &agentId)
 }
 
 int MDRV2::sdplusMdrv2GetProperty(const std::string &name,
-                                  sdbusplus::message::variant<uint8_t> &value,
+                                  std::variant<uint8_t> &value,
                                   const std::string &service)
 {
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();

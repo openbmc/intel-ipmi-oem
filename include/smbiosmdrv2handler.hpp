@@ -273,7 +273,7 @@ class MDRV2
     bool smbiosTryLock(uint8_t flag, uint8_t index, uint16_t *session,
                        uint16_t timeout);
     int sdplusMdrv2GetProperty(const std::string &name,
-                               sdbusplus::message::variant<uint8_t> &value,
+                               std::variant<uint8_t> &value,
                                const std::string &service);
 
     Mdr2DirStruct smbiosDir{smbiosAgentVersion,

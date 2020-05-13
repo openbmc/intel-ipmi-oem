@@ -82,8 +82,7 @@ int initBMCDeviceState(ipmi::Context::ptr ctx)
         sdbusplus::bus::match::rules::propertiesChanged(objInfo.first,
                                                         bmcStateIntf),
         [](sdbusplus::message::message& msg) {
-            std::map<std::string, sdbusplus::message::variant<std::string>>
-                props;
+            std::map<std::string, std::variant<std::string>> props;
             std::vector<std::string> inVal;
             std::string iface;
             try
