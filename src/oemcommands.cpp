@@ -1088,10 +1088,11 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
     PrivAccess privAccess = {0, true, true, true, PRIVILEGE_ADMIN};
 #endif
 
-    const std::string strUserName(
-        reinterpret_cast<const char*>(userName.data()));
+    // ipmiUserSetUserName correctly handles char*, possibly non-null
+    // terminated strings using ipmiMaxUserName size
+    auto userNameRaw = reinterpret_cast<const char*>(userName.data());
 
-    if (ipmi::ccSuccess == ipmiUserSetUserName(ipmiDefaultUserId, strUserName))
+    if (ipmi::ccSuccess == ipmiUserSetUserName(ipmiDefaultUserId, userNameRaw))
     {
         if (ipmi::ccSuccess ==
             ipmiUserSetUserPassword(
