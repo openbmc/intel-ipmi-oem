@@ -119,6 +119,7 @@ static uint8_t writeAddr = 0XFF;
 
 std::unique_ptr<phosphor::Timer> writeTimer = nullptr;
 std::unique_ptr<phosphor::Timer> cacheTimer = nullptr;
+static std::unique_ptr<sdbusplus::bus::match::match> fruMatch = nullptr;
 
 ManagedObjectType frus;
 
@@ -127,6 +128,24 @@ ManagedObjectType frus;
 boost::container::flat_map<uint8_t, std::pair<uint8_t, uint8_t>> deviceHashes;
 
 void registerStorageFunctions() __attribute__((constructor));
+
+void startMatch(sdbusplus::bus::bus& bus)
+{
+    if (fruMatch)
+    {
+        return;
+    }
+
+    fruMatch = std::make_unique<sdbusplus::bus::match::match>(
+        bus, "type='signal',interface='xyz.openbmc_project.FruDevice'",
+        [](sdbusplus::message::message& message) {
+            if (cacheTimer)
+            {
+                // timer is invalidated by fru changing
+                cacheTimer->stop();
+            }
+        });
+}
 
 bool writeFru()
 {
@@ -1235,6 +1254,8 @@ std::vector<uint8_t> getNMDiscoverySDR(uint16_t index, uint16_t recordId)
 void registerStorageFunctions()
 {
     createTimers();
+    startMatch(*(getSdBus()));
+
     // <Get FRU Inventory Area Info>
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnStorage,
                           ipmi::storage::cmdGetFruInventoryAreaInfo,
