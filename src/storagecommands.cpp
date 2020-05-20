@@ -105,7 +105,6 @@ constexpr static const char* fruDeviceServiceName =
     "xyz.openbmc_project.FruDevice";
 constexpr static const char* entityManagerServiceName =
     "xyz.openbmc_project.EntityManager";
-constexpr static const size_t cacheTimeoutSeconds = 30;
 constexpr static const size_t writeTimeoutSeconds = 10;
 constexpr static const char* chassisTypeRackMount = "23";
 
@@ -120,7 +119,7 @@ static uint8_t writeBus = 0xFF;
 static uint8_t writeAddr = 0XFF;
 
 std::unique_ptr<phosphor::Timer> writeTimer = nullptr;
-std::unique_ptr<phosphor::Timer> cacheTimer = nullptr;
+static std::unique_ptr<sdbusplus::bus::match::match> fruMatch = nullptr;
 
 ManagedObjectType frus;
 
@@ -159,33 +158,16 @@ bool writeFru()
 
 void createTimers()
 {
-
     writeTimer = std::make_unique<phosphor::Timer>(writeFru);
-    cacheTimer = std::make_unique<phosphor::Timer>([]() { return; });
 }
 
-ipmi::Cc replaceCacheFru(ipmi::Context::ptr ctx, uint8_t devId)
+void replaceCacheFru(const std::shared_ptr<sdbusplus::asio::connection>& bus,
+                     boost::asio::yield_context& yield)
 {
-    static uint8_t lastDevId = 0xFF;
-
-    bool timerRunning = (cacheTimer != nullptr) && !cacheTimer->isExpired();
-    if (lastDevId == devId && timerRunning)
-    {
-        return IPMI_CC_OK; // cache already up to date
-    }
-    // if timer is running, stop it and writeFru manually
-    else if (timerRunning)
-    {
-        cacheTimer->stop();
-    }
-
-    cacheTimer->start(std::chrono::duration_cast<std::chrono::microseconds>(
-        std::chrono::seconds(cacheTimeoutSeconds)));
-
     boost::system::error_code ec;
 
-    frus = ctx->bus->yield_method_call<ManagedObjectType>(
-        ctx->yield, ec, fruDeviceServiceName, "/",
+    frus = bus->yield_method_call<ManagedObjectType>(
+        yield, ec, fruDeviceServiceName, "/",
         "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
     if (ec)
     {
@@ -193,7 +175,7 @@ ipmi::Cc replaceCacheFru(ipmi::Context::ptr ctx, uint8_t devId)
             "GetMangagedObjects for getSensorMap failed",
             phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
 
-        return ipmi::ccResponseError;
+        return;
     }
 
     deviceHashes.clear();
@@ -258,6 +240,17 @@ ipmi::Cc replaceCacheFru(ipmi::Context::ptr ctx, uint8_t devId)
             }
         }
     }
+}
+
+ipmi::Cc getFru(ipmi::Context::ptr ctx, uint8_t devId)
+{
+    static uint8_t lastDevId = 0xFF;
+
+    if (lastDevId == devId && devId != 0xFF)
+    {
+        return ipmi::ccSuccess;
+    }
+
     auto deviceFind = deviceHashes.find(devId);
     if (deviceFind == deviceHashes.end())
     {
@@ -265,10 +258,11 @@ ipmi::Cc replaceCacheFru(ipmi::Context::ptr ctx, uint8_t devId)
     }
 
     fruCache.clear();
-    ec.clear();
 
     cacheBus = deviceFind->second.first;
     cacheAddr = deviceFind->second.second;
+
+    boost::system::error_code ec;
 
     fruCache = ctx->bus->yield_method_call<std::vector<uint8_t>>(
         ctx->yield, ec, fruDeviceServiceName, "/xyz/openbmc_project/FruDevice",
@@ -280,7 +274,6 @@ ipmi::Cc replaceCacheFru(ipmi::Context::ptr ctx, uint8_t devId)
             "Couldn't get raw fru",
             phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
 
-        lastDevId = 0xFF;
         cacheBus = 0xFF;
         cacheAddr = 0xFF;
         return ipmi::ccResponseError;
@@ -288,6 +281,29 @@ ipmi::Cc replaceCacheFru(ipmi::Context::ptr ctx, uint8_t devId)
 
     lastDevId = devId;
     return ipmi::ccSuccess;
+}
+
+void startMatch(void)
+{
+    if (fruMatch)
+    {
+        return;
+    }
+
+    auto bus = getSdBus();
+    fruMatch = std::make_unique<sdbusplus::bus::match::match>(
+        *bus, "type='signal',interface='xyz.openbmc_project.FruDevice'",
+        [](sdbusplus::message::message& message) {
+            boost::asio::spawn(*getIoContext(),
+                               [](boost::asio::yield_context yield) {
+                                   replaceCacheFru(getSdBus(), yield);
+                               });
+        });
+
+    // call once to populate
+    boost::asio::spawn(*getIoContext(), [](boost::asio::yield_context yield) {
+        replaceCacheFru(getSdBus(), yield);
+    });
 }
 
 /** @brief implements the read FRU data command
@@ -309,7 +325,7 @@ ipmi::RspType<uint8_t,             // Count
         return ipmi::responseInvalidFieldRequest();
     }
 
-    ipmi::Cc status = replaceCacheFru(ctx, fruDeviceId);
+    ipmi::Cc status = getFru(ctx, fruDeviceId);
 
     if (status != ipmi::ccSuccess)
     {
@@ -360,7 +376,7 @@ ipmi::RspType<uint8_t>
 
     size_t writeLen = dataToWrite.size();
 
-    ipmi::Cc status = replaceCacheFru(ctx, fruDeviceId);
+    ipmi::Cc status = getFru(ctx, fruDeviceId);
     if (status != ipmi::ccSuccess)
     {
         return ipmi::response(status);
@@ -465,12 +481,7 @@ ipmi::RspType<uint16_t, // inventorySize
         return ipmi::responseInvalidFieldRequest();
     }
 
-    ipmi::Cc status = replaceCacheFru(ctx, fruDeviceId);
-
-    if (status != IPMI_CC_OK)
-    {
-        return ipmi::response(status);
-    }
+    replaceCacheFru(ctx->bus, ctx->yield);
 
     constexpr uint8_t accessType =
         static_cast<uint8_t>(GetFRUAreaAccessType::byte);
@@ -480,7 +491,7 @@ ipmi::RspType<uint16_t, // inventorySize
 
 ipmi_ret_t getFruSdrCount(ipmi::Context::ptr ctx, size_t& count)
 {
-    ipmi_ret_t ret = replaceCacheFru(ctx, 0);
+    ipmi_ret_t ret = getFru(ctx, 0);
     if (ret != IPMI_CC_OK)
     {
         return ret;
@@ -492,11 +503,6 @@ ipmi_ret_t getFruSdrCount(ipmi::Context::ptr ctx, size_t& count)
 ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
                       get_sdr::SensorDataFruRecord& resp)
 {
-    ipmi_ret_t ret = replaceCacheFru(ctx, 0); // this will update the hash list
-    if (ret != IPMI_CC_OK)
-    {
-        return ret;
-    }
     if (deviceHashes.size() < index)
     {
         return IPMI_CC_INVALID_FIELD_REQUEST;
@@ -1243,6 +1249,8 @@ std::vector<uint8_t> getNMDiscoverySDR(uint16_t index, uint16_t recordId)
 void registerStorageFunctions()
 {
     createTimers();
+    startMatch();
+
     // <Get FRU Inventory Area Info>
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnStorage,
                           ipmi::storage::cmdGetFruInventoryAreaInfo,
