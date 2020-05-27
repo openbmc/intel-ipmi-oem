@@ -296,7 +296,7 @@ ipmi::RspType<std::vector<uint8_t>> mdr2GetDir(uint16_t agentId,
         return ipmi::responseParmOutOfRange();
     }
 
-    std::variant<uint8_t> value = 0;
+    std::variant<uint8_t> value = static_cast<uint8_t>(0);
     if (0 != mdrv2->sdplusMdrv2GetProperty("DirectoryEntries", value, service))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
