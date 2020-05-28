@@ -44,7 +44,7 @@ static bool messageHook(const SELData& selData, std::string& eventId,
         return false;
     }
 
-    eventId = "MeSmbusLinkFailure";
+    eventId = "MESmbusLinkFailure";
 
     args.push_back(faultySmlink->second);
     args.push_back(utils::toHex(errorDetails));
@@ -170,7 +170,7 @@ bool messageHook(const SELData& selData, std::string& eventId,
     auto succeeded = selData.eventData3 >> 7 & 0b1;
     if (succeeded)
     {
-        eventId = "MeAutoConfigSuccess";
+        eventId = "MEAutoConfigSuccess";
 
         auto dc = dcSource.find(selData.eventData3 >> 5 & 0b11);
         auto chassis = chassisSource.find(selData.eventData3 >> 3 & 0b11);
@@ -190,7 +190,7 @@ bool messageHook(const SELData& selData, std::string& eventId,
     }
     else
     {
-        eventId = "MeAutoConfigFailed";
+        eventId = "MEAutoConfigFailed";
 
         const auto it = failureReason.find(selData.eventData3 >> 5 & 0b11);
         if (it == failureReason.end())
@@ -216,9 +216,8 @@ bool messageHook(const SELData& selData, std::string& eventId,
              "Flash file system error detected. Automatic restore to factory "
              "presets has been triggered."},
             {0x01, "Automatic restore to factory presets has been completed."},
-            {0x02,
-             "Restore to factory presets triggered by “Force ME Recovery” "
-             "IPMI command has been completed."},
+            {0x02, "Restore to factory presets triggered by Force ME Recovery "
+                   "IPMI command has been completed."},
             {0x03,
              "Restore to factory presets triggered by AC power cycle with "
              "Recovery jumper asserted has been completed."}};
@@ -231,11 +230,11 @@ bool messageHook(const SELData& selData, std::string& eventId,
 
     if (selData.eventData3 == 0x00)
     {
-        eventId = "MeFactoryResetError";
+        eventId = "MEFactoryResetError";
     }
     else
     {
-        eventId = "MeFactoryRestore";
+        eventId = "MEFactoryRestore";
     }
 
     args.push_back(param->second);
@@ -267,11 +266,11 @@ bool messageHook(const SELData& selData, std::string& eventId,
 
     if (selData.eventData3 == 0x03)
     {
-        eventId = "MeFlashStateInformationWritingEnabled";
+        eventId = "MEFlashStateInformationWritingEnabled";
     }
     else
     {
-        eventId = "MeFlashStateInformation";
+        eventId = "MEFlashStateInformation";
     }
 
     args.push_back(param->second);
@@ -287,28 +286,28 @@ static bool messageHook(const SELData& selData, std::string& eventId,
         std::pair<std::string, std::optional<std::variant<utils::ParserFunc,
                                                           utils::MessageMap>>>>
         eventMap = {
-            {0x00, {"MeRecoveryGpioForced", {}}},
-            {0x01, {"MeImageExecutionFailed", {}}},
-            {0x02, {"MeFlashEraseError", {}}},
+            {0x00, {"MERecoveryGpioForced", {}}},
+            {0x01, {"MEImageExecutionFailed", {}}},
+            {0x02, {"MEFlashEraseError", {}}},
             {0x03, {{}, flash_state::messageHook}},
-            {0x04, {"MeInternalError", {}}},
-            {0x05, {"MeExceptionDuringShutdown", {}}},
-            {0x06, {"MeDirectFlashUpdateRequested", {}}},
-            {0x07, {"MeManufacturingError", manufacturingError}},
+            {0x04, {"MEInternalError", {}}},
+            {0x05, {"MEExceptionDuringShutdown", {}}},
+            {0x06, {"MEDirectFlashUpdateRequested", {}}},
+            {0x07, {"MEManufacturingError", manufacturingError}},
             {0x08, {{}, factory_reset::messageHook}},
-            {0x09, {"MeFirmwareException", utils::logByteHex<2>}},
-            {0x0A, {"MeFlashWearOutWarning", utils::logByteDec<2>}},
-            {0x0D, {"MePeciOverDmiError", peciOverDmiError}},
-            {0x0E, {"MeMctpInterfaceError", mctpInterfaceError}},
+            {0x09, {"MEFirmwareException", utils::logByteHex<2>}},
+            {0x0A, {"MEFlashWearOutWarning", utils::logByteDec<2>}},
+            {0x0D, {"MEPeciOverDmiError", peciOverDmiError}},
+            {0x0E, {"MEMctpInterfaceError", mctpInterfaceError}},
             {0x0F, {{}, autoconfiguration::messageHook}},
-            {0x10, {"MeUnsupportedFeature", unsupportedFeature}},
-            {0x12, {"MeCpuDebugCapabilityDisabled", {}}},
-            {0x13, {"MeUmaError", umaError}},
-            {0x16, {"MePttHealthEvent", pttHealthEvent}},
-            {0x17, {"MeBootGuardHealthEvent", bootGuardHealthEvent}},
-            {0x18, {"MeRestrictedMode", restrictedMode}},
-            {0x19, {"MeMultiPchModeMisconfig", multiPchModeMisconfig}},
-            {0x1A, {"MeFlashVerificationError", flashVerificationError}}};
+            {0x10, {"MEUnsupportedFeature", unsupportedFeature}},
+            {0x12, {"MECpuDebugCapabilityDisabled", {}}},
+            {0x13, {"MEUmaError", umaError}},
+            {0x16, {"MEPttHealthEvent", pttHealthEvent}},
+            {0x17, {"MEBootGuardHealthEvent", bootGuardHealthEvent}},
+            {0x18, {"MERestrictedMode", restrictedMode}},
+            {0x19, {"MEMultiPchModeMisconfig", multiPchModeMisconfig}},
+            {0x1A, {"MEFlashVerificationError", flashVerificationError}}};
 
     return utils::genericMessageHook(eventMap, selData, eventId, args);
 }
