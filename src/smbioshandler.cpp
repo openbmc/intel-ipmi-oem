@@ -15,16 +15,17 @@
 */
 
 #include <commandutils.hpp>
-#include <cstdint>
-#include <iostream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/elog-errors.hpp>
 #include <phosphor-logging/log.hpp>
 #include <smbioshandler.hpp>
+#include <xyz/openbmc_project/Common/error.hpp>
+
+#include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <xyz/openbmc_project/Common/error.hpp>
 
 using InternalFailure =
     sdbusplus::xyz::openbmc_project::Common::Error::InternalFailure;

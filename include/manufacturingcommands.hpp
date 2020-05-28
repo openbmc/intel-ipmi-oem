@@ -23,6 +23,7 @@
 #include <sdbusplus/message.hpp>
 #include <sdbusplus/timer.hpp>
 #include <variantvisitors.hpp>
+
 #include <vector>
 
 #define FAN_SENSOR_NOT_PRESENT (0 << 0)
@@ -167,8 +168,7 @@ class LedProperty
   public:
     LedProperty(SmSignalSet signal_, std::string name_) :
         signal(signal_), name(name_), prevState(""), isLocked(false)
-    {
-    }
+    {}
 
     LedProperty() = delete;
 

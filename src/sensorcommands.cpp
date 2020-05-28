@@ -22,21 +22,22 @@
 #include "sensorutils.hpp"
 #include "storagecommands.hpp"
 
-#include <algorithm>
-#include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
+#include <ipmid/api.hpp>
+#include <ipmid/utils.hpp>
+#include <phosphor-logging/log.hpp>
+#include <sdbusplus/bus.hpp>
+
+#include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <ipmid/api.hpp>
-#include <ipmid/utils.hpp>
 #include <map>
 #include <memory>
 #include <optional>
-#include <phosphor-logging/log.hpp>
-#include <sdbusplus/bus.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -64,12 +65,12 @@ static boost::container::flat_map<std::string, ManagedObjectType> SensorCache;
 // Specify the comparison required to sort and find char* map objects
 struct CmpStr
 {
-    bool operator()(const char *a, const char *b) const
+    bool operator()(const char* a, const char* b) const
     {
         return std::strcmp(a, b) < 0;
     }
 };
-const static boost::container::flat_map<const char *, SensorUnits, CmpStr>
+const static boost::container::flat_map<const char*, SensorUnits, CmpStr>
     sensorUnits{{{"temperature", SensorUnits::degreesC},
                  {"voltage", SensorUnits::volts},
                  {"current", SensorUnits::amps},
@@ -82,7 +83,7 @@ static sdbusplus::bus::match::match sensorAdded(
     *getSdBus(),
     "type='signal',member='InterfacesAdded',arg0path='/xyz/openbmc_project/"
     "sensors/'",
-    [](sdbusplus::message::message &m) {
+    [](sdbusplus::message::message& m) {
         sensorTree.clear();
         sdrLastAdd = std::chrono::duration_cast<std::chrono::seconds>(
                          std::chrono::system_clock::now().time_since_epoch())
@@ -93,7 +94,7 @@ static sdbusplus::bus::match::match sensorRemoved(
     *getSdBus(),
     "type='signal',member='InterfacesRemoved',arg0path='/xyz/openbmc_project/"
     "sensors/'",
-    [](sdbusplus::message::message &m) {
+    [](sdbusplus::message::message& m) {
         sensorTree.clear();
         sdrLastRemove = std::chrono::duration_cast<std::chrono::seconds>(
                             std::chrono::system_clock::now().time_since_epoch())
@@ -110,13 +111,13 @@ static sdbusplus::bus::match::match thresholdChanged(
     *getSdBus(),
     "type='signal',member='PropertiesChanged',interface='org.freedesktop.DBus."
     "Properties',arg0namespace='xyz.openbmc_project.Sensor.Threshold'",
-    [](sdbusplus::message::message &m) {
+    [](sdbusplus::message::message& m) {
         boost::container::flat_map<std::string, std::variant<bool, double>>
             values;
         m.read(std::string(), values);
 
         auto findAssert =
-            std::find_if(values.begin(), values.end(), [](const auto &pair) {
+            std::find_if(values.begin(), values.end(), [](const auto& pair) {
                 return pair.first.find("Alarm") != std::string::npos;
             });
         if (findAssert != values.end())
@@ -137,7 +138,7 @@ static sdbusplus::bus::match::match thresholdChanged(
             }
             else
             {
-                auto &value =
+                auto& value =
                     thresholdDeassertMap[m.get_path()][findAssert->first];
                 if (value)
                 {
@@ -150,8 +151,8 @@ static sdbusplus::bus::match::match thresholdChanged(
         }
     });
 
-static void getSensorMaxMin(const SensorMap &sensorMap, double &max,
-                            double &min)
+static void getSensorMaxMin(const SensorMap& sensorMap, double& max,
+                            double& min)
 {
     max = 127;
     min = -128;
@@ -211,7 +212,7 @@ static void getSensorMaxMin(const SensorMap &sensorMap, double &max,
 
 static bool getSensorMap(boost::asio::yield_context yield,
                          std::string sensorConnection, std::string sensorPath,
-                         SensorMap &sensorMap)
+                         SensorMap& sensorMap)
 {
     static boost::container::flat_map<
         std::string, std::chrono::time_point<std::chrono::steady_clock>>
@@ -265,13 +266,13 @@ static bool getSensorMap(boost::asio::yield_context yield,
 /* sensor commands */
 namespace meHealth
 {
-constexpr const char *busname = "xyz.openbmc_project.NodeManagerProxy";
-constexpr const char *path = "/xyz/openbmc_project/status/me";
-constexpr const char *interface = "xyz.openbmc_project.SetHealth";
-constexpr const char *method = "SetHealth";
-constexpr const char *critical = "critical";
-constexpr const char *warning = "warning";
-constexpr const char *ok = "ok";
+constexpr const char* busname = "xyz.openbmc_project.NodeManagerProxy";
+constexpr const char* path = "/xyz/openbmc_project/status/me";
+constexpr const char* interface = "xyz.openbmc_project.SetHealth";
+constexpr const char* method = "SetHealth";
+constexpr const char* critical = "critical";
+constexpr const char* warning = "warning";
+constexpr const char* ok = "ok";
 } // namespace meHealth
 
 static void setMeStatus(uint8_t eventData2, uint8_t eventData3, bool disable)
@@ -322,14 +323,14 @@ static void setMeStatus(uint8_t eventData2, uint8_t eventData3, bool disable)
     {
         dbus->call(setHealth);
     }
-    catch (sdbusplus::exception_t &)
+    catch (sdbusplus::exception_t&)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Failed to set ME Health");
     }
 }
 
-ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload &p)
+ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload& p)
 {
     constexpr const uint8_t meId = 0x2C;
     constexpr const uint8_t meSensorNum = 0x17;
@@ -408,7 +409,7 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
     {
         return ipmi::responseResponseError();
     }
-    auto &valueVariant = sensorObject->second["Value"];
+    auto& valueVariant = sensorObject->second["Value"];
     double reading = std::visit(VariantToDoubleVisitor(), valueVariant);
 
     double max = 0;
@@ -630,7 +631,7 @@ ipmi::RspType<> ipmiSenSetSensorThresholds(
                                          findThreshold->first);
         }
     }
-    for (const auto &property : thresholdsToSet)
+    for (const auto& property : thresholdsToSet)
     {
         // from section 36.3 in the IPMI Spec, assume all linear
         double valueToSet = ((mValue * std::get<thresholdValue>(property)) +
@@ -643,7 +644,7 @@ ipmi::RspType<> ipmiSenSetSensorThresholds(
     return ipmi::responseSuccess();
 }
 
-IPMIThresholds getIPMIThresholds(const SensorMap &sensorMap)
+IPMIThresholds getIPMIThresholds(const SensorMap& sensorMap)
 {
     IPMIThresholds resp;
     auto warningInterface =
@@ -679,7 +680,7 @@ IPMIThresholds getIPMIThresholds(const SensorMap &sensorMap)
         }
         if (warningInterface != sensorMap.end())
         {
-            auto &warningMap = warningInterface->second;
+            auto& warningMap = warningInterface->second;
 
             auto warningHigh = warningMap.find("WarningHigh");
             auto warningLow = warningMap.find("WarningLow");
@@ -702,7 +703,7 @@ IPMIThresholds getIPMIThresholds(const SensorMap &sensorMap)
         }
         if (criticalInterface != sensorMap.end())
         {
-            auto &criticalMap = criticalInterface->second;
+            auto& criticalMap = criticalInterface->second;
 
             auto criticalHigh = criticalMap.find("CriticalHigh");
             auto criticalLow = criticalMap.find("CriticalLow");
@@ -756,7 +757,7 @@ ipmi::RspType<uint8_t, // readable
     {
         thresholdData = getIPMIThresholds(sensorMap);
     }
-    catch (std::exception &)
+    catch (std::exception&)
     {
         return ipmi::responseResponseError();
     }
@@ -851,7 +852,7 @@ ipmi::RspType<uint8_t, // enabled
             IPMISensorEventEnableByte2::sensorScanningEnable);
         if (warningInterface != sensorMap.end())
         {
-            auto &warningMap = warningInterface->second;
+            auto& warningMap = warningInterface->second;
 
             auto warningHigh = warningMap.find("WarningHigh");
             auto warningLow = warningMap.find("WarningLow");
@@ -872,7 +873,7 @@ ipmi::RspType<uint8_t, // enabled
         }
         if (criticalInterface != sensorMap.end())
         {
-            auto &criticalMap = criticalInterface->second;
+            auto& criticalMap = criticalInterface->second;
 
             auto criticalHigh = criticalMap.find("CriticalHigh");
             auto criticalLow = criticalMap.find("CriticalLow");
@@ -985,7 +986,7 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
             IPMISensorEventEnableByte2::eventMessagesEnable);
         if (warningInterface != sensorMap.end())
         {
-            auto &warningMap = warningInterface->second;
+            auto& warningMap = warningInterface->second;
 
             auto warningHigh = warningMap.find("WarningAlarmHigh");
             auto warningLow = warningMap.find("WarningAlarmLow");
@@ -1015,7 +1016,7 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
         }
         if (criticalInterface != sensorMap.end())
         {
-            auto &criticalMap = criticalInterface->second;
+            auto& criticalMap = criticalInterface->second;
 
             auto criticalHigh = criticalMap.find("CriticalAlarmHigh");
             auto criticalLow = criticalMap.find("CriticalAlarmLow");
@@ -1237,7 +1238,7 @@ ipmi::RspType<uint16_t,            // next record ID
                 bytesToRead = sizeof(data) - offset;
             }
 
-            uint8_t *respStart = reinterpret_cast<uint8_t *>(&data) + offset;
+            uint8_t* respStart = reinterpret_cast<uint8_t*>(&data) + offset;
             recordData.insert(recordData.end(), respStart,
                               respStart + bytesToRead);
         }
@@ -1248,7 +1249,7 @@ ipmi::RspType<uint16_t,            // next record ID
     std::string connection;
     std::string path;
     uint16_t sensorIndex = recordID;
-    for (const auto &sensor : sensorTree)
+    for (const auto& sensor : sensorTree)
     {
         if (sensorIndex-- == 0)
         {
@@ -1399,10 +1400,10 @@ ipmi::RspType<uint16_t,            // next record ID
     if (name.size() > FULL_RECORD_ID_STR_MAX_LENGTH)
     {
         // try to not truncate by replacing common words
-        constexpr std::array<std::pair<const char *, const char *>, 2>
+        constexpr std::array<std::pair<const char*, const char*>, 2>
             replaceWords = {std::make_pair("Output", "Out"),
                             std::make_pair("Input", "In")};
-        for (const auto &[find, replace] : replaceWords)
+        for (const auto& [find, replace] : replaceWords)
         {
             boost::replace_all(name, find, replace);
         }
@@ -1418,7 +1419,7 @@ ipmi::RspType<uint16_t,            // next record ID
     {
         thresholdData = getIPMIThresholds(sensorMap);
     }
-    catch (std::exception &)
+    catch (std::exception&)
     {
         return ipmi::responseResponseError();
     }
@@ -1481,7 +1482,7 @@ ipmi::RspType<uint16_t,            // next record ID
         bytesToRead = sizeof(get_sdr::SensorDataFullRecord) - offset;
     }
 
-    uint8_t *respStart = reinterpret_cast<uint8_t *>(&record) + offset;
+    uint8_t* respStart = reinterpret_cast<uint8_t*>(&record) + offset;
     std::vector<uint8_t> recordData(respStart, respStart + bytesToRead);
 
     return ipmi::responseSuccess(nextRecordId, recordData);

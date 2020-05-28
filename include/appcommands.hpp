@@ -31,13 +31,13 @@ typedef struct
 } MetaRevision;
 #pragma pack(pop)
 
-static constexpr const char *versionPurposeBMC =
+static constexpr const char* versionPurposeBMC =
     "xyz.openbmc_project.Software.Version.VersionPurpose.BMC";
-static constexpr const char *versionPurposeME =
+static constexpr const char* versionPurposeME =
     "xyz.openbmc_project.Software.Version.VersionPurpose.ME";
 
 extern int getActiveSoftwareVersionInfo(ipmi::Context::ptr ctx,
-                                        const std::string &reqVersionPurpose,
-                                        std::string &version);
-extern std::optional<MetaRevision> convertIntelVersion(std::string &s);
+                                        const std::string& reqVersionPurpose,
+                                        std::string& version);
+extern std::optional<MetaRevision> convertIntelVersion(std::string& s);
 } // namespace ipmi

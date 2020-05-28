@@ -15,11 +15,12 @@
 */
 
 #include <boost/beast/core/span.hpp>
-#include <iomanip>
 #include <ipmi_to_redfish_hooks.hpp>
 #include <me_to_redfish_hooks.hpp>
-#include <sstream>
 #include <storagecommands.hpp>
+
+#include <iomanip>
+#include <sstream>
 #include <string_view>
 
 namespace intel_oem::ipmi::sel

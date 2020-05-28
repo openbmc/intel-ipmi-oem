@@ -1,11 +1,12 @@
-#include <algorithm>
-#include <array>
 #include <ipmi-whitelist.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/elog-errors.hpp>
 #include <phosphor-logging/log.hpp>
 #include <xyz/openbmc_project/Control/Security/RestrictionMode/server.hpp>
+
+#include <algorithm>
+#include <array>
 
 using namespace phosphor::logging;
 using namespace sdbusplus::xyz::openbmc_project::Common::Error;

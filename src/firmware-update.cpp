@@ -11,21 +11,22 @@
 #include <boost/process/child.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <chrono>
 #include <commandutils.hpp>
-#include <cstdint>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
-#include <map>
 #include <phosphor-logging/log.hpp>
-#include <random>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/bus/match.hpp>
 #include <sdbusplus/server/object.hpp>
 #include <sdbusplus/timer.hpp>
+
+#include <chrono>
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <random>
 #ifdef INTEL_PFR_ENABLED
 #include <spiDev.hpp>
 #endif
@@ -68,11 +69,11 @@ static inline auto responseNotSupportedInPresentState()
 }
 } // namespace ipmi
 
-static constexpr const char *bmcStateIntf = "xyz.openbmc_project.State.BMC";
-static constexpr const char *bmcStatePath = "/xyz/openbmc_project/state/bmc0";
-static constexpr const char *bmcStateReady =
+static constexpr const char* bmcStateIntf = "xyz.openbmc_project.State.BMC";
+static constexpr const char* bmcStatePath = "/xyz/openbmc_project/state/bmc0";
+static constexpr const char* bmcStateReady =
     "xyz.openbmc_project.State.BMC.BMCState.Ready";
-static constexpr const char *bmcStateUpdateInProgress =
+static constexpr const char* bmcStateUpdateInProgress =
     "xyz.openbmc_project.State.BMC.BMCState.UpdateInProgress";
 
 static constexpr char firmwareBufferFile[] = "/tmp/fw-download.bin";
@@ -92,8 +93,8 @@ uint32_t imgType = 0;
 bool block0Mapped = false;
 static constexpr uint32_t perBlock0MagicNum = 0xB6EAFD19;
 
-static constexpr const char *bmcActivePfmMTDDev = "/dev/mtd/pfm";
-static constexpr const char *bmcRecoveryImgMTDDev = "/dev/mtd/rc-image";
+static constexpr const char* bmcActivePfmMTDDev = "/dev/mtd/pfm";
+static constexpr const char* bmcRecoveryImgMTDDev = "/dev/mtd/rc-image";
 static constexpr size_t pfmBaseOffsetInImage = 0x400;
 static constexpr size_t rootkeyOffsetInPfm = 0xA0;
 static constexpr size_t cskKeyOffsetInPfm = 0x124;
@@ -101,7 +102,7 @@ static constexpr size_t cskSignatureOffsetInPfm = 0x19c;
 static constexpr size_t certKeyLen = 96;
 static constexpr size_t cskSignatureLen = 96;
 
-static constexpr const char *versionIntf =
+static constexpr const char* versionIntf =
     "xyz.openbmc_project.Software.Version";
 
 enum class FwGetRootCertDataTag : uint8_t
@@ -118,7 +119,7 @@ enum class FWDeviceIDTag : uint8_t
     bmcRecoveryImage,
 };
 
-const static boost::container::flat_map<FWDeviceIDTag, const char *>
+const static boost::container::flat_map<FWDeviceIDTag, const char*>
     fwVersionIdMap{{FWDeviceIDTag::bmcActiveImage,
                     "/xyz/openbmc_project/software/bmc_active"},
                    {FWDeviceIDTag::bmcRecoveryImage,
@@ -179,15 +180,14 @@ class TransferHashCheck
     };
 
   protected:
-    EVP_MD_CTX *ctx;
+    EVP_MD_CTX* ctx;
     std::vector<uint8_t> expectedHash;
     enum HashCheck check;
     bool started;
 
   public:
     TransferHashCheck() : check(HashCheck::notRequested), started(false)
-    {
-    }
+    {}
     ~TransferHashCheck()
     {
         if (ctx)
@@ -196,14 +196,14 @@ class TransferHashCheck
             ctx = NULL;
         }
     }
-    void init(const std::vector<uint8_t> &expected)
+    void init(const std::vector<uint8_t>& expected)
     {
         expectedHash = expected;
         check = HashCheck::requested;
         ctx = EVP_MD_CTX_create();
         EVP_DigestInit(ctx, EVP_sha256());
     }
-    void hash(const std::vector<uint8_t> &data)
+    void hash(const std::vector<uint8_t>& data)
     {
         if (!started)
         {
@@ -259,7 +259,7 @@ class TransferHashCheck
 class MappedFile
 {
   public:
-    MappedFile(const std::string &fname) : addr(nullptr), fsize(0)
+    MappedFile(const std::string& fname) : addr(nullptr), fsize(0)
     {
         std::error_code ec;
         size_t sz = std::filesystem::file_size(fname, ec);
@@ -268,7 +268,7 @@ class MappedFile
         {
             return;
         }
-        void *tmp = mmap(NULL, sz, PROT_READ, MAP_SHARED, fd, 0);
+        void* tmp = mmap(NULL, sz, PROT_READ, MAP_SHARED, fd, 0);
         close(fd);
         if (tmp == MAP_FAILED)
         {
@@ -285,9 +285,9 @@ class MappedFile
             munmap(addr, fsize);
         }
     }
-    const uint8_t *data() const
+    const uint8_t* data() const
     {
-        return static_cast<const uint8_t *>(addr);
+        return static_cast<const uint8_t*>(addr);
     }
     size_t size() const
     {
@@ -296,7 +296,7 @@ class MappedFile
 
   private:
     size_t fsize;
-    void *addr;
+    void* addr;
 };
 
 class FwUpdateStatusCache
@@ -351,7 +351,7 @@ class FwUpdateStatusCache
     {
         return progressPercent;
     }
-    void updateActivationPercent(const std::string &objPath)
+    void updateActivationPercent(const std::string& objPath)
     {
         std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
         fwUpdateState = fwStateProgram;
@@ -360,7 +360,7 @@ class FwUpdateStatusCache
             *busp,
             sdbusplus::bus::match::rules::propertiesChanged(
                 objPath, "xyz.openbmc_project.Software.ActivationProgress"),
-            [&](sdbusplus::message::message &msg) {
+            [&](sdbusplus::message::message& msg) {
                 std::map<std::string, ipmi::DbusVariant> props;
                 std::vector<std::string> inVal;
                 std::string iface;
@@ -368,7 +368,7 @@ class FwUpdateStatusCache
                 {
                     msg.read(iface, props, inVal);
                 }
-                catch (const std::exception &e)
+                catch (const std::exception& e)
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "Exception caught in get ActivationProgress");
@@ -435,7 +435,7 @@ class FwUpdateStatusCache
 static FwUpdateStatusCache fwUpdateStatus;
 std::shared_ptr<TransferHashCheck> xferHashCheck;
 
-static void activateImage(const std::string &objPath)
+static void activateImage(const std::string& objPath)
 {
     // If flag is false  means to reboot
     if (fwUpdateStatus.getDeferRestart() == false)
@@ -479,7 +479,7 @@ static bool getFirmwareUpdateMode()
         std::string bmcState = std::get<std::string>(state);
         return (bmcState == bmcStateUpdateInProgress);
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Exception caught while getting BMC state.",
@@ -504,7 +504,7 @@ static void setFirmwareUpdateMode(const bool mode)
         ipmi::setDbusProperty(*busp, service, bmcStatePath, bmcStateIntf,
                               "CurrentBMCState", bmcState);
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Exception caught while setting BMC state.",
@@ -520,7 +520,7 @@ static void setFirmwareUpdateMode(const bool mode)
  * @param[in] ctx - context of current session.
  *  @returns true if the medium is IPMB else return true.
  **/
-ipmi::Cc checkIPMBChannel(const ipmi::Context::ptr &ctx, bool &isIPMBChannel)
+ipmi::Cc checkIPMBChannel(const ipmi::Context::ptr& ctx, bool& isIPMBChannel)
 {
     ipmi::ChannelInfo chInfo;
 
@@ -541,7 +541,7 @@ ipmi::Cc checkIPMBChannel(const ipmi::Context::ptr &ctx, bool &isIPMBChannel)
 }
 
 static void postTransferCompleteHandler(
-    std::unique_ptr<sdbusplus::bus::match::match> &fwUpdateMatchSignal)
+    std::unique_ptr<sdbusplus::bus::match::match>& fwUpdateMatchSignal)
 {
     // Setup timer for watching signal
     static phosphor::Timer timer(
@@ -559,7 +559,7 @@ static void postTransferCompleteHandler(
     timer.start(std::chrono::microseconds(5000000), false);
 
     // callback function for capturing signal
-    auto callback = [&](sdbusplus::message::message &m) {
+    auto callback = [&](sdbusplus::message::message& m) {
         bool flag = false;
 
         std::vector<std::pair<
@@ -573,7 +573,7 @@ static void postTransferCompleteHandler(
             m.read(objPath, intfPropsPair); // Read in the object path
                                             // that was just created
         }
-        catch (const std::exception &e)
+        catch (const std::exception& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "Exception caught in reading created object path.");
@@ -583,7 +583,7 @@ static void postTransferCompleteHandler(
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "New Interface Added.",
             phosphor::logging::entry("OBJPATH=%s", objPath.str.c_str()));
-        for (auto &interface : intfPropsPair)
+        for (auto& interface : intfPropsPair)
         {
             if (interface.first == "xyz.openbmc_project.Software.Activation")
             {
@@ -604,7 +604,7 @@ static void postTransferCompleteHandler(
                     activationStatusTimer.start(
                         std::chrono::microseconds(3000000), true);
                 }
-                catch (const std::exception &e)
+                catch (const std::exception& e)
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "Exception caught in start activationStatusTimer.",
@@ -624,7 +624,7 @@ static void postTransferCompleteHandler(
         "member='InterfacesAdded',path='/xyz/openbmc_project/software'",
         callback);
 }
-static bool startFirmwareUpdate(const std::string &uri)
+static bool startFirmwareUpdate(const std::string& uri)
 {
     // fwupdate URIs start with file:// or usb:// or tftp:// etc. By the time
     // the code gets to this point, the file should be transferred start the
@@ -638,7 +638,7 @@ static bool startFirmwareUpdate(const std::string &uri)
     return true;
 }
 
-static int transferImageFromFile(const std::string &uri, bool move = true)
+static int transferImageFromFile(const std::string& uri, bool move = true)
 {
     std::error_code ec;
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -669,14 +669,14 @@ static int transferImageFromFile(const std::string &uri, bool move = true)
 }
 
 template <typename... ArgTypes>
-static int executeCmd(const char *path, ArgTypes &&... tArgs)
+static int executeCmd(const char* path, ArgTypes&&... tArgs)
 {
-    boost::process::child execProg(path, const_cast<char *>(tArgs)...);
+    boost::process::child execProg(path, const_cast<char*>(tArgs)...);
     execProg.wait();
     return execProg.exit_code();
 }
 
-static int transferImageFromUsb(const std::string &uri)
+static int transferImageFromUsb(const std::string& uri)
 {
     int ret, sysret;
     char fwpath[fwPathMaxLength];
@@ -697,7 +697,7 @@ static int transferImageFromUsb(const std::string &uri)
     return ret;
 }
 
-static bool transferFirmwareFromUri(const std::string &uri)
+static bool transferFirmwareFromUri(const std::string& uri)
 {
     static constexpr char fwUriFile[] = "file://";
     static constexpr char fwUriUsb[] = "usb://";
@@ -761,7 +761,7 @@ static uint8_t getActiveBootImage(ipmi::Context::ptr ctx)
     constexpr uint8_t undefinedImage = 0x00;
     constexpr uint8_t primaryImage = 0x01;
     constexpr uint8_t secondaryImage = 0x02;
-    constexpr const char *secondaryFitImageStartAddr = "22480000";
+    constexpr const char* secondaryFitImageStartAddr = "22480000";
 
     uint8_t bootImage = primaryImage;
     boost::system::error_code ec;
@@ -805,7 +805,7 @@ ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
 
     std::vector<fwVersionInfoType> fwVerInfoList;
     std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
-    for (const auto &fwDev : fwVersionIdMap)
+    for (const auto& fwDev : fwVersionIdMap)
     {
         std::string verStr;
         try
@@ -816,7 +816,7 @@ ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
                 *busp, service, fwDev.second, versionIntf, "Version");
             verStr = std::get<std::string>(result);
         }
-        catch (const std::exception &e)
+        catch (const std::exception& e)
         {
             phosphor::logging::log<phosphor::logging::level::INFO>(
                 "Failed to fetch Version property",
@@ -856,7 +856,7 @@ ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
             minorNum = std::stoul(splitVer[1], nullptr, 16);
             buildNum = std::stoul(splitVer[2], nullptr, 16);
         }
-        catch (const std::exception &e)
+        catch (const std::exception& e)
         {
             phosphor::logging::log<phosphor::logging::level::INFO>(
                 "Failed to convert stoul.",
@@ -885,7 +885,7 @@ ipmi::RspType<uint8_t, std::vector<fwSecurityVersionInfoType>>
 
 ipmi::RspType<std::array<uint8_t, certKeyLen>,
               std::optional<std::array<uint8_t, cskSignatureLen>>>
-    ipmiGetFwRootCertData(const ipmi::Context::ptr &ctx, uint8_t certId)
+    ipmiGetFwRootCertData(const ipmi::Context::ptr& ctx, uint8_t certId)
 {
     bool isIPMBChannel = false;
 
@@ -953,7 +953,7 @@ ipmi::RspType<std::array<uint8_t, certKeyLen>,
             return ipmi::responseSuccess(certKey, cskSignature);
         }
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Exception caught in ipmiGetFwRootCertData",
@@ -1016,7 +1016,7 @@ ipmi::RspType<uint8_t, uint8_t>
  *   - random number
  **/
 ipmi::RspType<std::array<uint8_t, fwRandomNumLength>>
-    ipmiGetFwUpdateRandomNumber(const ipmi::Context::ptr &ctx)
+    ipmiGetFwUpdateRandomNumber(const ipmi::Context::ptr& ctx)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Generate FW update random number");
@@ -1057,8 +1057,8 @@ ipmi::RspType<std::array<uint8_t, fwRandomNumLength>>
  * @returns IPMI completion code
  **/
 ipmi::RspType<>
-    ipmiSetFirmwareUpdateMode(const ipmi::Context::ptr &ctx,
-                              std::array<uint8_t, fwRandomNumLength> &randNum)
+    ipmiSetFirmwareUpdateMode(const ipmi::Context::ptr& ctx,
+                              std::array<uint8_t, fwRandomNumLength>& randNum)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Start FW update mode");
@@ -1107,13 +1107,13 @@ ipmi::RspType<>
             return ipmi::responseBusy();
         }
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
         return ipmi::responseUnspecifiedError();
     }
 
     // FIXME? c++ doesn't off an option for exclusive file creation
-    FILE *fp = fopen(firmwareBufferFile, "wx");
+    FILE* fp = fopen(firmwareBufferFile, "wx");
     if (!fp)
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -1126,7 +1126,7 @@ ipmi::RspType<>
     {
         setFirmwareUpdateMode(true);
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
         unlink(firmwareBufferFile);
         return ipmi::responseUnspecifiedError();
@@ -1140,7 +1140,7 @@ ipmi::RspType<>
  *
  *  @returns IPMI completion code
  */
-ipmi::RspType<> ipmiExitFirmwareUpdateMode(const ipmi::Context::ptr &ctx)
+ipmi::RspType<> ipmiExitFirmwareUpdateMode(const ipmi::Context::ptr& ctx)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Exit FW update mode");
@@ -1181,7 +1181,7 @@ ipmi::RspType<> ipmiExitFirmwareUpdateMode(const ipmi::Context::ptr &ctx)
     {
         setFirmwareUpdateMode(false);
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
         return ipmi::responseUnspecifiedError();
     }
@@ -1199,9 +1199,9 @@ ipmi::RspType<> ipmiExitFirmwareUpdateMode(const ipmi::Context::ptr &ctx)
  *   - Byte 2: Current control status
  **/
 ipmi::RspType<bool, bool, bool, bool, uint4_t>
-    ipmiGetSetFirmwareUpdateControl(const ipmi::Context::ptr &ctx,
+    ipmiGetSetFirmwareUpdateControl(const ipmi::Context::ptr& ctx,
                                     const uint8_t controlReq,
-                                    const std::optional<std::string> &fileName)
+                                    const std::optional<std::string>& fileName)
 {
     bool isIPMBChannel = false;
 
@@ -1404,7 +1404,7 @@ ipmi::RspType<uint8_t, // status
 }
 
 ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
-    const ipmi::Context::ptr &ctx, bool noDowngradeMask, bool deferRestartMask,
+    const ipmi::Context::ptr& ctx, bool noDowngradeMask, bool deferRestartMask,
     bool sha2CheckMask, uint5_t reserved1, bool noDowngrade, bool deferRestart,
     bool sha2Check, uint5_t reserved2,
     std::optional<std::vector<uint8_t>> integrityCheckVal)
@@ -1463,7 +1463,7 @@ ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
 }
 
 ipmi::RspType<uint32_t>
-    ipmiFwImageWriteData(const std::vector<uint8_t> &writeData)
+    ipmiFwImageWriteData(const std::vector<uint8_t>& writeData)
 {
     const uint8_t ccCmdNotSupportedInPresentState = 0xD5;
     size_t writeDataLen = writeData.size();
@@ -1498,7 +1498,7 @@ ipmi::RspType<uint32_t>
         return ipmi::responseInvalidFieldRequest();
     }
 
-    const char *data = reinterpret_cast<const char *>(writeData.data());
+    const char* data = reinterpret_cast<const char*>(writeData.data());
     out.write(data, writeDataLen);
     out.close();
 
@@ -1529,7 +1529,7 @@ ipmi::RspType<uint32_t>
 
         std::ifstream inFile(firmwareBufferFile,
                              std::ios::binary | std::ios::in);
-        inFile.read(reinterpret_cast<char *>(&block0Data), sizeof(block0Data));
+        inFile.read(reinterpret_cast<char*>(&block0Data), sizeof(block0Data));
         inFile.close();
 
         uint32_t magicNum = block0Data.tag;

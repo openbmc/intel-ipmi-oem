@@ -16,10 +16,11 @@
 
 #pragma once
 
-#include <iostream>
 #include <ipmid/api.hpp>
-#include <map>
 #include <sdbusplus/bus.hpp>
+
+#include <iostream>
+#include <map>
 #include <string>
 #include <tuple>
 #include <utility>

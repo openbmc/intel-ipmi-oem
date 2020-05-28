@@ -15,9 +15,10 @@
 */
 
 #pragma once
+#include <sdbusplus/bus.hpp>
+
 #include <cstdint>
 #include <limits>
-#include <sdbusplus/bus.hpp>
 namespace ipmi
 {
 

@@ -16,11 +16,12 @@
 #include <byteswap.h>
 
 #include <appcommands.hpp>
-#include <fstream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <nlohmann/json.hpp>
 #include <phosphor-logging/log.hpp>
+
+#include <fstream>
 #include <regex>
 
 namespace ipmi

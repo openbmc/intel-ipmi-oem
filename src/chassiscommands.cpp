@@ -15,18 +15,19 @@
 */
 #include "xyz/openbmc_project/Common/error.hpp"
 
-#include <fstream>
-#include <iostream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <nlohmann/json.hpp>
 #include <phosphor-logging/elog-errors.hpp>
 #include <phosphor-logging/log.hpp>
-#include <regex>
 #include <sdbusplus/timer.hpp>
+#include <xyz/openbmc_project/Control/Power/RestorePolicy/server.hpp>
+
+#include <fstream>
+#include <iostream>
+#include <regex>
 #include <stdexcept>
 #include <string_view>
-#include <xyz/openbmc_project/Control/Power/RestorePolicy/server.hpp>
 
 using namespace phosphor::logging;
 

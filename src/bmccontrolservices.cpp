@@ -20,6 +20,7 @@
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
+
 #include <variant>
 
 namespace ipmi

@@ -5,6 +5,7 @@
 #include <phosphor-logging/elog.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/exception.hpp>
+
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -658,9 +659,7 @@ namespace Control
 namespace Host
 {
 namespace _CommandNotSupported
-{
-
-} // namespace _CommandNotSupported
+{} // namespace _CommandNotSupported
 
 struct CommandNotSupported
 {
@@ -788,9 +787,7 @@ namespace Shutdown
 namespace ThermalEvent
 {
 namespace _Processor
-{
-
-} // namespace _Processor
+{} // namespace _Processor
 
 struct Processor
 {
@@ -827,9 +824,7 @@ namespace Shutdown
 namespace ThermalEvent
 {
 namespace _GPU
-{
-
-} // namespace _GPU
+{} // namespace _GPU
 
 struct GPU
 {
@@ -864,9 +859,7 @@ namespace Dump
 namespace Create
 {
 namespace _Disabled
-{
-
-} // namespace _Disabled
+{} // namespace _Disabled
 
 struct Disabled
 {
@@ -987,9 +980,7 @@ namespace openbmc_project
 namespace Common
 {
 namespace _InternalFailure
-{
-
-} // namespace _InternalFailure
+{} // namespace _InternalFailure
 
 struct InternalFailure
 {
@@ -1072,9 +1063,7 @@ namespace openbmc_project
 namespace Common
 {
 namespace _InsufficientPermission
-{
-
-} // namespace _InsufficientPermission
+{} // namespace _InsufficientPermission
 
 struct InsufficientPermission
 {
@@ -1107,9 +1096,7 @@ namespace User
 namespace Common
 {
 namespace _UserNameExists
-{
-
-} // namespace _UserNameExists
+{} // namespace _UserNameExists
 
 struct UserNameExists
 {
@@ -1143,9 +1130,7 @@ namespace User
 namespace Common
 {
 namespace _UserNameDoesNotExist
-{
-
-} // namespace _UserNameDoesNotExist
+{} // namespace _UserNameDoesNotExist
 
 struct UserNameDoesNotExist
 {
@@ -1781,9 +1766,7 @@ namespace Common
 namespace Device
 {
 namespace _ReadFailure
-{
-
-} // namespace _ReadFailure
+{} // namespace _ReadFailure
 
 struct ReadFailure
 {
@@ -1821,9 +1804,7 @@ namespace Common
 namespace Device
 {
 namespace _WriteFailure
-{
-
-} // namespace _WriteFailure
+{} // namespace _WriteFailure
 
 struct WriteFailure
 {
@@ -2051,9 +2032,7 @@ namespace Shutdown
 namespace Inventory
 {
 namespace _Fan
-{
-
-} // namespace _Fan
+{} // namespace _Fan
 
 struct Fan
 {
@@ -2090,9 +2069,7 @@ namespace Shutdown
 namespace Power
 {
 namespace _Fault
-{
-
-} // namespace _Fault
+{} // namespace _Fault
 
 struct Fault
 {
@@ -2127,9 +2104,7 @@ namespace Sensor
 namespace Device
 {
 namespace _ReadFailure
-{
-
-} // namespace _ReadFailure
+{} // namespace _ReadFailure
 
 struct ReadFailure
 {
@@ -2167,9 +2142,7 @@ namespace State
 namespace Host
 {
 namespace _SoftOffTimeout
-{
-
-} // namespace _SoftOffTimeout
+{} // namespace _SoftOffTimeout
 
 struct SoftOffTimeout
 {
@@ -2203,9 +2176,7 @@ namespace openbmc_project
 namespace Inventory
 {
 namespace _NotPresent
-{
-
-} // namespace _NotPresent
+{} // namespace _NotPresent
 
 struct NotPresent
 {
@@ -2238,9 +2209,7 @@ namespace openbmc_project
 namespace Inventory
 {
 namespace _Nonfunctional
-{
-
-} // namespace _Nonfunctional
+{} // namespace _Nonfunctional
 
 struct Nonfunctional
 {
@@ -2275,9 +2244,7 @@ namespace Control
 namespace Device
 {
 namespace _WriteFailure
-{
-
-} // namespace _WriteFailure
+{} // namespace _WriteFailure
 
 struct WriteFailure
 {

@@ -22,17 +22,18 @@
 #include <unistd.h>
 
 #include <commandutils.hpp>
-#include <cstdint>
-#include <fstream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <oemcommands.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/message/types.hpp>
 #include <smbiosmdrv2handler.hpp>
+#include <xyz/openbmc_project/Common/error.hpp>
+
+#include <cstdint>
+#include <fstream>
 #include <string>
 #include <vector>
-#include <xyz/openbmc_project/Common/error.hpp>
 
 std::unique_ptr<MDRV2> mdrv2 = nullptr;
 static constexpr const uint8_t ccOemInvalidChecksum = 0x85;
@@ -41,7 +42,7 @@ static constexpr const uint8_t ccStorageLeak = 0xC4;
 
 static void register_netfn_smbiosmdrv2_functions() __attribute__((constructor));
 
-int MDRV2::agentLookup(const uint16_t &agentId)
+int MDRV2::agentLookup(const uint16_t& agentId)
 {
     int agentIndex = -1;
 
@@ -58,9 +59,9 @@ int MDRV2::agentLookup(const uint16_t &agentId)
     return agentIndex;
 }
 
-int MDRV2::sdplusMdrv2GetProperty(const std::string &name,
-                                  std::variant<uint8_t> &value,
-                                  const std::string &service)
+int MDRV2::sdplusMdrv2GetProperty(const std::string& name,
+                                  std::variant<uint8_t>& value,
+                                  const std::string& service)
 {
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     sdbusplus::message::message method =
@@ -74,7 +75,7 @@ int MDRV2::sdplusMdrv2GetProperty(const std::string &name,
         sdbusplus::message::message reply = bus->call(method);
         reply.read(value);
     }
-    catch (sdbusplus::exception_t &e)
+    catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error get property, sdbusplus call failed",
@@ -86,7 +87,7 @@ int MDRV2::sdplusMdrv2GetProperty(const std::string &name,
 }
 
 int MDRV2::syncDirCommonData(uint8_t idIndex, uint32_t size,
-                             const std::string &service)
+                             const std::string& service)
 {
     std::vector<uint32_t> commonData;
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
@@ -100,7 +101,7 @@ int MDRV2::syncDirCommonData(uint8_t idIndex, uint32_t size,
         sdbusplus::message::message reply = bus->call(method);
         reply.read(commonData);
     }
-    catch (sdbusplus::exception_t &e)
+    catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error sync dir common data with service",
@@ -121,8 +122,8 @@ int MDRV2::syncDirCommonData(uint8_t idIndex, uint32_t size,
     return 0;
 }
 
-int MDRV2::findDataId(const uint8_t *dataInfo, const size_t &len,
-                      const std::string &service)
+int MDRV2::findDataId(const uint8_t* dataInfo, const size_t& len,
+                      const std::string& service)
 {
     int idIndex = -1;
 
@@ -146,7 +147,7 @@ int MDRV2::findDataId(const uint8_t *dataInfo, const size_t &len,
         sdbusplus::message::message reply = bus->call(method);
         reply.read(idIndex);
     }
-    catch (sdbusplus::exception_t &e)
+    catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error find id index",
@@ -159,7 +160,7 @@ int MDRV2::findDataId(const uint8_t *dataInfo, const size_t &len,
     return idIndex;
 }
 
-uint16_t MDRV2::getSessionHandle(Mdr2DirStruct *dir)
+uint16_t MDRV2::getSessionHandle(Mdr2DirStruct* dir)
 {
     if (dir == NULL)
     {
@@ -176,7 +177,7 @@ uint16_t MDRV2::getSessionHandle(Mdr2DirStruct *dir)
     return dir->sessionHandle;
 }
 
-int MDRV2::findLockHandle(const uint16_t &lockHandle)
+int MDRV2::findLockHandle(const uint16_t& lockHandle)
 {
     int idIndex = -1;
 
@@ -205,7 +206,7 @@ bool MDRV2::smbiosIsUpdating(uint8_t index)
     return false;
 }
 
-uint32_t MDRV2::calcChecksum32(uint8_t *buf, uint32_t len)
+uint32_t MDRV2::calcChecksum32(uint8_t* buf, uint32_t len)
 {
     uint32_t sum = 0;
 
@@ -319,7 +320,7 @@ ipmi::RspType<std::vector<uint8_t>> mdr2GetDir(uint16_t agentId,
         sdbusplus::message::message reply = bus->call(method);
         reply.read(dataOut);
     }
-    catch (sdbusplus::exception_t &e)
+    catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error get dir", phosphor::logging::entry("ERROR=%s", e.what()),
@@ -388,7 +389,7 @@ ipmi::RspType<bool> mdr2SendDir(uint16_t agentId, uint8_t dirVersion,
         sdbusplus::message::message reply = bus->call(method);
         reply.read(terminate);
     }
-    catch (sdbusplus::exception_t &e)
+    catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error send dir", phosphor::logging::entry("ERROR=%s", e.what()),
@@ -454,7 +455,7 @@ ipmi::RspType<std::vector<uint8_t>>
         sdbusplus::message::message reply = bus->call(method);
         reply.read(res);
     }
-    catch (sdbusplus::exception_t &e)
+    catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error get data info",
@@ -507,7 +508,7 @@ ipmi::RspType<std::vector<uint8_t>> mdr2DataInfoOffer(uint16_t agentId)
         sdbusplus::message::message reply = bus->call(method);
         reply.read(dataOut);
     }
-    catch (sdbusplus::exception_t &e)
+    catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error send data info offer",
@@ -588,7 +589,7 @@ ipmi::RspType<bool> mdr2SendDataInfo(uint16_t agentId,
         sdbusplus::message::message reply = bus->call(method);
         reply.read(entryChanged);
     }
-    catch (sdbusplus::exception_t &e)
+    catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error send data info",
@@ -760,9 +761,9 @@ ipmi::RspType<> mdr2SendDataBlock(uint16_t agentId, uint16_t lockHandle,
                 "Offset is out of range");
             return ipmi::responseParmOutOfRange();
         }
-        uint8_t *destAddr =
+        uint8_t* destAddr =
             mdrv2->smbiosDir.dir[idIndex].dataStorage + xferOffset;
-        uint8_t *sourceAddr = reinterpret_cast<uint8_t *>(mdrv2->area->vPtr);
+        uint8_t* sourceAddr = reinterpret_cast<uint8_t*>(mdrv2->area->vPtr);
         uint32_t calcChecksum = mdrv2->calcChecksum32(sourceAddr, xferLength);
         if (calcChecksum != checksum)
         {
@@ -791,7 +792,7 @@ ipmi::RspType<> mdr2SendDataBlock(uint16_t agentId, uint16_t lockHandle,
     return ipmi::responseSuccess();
 }
 
-bool MDRV2::storeDatatoFlash(MDRSMBIOSHeader *mdrHdr, uint8_t *data)
+bool MDRV2::storeDatatoFlash(MDRSMBIOSHeader* mdrHdr, uint8_t* data)
 {
     std::ofstream smbiosFile(mdrType2File,
                              std::ios_base::binary | std::ios_base::trunc);
@@ -804,11 +805,11 @@ bool MDRV2::storeDatatoFlash(MDRSMBIOSHeader *mdrHdr, uint8_t *data)
 
     try
     {
-        smbiosFile.write(reinterpret_cast<char *>(mdrHdr),
+        smbiosFile.write(reinterpret_cast<char*>(mdrHdr),
                          sizeof(MDRSMBIOSHeader));
-        smbiosFile.write(reinterpret_cast<char *>(data), mdrHdr->dataSize);
+        smbiosFile.write(reinterpret_cast<char*>(data), mdrHdr->dataSize);
     }
-    catch (std::ofstream::failure &e)
+    catch (std::ofstream::failure& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Write data from flash error - write data error",
@@ -882,7 +883,7 @@ bool MDRV2::smbiosUnlock(uint8_t index)
     return ret;
 }
 
-bool MDRV2::smbiosTryLock(uint8_t flag, uint8_t index, uint16_t *session,
+bool MDRV2::smbiosTryLock(uint8_t flag, uint8_t index, uint16_t* session,
                           uint16_t timeout)
 {
     bool ret = false;
@@ -1121,7 +1122,7 @@ ipmi::RspType<uint8_t, uint16_t>
             mdrv2->area =
                 std::make_unique<SharedMemoryArea>(xferAddress, xferLength);
         }
-        catch (const std::system_error &e)
+        catch (const std::system_error& e)
         {
             mdrv2->smbiosUnlock(idIndex);
             phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -1225,7 +1226,7 @@ ipmi::RspType<> cmd_mdr2_data_done(uint16_t agentId, uint16_t lockHandle)
         sdbusplus::message::message reply = bus->call(method);
         reply.read(status);
     }
-    catch (sdbusplus::exception_t &e)
+    catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error Sync data with service",

@@ -21,8 +21,8 @@
 #include <oemcommands.hpp>
 #include <sdbusplus/timer.hpp>
 
-static constexpr const char *mdrType2File = "/var/lib/smbios/smbios2";
-static constexpr const char *smbiosPath = "/var/lib/smbios";
+static constexpr const char* mdrType2File = "/var/lib/smbios/smbios2";
+static constexpr const char* smbiosPath = "/var/lib/smbios";
 static constexpr const size_t msgPayloadSize =
     1024 * 60; // Total size will transfer for smbios table
 static constexpr const size_t mdriiSMSize = 0x00100000;
@@ -62,9 +62,9 @@ static constexpr const uint8_t sysClock = 100;
 static constexpr const int lastAgentIndex = -1;
 static constexpr const uint16_t lastAgentId = 0xFFFF;
 constexpr const uint32_t invalidChecksum = 0xffffffff;
-constexpr const char *dbusProperties = "org.freedesktop.DBus.Properties";
-constexpr const char *mdrv2Path = "/xyz/openbmc_project/Smbios/MDR_V2";
-constexpr const char *mdrv2Interface = "xyz.openbmc_project.Smbios.MDR_V2";
+constexpr const char* dbusProperties = "org.freedesktop.DBus.Properties";
+constexpr const char* mdrv2Path = "/xyz/openbmc_project/Smbios/MDR_V2";
+constexpr const char* mdrv2Interface = "xyz.openbmc_project.Smbios.MDR_V2";
 
 enum class MDR2SMBIOSStatusEnum
 {
@@ -120,7 +120,7 @@ struct Mdr2DirLocalStruct
     uint32_t xferBuff;
     uint32_t xferSize;
     uint32_t maxDataSize;
-    uint8_t *dataStorage;
+    uint8_t* dataStorage;
 };
 
 struct Mdr2DirStruct
@@ -240,7 +240,7 @@ class SharedMemoryArea
         }
     }
 
-    void *vPtr;
+    void* vPtr;
 
   private:
     uint32_t physicalAddr;
@@ -258,23 +258,23 @@ class MDRV2
             std::make_unique<phosphor::Timer>([&](void) { timeoutHandler(); });
     }
 
-    int agentLookup(const uint16_t &agentId);
-    int findLockHandle(const uint16_t &lockHandle);
+    int agentLookup(const uint16_t& agentId);
+    int findLockHandle(const uint16_t& lockHandle);
     int syncDirCommonData(uint8_t idIndex, uint32_t size,
-                          const std::string &service);
-    int findDataId(const uint8_t *dataInfo, const size_t &len,
-                   const std::string &service);
-    uint16_t getSessionHandle(Mdr2DirStruct *dir);
+                          const std::string& service);
+    int findDataId(const uint8_t* dataInfo, const size_t& len,
+                   const std::string& service);
+    uint16_t getSessionHandle(Mdr2DirStruct* dir);
     bool smbiosIsUpdating(uint8_t index);
-    uint32_t calcChecksum32(uint8_t *buf, uint32_t len);
-    bool storeDatatoFlash(MDRSMBIOSHeader *mdrHdr, uint8_t *data);
+    uint32_t calcChecksum32(uint8_t* buf, uint32_t len);
+    bool storeDatatoFlash(MDRSMBIOSHeader* mdrHdr, uint8_t* data);
     bool smbiosUnlock(uint8_t index);
     void timeoutHandler();
-    bool smbiosTryLock(uint8_t flag, uint8_t index, uint16_t *session,
+    bool smbiosTryLock(uint8_t flag, uint8_t index, uint16_t* session,
                        uint16_t timeout);
-    int sdplusMdrv2GetProperty(const std::string &name,
-                               std::variant<uint8_t> &value,
-                               const std::string &service);
+    int sdplusMdrv2GetProperty(const std::string& name,
+                               std::variant<uint8_t>& value,
+                               const std::string& service);
 
     Mdr2DirStruct smbiosDir{smbiosAgentVersion,
                             1,

@@ -151,9 +151,9 @@ struct IpmbRequest
     uint8_t cmd;
     std::vector<uint8_t> data;
 
-    IpmbRequest(const ipmbHeader *ipmbBuffer, size_t bufferLength);
+    IpmbRequest(const ipmbHeader* ipmbBuffer, size_t bufferLength);
 
-    void prepareRequest(sdbusplus::message::message &mesg);
+    void prepareRequest(sdbusplus::message::message& mesg);
 };
 
 struct IpmbResponse
@@ -170,9 +170,9 @@ struct IpmbResponse
 
     IpmbResponse(uint8_t address, uint8_t netFn, uint8_t rqLun, uint8_t rsSA,
                  uint8_t seq, uint8_t rsLun, uint8_t cmd,
-                 uint8_t completionCode, std::vector<uint8_t> &inputData);
+                 uint8_t completionCode, std::vector<uint8_t>& inputData);
 
-    void ipmbToi2cConstruct(uint8_t *buffer, size_t *bufferLength);
+    void ipmbToi2cConstruct(uint8_t* buffer, size_t* bufferLength);
 };
 
 /**
@@ -198,8 +198,8 @@ class Bridging
     void clearResponseQueue();
 
     ipmi::Cc handleIpmbChannel(ipmi::Context::ptr ctx, const uint8_t tracking,
-                               const std::vector<uint8_t> &msgData,
-                               std::vector<uint8_t> &rspData);
+                               const std::vector<uint8_t>& msgData,
+                               std::vector<uint8_t>& rspData);
 
     void insertMessageInQueue(IpmbResponse msg);
 

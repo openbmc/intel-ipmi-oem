@@ -20,32 +20,33 @@
 #include <systemd/sd-journal.h>
 
 #include <appcommands.hpp>
-#include <array>
 #include <boost/container/flat_map.hpp>
 #include <boost/process/child.hpp>
 #include <boost/process/io.hpp>
 #include <com/intel/Control/OCOTShutdownPolicy/server.hpp>
 #include <commandutils.hpp>
-#include <filesystem>
 #include <gpiod.hpp>
-#include <iostream>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <nlohmann/json.hpp>
 #include <oemcommands.hpp>
 #include <phosphor-logging/log.hpp>
-#include <regex>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/message/types.hpp>
-#include <string>
-#include <variant>
-#include <vector>
 #include <xyz/openbmc_project/Chassis/Control/NMISource/server.hpp>
 #include <xyz/openbmc_project/Control/Boot/Mode/server.hpp>
 #include <xyz/openbmc_project/Control/Boot/Source/server.hpp>
 #include <xyz/openbmc_project/Control/PowerSupplyRedundancy/server.hpp>
 #include <xyz/openbmc_project/Control/Security/RestrictionMode/server.hpp>
 #include <xyz/openbmc_project/Control/Security/SpecialMode/server.hpp>
+
+#include <array>
+#include <filesystem>
+#include <iostream>
+#include <regex>
+#include <string>
+#include <variant>
+#include <vector>
 
 namespace ipmi
 {

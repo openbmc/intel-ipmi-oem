@@ -15,11 +15,12 @@
 */
 
 #pragma once
-#include <cstddef>
-#include <cstdint>
+#include "ipmid/api.h"
+
 #include <oemcommands.hpp>
 
-#include "ipmid/api.h"
+#include <cstddef>
+#include <cstdint>
 
 constexpr uint16_t msgPayloadSize = 1024 * 60;
 

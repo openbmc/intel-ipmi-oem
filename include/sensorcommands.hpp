@@ -17,8 +17,9 @@
 #pragma once
 #include "sdrutils.hpp"
 
-#include <cstdint>
 #include <ipmid/api.hpp>
+
+#include <cstdint>
 
 #pragma pack(push, 1)
 
@@ -120,8 +121,8 @@ enum class IPMINetfnSensorCmds : ipmi_cmd_t
 namespace ipmi
 {
 extern SensorSubTree sensorTree;
-static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string &connection,
-                                      std::string &path)
+static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string& connection,
+                                      std::string& path)
 {
     if (sensorTree.empty() && !getSensorSubtree(sensorTree))
     {
@@ -134,7 +135,7 @@ static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string &connection,
     }
 
     uint8_t sensorIndex = sensnum;
-    for (const auto &sensor : sensorTree)
+    for (const auto& sensor : sensorTree)
     {
         if (sensorIndex-- == 0)
         {

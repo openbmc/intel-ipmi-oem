@@ -14,9 +14,7 @@
 // limitations under the License.
 */
 
-#include <bitset>
 #include <bridgingcommands.hpp>
-#include <cstring>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <manufacturingcommands.hpp>
@@ -25,18 +23,21 @@
 #include <sdbusplus/bus/match.hpp>
 #include <sdbusplus/message.hpp>
 #include <storagecommands.hpp>
+
+#include <bitset>
+#include <cstring>
 #include <vector>
 
-static constexpr const char *wdtService = "xyz.openbmc_project.Watchdog";
-static constexpr const char *wdtInterface =
+static constexpr const char* wdtService = "xyz.openbmc_project.Watchdog";
+static constexpr const char* wdtInterface =
     "xyz.openbmc_project.State.Watchdog";
-static constexpr const char *wdtObjPath = "/xyz/openbmc_project/watchdog/host0";
-static constexpr const char *wdtInterruptFlagProp =
+static constexpr const char* wdtObjPath = "/xyz/openbmc_project/watchdog/host0";
+static constexpr const char* wdtInterruptFlagProp =
     "PreTimeoutInterruptOccurFlag";
 
-static constexpr const char *ipmbBus = "xyz.openbmc_project.Ipmi.Channel.Ipmb";
-static constexpr const char *ipmbObj = "/xyz/openbmc_project/Ipmi/Channel/Ipmb";
-static constexpr const char *ipmbIntf = "org.openbmc.Ipmb";
+static constexpr const char* ipmbBus = "xyz.openbmc_project.Ipmi.Channel.Ipmb";
+static constexpr const char* ipmbObj = "/xyz/openbmc_project/Ipmi/Channel/Ipmb";
+static constexpr const char* ipmbIntf = "org.openbmc.Ipmb";
 
 static Bridging bridging;
 static bool eventMessageBufferFlag = false;
@@ -49,7 +50,7 @@ void Bridging::clearResponseQueue()
 /**
  * @brief utils for checksum
  */
-static bool ipmbChecksumValidate(const uint8_t *data, uint8_t length)
+static bool ipmbChecksumValidate(const uint8_t* data, uint8_t length)
 {
     if (data == nullptr)
     {
@@ -71,7 +72,7 @@ static bool ipmbChecksumValidate(const uint8_t *data, uint8_t length)
     return false;
 }
 
-static uint8_t ipmbChecksumCompute(uint8_t *data, uint8_t length)
+static uint8_t ipmbChecksumCompute(uint8_t* data, uint8_t length)
 {
     if (data == nullptr)
     {
@@ -90,21 +91,21 @@ static uint8_t ipmbChecksumCompute(uint8_t *data, uint8_t length)
 }
 
 static inline bool
-    ipmbConnectionHeaderChecksumValidate(const ipmbHeader *ipmbHeader)
+    ipmbConnectionHeaderChecksumValidate(const ipmbHeader* ipmbHeader)
 {
-    return ipmbChecksumValidate(reinterpret_cast<const uint8_t *>(ipmbHeader),
+    return ipmbChecksumValidate(reinterpret_cast<const uint8_t*>(ipmbHeader),
                                 ipmbConnectionHeaderLength);
 }
 
-static inline bool ipmbDataChecksumValidate(const ipmbHeader *ipmbHeader,
+static inline bool ipmbDataChecksumValidate(const ipmbHeader* ipmbHeader,
                                             uint8_t length)
 {
-    return ipmbChecksumValidate((reinterpret_cast<const uint8_t *>(ipmbHeader) +
+    return ipmbChecksumValidate((reinterpret_cast<const uint8_t*>(ipmbHeader) +
                                  ipmbConnectionHeaderLength),
                                 (length - ipmbConnectionHeaderLength));
 }
 
-static bool isFrameValid(const ipmbHeader *frame, uint8_t length)
+static bool isFrameValid(const ipmbHeader* frame, uint8_t length)
 {
     if ((length < ipmbMinFrameLength) || (length > ipmbMaxFrameLength))
     {
@@ -124,7 +125,7 @@ static bool isFrameValid(const ipmbHeader *frame, uint8_t length)
     return true;
 }
 
-IpmbRequest::IpmbRequest(const ipmbHeader *ipmbBuffer, size_t bufferLength)
+IpmbRequest::IpmbRequest(const ipmbHeader* ipmbBuffer, size_t bufferLength)
 {
     address = ipmbBuffer->Header.Req.address;
     netFn = ipmbNetFnGet(ipmbBuffer->Header.Req.rsNetFnLUN);
@@ -148,7 +149,7 @@ IpmbRequest::IpmbRequest(const ipmbHeader *ipmbBuffer, size_t bufferLength)
 IpmbResponse::IpmbResponse(uint8_t address, uint8_t netFn, uint8_t rqLun,
                            uint8_t rsSA, uint8_t seq, uint8_t rsLun,
                            uint8_t cmd, uint8_t completionCode,
-                           std::vector<uint8_t> &inputData) :
+                           std::vector<uint8_t>& inputData) :
     address(address),
     netFn(netFn), rqLun(rqLun), rsSA(rsSA), seq(seq), rsLun(rsLun), cmd(cmd),
     completionCode(completionCode)
@@ -161,9 +162,9 @@ IpmbResponse::IpmbResponse(uint8_t address, uint8_t netFn, uint8_t rqLun,
     }
 }
 
-void IpmbResponse::ipmbToi2cConstruct(uint8_t *buffer, size_t *bufferLength)
+void IpmbResponse::ipmbToi2cConstruct(uint8_t* buffer, size_t* bufferLength)
 {
-    ipmbHeader *ipmbBuffer = (ipmbHeader *)buffer;
+    ipmbHeader* ipmbBuffer = (ipmbHeader*)buffer;
 
     ipmbBuffer->Header.Resp.address = address;
     ipmbBuffer->Header.Resp.rqNetFnLUN = ipmbNetFnLunSet(netFn, rqLun);
@@ -190,7 +191,7 @@ void IpmbResponse::ipmbToi2cConstruct(uint8_t *buffer, size_t *bufferLength)
                             (ipmbResponseDataHeaderLength + data.size()));
 }
 
-void IpmbRequest::prepareRequest(sdbusplus::message::message &mesg)
+void IpmbRequest::prepareRequest(sdbusplus::message::message& mesg)
 {
     mesg.append(ipmbMeChannelNum, netFn, rqLun, cmd, data);
 }
@@ -240,8 +241,8 @@ static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
 
 ipmi::Cc Bridging::handleIpmbChannel(ipmi::Context::ptr ctx,
                                      const uint8_t tracking,
-                                     const std::vector<uint8_t> &msgData,
-                                     std::vector<uint8_t> &rspData)
+                                     const std::vector<uint8_t>& msgData,
+                                     std::vector<uint8_t>& rspData)
 {
     ipmi::Manufacturing mtm;
 
@@ -259,7 +260,7 @@ ipmi::Cc Bridging::handleIpmbChannel(ipmi::Context::ptr ctx,
         return ipmi::ccInsufficientPrivilege;
     }
 
-    auto sendMsgReqData = reinterpret_cast<const ipmbHeader *>(msgData.data());
+    auto sendMsgReqData = reinterpret_cast<const ipmbHeader*>(msgData.data());
 
     // allow bridging to ME only
     if (sendMsgReqData->Header.Req.address != ipmbMeSlaveAddress)
@@ -394,7 +395,7 @@ ipmi::RspType<std::vector<uint8_t> // responseData
     ipmiAppSendMessage(ipmi::Context::ptr ctx, const uint4_t channelNumber,
                        const bool authenticationEnabled,
                        const bool encryptionEnabled, const uint2_t tracking,
-                       ipmi::message::Payload &msg)
+                       ipmi::message::Payload& msg)
 {
     // check message fields:
     // encryption not supported
@@ -546,7 +547,7 @@ ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags()
             getMsgFlagsRes.set(getMsgFlagWatchdogPreTimeOutBit);
         }
     }
-    catch (sdbusplus::exception::SdBusError &e)
+    catch (sdbusplus::exception::SdBusError& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppGetMessageFlags, dbus call exception");
@@ -595,7 +596,7 @@ ipmi::RspType<> ipmiAppClearMessageFlags(bool receiveMessage,
         ipmi::setDbusProperty(*dbus, wdtService, wdtObjPath, wdtInterface,
                               wdtInterruptFlagProp, false);
     }
-    catch (const sdbusplus::exception::SdBusError &e)
+    catch (const sdbusplus::exception::SdBusError& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppClearMessageFlags: can't Clear/Set "
