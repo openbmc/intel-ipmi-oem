@@ -447,7 +447,7 @@ ipmi::RspType<std::vector<uint8_t>>
     sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "GetDataInformation");
 
-    method.append(idIndex);
+    method.append(static_cast<uint8_t>(idIndex));
 
     std::vector<uint8_t> res;
     try

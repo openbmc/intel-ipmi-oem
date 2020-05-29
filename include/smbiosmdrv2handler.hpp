@@ -151,7 +151,7 @@ struct MDRiiGetDataInfoResponse
     DataIdStruct dataSetId;
     uint8_t validFlag;
     uint32_t dataLength;
-    uint32_t dataVersion;
+    uint8_t dataVersion;
     uint32_t timeStamp;
 };
 
