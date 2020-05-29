@@ -137,24 +137,6 @@ struct Mdr2DirStruct
 // Three members include dataSetSize, dataVersion and timestamp
 static constexpr const size_t syncDirCommonSize = 3;
 
-// ====================== MDR II Pull Command Structures ======================
-struct MDRiiGetDataInfoRequest
-{
-    uint16_t agentId;
-    DataIdStruct dataSetInfo;
-};
-
-// MDR II data set information inquiry response
-struct MDRiiGetDataInfoResponse
-{
-    uint8_t mdrVersion;
-    DataIdStruct dataSetId;
-    uint8_t validFlag;
-    uint32_t dataLength;
-    uint32_t dataVersion;
-    uint32_t timeStamp;
-};
-
 // ====================== MDR II Push Command Structures ======================
 // MDR II Client send data set info offer response
 struct MDRiiOfferDataInfoResponse
