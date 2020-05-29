@@ -447,7 +447,7 @@ ipmi::RspType<std::vector<uint8_t>>
     sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "GetDataInformation");
 
-    method.append(idIndex);
+    method.append((uint8_t)idIndex);
 
     std::vector<uint8_t> res;
     try
@@ -465,7 +465,8 @@ ipmi::RspType<std::vector<uint8_t>>
         return ipmi::responseResponseError();
     }
 
-    if (res.size() != sizeof(MDRiiGetDataInfoResponse))
+    constexpr size_t MDRiiGetDataInfoResponseSize = 21;
+    if (res.size() != MDRiiGetDataInfoResponseSize)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Get data info response length not invalid");
