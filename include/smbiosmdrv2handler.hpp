@@ -144,17 +144,6 @@ struct MDRiiGetDataInfoRequest
     DataIdStruct dataSetInfo;
 };
 
-// MDR II data set information inquiry response
-struct MDRiiGetDataInfoResponse
-{
-    uint8_t mdrVersion;
-    DataIdStruct dataSetId;
-    uint8_t validFlag;
-    uint32_t dataLength;
-    uint32_t dataVersion;
-    uint32_t timeStamp;
-};
-
 // ====================== MDR II Push Command Structures ======================
 // MDR II Client send data set info offer response
 struct MDRiiOfferDataInfoResponse
