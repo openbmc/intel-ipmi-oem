@@ -19,6 +19,7 @@
 #include <sdbusplus/bus/match.hpp>
 #include <sdbusplus/server/object.hpp>
 #include <sdbusplus/timer.hpp>
+#include <types.hpp>
 
 #include <chrono>
 #include <cstdint>

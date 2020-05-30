@@ -21,6 +21,7 @@
 #include "sdrutils.hpp"
 #include "sensorutils.hpp"
 #include "storagecommands.hpp"
+#include "types.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
