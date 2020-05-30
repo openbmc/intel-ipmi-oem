@@ -19,6 +19,7 @@
 #include "commandutils.hpp"
 #include "ipmi_to_redfish_hooks.hpp"
 #include "sdrutils.hpp"
+#include "types.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
