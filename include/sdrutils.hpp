@@ -15,6 +15,7 @@
 */
 
 #include "commandutils.hpp"
+#include "types.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/bimap.hpp>

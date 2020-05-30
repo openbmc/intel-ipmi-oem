@@ -14,6 +14,7 @@
 // limitations under the License.
 */
 
+#include "types.hpp"
 #include "xyz/openbmc_project/Common/error.hpp"
 #include "xyz/openbmc_project/Led/Physical/server.hpp"
 
