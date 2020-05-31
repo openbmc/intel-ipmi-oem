@@ -19,3 +19,4 @@ phosphor-host-ipmid/
 phosphor-ipmi-host-src/
 prefix/
 runSensorTests
+ipmi-whitelist.hpp
