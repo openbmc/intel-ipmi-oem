@@ -52,9 +52,6 @@ static inline bool baseInRange(double base)
 // Returns true if successful, modifies values in-place
 static inline bool scaleFloatExp(double& base, int8_t& expShift)
 {
-    auto min10 = static_cast<double>(minInt10);
-    auto max10 = static_cast<double>(maxInt10);
-
     // Comparing with zero should be OK, zero is special in floating-point
     // If base is exactly zero, no adjustment of the exponent is necessary
     if (base == 0.0)
