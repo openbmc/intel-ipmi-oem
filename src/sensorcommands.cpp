@@ -433,6 +433,11 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
         static_cast<uint8_t>(IPMISensorReadingByte2::sensorScanningEnable);
     operation |=
         static_cast<uint8_t>(IPMISensorReadingByte2::eventMessagesEnable);
+    if (std::isnan(reading))
+    {
+        operation |= static_cast<uint8_t>(
+            IPMISensorReadingByte2::readingStateUnavailable);
+    }
 
     uint8_t thresholds = 0;
 
