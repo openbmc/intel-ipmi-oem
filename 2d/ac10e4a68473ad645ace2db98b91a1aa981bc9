@@ -1,0 +1,8 @@
+Code-Review+2: AppaRao Puli <apparao.puli@linux.intel.com>
+Ok-To-Test+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Verified+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Submitted-by: Patrick Venture <venture@google.com>
+Submitted-at: Fri, 19 Jun 2020 16:39:28 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/33013
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
