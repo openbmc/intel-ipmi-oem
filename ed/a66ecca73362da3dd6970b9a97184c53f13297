@@ -1,0 +1,10 @@
+Ok-To-Test+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Verified+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Code-Review+1: Zbigniew Lukwinski <zbigniew.lukwinski@linux.intel.com>
+Code-Review+1: Zbigniew Kurzynski <zbigniew.kurzynski@intel.com>
+Code-Review+2: Vernon Mauery <vernon.mauery@linux.intel.com>
+Submitted-by: Vernon Mauery <vernon.mauery@linux.intel.com>
+Submitted-at: Wed, 24 Jun 2020 22:39:18 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/33973
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
