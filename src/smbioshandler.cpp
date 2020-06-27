@@ -14,12 +14,14 @@
 // limitations under the License.
 */
 
-#include <commandutils.hpp>
+#include "smbioshandler.hpp"
+
+#include "commandutils.hpp"
+
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/elog-errors.hpp>
 #include <phosphor-logging/log.hpp>
-#include <smbioshandler.hpp>
 #include <xyz/openbmc_project/Common/error.hpp>
 
 #include <cstdint>

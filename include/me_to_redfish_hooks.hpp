@@ -15,7 +15,7 @@
 */
 
 #pragma once
-#include <ipmi_to_redfish_hooks.hpp>
+#include "ipmi_to_redfish_hooks.hpp"
 
 namespace intel_oem::ipmi::sel::redfish_hooks::me
 {

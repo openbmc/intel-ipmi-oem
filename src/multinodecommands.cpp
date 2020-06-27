@@ -14,10 +14,12 @@
 // limitations under the License.
 */
 
+#include "multinodecommands.hpp"
+
+#include "oemcommands.hpp"
+
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
-#include <multinodecommands.hpp>
-#include <oemcommands.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/message/types.hpp>

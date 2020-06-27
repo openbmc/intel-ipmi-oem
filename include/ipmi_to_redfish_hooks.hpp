@@ -15,9 +15,10 @@
 */
 
 #pragma once
+#include "storagecommands.hpp"
+
 #include <boost/algorithm/string/join.hpp>
 #include <phosphor-logging/log.hpp>
-#include <storagecommands.hpp>
 
 namespace intel_oem::ipmi::sel
 {

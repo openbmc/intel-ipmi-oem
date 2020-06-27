@@ -13,9 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
+#include "appcommands.hpp"
+
 #include <byteswap.h>
 
-#include <appcommands.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <nlohmann/json.hpp>
