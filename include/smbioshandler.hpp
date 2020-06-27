@@ -15,9 +15,9 @@
 */
 
 #pragma once
-#include "ipmid/api.h"
+#include "oemcommands.hpp"
 
-#include <oemcommands.hpp>
+#include <ipmid/api.h>
 
 #include <cstddef>
 #include <cstdint>

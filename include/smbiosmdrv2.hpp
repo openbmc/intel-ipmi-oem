@@ -15,9 +15,9 @@
 */
 
 #pragma once
-#include <ipmid/api.h>
+#include "oemcommands.hpp"
 
-#include <oemcommands.hpp>
+#include <ipmid/api.h>
 
 constexpr uint8_t maxDirEntries = 4;
 constexpr uint16_t msgPayloadSize = 1024 * 60;

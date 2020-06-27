@@ -16,13 +16,14 @@
 
 #pragma once
 
+#include "variantvisitors.hpp"
+
 #include <ipmid/api-types.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/message.hpp>
 #include <sdbusplus/timer.hpp>
-#include <variantvisitors.hpp>
 
 #include <vector>
 
