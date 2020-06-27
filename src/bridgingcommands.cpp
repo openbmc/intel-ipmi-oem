@@ -14,15 +14,17 @@
 // limitations under the License.
 */
 
-#include <bridgingcommands.hpp>
+#include "bridgingcommands.hpp"
+
+#include "manufacturingcommands.hpp"
+#include "storagecommands.hpp"
+
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
-#include <manufacturingcommands.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/bus/match.hpp>
 #include <sdbusplus/message.hpp>
-#include <storagecommands.hpp>
 
 #include <bitset>
 #include <cstring>

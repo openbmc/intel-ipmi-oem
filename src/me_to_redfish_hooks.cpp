@@ -14,8 +14,9 @@
 // limitations under the License.
 */
 
+#include "me_to_redfish_hooks.hpp"
+
 #include <boost/algorithm/string/join.hpp>
-#include <me_to_redfish_hooks.hpp>
 #include <phosphor-logging/log.hpp>
 
 #include <string_view>

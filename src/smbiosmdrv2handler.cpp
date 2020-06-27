@@ -14,6 +14,11 @@
 // limitations under the License.
 */
 
+#include "smbiosmdrv2handler.hpp"
+
+#include "commandutils.hpp"
+#include "oemcommands.hpp"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -21,13 +26,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <commandutils.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
-#include <oemcommands.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/message/types.hpp>
-#include <smbiosmdrv2handler.hpp>
 #include <xyz/openbmc_project/Common/error.hpp>
 
 #include <cstdint>

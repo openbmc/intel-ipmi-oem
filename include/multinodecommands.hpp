@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 static constexpr const char* multiNodeObjPath =
     "/xyz/openbmc_project/MultiNode/Status";
 static constexpr const char* multiNodeIntf =

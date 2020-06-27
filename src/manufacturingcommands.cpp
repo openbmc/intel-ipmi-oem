@@ -14,12 +14,14 @@
 // limitations under the License.
 */
 
+#include "manufacturingcommands.hpp"
+
+#include "oemcommands.hpp"
+
 #include <linux/input.h>
 
 #include <boost/container/flat_map.hpp>
 #include <ipmid/api.hpp>
-#include <manufacturingcommands.hpp>
-#include <oemcommands.hpp>
 
 #include <filesystem>
 #include <fstream>

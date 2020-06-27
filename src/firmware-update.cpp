@@ -1,3 +1,6 @@
+#include "commandutils.hpp"
+#include "types.hpp"
+
 #include <ipmid/api.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
@@ -11,7 +14,6 @@
 #include <boost/process/child.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <commandutils.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
@@ -19,7 +21,6 @@
 #include <sdbusplus/bus/match.hpp>
 #include <sdbusplus/server/object.hpp>
 #include <sdbusplus/timer.hpp>
-#include <types.hpp>
 
 #include <chrono>
 #include <cstdint>

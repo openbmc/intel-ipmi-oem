@@ -15,10 +15,11 @@
 */
 
 #pragma once
+#include "oemcommands.hpp"
+
 #include <ipmid/api.h>
 #include <sys/mman.h>
 
-#include <oemcommands.hpp>
 #include <sdbusplus/timer.hpp>
 
 static constexpr const char* mdrType2File = "/var/lib/smbios/smbios2";

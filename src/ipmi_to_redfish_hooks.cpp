@@ -14,10 +14,12 @@
 // limitations under the License.
 */
 
+#include "ipmi_to_redfish_hooks.hpp"
+
+#include "me_to_redfish_hooks.hpp"
+#include "storagecommands.hpp"
+
 #include <boost/beast/core/span.hpp>
-#include <ipmi_to_redfish_hooks.hpp>
-#include <me_to_redfish_hooks.hpp>
-#include <storagecommands.hpp>
 
 #include <iomanip>
 #include <sstream>

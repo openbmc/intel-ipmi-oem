@@ -14,32 +14,33 @@
 // limitations under the License.
 */
 
+#include "oemcommands.hpp"
+
+#include "appcommands.hpp"
+#include "commandutils.hpp"
 #include "types.hpp"
-#include "xyz/openbmc_project/Common/error.hpp"
-#include "xyz/openbmc_project/Led/Physical/server.hpp"
 
 #include <systemd/sd-journal.h>
 
-#include <appcommands.hpp>
 #include <boost/container/flat_map.hpp>
 #include <boost/process/child.hpp>
 #include <boost/process/io.hpp>
 #include <com/intel/Control/OCOTShutdownPolicy/server.hpp>
-#include <commandutils.hpp>
 #include <gpiod.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <nlohmann/json.hpp>
-#include <oemcommands.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/message/types.hpp>
 #include <xyz/openbmc_project/Chassis/Control/NMISource/server.hpp>
+#include <xyz/openbmc_project/Common/error.hpp>
 #include <xyz/openbmc_project/Control/Boot/Mode/server.hpp>
 #include <xyz/openbmc_project/Control/Boot/Source/server.hpp>
 #include <xyz/openbmc_project/Control/PowerSupplyRedundancy/server.hpp>
 #include <xyz/openbmc_project/Control/Security/RestrictionMode/server.hpp>
 #include <xyz/openbmc_project/Control/Security/SpecialMode/server.hpp>
+#include <xyz/openbmc_project/Led/Physical/server.hpp>
 
 #include <array>
 #include <filesystem>
