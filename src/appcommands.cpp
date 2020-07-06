@@ -16,6 +16,7 @@
 #include <byteswap.h>
 
 #include <appcommands.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <nlohmann/json.hpp>
@@ -45,6 +46,10 @@ static constexpr const char* bmcStateReadyStr =
 
 static std::unique_ptr<sdbusplus::bus::match::match> bmcStateChangedSignal;
 static uint8_t bmcDeviceBusy = true;
+std::unique_ptr<sdbusplus::bus::match::match> baseBoardUpdatedSignal;
+static constexpr const char* prodIdFilename = "/var/cache/private/prodID";
+static constexpr const char* baseBoardIntf =
+    "xyz.openbmc_project.Inventory.Item.Board.Motherboard";
 
 int initBMCDeviceState(ipmi::Context::ptr ctx)
 {
@@ -286,7 +291,6 @@ RspType<uint8_t,  // Device ID
     static bool devIdInitialized = false;
     static bool bmcStateInitialized = false;
     const char* filename = "/usr/share/ipmi-providers/dev_id.json";
-    const char* prodIdFilename = "/var/cache/private/prodID";
     if (!fwVerInitialized)
     {
         std::string versionString;
@@ -354,11 +358,14 @@ RspType<uint8_t,  // Device ID
         std::fstream prodIdFile(prodIdFilename);
         if (prodIdFile.is_open())
         {
-            std::string id = "0x00";
-            char* end;
-            prodIdFile.getline(&id[0], id.size() + 1);
-            devId.prodId = std::strtol(&id[0], &end, 0);
-            devIdInitialized = true;
+            uint16_t id = 0x00;
+            // id will become 0xFFFF (Reserved) if prodIdFile has invalid data.
+            prodIdFile >> std::hex >> id;
+            devId.prodId = id;
+            if (devId.prodId != 0)
+            {
+                devIdInitialized = true;
+            }
         }
         else
         {
@@ -383,11 +390,109 @@ RspType<uint8_t,  // Device ID
                                  devId.prodId, devId.aux);
 }
 
+static void getProductId(const std::string& baseboardObjPath)
+{
+    // Get the Baseboard object to find the Product id
+    constexpr std::chrono::microseconds IPMI_DBUS_TIMEOUT = 30s;
+    uint16_t propertyIdRead;
+
+    try
+    {
+        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+        std::string service =
+            getService(*dbus, baseBoardIntf, baseboardObjPath);
+        ipmi::Value property =
+            getDbusProperty(*dbus, service, baseboardObjPath, baseBoardIntf,
+                            "ProductId", IPMI_DBUS_TIMEOUT);
+        propertyIdRead = static_cast<uint16_t>(std::get<uint64_t>(property));
+    }
+
+    catch (std::exception& ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "dbus call failed in getProductId",
+            phosphor::logging::entry("ERROR=%s", ec.what()));
+        return;
+    }
+    std::fstream prodIdFile(prodIdFilename, std::ios::in | std::ios::out);
+    if (prodIdFile.is_open())
+    {
+        uint16_t id = 0xFF;
+        prodIdFile >> std::hex >> id;
+        if (id == 0)
+        {
+            prodIdFile.seekp(0);
+            prodIdFile << "0x" << std::hex << propertyIdRead << std::endl;
+        }
+    }
+}
+
+static void getProductIdFromBoard()
+{
+    namespace rules = sdbusplus::bus::match::rules;
+    const std::string filterStrPostIntfAdd =
+        rules::interfacesAdded() +
+        rules::argNpath(0, "/xyz/openbmc_project/inventory/system/board/");
+
+    auto callback = [](sdbusplus::message::message& m) {
+        sdbusplus::message::object_path objPath;
+        boost::container::flat_map<
+            std::string, boost::container::flat_map<
+                             std::string, std::variant<std::string, uint64_t>>>
+            msgData;
+        m.read(objPath, msgData);
+        const auto intfFound = msgData.find(baseBoardIntf);
+        if (intfFound != msgData.cend())
+        {
+            getProductId(objPath.str);
+            return;
+        }
+    };
+    std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
+    baseBoardUpdatedSignal = std::make_unique<sdbusplus::bus::match::match>(
+        static_cast<sdbusplus::bus::bus&>(*bus), filterStrPostIntfAdd,
+        callback);
+    bus->async_method_call(
+        [](boost::system::error_code ec, std::vector<std::string>& subtree) {
+            if (ec)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "dbus call failed in getProductIdFromBoard",
+                    phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+                return;
+            }
+            const std::string match = "board";
+            for (const std::string& objpath : subtree)
+            {
+                // Iterate over all retrieved ObjectPaths.
+                if (!boost::ends_with(objpath, match))
+                {
+                    // Just move to next path.
+                    continue;
+                }
+
+                // Baseboard object path found
+                getProductId(objpath);
+                baseBoardUpdatedSignal.reset();
+                return;
+            }
+        },
+        "xyz.openbmc_project.ObjectMapper",
+        "/xyz/openbmc_project/object_mapper",
+        "xyz.openbmc_project.ObjectMapper", "GetSubTreePaths",
+        "/xyz/openbmc_project/inventory", 0,
+        std::array<const char*, 1>{baseBoardIntf});
+
+    return;
+}
+
 static void registerAPPFunctions(void)
 {
     // <Get Device ID>
     registerHandler(prioOemBase, netFnApp, app::cmdGetDeviceId, Privilege::User,
                     ipmiAppGetDeviceId);
+    // <Get Product ID from BaseBoard>
+    getProductIdFromBoard();
 }
 
 } // namespace ipmi
