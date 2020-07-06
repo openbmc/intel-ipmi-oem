@@ -774,7 +774,7 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
                 // Allow write data count > 1 only in Special mode
                 if (mtm.getMfgMode() == SpecialMode::none)
                 {
-                    return ipmi::ccInsufficientPrivilege;
+                    return ipmi::ccCommandNotAvailable;
                 }
             }
             return ipmi::ccSuccess;
@@ -931,7 +931,7 @@ ipmi::RspType<std::vector<uint8_t>>
     {
         if (mtm.getMfgMode() == SpecialMode::none)
         {
-            return ipmi::responseInsufficientPrivilege();
+            return ipmi::responseCommandNotAvailable();
         }
     }
 
@@ -972,7 +972,7 @@ ipmi::RspType<> clearCMOS()
 
     if (mtm.getMfgMode() == SpecialMode::none)
     {
-        return ipmi::responseInsufficientPrivilege();
+        return ipmi::responseCommandNotAvailable();
     }
 
     ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
