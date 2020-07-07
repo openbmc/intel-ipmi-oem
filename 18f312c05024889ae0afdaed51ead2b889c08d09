@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9247f95f_c0b46217",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 363,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-07-07T09:44:36Z",
+      "side": 1,
+      "message": "Here, Set devIdInitialized \u003d true, only if devId.prodId !\u003d 0.  I believe, then only the ProdId will be updated in getDeviceId() command, after entity-manager exposing ProdId property value for baseboard EEPROM FRU board.",
+      "revId": "18f312c05024889ae0afdaed51ead2b889c08d09",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    }
+  ]
+}
