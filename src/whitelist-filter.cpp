@@ -451,7 +451,7 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
                              entry("CHANNEL=0x%X", request->ctx->channel),
                              entry("NETFN=0x%X", int(request->ctx->netFn)),
                              entry("CMD=0x%X", int(request->ctx->cmd)));
-            return ipmi::ccCommandNotAvailable;
+            return ipmi::ccInsufficientPrivilege;
         }
         return ipmi::ccSuccess;
     }
@@ -459,8 +459,8 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
     // for system interface, filtering is done as follows:
     // Allow All:  preboot ? ccSuccess : ccSuccess
     // Restricted: preboot ? ccSuccess :
-    //                  ( whitelist ? ccSuccess : // ccCommandNotAvailable )
-    // Deny All:   preboot ? ccSuccess : ccCommandNotAvailable
+    //                  ( whitelist ? ccSuccess : // ccInsufficientPrivilege )
+    // Deny All:   preboot ? ccSuccess : ccInsufficientPrivilege
 
     if (!(postCompleted || coreBIOSDone))
     {
@@ -489,7 +489,7 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
             break;
         }
         default: // for whitelist and blacklist
-            return ipmi::ccCommandNotAvailable;
+            return ipmi::ccInsufficientPrivilege;
     }
 
     if (!whitelisted)
@@ -498,7 +498,7 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
                          entry("CHANNEL=0x%X", request->ctx->channel),
                          entry("NETFN=0x%X", int(request->ctx->netFn)),
                          entry("CMD=0x%X", int(request->ctx->cmd)));
-        return ipmi::ccCommandNotAvailable;
+        return ipmi::ccInsufficientPrivilege;
     }
     return ipmi::ccSuccess;
 } // namespace
