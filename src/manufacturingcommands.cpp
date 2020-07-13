@@ -789,6 +789,7 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
         case makeCmdKey(ipmi::netFnOemOne,
                         ipmi::intel::general::cmdGetManufacturingData):
         case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdWriteFruData):
+        case makeCmdKey(ipmi::netFnOemTwo, ipmi::intel::platform::cmdClearCMOS):
 
             // Check for Special mode
             if (mtm.getMfgMode() == SpecialMode::none)
@@ -969,11 +970,6 @@ ipmi::RspType<> clearCMOS()
     std::string i2cBus = "/dev/i2c-4";
     std::vector<uint8_t> writeData = {0x61, 0x1};
     std::vector<uint8_t> readBuf(0);
-
-    if (mtm.getMfgMode() == SpecialMode::none)
-    {
-        return ipmi::responseInsufficientPrivilege();
-    }
 
     ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
     return ipmi::response(retI2C);
