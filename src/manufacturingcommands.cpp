@@ -972,7 +972,7 @@ ipmi::RspType<> clearCMOS()
 
     if (mtm.getMfgMode() == SpecialMode::none)
     {
-        return ipmi::responseInsufficientPrivilege();
+        return ipmi::responseInvalidCommand();
     }
 
     ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
