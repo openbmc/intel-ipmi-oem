@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "5c055247_0fb7d484",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-14T12:43:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9179fb92_2997d91c",
+      "range": {
+        "startLine": 51,
+        "startChar": 0,
+        "endLine": 51,
+        "endChar": 5
+      },
+      "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7c85d596_f78cb6c0",
         "filename": "src/appcommands.cpp",
         "patchSetId": 2
@@ -36,6 +60,30 @@
       "writtenOn": "2020-07-08T23:07:01Z",
       "side": 1,
       "message": "use phosphor logging, not cerr",
+      "range": {
+        "startLine": 401,
+        "startChar": 0,
+        "endLine": 401,
+        "endChar": 68
+      },
+      "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b9ea1e1d_e71c65e2",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 401,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-14T12:43:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7c85d596_f78cb6c0",
       "range": {
         "startLine": 401,
         "startChar": 0,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "c2327c31_00f431fb",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 404,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-14T12:43:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "64bdbc5f_261c9c1d",
+      "range": {
+        "startLine": 404,
+        "startChar": 0,
+        "endLine": 404,
+        "endChar": 52
+      },
+      "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "afcbdde4_7337f393",
         "filename": "src/appcommands.cpp",
         "patchSetId": 2
@@ -82,6 +154,30 @@
       "writtenOn": "2020-07-08T23:07:01Z",
       "side": 1,
       "message": "this can cause overflow, indexing id past id.size(). Also, it appears that the file ideally would be storing a uint16_t in hex form with a 0x prefix. That is 6 characters, whereas your string above was only 4.\n\nwhy not use something like:\nstd::string id;\nprodIdFile \u003e\u003e std::hex \u003e\u003e id;",
+      "range": {
+        "startLine": 409,
+        "startChar": 43,
+        "endLine": 409,
+        "endChar": 56
+      },
+      "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c84ea380_70afa44c",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 409,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-14T12:43:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "afcbdde4_7337f393",
       "range": {
         "startLine": 409,
         "startChar": 43,
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "82e57a90_3ef78f25",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 410,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-14T12:43:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c097a700_a15eb313",
+      "range": {
+        "startLine": 410,
+        "startChar": 0,
+        "endLine": 410,
+        "endChar": 63
+      },
+      "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "dff16c7f_ca9cd8e9",
         "filename": "src/appcommands.cpp",
         "patchSetId": 2
@@ -128,6 +248,30 @@
       "writtenOn": "2020-07-08T23:07:01Z",
       "side": 1,
       "message": "not needed",
+      "range": {
+        "startLine": 426,
+        "startChar": 0,
+        "endLine": 426,
+        "endChar": 11
+      },
+      "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dfc8b1db_0a788dae",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 426,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-14T12:43:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dff16c7f_ca9cd8e9",
       "range": {
         "startLine": 426,
         "startChar": 0,
@@ -163,6 +307,30 @@
     },
     {
       "key": {
+        "uuid": "a851dde1_0c0c701d",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 438,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-14T12:43:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "08f9ed0d_6d3ba845",
+      "range": {
+        "startLine": 438,
+        "startChar": 21,
+        "endLine": 438,
+        "endChar": 22
+      },
+      "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d85e9713_ab61427f",
         "filename": "src/appcommands.cpp",
         "patchSetId": 2
@@ -174,6 +342,30 @@
       "writtenOn": "2020-07-08T23:07:01Z",
       "side": 1,
       "message": "intfFound !\u003d msgData.end()\n\nWe aren\u0027t using the yoda syntax in openBMC",
+      "range": {
+        "startLine": 448,
+        "startChar": 12,
+        "endLine": 448,
+        "endChar": 38
+      },
+      "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0d3b1b21_deadf532",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 448,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-14T12:43:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d85e9713_ab61427f",
       "range": {
         "startLine": 448,
         "startChar": 12,
@@ -209,6 +401,30 @@
     },
     {
       "key": {
+        "uuid": "2870b0c6_778d1cfb",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 461,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-14T12:43:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "603840ae_f4a94d82",
+      "range": {
+        "startLine": 461,
+        "startChar": 0,
+        "endLine": 461,
+        "endChar": 68
+      },
+      "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "265d41f6_f38c012d",
         "filename": "src/appcommands.cpp",
         "patchSetId": 2
@@ -220,6 +436,24 @@
       "writtenOn": "2020-07-08T23:07:01Z",
       "side": 1,
       "message": "what happens if you didn\u0027t find the object path?",
+      "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3e2fe69f_dcad6601",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 477,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-14T12:43:49Z",
+      "side": 1,
+      "message": "\u0027Most likely it is an indication that entity-manager yet to expose the object path, and when it starts exposed, it will be processed by signal handler defined at line 454: baseBoardUpdatedSignal.\n\nRegards,\nAnoop S",
+      "parentUuid": "265d41f6_f38c012d",
       "revId": "0da6c0fda3bca2fd0948e6af698c325a87cbb8e1",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
