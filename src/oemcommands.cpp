@@ -2076,7 +2076,7 @@ int setCRConfig(ipmi::Context::ptr ctx, const std::string& property,
 
 int getCRConfig(ipmi::Context::ptr ctx, const std::string& property,
                 crConfigVariant& value,
-                const std::string& service = "xyz.openbmc_project.Settings",
+                const std::string& service = "xyz.openbmc_project.PSURedundancy",
                 std::chrono::microseconds timeout = ipmi::IPMI_DBUS_TIMEOUT)
 {
     boost::system::error_code ec;
@@ -2179,12 +2179,12 @@ ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(ipmi::Context::ptr ctx,
             {
                 return ipmi::responseReqDataLenInvalid();
             }
-            // ColdRedundancy Enable can only be true or flase
+            // Power Supply Redundancy Enable can only be true or flase
             if (param1 > 1)
             {
                 return ipmi::responseInvalidFieldRequest();
             }
-            if (setCRConfig(ctx, "ColdRedundancyEnabled",
+            if (setCRConfig(ctx, "PowerSupplyRedundancyEnabled",
                             static_cast<bool>(param1)))
             {
                 return ipmi::responseResponseError();
@@ -2351,7 +2351,7 @@ ipmi::RspType<uint8_t, std::variant<uint8_t, uint32_t, std::vector<uint8_t>>>
         }
         case crParameter::crFeature:
         {
-            if (getCRConfig(ctx, "ColdRedundancyEnabled", value))
+            if (getCRConfig(ctx, "PowerSupplyRedundancyEnabled", value))
             {
                 return ipmi::responseResponseError();
             }
