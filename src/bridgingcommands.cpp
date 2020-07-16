@@ -23,6 +23,7 @@
 #include <sdbusplus/bus/match.hpp>
 #include <sdbusplus/message.hpp>
 #include <storagecommands.hpp>
+#include <user_channel/channel_layer.hpp>
 
 #include <bitset>
 #include <cstring>
@@ -468,8 +469,30 @@ ipmi::RspType<std::vector<uint8_t> // responseData
 ipmi::RspType<uint8_t,             // channelNumber
               std::vector<uint8_t> // messageData
               >
-    ipmiAppGetMessage()
+    ipmiAppGetMessage(ipmi::Context::ptr ctx)
 {
+    ipmi::ChannelInfo chInfo;
+
+    try
+    {
+        getChannelInfo(ctx->channel, chInfo);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppGetMessage: Failed to get Channel Info",
+            phosphor::logging::entry("MSG: %s", e.description()));
+        return ipmi::responseUnspecifiedError();
+    }
+    if (chInfo.mediumType !=
+        static_cast<uint8_t>(ipmi::EChannelMediumType::systemInterface))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppGetMessage: Error - supported only in KCS "
+            "interface");
+        return ipmi::responseCommandNotAvailable();
+    }
+
     uint8_t channelData = 0;
     std::vector<uint8_t> res(ipmbMaxFrameLength);
     size_t dataLength = 0;
@@ -513,8 +536,30 @@ std::size_t Bridging::getResponseQueueSize()
 
 @return IPMI completion code plus Flags as response data on success.
 **/
-ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags()
+ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags(ipmi::Context::ptr ctx)
 {
+    ipmi::ChannelInfo chInfo;
+
+    try
+    {
+        getChannelInfo(ctx->channel, chInfo);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppGetMessageFlags: Failed to get Channel Info",
+            phosphor::logging::entry("MSG: %s", e.description()));
+        return ipmi::responseUnspecifiedError();
+    }
+    if (chInfo.mediumType !=
+        static_cast<uint8_t>(ipmi::EChannelMediumType::systemInterface))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppGetMessageFlags: Error - supported only in KCS "
+            "interface");
+        return ipmi::responseCommandNotAvailable();
+    }
+
     std::bitset<8> getMsgFlagsRes;
 
     // set event message buffer bit
@@ -570,11 +615,34 @@ ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags()
 
  *  @return IPMI completion code on success
  */
-ipmi::RspType<> ipmiAppClearMessageFlags(bool receiveMessage,
+ipmi::RspType<> ipmiAppClearMessageFlags(ipmi::Context::ptr ctx,
+                                         bool receiveMessage,
                                          bool eventMsgBufFull, bool reserved2,
                                          bool watchdogTimeout, bool reserved1,
                                          bool oem0, bool oem1, bool oem2)
 {
+    ipmi::ChannelInfo chInfo;
+
+    try
+    {
+        getChannelInfo(ctx->channel, chInfo);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppClearMessageFlags: Failed to get Channel Info",
+            phosphor::logging::entry("MSG: %s", e.description()));
+        return ipmi::responseUnspecifiedError();
+    }
+    if (chInfo.mediumType !=
+        static_cast<uint8_t>(ipmi::EChannelMediumType::systemInterface))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppClearMessageFlags: Error - supported only in KCS "
+            "interface");
+        return ipmi::responseCommandNotAvailable();
+    }
+
     if (reserved1 || reserved2)
     {
         return ipmi::responseInvalidFieldRequest();
@@ -640,8 +708,30 @@ ipmi::RspType<uint16_t, // Record ID
               uint8_t,  // Record Type
               std::variant<systemEventType, oemTsEventType,
                            oemEventType>> // Record Content
-    ipmiAppReadEventMessageBuffer()
+    ipmiAppReadEventMessageBuffer(ipmi::Context::ptr ctx)
 {
+    ipmi::ChannelInfo chInfo;
+
+    try
+    {
+        getChannelInfo(ctx->channel, chInfo);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppReadEventMessageBuffer: Failed to get Channel Info",
+            phosphor::logging::entry("MSG: %s", e.description()));
+        return ipmi::responseUnspecifiedError();
+    }
+    if (chInfo.mediumType !=
+        static_cast<uint8_t>(ipmi::EChannelMediumType::systemInterface))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiAppReadEventMessageBuffer: Error - supported only in KCS "
+            "interface");
+        return ipmi::responseCommandNotAvailable();
+    }
+
     uint16_t recordId =
         static_cast<uint16_t>(0x5555); // recordId: 0x55 << 8 | 0x55
     uint16_t generatorId =
