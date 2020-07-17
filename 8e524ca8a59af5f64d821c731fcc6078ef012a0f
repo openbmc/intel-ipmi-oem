@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "878587fb_9907a5de",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-07-17T07:03:19Z",
+      "side": 1,
+      "message": "Can u add neg test case. What happen if FRU is corrupted ?",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "29024319_8122daee",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-07-17T07:03:19Z",
+      "side": 1,
+      "message": "Why u need this header file ?",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "38938fe0_fb8c1c59",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-07-17T07:03:19Z",
+      "side": 1,
+      "message": "Why u declared the bus in global variable ?",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9c8d4240_68ac8d61",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 497,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-07-17T07:03:19Z",
+      "side": 1,
+      "message": "This will create a issue. If Motherboard interface is not available. you wont get the data. why its not handled in command itself.",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
