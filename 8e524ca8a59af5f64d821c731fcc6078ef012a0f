@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "eb482dab_12110dc5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-07-17T17:08:43Z",
+      "side": 1,
+      "message": "As FRU is corrupted, Board Name and Product-ID can not be determined.  So, Product-ID will remain zero in this case.  @Anoop, Please test this and update the findings.",
+      "parentUuid": "878587fb_9907a5de",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "29024319_8122daee",
         "filename": "src/appcommands.cpp",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2020-07-17T07:03:19Z",
       "side": 1,
       "message": "Why u need this header file ?",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "55812b33_34744e8c",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-07-17T17:08:43Z",
+      "side": 1,
+      "message": "@Anoop, Remove this if this header file is not needed for latest patchset.",
+      "parentUuid": "29024319_8122daee",
       "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "26ec139b_b36d072b",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-07-17T17:08:43Z",
+      "side": 1,
+      "message": "Because \u0027bus\u0027 is usually initialized in first function and used in other functions.  @Anoop, Check the feasiblity of moving this inside function(s).",
+      "parentUuid": "38938fe0_fb8c1c59",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9c8d4240_68ac8d61",
         "filename": "src/appcommands.cpp",
         "patchSetId": 3
@@ -64,6 +118,24 @@
       "writtenOn": "2020-07-17T07:03:19Z",
       "side": 1,
       "message": "This will create a issue. If Motherboard interface is not available. you wont get the data. why its not handled in command itself.",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e6050f80_82a82ea9",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 497,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-07-17T17:08:43Z",
+      "side": 1,
+      "message": "Handling this inside the command, will invoke the sdbus call every time the get_device_id() command is invoked.  Whereas here, it is invoked only once at registration as it is better to call this only once as Product-ID is constant value.  If Motherboard interface is not available, We have still registered signal handler which will get kicked in once the Motherboard interface is exposed.  In EEPROM FRU platforms, we observe that Motherboard interface is available when this call is made here.",
+      "parentUuid": "9c8d4240_68ac8d61",
       "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
