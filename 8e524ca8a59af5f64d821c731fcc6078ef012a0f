@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "04b3ab1c_d324deed",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-19T07:31:44Z",
+      "side": 1,
+      "message": "The test case added",
+      "parentUuid": "eb482dab_12110dc5",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "29024319_8122daee",
         "filename": "src/appcommands.cpp",
         "patchSetId": 3
@@ -66,6 +84,24 @@
       "side": 1,
       "message": "@Anoop, Remove this if this header file is not needed for latest patchset.",
       "parentUuid": "29024319_8122daee",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "685f9d43_4dd24392",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-19T07:31:44Z",
+      "side": 1,
+      "message": "!boost::ends_with() is defined in the header file so this header file is need to include",
+      "parentUuid": "55812b33_34744e8c",
       "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
@@ -107,6 +143,24 @@
     },
     {
       "key": {
+        "uuid": "9e4b8789_00fd6fbc",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-19T07:31:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "26ec139b_b36d072b",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9c8d4240_68ac8d61",
         "filename": "src/appcommands.cpp",
         "patchSetId": 3
@@ -136,6 +190,24 @@
       "side": 1,
       "message": "Handling this inside the command, will invoke the sdbus call every time the get_device_id() command is invoked.  Whereas here, it is invoked only once at registration as it is better to call this only once as Product-ID is constant value.  If Motherboard interface is not available, We have still registered signal handler which will get kicked in once the Motherboard interface is exposed.  In EEPROM FRU platforms, we observe that Motherboard interface is available when this call is made here.",
       "parentUuid": "9c8d4240_68ac8d61",
+      "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "664269ad_f1e77ccf",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 497,
+      "author": {
+        "id": 1000569
+      },
+      "writtenOn": "2020-07-19T07:31:44Z",
+      "side": 1,
+      "message": "correct",
+      "parentUuid": "e6050f80_82a82ea9",
       "revId": "8e524ca8a59af5f64d821c731fcc6078ef012a0f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
