@@ -1020,6 +1020,7 @@ ipmi::RspType<uint16_t, // Next Record ID
 
         uint16_t generatorID = 0;
         uint8_t sensorType = 0;
+        uint16_t sensorAndLun = 0;
         uint8_t sensorNum = 0xFF;
         uint7_t eventType = 0;
         bool eventDir = 0;
@@ -1042,7 +1043,9 @@ ipmi::RspType<uint16_t, // Next Record ID
 
             // Get the sensor type, sensor number, and event type for the sensor
             sensorType = getSensorTypeFromPath(sensorPath);
-            sensorNum = getSensorNumberFromPath(sensorPath);
+            sensorAndLun = getSensorNumberFromPath(sensorPath);
+            sensorNum = static_cast<uint8_t>(sensorAndLun);
+            generatorID |= sensorAndLun >> 8;
             eventType = getSensorEventTypeFromPath(sensorPath);
 
             // Get the event direction

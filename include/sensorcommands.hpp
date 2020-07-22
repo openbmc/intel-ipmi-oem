@@ -121,7 +121,8 @@ enum class IPMINetfnSensorCmds : ipmi_cmd_t
 namespace ipmi
 {
 extern SensorSubTree sensorTree;
-static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string& connection,
+static ipmi_ret_t getSensorConnection(ipmi::Context::ptr ctx, uint8_t sensnum,
+                                      std::string& connection,
                                       std::string& path)
 {
     if (sensorTree.empty() && !getSensorSubtree(sensorTree))
@@ -129,22 +130,22 @@ static ipmi_ret_t getSensorConnection(uint8_t sensnum, std::string& connection,
         return IPMI_CC_RESPONSE_ERROR;
     }
 
-    if (sensorTree.size() < (sensnum + 1))
+    if (ctx == nullptr)
+    {
+        return IPMI_CC_RESPONSE_ERROR;
+    }
+
+    path = getPathFromSensorNumber((ctx->lun << 8) | sensnum);
+    if (path.empty())
     {
         return IPMI_CC_INVALID_FIELD_REQUEST;
     }
 
-    uint8_t sensorIndex = sensnum;
     for (const auto& sensor : sensorTree)
     {
-        if (sensorIndex-- == 0)
+        if (path == sensor.first)
         {
-            if (!sensor.second.size())
-            {
-                return IPMI_CC_RESPONSE_ERROR;
-            }
             connection = sensor.second.begin()->first;
-            path = sensor.first;
             break;
         }
     }
