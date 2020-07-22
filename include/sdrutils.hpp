@@ -48,6 +48,13 @@ using SensorSubTree = boost::container::flat_map<
 
 using SensorNumMap = boost::bimap<int, std::string>;
 
+static constexpr uint8_t maxSensorsPerLUN = 255;
+static constexpr uint16_t maxIPMISensors = (maxSensorsPerLUN * 3);
+static constexpr uint16_t lun1Sensor0 = 0x100;
+static constexpr uint16_t lun3Sensor0 = 0x300;
+static constexpr uint16_t invalidSensorNumber = 0xFFFF;
+static constexpr uint8_t reservedSensorNumber = 0xFF;
+
 namespace details
 {
 inline static bool getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
@@ -131,11 +138,28 @@ inline static bool getSensorNumMap(std::shared_ptr<SensorNumMap>& sensorNumMap)
 
     sensorNumMapPtr = std::make_shared<SensorNumMap>();
 
-    uint8_t sensorNum = 0;
+    uint16_t sensorNum = 0;
+    uint16_t sensorIndex = 0;
     for (const auto& sensor : *sensorTree)
     {
         sensorNumMapPtr->insert(
-            SensorNumMap::value_type(sensorNum++, sensor.first));
+            SensorNumMap::value_type(sensorNum, sensor.first));
+        sensorIndex++;
+        if (sensorIndex == maxSensorsPerLUN)
+        {
+            sensorIndex = lun1Sensor0;
+        }
+        if (sensorIndex == (maxSensorsPerLUN * 2))
+        {
+            // Skip assigning LUN 0x2 any sensors
+            sensorIndex = lun3Sensor0;
+        }
+        if (sensorIndex > (lun3Sensor0 | maxSensorsPerLUN))
+        {
+            // this is an error, too many IPMI sensors
+            throw("Maximum number of IPMI sensors exceeded.");
+        }
+        sensorNum = sensorIndex;
     }
     sensorNumMap = sensorNumMapPtr;
     sensorNumMapUpated = true;
@@ -214,13 +238,13 @@ inline static uint8_t getSensorTypeFromPath(const std::string& path)
     return sensorType;
 }
 
-inline static uint8_t getSensorNumberFromPath(const std::string& path)
+inline static uint16_t getSensorNumberFromPath(const std::string& path)
 {
     std::shared_ptr<SensorNumMap> sensorNumMapPtr;
     details::getSensorNumMap(sensorNumMapPtr);
     if (!sensorNumMapPtr)
     {
-        return 0xFF;
+        return invalidSensorNumber;
     }
 
     try
@@ -230,7 +254,7 @@ inline static uint8_t getSensorNumberFromPath(const std::string& path)
     catch (std::out_of_range& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-        return 0xFF;
+        return invalidSensorNumber;
     }
 }
 
@@ -240,7 +264,7 @@ inline static uint8_t getSensorEventTypeFromPath(const std::string& path)
     return 0x1; // reading type = threshold
 }
 
-inline static std::string getPathFromSensorNumber(uint8_t sensorNum)
+inline static std::string getPathFromSensorNumber(uint16_t sensorNum)
 {
     std::shared_ptr<SensorNumMap> sensorNumMapPtr;
     details::getSensorNumMap(sensorNumMapPtr);

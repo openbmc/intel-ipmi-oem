@@ -387,19 +387,19 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload& p)
 }
 
 ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
-    ipmiSenGetSensorReading(boost::asio::yield_context yield, uint8_t sensnum)
+    ipmiSenGetSensorReading(ipmi::Context::ptr ctx, uint8_t sensnum)
 {
     std::string connection;
     std::string path;
 
-    auto status = getSensorConnection(sensnum, connection, path);
+    auto status = getSensorConnection(ctx, sensnum, connection, path);
     if (status)
     {
         return ipmi::response(status);
     }
 
     SensorMap sensorMap;
-    if (!getSensorMap(yield, connection, path, sensorMap))
+    if (!getSensorMap(ctx->yield, connection, path, sensorMap))
     {
         return ipmi::responseResponseError();
     }
@@ -533,13 +533,13 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
  *  @returns IPMI completion code
  */
 ipmi::RspType<> ipmiSenSetSensorThresholds(
-    boost::asio::yield_context yield, uint8_t sensorNum,
-    bool lowerNonCriticalThreshMask, bool lowerCriticalThreshMask,
-    bool lowerNonRecovThreshMask, bool upperNonCriticalThreshMask,
-    bool upperCriticalThreshMask, bool upperNonRecovThreshMask,
-    uint2_t reserved, uint8_t lowerNonCritical, uint8_t lowerCritical,
-    uint8_t lowerNonRecoverable, uint8_t upperNonCritical,
-    uint8_t upperCritical, uint8_t upperNonRecoverable)
+    ipmi::Context::ptr ctx, uint8_t sensorNum, bool lowerNonCriticalThreshMask,
+    bool lowerCriticalThreshMask, bool lowerNonRecovThreshMask,
+    bool upperNonCriticalThreshMask, bool upperCriticalThreshMask,
+    bool upperNonRecovThreshMask, uint2_t reserved, uint8_t lowerNonCritical,
+    uint8_t lowerCritical, uint8_t lowerNonRecoverable,
+    uint8_t upperNonCritical, uint8_t upperCritical,
+    uint8_t upperNonRecoverable)
 {
     constexpr uint8_t thresholdMask = 0xFF;
 
@@ -565,13 +565,13 @@ ipmi::RspType<> ipmiSenSetSensorThresholds(
     std::string connection;
     std::string path;
 
-    ipmi::Cc status = getSensorConnection(sensorNum, connection, path);
+    ipmi::Cc status = getSensorConnection(ctx, sensorNum, connection, path);
     if (status)
     {
         return ipmi::response(status);
     }
     SensorMap sensorMap;
-    if (!getSensorMap(yield, connection, path, sensorMap))
+    if (!getSensorMap(ctx->yield, connection, path, sensorMap))
     {
         return ipmi::responseResponseError();
     }
@@ -760,20 +760,19 @@ ipmi::RspType<uint8_t, // readable
               uint8_t, // upperNC
               uint8_t, // upperCrit
               uint8_t> // upperNRecoverable
-    ipmiSenGetSensorThresholds(boost::asio::yield_context yield,
-                               uint8_t sensorNumber)
+    ipmiSenGetSensorThresholds(ipmi::Context::ptr ctx, uint8_t sensorNumber)
 {
     std::string connection;
     std::string path;
 
-    auto status = getSensorConnection(sensorNumber, connection, path);
+    auto status = getSensorConnection(ctx, sensorNumber, connection, path);
     if (status)
     {
         return ipmi::response(status);
     }
 
     SensorMap sensorMap;
-    if (!getSensorMap(yield, connection, path, sensorMap))
+    if (!getSensorMap(ctx->yield, connection, path, sensorMap))
     {
         return ipmi::responseResponseError();
     }
@@ -843,8 +842,7 @@ ipmi::RspType<uint8_t, // enabled
               uint8_t, // assertionEnabledMsb
               uint8_t, // deassertionEnabledLsb
               uint8_t> // deassertionEnabledMsb
-    ipmiSenGetSensorEventEnable(boost::asio::yield_context yield,
-                                uint8_t sensorNum)
+    ipmiSenGetSensorEventEnable(ipmi::Context::ptr ctx, uint8_t sensorNum)
 {
     std::string connection;
     std::string path;
@@ -855,14 +853,14 @@ ipmi::RspType<uint8_t, // enabled
     uint8_t deassertionEnabledLsb = 0;
     uint8_t deassertionEnabledMsb = 0;
 
-    auto status = getSensorConnection(sensorNum, connection, path);
+    auto status = getSensorConnection(ctx, sensorNum, connection, path);
     if (status)
     {
         return ipmi::response(status);
     }
 
     SensorMap sensorMap;
-    if (!getSensorMap(yield, connection, path, sensorMap))
+    if (!getSensorMap(ctx->yield, connection, path, sensorMap))
     {
         return ipmi::responseResponseError();
     }
@@ -938,17 +936,16 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
               std::bitset<16>, // assertions
               std::bitset<16>  // deassertion
               >
-    ipmiSenGetSensorEventStatus(boost::asio::yield_context yield,
-                                uint8_t sensorNum)
+    ipmiSenGetSensorEventStatus(ipmi::Context::ptr ctx, uint8_t sensorNum)
 {
-    if (sensorNum == 0xFF)
+    if (sensorNum == reservedSensorNumber)
     {
         return ipmi::responseInvalidFieldRequest();
     }
 
     std::string connection;
     std::string path;
-    auto status = getSensorConnection(sensorNum, connection, path);
+    auto status = getSensorConnection(ctx, sensorNum, connection, path);
     if (status)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -958,7 +955,7 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
     }
 
     SensorMap sensorMap;
-    if (!getSensorMap(yield, connection, path, sensorMap))
+    if (!getSensorMap(ctx->yield, connection, path, sensorMap))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiSenGetSensorEventStatus: Sensor Mapping Error",
@@ -1072,6 +1069,96 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
     }
 
     return ipmi::responseSuccess(sensorEventStatus, assertions, deassertions);
+}
+
+/** @brief implements the get SDR Info command
+ *  @param count - Operation
+ *
+ *  @returns IPMI completion code plus response data
+ *   - sdrCount - sensor/SDR count
+ *   - lunsAndDynamicPopulation - static/Dynamic sensor population flag
+ */
+ipmi::RspType<uint8_t, // respcount
+              uint8_t, // dynamic population flags
+              uint32_t // last time a sensor was added
+              >
+    ipmiOemSensorGetDeviceSdrInfo(ipmi::Context::ptr ctx,
+                                  std::optional<uint8_t> count)
+{
+    uint8_t sdrCount = count.value_or(0);
+    // Sensors are dynamically allocated, and there is at least one LUN
+    uint8_t lunsAndDynamicPopulation = 0x80;
+    constexpr uint8_t getSdrCount = 0x01;
+    constexpr uint8_t getSensorCount = 0x00;
+
+    std::shared_ptr<SensorSubTree> sensorTree;
+    bool sensorTreeUpdated = details::getSensorSubtree(sensorTree);
+    if (!sensorTree)
+    {
+        return ipmi::responseResponseError();
+    }
+
+    if (count.value_or(0) == getSdrCount)
+    {
+        // It is unclear what this should return. The number of SDR's
+        // in a system will almost certainly be greater than 255,
+        // which is the limit of the return byte. It is equally
+        // unclear if the value to be returned is supposed to be a
+        // count of the SDR's associated to the sensors. It's unclear
+        // what value that number provides.
+        sdrCount = getSdrCount;
+    }
+    else if (count.value_or(0) == getSensorCount)
+    {
+        uint16_t numSensors = sensorTree->size();
+        // Get Sensor count. This returns the number of sensors
+        if (numSensors > 0)
+        {
+            lunsAndDynamicPopulation |= 1;
+        }
+        if (numSensors > maxSensorsPerLUN)
+        {
+            lunsAndDynamicPopulation |= 2;
+        }
+        if ((numSensors >= (maxSensorsPerLUN * 2)) &&
+            (numSensors < maxIPMISensors))
+        {
+            lunsAndDynamicPopulation |= 8;
+        }
+
+        // Return the number of sensors attached to the LUN
+        if ((ctx->lun == 0) && (numSensors > 0))
+        {
+            sdrCount =
+                (numSensors > maxSensorsPerLUN) ? maxSensorsPerLUN : numSensors;
+        }
+        else if ((ctx->lun == 1) && (numSensors > maxSensorsPerLUN))
+        {
+            sdrCount = (numSensors > (2 * maxSensorsPerLUN))
+                           ? maxSensorsPerLUN
+                           : (numSensors - maxSensorsPerLUN) & maxSensorsPerLUN;
+        }
+        else if (ctx->lun == 3)
+        {
+            if (numSensors <= maxIPMISensors)
+            {
+                sdrCount =
+                    (numSensors - (2 * maxSensorsPerLUN)) & maxSensorsPerLUN;
+            }
+            else
+            {
+                // error
+                throw("Maximum number of IPMI sensors exceeded.");
+            }
+        }
+    }
+    else
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    return ipmi::responseSuccess(sdrCount, lunsAndDynamicPopulation,
+                                 sdrLastAdd);
 }
 
 /* end sensor commands */
@@ -1294,7 +1381,15 @@ ipmi::RspType<uint16_t,            // next record ID
     {
         return ipmi::responseResponseError();
     }
-    uint8_t sensornumber = (recordID & 0xFF);
+
+    uint16_t sensorNum = getSensorNumberFromPath(path);
+    if (sensorNum == invalidSensorNumber)
+    {
+        return ipmi::responseResponseError();
+    }
+    uint8_t sensornumber = static_cast<uint8_t>(sensorNum);
+    uint8_t lun = static_cast<uint8_t>(sensorNum >> 8);
+
     get_sdr::SensorDataFullRecord record = {0};
 
     record.header.record_id_msb = recordID << 8;
@@ -1304,7 +1399,7 @@ ipmi::RspType<uint16_t,            // next record ID
     record.header.record_length = sizeof(get_sdr::SensorDataFullRecord) -
                                   sizeof(get_sdr::SensorDataRecordHeader);
     record.key.owner_id = 0x20;
-    record.key.owner_lun = 0x0;
+    record.key.owner_lun = lun;
     record.key.sensor_number = sensornumber;
 
     record.body.sensor_capabilities = 0x68; // auto rearm - todo hysteresis
@@ -1556,6 +1651,11 @@ void registerSensorFunctions()
                           ipmi::storage::cmdGetSdrRepositoryInfo,
                           ipmi::Privilege::User,
                           ipmiStorageGetSDRRepositoryInfo);
+
+    // <Get Device SDR Info>
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnSensor,
+                          ipmi::sensor_event::cmdGetDeviceSdrInfo,
+                          ipmi::Privilege::User, ipmiOemSensorGetDeviceSdrInfo);
 
     // <Get SDR Allocation Info>
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnStorage,
