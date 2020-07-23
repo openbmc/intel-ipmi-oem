@@ -103,7 +103,7 @@ add_library (zinteloemcmds
              src/smbiosmdrv2handler.cpp src/manufacturingcommands.cpp
              src/bmccontrolservices.cpp src/bridgingcommands.cpp
              src/ipmi_to_redfish_hooks.cpp src/me_to_redfish_hooks.cpp
-             src/chassiscommands.cpp src/whitelist-filter.cpp
+             src/chassiscommands.cpp src/whitelist-filter.cpp src/fruutils.cpp
              include/ipmi-whitelist.hpp)
 set_target_properties (zinteloemcmds PROPERTIES VERSION "0.1.0")
 set_target_properties (zinteloemcmds PROPERTIES SOVERSION "0")
