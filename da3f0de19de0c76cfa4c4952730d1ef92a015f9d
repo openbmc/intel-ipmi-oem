@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1251bc32_e0ffa08e",
+        "filename": "include/fruutils.hpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000100
+      },
+      "writtenOn": "2020-07-24T15:29:18Z",
+      "side": 1,
+      "message": "This was moved here because it avoids then including a large bit of stuff we don\u0027t need.  Including stuff from ipmid that includes exceptions and all sorts of stuff.",
+      "revId": "da3f0de19de0c76cfa4c4952730d1ef92a015f9d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    }
+  ]
+}
