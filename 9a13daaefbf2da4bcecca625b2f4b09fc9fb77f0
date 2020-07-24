@@ -16,6 +16,24 @@
       "revId": "9a13daaefbf2da4bcecca625b2f4b09fc9fb77f0",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "40532155_bf0e894e",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 456,
+      "author": {
+        "id": 1000100
+      },
+      "writtenOn": "2020-07-24T19:29:40Z",
+      "side": 0,
+      "message": "The spec says that we dont\u0027 _need_ to validate their input.  It\u0027s just the danger here is walking beyond the data provided so far.  So, perhaps it should check the offsets before using, and then return false. -- since it\u0027s not \"atEnd... yet\"  Perhaps it\u0027s even legal to provide a partial input that leads to the out of bounds access.",
+      "parentUuid": "1d128c5c_b55ba91f",
+      "revId": "9a13daaefbf2da4bcecca625b2f4b09fc9fb77f0",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
