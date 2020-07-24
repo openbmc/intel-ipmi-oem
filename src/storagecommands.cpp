@@ -448,6 +448,7 @@ ipmi::RspType<uint8_t>
               fruCache.begin() + fruInventoryOffset);
 
     bool atEnd = false;
+    bool earlyBail = false;
 
     if (fruCache.size() >= sizeof(FRUHeader))
     {
@@ -466,13 +467,35 @@ ipmi::RspType<uint8_t>
             // Walk the MultiRecord headers until the last record
             while (!endOfList)
             {
+                // Check before accessing cache.  Validate entire Multi-Record
+                // header present.
+                if ((lastRecordStart + 2) >= fruCache.size())
+                {
+                    earlyBail = true;
+                    break;
+                }
+
                 // The MSB in the second byte of the MultiRecord header signals
                 // "End of list"
                 endOfList = fruCache[lastRecordStart + 1] & 0x80;
+                if (endOfList)
+                {
+                    break;
+                }
+
                 // Third byte in the MultiRecord header is the length
                 areaLength = fruCache[lastRecordStart + 2];
                 // This length is in bytes (not 8 bytes like other headers)
                 areaLength += 5; // The length omits the 5 byte header
+
+                // if areaLength + lastRecordStart > fruCache then this record
+                // isn't wholly in the fruCache.
+                if ((areaLength + lastRecordStart) > fruCache.size())
+                {
+                    earlyBail = true;
+                    break;
+                }
+
                 if (!endOfList)
                 {
                     // Next MultiRecord header
@@ -491,9 +514,14 @@ ipmi::RspType<uint8_t>
                 areaLength *= 8; // it is in multiples of 8 bytes
             }
         }
-        if (lastWriteAddr >= (areaLength + lastRecordStart))
+
+        // Only check if we have the whole record if we didn't bail early.
+        if (!earlyBail)
         {
-            atEnd = true;
+            if (lastWriteAddr >= (areaLength + lastRecordStart))
+            {
+                atEnd = true;
+            }
         }
     }
     uint8_t countWritten = 0;
