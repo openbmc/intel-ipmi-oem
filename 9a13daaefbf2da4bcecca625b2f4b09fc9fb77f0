@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1d128c5c_b55ba91f",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 456,
+      "author": {
+        "id": 1000100
+      },
+      "writtenOn": "2020-07-24T19:22:49Z",
+      "side": 0,
+      "message": "bug in the original code, it doesn\u0027t validate the header is a valid header with something like https://github.com/openbmc/entity-manager/blob/master/src/FruDevice.cpp#L411 before it starts acting on the information.",
+      "revId": "9a13daaefbf2da4bcecca625b2f4b09fc9fb77f0",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
