@@ -1,3 +1,4 @@
+#include <byteswap.h>
 #include <ipmid/api.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
@@ -6,6 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <appcommands.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <boost/process/child.hpp>
@@ -836,26 +838,44 @@ ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
             continue;
         }
 
-        // BMC Version format: <major>.<minor>-<build bum>-<build hash>
-        std::vector<std::string> splitVer;
-        boost::split(splitVer, verStr, boost::is_any_of(".-"));
-        if (splitVer.size() < 3)
-        {
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                "Invalid Version format.",
-                phosphor::logging::entry("Version=%s", verStr.c_str()),
-                phosphor::logging::entry("PATH=%s", fwDev.second));
-            continue;
-        }
-
         uint8_t majorNum = 0;
         uint8_t minorNum = 0;
         uint32_t buildNum = 0;
         try
         {
-            majorNum = std::stoul(splitVer[0], nullptr, 16);
-            minorNum = std::stoul(splitVer[1], nullptr, 16);
-            buildNum = std::stoul(splitVer[2], nullptr, 16);
+            std::optional<ipmi::MetaRevision> rev =
+                ipmi::convertIntelVersion(verStr);
+            if (rev.has_value())
+            {
+                ipmi::MetaRevision revision = rev.value();
+                majorNum = revision.major % 10 + (revision.major / 10) * 16;
+                minorNum = (revision.minor > 99 ? 99 : revision.minor);
+                minorNum = minorNum % 10 + (minorNum / 10) * 16;
+                uint32_t hash = std::stoul(revision.metaHash, 0, 16);
+                hash = bswap_32(hash);
+                buildNum = (revision.buildNo & 0xFF) + (hash & 0xFFFFFF00);
+            }
+            else
+            {
+                std::vector<std::string> splitVer;
+                boost::split(splitVer, verStr, boost::is_any_of(".-"));
+                if (splitVer.size() < 3)
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "Invalid Version format.",
+                        phosphor::logging::entry("Version=%s", verStr.c_str()),
+                        phosphor::logging::entry("PATH=%s", fwDev.second));
+                    continue;
+                }
+                majorNum = std::stoul(splitVer[0], nullptr, 16);
+                minorNum = std::stoul(splitVer[1], nullptr, 16);
+                buildNum = std::stoul(splitVer[2], nullptr, 16);
+            }
+            // Build Timestamp - Not supported.
+            // Update Timestamp - TODO: Need to check with CPLD team.
+            fwVerInfoList.emplace_back(
+                fwVersionInfoType(static_cast<uint8_t>(fwDev.first), majorNum,
+                                  minorNum, buildNum, 0, 0));
         }
         catch (const std::exception& e)
         {
@@ -864,12 +884,6 @@ ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
                 phosphor::logging::entry("ERROR=%s", e.what()));
             continue;
         }
-
-        // Build Timestamp - Not supported.
-        // Update Timestamp - TODO: Need to check with CPLD team.
-        fwVerInfoList.emplace_back(
-            fwVersionInfoType(static_cast<uint8_t>(fwDev.first), majorNum,
-                              minorNum, buildNum, 0, 0));
     }
 
     return ipmi::responseSuccess(fwVerInfoList.size(), fwVerInfoList);
