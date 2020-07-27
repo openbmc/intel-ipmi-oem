@@ -1,3 +1,4 @@
+#include <byteswap.h>
 #include <ipmid/api.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
@@ -6,6 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <appcommands.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <boost/process/child.hpp>
@@ -853,9 +855,23 @@ ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
         uint32_t buildNum = 0;
         try
         {
-            majorNum = std::stoul(splitVer[0], nullptr, 16);
-            minorNum = std::stoul(splitVer[1], nullptr, 16);
-            buildNum = std::stoul(splitVer[2], nullptr, 16);
+            std::optional<ipmi::MetaRevision> rev =
+                ipmi::convertIntelVersion(verStr);
+            if (rev.has_value())
+            {
+                ipmi::MetaRevision revision = rev.value();
+                majorNum = revision.major;
+                minorNum = revision.minor;
+                uint32_t hash = std::stoul(revision.metaHash, 0, 16);
+                hash = bswap_32(hash);
+                buildNum = (revision.buildNo & 0xFF) + (hash & 0xFFFFFF00);
+            }
+            else
+            {
+                majorNum = std::stoul(splitVer[0], nullptr, 16);
+                minorNum = std::stoul(splitVer[1], nullptr, 16);
+                buildNum = std::stoul(splitVer[2], nullptr, 16);
+            }
         }
         catch (const std::exception& e)
         {
