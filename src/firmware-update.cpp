@@ -874,14 +874,68 @@ ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
 
     return ipmi::responseSuccess(fwVerInfoList.size(), fwVerInfoList);
 }
-using fwSecurityVersionInfoType = std::tuple<uint8_t,  // ID Tag
-                                             uint8_t,  // BKC Version
-                                             uint8_t>; // SVN Version
-ipmi::RspType<uint8_t, std::vector<fwSecurityVersionInfoType>>
+
+std::array<uint8_t, imageCount> getSecurityVersionInfo(const char* mtdDevBuf)
+{
+    constexpr size_t bufLength = 2;
+    std::array<uint8_t, imageCount> fwSecurityVersionBuf = {0};
+    try
+    {
+        SPIDev spiDev(mtdDevBuf);
+        spiDev.spiReadData(svnVerOffsetInPfm, bufLength,
+                           fwSecurityVersionBuf.data());
+    }
+    catch (const std::exception& e)
+    {
+        throw e;
+    }
+
+    return fwSecurityVersionBuf;
+}
+
+
+ipmi::RspType<
+    uint8_t,                         // device ID
+    uint8_t,                         // Active Image Value
+    std::array<uint8_t, imageCount>, // Security version for Active Image
+    uint8_t,                         // recovery Image Value
+    std::array<uint8_t, imageCount>> // Security version for Recovery Image
     ipmiGetFwSecurityVersionInfo()
 {
-    // TODO: Need to add support.
-    return ipmi::responseInvalidCommand();
+    static bool cacheFlag = false;
+    constexpr size_t bufLength = 1;
+    constexpr std::array<const char*, imageCount> mtdDevBuf = {
+        bmcActivePfmMTDDev, bmcRecoveryImgMTDDev};
+
+    // To avoid multiple reading from SPI device
+    if (!cacheFlag)
+    {
+        try
+        {
+            for (int i = 0; i < imageCount; i++)
+            {
+                imgFwSecurityVersion[i] = getSecurityVersionInfo(mtdDevBuf[i]);
+            }
+        }
+        catch (const std::exception& e)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Exception caught in fwSecurityVersionInfoType",
+                phosphor::logging::entry("MSG=%s", e.what()));
+            return ipmi::responseUnspecifiedError();
+        }
+
+        cacheFlag = true;
+    }
+
+    constexpr uint8_t ActivePfmMTDDev = 0x00;
+    constexpr uint8_t RecoveryImgMTDDev = 0x01;
+
+    return ipmi::responseSuccess(
+        imageCount, static_cast<uint8_t>(FWDeviceIDTag::bmcActiveImage),
+        imgFwSecurityVersion[ActivePfmMTDDev],
+        static_cast<uint8_t>(FWDeviceIDTag::bmcRecoveryImage),
+        imgFwSecurityVersion[RecoveryImgMTDDev]);
 }
 
 ipmi::RspType<std::array<uint8_t, certKeyLen>,
