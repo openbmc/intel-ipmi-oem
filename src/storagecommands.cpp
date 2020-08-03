@@ -538,7 +538,11 @@ ipmi::RspType<uint16_t, // inventorySize
         return ipmi::responseInvalidFieldRequest();
     }
 
-    getFru(ctx, fruDeviceId);
+    ipmi::Cc ret = getFru(ctx, fruDeviceId);
+    if (ret != ipmi::ccSuccess)
+    {
+        return ipmi::response(ret);
+    }
 
     constexpr uint8_t accessType =
         static_cast<uint8_t>(GetFRUAreaAccessType::byte);
