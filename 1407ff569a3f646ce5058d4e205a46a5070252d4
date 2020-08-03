@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "47027f14_0ec9793f",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-08-03T07:06:31Z",
+      "side": 1,
+      "message": "Both \u0027devId\u0027 and \u0027devIdInitialized\u0027 are static variables existing even before this patchset.  They will be populated by reading these file contents, \"/usr/share/ipmi-providers/dev_id.json\", \"/var/cache/private/prodID\".  Since they are static, they retain the value across the calls.\n\u0027devId\u0027 content is valid only if \u0027devIdInitialized \u003d true\u0027.\nWhen \u0027devId\u0027 is valid, it will just return its contents thereby avoiding file-operations every time getDeviceId() is called.\n\nWe set \u0027devIdInitialized \u003d false\u0027 if \u0027productId\u0027 is zero, i.e. invalid.  This is inline with existing design, i.e.) When devId/productId can not be initialized, set \u0027devIdInitialized \u003d false\u0027.",
+      "parentUuid": "6da85bdb_53dba682",
+      "revId": "1407ff569a3f646ce5058d4e205a46a5070252d4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "952735f7_67a8c8fe",
         "filename": "src/appcommands.cpp",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2020-07-31T15:22:30Z",
       "side": 1,
       "message": "how we are re initialize the product Id if its failed",
+      "revId": "1407ff569a3f646ce5058d4e205a46a5070252d4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6338e13a_a9836c0c",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 372,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-08-03T07:06:31Z",
+      "side": 1,
+      "message": "This scenario may happen if getProductId() function does not find productId AND signal handler for \u0027baseBoardUpdatedSignal\u0027 in line 454 is yet to be invoked.  In this scenario, \u0027productId\u0027 will be updated after receiving the registered signal.\n\nFrom our unit-testing, we see that getProductId() itself updates the productId in first shot !",
+      "parentUuid": "952735f7_67a8c8fe",
       "revId": "1407ff569a3f646ce5058d4e205a46a5070252d4",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
