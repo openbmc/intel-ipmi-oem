@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9cadac54_05236395",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000100
+      },
+      "writtenOn": "2020-08-06T14:26:47Z",
+      "side": 1,
+      "message": "I don\u0027t have a test for this version of the code.  But in a follow-on CL, I have a unit-test because I pulled it into its own method - making it testable.",
+      "parentUuid": "29fed320_28696016",
+      "revId": "041cfd40599c6d647735bd82c6c638519a2700ae",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0d95e902_55d191b8",
         "filename": "src/storagecommands.cpp",
         "patchSetId": 2
@@ -30,6 +48,30 @@
       "writtenOn": "2020-08-06T04:08:13Z",
       "side": 1,
       "message": "In above logic( line no: 444), we are doing the resize and this will increase dynamically there itself.",
+      "range": {
+        "startLine": 471,
+        "startChar": 45,
+        "endLine": 471,
+        "endChar": 58
+      },
+      "revId": "041cfd40599c6d647735bd82c6c638519a2700ae",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2555b219_54657220",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 471,
+      "author": {
+        "id": 1000100
+      },
+      "writtenOn": "2020-08-06T14:26:47Z",
+      "side": 1,
+      "message": "That resize doesn\u0027t impact the contents of the header being invalid, which is what this is addressing.",
+      "parentUuid": "0d95e902_55d191b8",
       "range": {
         "startLine": 471,
         "startChar": 45,
