@@ -93,6 +93,7 @@ namespace storage
 
 constexpr static const size_t maxMessageSize = 64;
 constexpr static const size_t maxFruSdrNameSize = 16;
+constexpr static const size_t maxFruSize = 512;
 using ObjectType = boost::container::flat_map<
     std::string, boost::container::flat_map<std::string, DbusVariant>>;
 using ManagedObjectType =
@@ -439,6 +440,10 @@ ipmi::RspType<uint8_t>
         return ipmi::response(status);
     }
     int lastWriteAddr = fruInventoryOffset + writeLen;
+    if (lastWriteAddr > maxFruSize)
+    {
+        return ipmi::responseReqDataLenExceeded();
+    }
     if (fruCache.size() < lastWriteAddr)
     {
         fruCache.resize(fruInventoryOffset + writeLen);
