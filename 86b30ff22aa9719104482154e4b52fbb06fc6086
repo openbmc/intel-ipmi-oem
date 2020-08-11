@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b11278c9_52b17d03",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2020-08-11T05:59:42Z",
+      "side": 1,
+      "message": "That\u0027s not how that works.  You can\u0027t simply hardcode a max fru length.  It needs to be either read from chip, or you need to allow the wrong length through in some wrong cases.",
+      "revId": "86b30ff22aa9719104482154e4b52fbb06fc6086",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
