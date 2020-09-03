@@ -134,3 +134,20 @@ target_compile_definitions (
     $<$<BOOL:${USING_ENTITY_MANAGER_DECORATORS}>:
     -DUSING_ENTITY_MANAGER_DECORATORS>
 )
+
+# Code Coverage
+if (NOT YOCTO)
+    # non-Debug build may generate misleading code coverage results.
+    set(CMAKE_BUILD_TYPE Debug)
+    message(WARNING "Using Debug build type!")
+    include(CodeCoverage)
+    APPEND_COVERAGE_COMPILER_FLAGS()
+    # check-code-coverage is a required name by
+    # openbmc-build-scripts/scripts/unit-test.py#L487.
+    SETUP_TARGET_FOR_COVERAGE_LCOV(
+        NAME check-code-coverage
+        EXECUTABLE runSensorTests
+        DEPENDENCIES runSensorTests
+        EXCLUDE "/usr/include/*" "/usr/local/include/*" "prefix/*"
+    )
+endif ()
