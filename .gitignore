@@ -20,3 +20,4 @@ phosphor-ipmi-host-src/
 prefix/
 runSensorTests
 ipmi-whitelist.hpp
+check-code-coverage*
