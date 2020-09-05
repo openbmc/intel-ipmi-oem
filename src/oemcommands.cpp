@@ -2836,6 +2836,14 @@ ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
     }
 
 #ifdef BMC_VALIDATION_UNSECURE_FEATURE
+    constexpr uint8_t mfgMode = 0x01;
+    // Manufacturing mode is reserved. So can't enable this value.
+    if (specialMode == mfgMode)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "ipmiSetSecurityMode: Can't enable Manufacturing mode");
+        return ipmi::responseInvalidFieldRequest();
+    }
     if (specialMode)
     {
         ec.clear();
