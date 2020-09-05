@@ -2836,6 +2836,40 @@ ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
     }
 
 #ifdef BMC_VALIDATION_UNSECURE_FEATURE
+    uint8_t specialModeValue = 0;
+    std::string specialModeStr{};
+    ec = ipmi::getDbusProperty(ctx, specialModeService, specialModeBasePath,
+                               specialModeIntf, specialModeProperty,
+                               specialModeStr);
+
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiSetSecurityMode: failed to get SpecialMode property",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+    }
+    else
+    {
+        specialModeValue = static_cast<uint8_t>(
+            securityNameSpace::SpecialMode::convertModesFromString(
+                specialModeStr));
+    }
+
+    constexpr uint8_t mfgMode = 0x01;
+    if (specialModeValue == mfgMode && specialMode == mfgMode)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "ipmiSetSecurityMode: Manufacturing mode already enabled");
+        return ipmi::responseUnspecifiedError();
+    }
+
+    // Manufacturing mode is reserved. So can't enable this value.
+    if (specialMode == mfgMode && specialModeValue != mfgMode)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "ipmiSetSecurityMode: Can't enable Manufacturing mode");
+        return ipmi::responseInvalidFieldRequest();
+    }
     if (specialMode)
     {
         ec.clear();
