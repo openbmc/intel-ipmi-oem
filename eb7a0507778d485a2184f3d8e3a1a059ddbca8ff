@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "69045f79_da44bd87",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 396,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-11T08:00:14Z",
+      "side": 1,
+      "message": "Why not to use getDbusProperty here ?",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1545082d_e42c48e7",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 417,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-11T08:00:14Z",
+      "side": 1,
+      "message": "If we are narrowing types it would be nice to check it doesn\u0027t overflow.",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "066bff25_35c3dc42",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-11T08:00:14Z",
+      "side": 1,
+      "message": "You do nor have to close the stream, it is scope scope-bound and will be closed automatically on destructor call. (which is in next line).",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c8222944_7394d785",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-11T08:00:14Z",
+      "side": 1,
+      "message": "This comment brings nothing here, we see in next lines what is going on. I recommend to remove it.",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "087ca454_1e75712f",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 446,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-11T08:00:14Z",
+      "side": 1,
+      "message": "`const auto` if there is no intend to change it.",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7c40a42a_fb334a5e",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 447,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-11T08:00:14Z",
+      "side": 1,
+      "message": "cend()",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a6e6e237_f66e7ef4",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-11T08:00:14Z",
+      "side": 1,
+      "message": "Is it ok to use async calls here? What will happen when one will call ipmiAppGetDeviceId, that is already registered before this response arrive ?\nThis async chain is even prolonged in line 477 where another async call will be made.",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
