@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4c26cb51_40451ba5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-16T13:20:15Z",
+      "side": 1,
+      "message": "nit \u0027to\u0027 instead of \u0027as\u0027",
+      "range": {
+        "startLine": 23,
+        "startChar": 29,
+        "endLine": 23,
+        "endChar": 31
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2025c254_574d961e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-16T13:20:15Z",
+      "side": 1,
+      "message": "I do not understand this sentence. Can you remove \u0027/\u0027 and use update instead of updation. Thanks in advnace.",
+      "range": {
+        "startLine": 24,
+        "startChar": 17,
+        "endLine": 24,
+        "endChar": 26
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bdb7017d_201ce1d0",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-16T13:20:15Z",
+      "side": 1,
+      "message": "Is end variable required? Can we change it to nullptr? Or verify using end pointer if value interpretation is succeed? If the integration fails we can at least log an debug error. Treat it as nice to have because there is no critical issue. Thanks",
+      "range": {
+        "startLine": 364,
+        "startChar": 48,
+        "endLine": 364,
+        "endChar": 51
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "282bf8ed_b02039da",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-16T13:20:15Z",
+      "side": 1,
+      "message": "Is Value type is required? Can you use uint64_t instead? Where Value come from? Sorry for being lazy to find it.",
+      "range": {
+        "startLine": 397,
+        "startChar": 4,
+        "endLine": 397,
+        "endChar": 10
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c290cf54_adde6f18",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-16T13:20:15Z",
+      "side": 1,
+      "message": "Is there was any problem with comparing it with string literal?\nif (id \u003d\u003d \"0x00\") ?\nTreat it as nice to have. Thanks",
+      "range": {
+        "startLine": 421,
+        "startChar": 12,
+        "endLine": 421,
+        "endChar": 35
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
