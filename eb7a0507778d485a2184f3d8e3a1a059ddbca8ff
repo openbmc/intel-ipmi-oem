@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "a250fe25_8b4129bf",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 396,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-17T07:23:25Z",
+      "side": 1,
+      "message": "There is also non-throwing version of this getDbusProperty function. Consider it if you do not like the exception approach.",
+      "parentUuid": "8adb7bb0_75947bda",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1545082d_e42c48e7",
         "filename": "src/appcommands.cpp",
         "patchSetId": 5
@@ -87,6 +105,24 @@
       "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5786bd50_32489d9e",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 417,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-17T07:23:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5f992723_b8e11f53",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
@@ -143,6 +179,24 @@
     },
     {
       "key": {
+        "uuid": "075c5f44_dc657050",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-17T07:23:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ef2db0b9_bf0dde31",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c8222944_7394d785",
         "filename": "src/appcommands.cpp",
         "patchSetId": 5
@@ -193,6 +247,24 @@
       "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fd419126_728b2111",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-17T07:23:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a2217675_27e679fa",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
@@ -249,6 +321,24 @@
     },
     {
       "key": {
+        "uuid": "c07c3d53_736c4f63",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 446,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-17T07:23:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "23c2cb9b_47284e32",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7c40a42a_fb334a5e",
         "filename": "src/appcommands.cpp",
         "patchSetId": 5
@@ -302,6 +392,24 @@
     },
     {
       "key": {
+        "uuid": "950a7aa8_f5fd43a1",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 447,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-17T07:23:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "702a0e81_7a763e39",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a6e6e237_f66e7ef4",
         "filename": "src/appcommands.cpp",
         "patchSetId": 5
@@ -352,6 +460,24 @@
       "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c6a7d40b_4e09fe42",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2020-09-17T07:23:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "71706a79_bd778082",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
