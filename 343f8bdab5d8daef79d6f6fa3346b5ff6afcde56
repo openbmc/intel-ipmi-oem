@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "8de1d25b_c1c6e814",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-09-17T16:46:02Z",
+      "side": 1,
+      "message": "Done. Will update in next patchset.",
+      "parentUuid": "4c26cb51_40451ba5",
+      "range": {
+        "startLine": 23,
+        "startChar": 29,
+        "endLine": 23,
+        "endChar": 31
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2025c254_574d961e",
         "filename": "/COMMIT_MSG",
         "patchSetId": 6
@@ -36,6 +60,30 @@
       "writtenOn": "2020-09-16T13:20:15Z",
       "side": 1,
       "message": "I do not understand this sentence. Can you remove \u0027/\u0027 and use update instead of updation. Thanks in advnace.",
+      "range": {
+        "startLine": 24,
+        "startChar": 17,
+        "endLine": 24,
+        "endChar": 26
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "77756082_7201871a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-09-17T16:46:02Z",
+      "side": 1,
+      "message": "Done. Will update in next patchset.",
+      "parentUuid": "2025c254_574d961e",
       "range": {
         "startLine": 24,
         "startChar": 17,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "94858277_ebf777d2",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-09-17T16:46:02Z",
+      "side": 1,
+      "message": "I think, this can be corrected as you mentioned. Will do it in the next patchset.",
+      "parentUuid": "bdb7017d_201ce1d0",
+      "range": {
+        "startLine": 364,
+        "startChar": 48,
+        "endLine": 364,
+        "endChar": 51
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "282bf8ed_b02039da",
         "filename": "src/appcommands.cpp",
         "patchSetId": 6
@@ -94,6 +166,30 @@
     },
     {
       "key": {
+        "uuid": "83dd747c_65225ebf",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-09-17T16:46:02Z",
+      "side": 1,
+      "message": "It is variant and this variable is required, for this getDbusProperty() syntax.\n\nIt comes from phosphor-ipmi-host:\n\ninclude/ipmid/types.hpp:\nusing Value \u003d std::variant\u003cbool, uint8_t, int16_t, uint16_t, int32_t, uint32_t,\nint64_t, uint64_t, double, std::string\u003e;",
+      "parentUuid": "282bf8ed_b02039da",
+      "range": {
+        "startLine": 397,
+        "startChar": 4,
+        "endLine": 397,
+        "endChar": 10
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c290cf54_adde6f18",
         "filename": "src/appcommands.cpp",
         "patchSetId": 6
@@ -105,6 +201,30 @@
       "writtenOn": "2020-09-16T13:20:15Z",
       "side": 1,
       "message": "Is there was any problem with comparing it with string literal?\nif (id \u003d\u003d \"0x00\") ?\nTreat it as nice to have. Thanks",
+      "range": {
+        "startLine": 421,
+        "startChar": 12,
+        "endLine": 421,
+        "endChar": 35
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "10c8527b_a17c8245",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-09-17T16:46:02Z",
+      "side": 1,
+      "message": "Will check and rewrite this in next patchset.",
+      "parentUuid": "c290cf54_adde6f18",
       "range": {
         "startLine": 421,
         "startChar": 12,
