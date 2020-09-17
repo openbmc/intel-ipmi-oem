@@ -73,6 +73,24 @@
     },
     {
       "key": {
+        "uuid": "51a7daa4_6e123c89",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 396,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-09-17T16:46:02Z",
+      "side": 1,
+      "message": "Thanks for the info. We don\u0027t have \u0027ctx\u0027 argument here, and like to retain this way.",
+      "parentUuid": "a250fe25_8b4129bf",
+      "revId": "eb7a0507778d485a2184f3d8e3a1a059ddbca8ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1545082d_e42c48e7",
         "filename": "src/appcommands.cpp",
         "patchSetId": 5
