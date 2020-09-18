@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "b32eb14d_184d864c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-18T08:58:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8de1d25b_c1c6e814",
+      "range": {
+        "startLine": 23,
+        "startChar": 29,
+        "endLine": 23,
+        "endChar": 31
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2025c254_574d961e",
         "filename": "/COMMIT_MSG",
         "patchSetId": 6
@@ -96,6 +120,30 @@
     },
     {
       "key": {
+        "uuid": "0f0a245b_f591e247",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-18T08:58:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "77756082_7201871a",
+      "range": {
+        "startLine": 24,
+        "startChar": 17,
+        "endLine": 24,
+        "endChar": 26
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bdb7017d_201ce1d0",
         "filename": "src/appcommands.cpp",
         "patchSetId": 6
@@ -131,6 +179,30 @@
       "side": 1,
       "message": "I think, this can be corrected as you mentioned. Will do it in the next patchset.",
       "parentUuid": "bdb7017d_201ce1d0",
+      "range": {
+        "startLine": 364,
+        "startChar": 48,
+        "endLine": 364,
+        "endChar": 51
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4d05bb77_1c9f685a",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-18T08:58:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "94858277_ebf777d2",
       "range": {
         "startLine": 364,
         "startChar": 48,
@@ -225,6 +297,30 @@
       "side": 1,
       "message": "Will check and rewrite this in next patchset.",
       "parentUuid": "c290cf54_adde6f18",
+      "range": {
+        "startLine": 421,
+        "startChar": 12,
+        "endLine": 421,
+        "endChar": 35
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5bbbbe17_cd48f861",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-18T08:58:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "10c8527b_a17c8245",
       "range": {
         "startLine": 421,
         "startChar": 12,
