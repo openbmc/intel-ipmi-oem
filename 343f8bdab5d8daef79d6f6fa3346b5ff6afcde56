@@ -215,6 +215,30 @@
     },
     {
       "key": {
+        "uuid": "91ee2084_00b2f69b",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-18T12:45:30Z",
+      "side": 1,
+      "message": "Thanks",
+      "parentUuid": "4d05bb77_1c9f685a",
+      "range": {
+        "startLine": 364,
+        "startChar": 48,
+        "endLine": 364,
+        "endChar": 51
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "282bf8ed_b02039da",
         "filename": "src/appcommands.cpp",
         "patchSetId": 6
@@ -250,6 +274,30 @@
       "side": 1,
       "message": "It is variant and this variable is required, for this getDbusProperty() syntax.\n\nIt comes from phosphor-ipmi-host:\n\ninclude/ipmid/types.hpp:\nusing Value \u003d std::variant\u003cbool, uint8_t, int16_t, uint16_t, int32_t, uint32_t,\nint64_t, uint64_t, double, std::string\u003e;",
       "parentUuid": "282bf8ed_b02039da",
+      "range": {
+        "startLine": 397,
+        "startChar": 4,
+        "endLine": 397,
+        "endChar": 10
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ac28c396_37d3a990",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-18T12:45:30Z",
+      "side": 1,
+      "message": "Thanks for explanation. I guess there is a possibility that you receive property variant that does not hold uint64_t. Is it possible to add a check if property variant holds a uint64_t? Or add a catch for bad_variant_access exception to properly handles such case? Exceptions sounds nice because it is unlikely to happened. Treat it as nice to have.",
+      "parentUuid": "83dd747c_65225ebf",
       "range": {
         "startLine": 397,
         "startChar": 4,
@@ -330,6 +378,30 @@
       "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5dbeffa6_330e0c45",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-18T12:45:30Z",
+      "side": 1,
+      "message": "Thanks",
+      "parentUuid": "5bbbbe17_cd48f861",
+      "range": {
+        "startLine": 421,
+        "startChar": 12,
+        "endLine": 421,
+        "endChar": 35
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
