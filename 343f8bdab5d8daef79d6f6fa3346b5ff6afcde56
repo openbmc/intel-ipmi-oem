@@ -334,6 +334,30 @@
     },
     {
       "key": {
+        "uuid": "dbd3cc62_d1b77a2b",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-21T16:29:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ee0badcd_00645d8f",
+      "range": {
+        "startLine": 397,
+        "startChar": 4,
+        "endLine": 397,
+        "endChar": 10
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c290cf54_adde6f18",
         "filename": "src/appcommands.cpp",
         "patchSetId": 6
