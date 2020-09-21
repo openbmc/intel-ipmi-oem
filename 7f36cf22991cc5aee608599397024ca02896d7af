@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "29a61383_eac0a1c4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-09-21T09:41:49Z",
+      "side": 1,
+      "message": "Manufacturer ID: is 0x157 (Intel) and it is same for all OpenBMC platforms. \n\nIt is already taken care in : \nhttps://github.com/openbmc/intel-ipmi-oem/blob/d77489f18e044448778a7c651dddea7a13e3eaca/src/appcommands.cpp#L334",
+      "parentUuid": "26354f23_7b290380",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 39
+      },
+      "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "94c15df4_408646c3",
         "filename": "src/appcommands.cpp",
         "patchSetId": 7
@@ -36,6 +60,30 @@
       "writtenOn": "2020-09-18T12:45:30Z",
       "side": 1,
       "message": "Using \"\u003e\u003e\" operator you do not have to use strtol. You can get the integer from stream.",
+      "range": {
+        "startLine": 362,
+        "startChar": 12,
+        "endLine": 362,
+        "endChar": 41
+      },
+      "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "38abdb2f_7a4d59ea",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 362,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-09-21T09:41:49Z",
+      "side": 1,
+      "message": "Thanks. Will address this in next patchset.",
+      "parentUuid": "94c15df4_408646c3",
       "range": {
         "startLine": 362,
         "startChar": 12,
