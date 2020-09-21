@@ -96,6 +96,30 @@
     },
     {
       "key": {
+        "uuid": "c554f167_1ce8e414",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 362,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-21T16:29:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "38abdb2f_7a4d59ea",
+      "range": {
+        "startLine": 362,
+        "startChar": 12,
+        "endLine": 362,
+        "endChar": 41
+      },
+      "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "38e27b94_0660362b",
         "filename": "src/appcommands.cpp",
         "patchSetId": 7
@@ -107,6 +131,30 @@
       "writtenOn": "2020-09-18T12:45:30Z",
       "side": 1,
       "message": "Same as above, you do not need strtoll.",
+      "range": {
+        "startLine": 419,
+        "startChar": 8,
+        "endLine": 420,
+        "endChar": 55
+      },
+      "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "81f93066_0bc85a98",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-21T16:29:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "38e27b94_0660362b",
       "range": {
         "startLine": 419,
         "startChar": 8,
