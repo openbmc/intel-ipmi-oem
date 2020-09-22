@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "e2aff60d_48d18620",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000879
+      },
+      "writtenOn": "2020-09-22T08:16:52Z",
+      "side": 1,
+      "message": "Yes, I know. But isn\u0027t you think it is strange that you read VID from one place and PID from another?\nIn our platform we had to patch appcommands.cpp to read both VID and PID from dev_id.json (to get rid of prodID file which we don\u0027t need at all), but I prefer to read them both from EM config.",
+      "parentUuid": "29a61383_eac0a1c4",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 39
+      },
+      "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "94c15df4_408646c3",
         "filename": "src/appcommands.cpp",
         "patchSetId": 7
