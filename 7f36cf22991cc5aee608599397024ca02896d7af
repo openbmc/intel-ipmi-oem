@@ -120,6 +120,30 @@
     },
     {
       "key": {
+        "uuid": "fd7a3749_818d590a",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 362,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-22T06:51:28Z",
+      "side": 1,
+      "message": "Thanks",
+      "parentUuid": "c554f167_1ce8e414",
+      "range": {
+        "startLine": 362,
+        "startChar": 12,
+        "endLine": 362,
+        "endChar": 41
+      },
+      "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "38e27b94_0660362b",
         "filename": "src/appcommands.cpp",
         "patchSetId": 7
@@ -164,6 +188,30 @@
       "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "14713e9c_f459eb61",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-22T06:51:28Z",
+      "side": 1,
+      "message": "Thanks",
+      "parentUuid": "81f93066_0bc85a98",
+      "range": {
+        "startLine": 419,
+        "startChar": 8,
+        "endLine": 420,
+        "endChar": 55
+      },
+      "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
