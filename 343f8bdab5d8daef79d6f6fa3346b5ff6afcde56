@@ -73,6 +73,30 @@
     },
     {
       "key": {
+        "uuid": "121077b7_573efd7d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-22T06:51:28Z",
+      "side": 1,
+      "message": "Thanks",
+      "parentUuid": "b32eb14d_184d864c",
+      "range": {
+        "startLine": 23,
+        "startChar": 29,
+        "endLine": 23,
+        "endChar": 31
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2025c254_574d961e",
         "filename": "/COMMIT_MSG",
         "patchSetId": 6
@@ -141,6 +165,30 @@
       "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d2416e25_b1fa305b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-22T06:51:28Z",
+      "side": 1,
+      "message": "Thanks",
+      "parentUuid": "0f0a245b_f591e247",
+      "range": {
+        "startLine": 24,
+        "startChar": 17,
+        "endLine": 24,
+        "endChar": 26
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
@@ -355,6 +403,30 @@
       "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "63dbe1ac_cce1b950",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 1000677
+      },
+      "writtenOn": "2020-09-22T06:51:28Z",
+      "side": 1,
+      "message": "Thanks. I guess you should care for overflow case, but it might be cover in next patch.",
+      "parentUuid": "dbd3cc62_d1b77a2b",
+      "range": {
+        "startLine": 397,
+        "startChar": 4,
+        "endLine": 397,
+        "endChar": 10
+      },
+      "revId": "343f8bdab5d8daef79d6f6fa3346b5ff6afcde56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
