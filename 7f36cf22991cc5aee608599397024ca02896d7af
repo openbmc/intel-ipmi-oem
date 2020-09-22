@@ -73,6 +73,30 @@
     },
     {
       "key": {
+        "uuid": "a00536de_b2df8ab7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-09-22T17:47:36Z",
+      "side": 1,
+      "message": "I accept that reading the info from single file is good. However, We already have some platforms implemented with this design and so I need to follow the existing design.",
+      "parentUuid": "e2aff60d_48d18620",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 39
+      },
+      "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "94c15df4_408646c3",
         "filename": "src/appcommands.cpp",
         "patchSetId": 7
