@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0964647e_3435d46f",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-09-23T20:23:11Z",
+      "side": 1,
+      "message": "If FRU is corrupted, Then this will not set the devIdInitialized and causes performance issue here.",
+      "range": {
+        "startLine": 365,
+        "startChar": 12,
+        "endLine": 365,
+        "endChar": 34
+      },
+      "revId": "1b511b8a90c2fbdb79dd0aa7c4fd300030b50ddf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8b0b6a25_b46992ed",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 396,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-09-23T20:23:11Z",
+      "side": 1,
+      "message": "30seconds timeout here isn\u0027t it too much? Usually 2seconds, we get the data.",
+      "range": {
+        "startLine": 396,
+        "startChar": 58,
+        "endLine": 396,
+        "endChar": 63
+      },
+      "revId": "1b511b8a90c2fbdb79dd0aa7c4fd300030b50ddf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a1438eb8_a6338068",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 460,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-09-23T20:23:11Z",
+      "side": 1,
+      "message": "nit: This dbus failure is not getProductIdFromBoard, This failure is for GetSubTree of board interfaces. Changing this will help better debugging.",
+      "range": {
+        "startLine": 460,
+        "startChar": 41,
+        "endLine": 460,
+        "endChar": 62
+      },
+      "revId": "1b511b8a90c2fbdb79dd0aa7c4fd300030b50ddf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "37755f9e_619fa902",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 476,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-09-23T20:23:11Z",
+      "side": 1,
+      "message": "You need to reset the signal only after you get data which is expected. So this reset should be done inside getProductId().",
+      "range": {
+        "startLine": 476,
+        "startChar": 16,
+        "endLine": 476,
+        "endChar": 47
+      },
+      "revId": "1b511b8a90c2fbdb79dd0aa7c4fd300030b50ddf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    }
+  ]
+}
