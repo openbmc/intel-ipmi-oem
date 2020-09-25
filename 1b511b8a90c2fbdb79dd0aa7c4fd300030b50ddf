@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "0b1661cc_5a6c1bff",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-25T04:54:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0964647e_3435d46f",
+      "range": {
+        "startLine": 365,
+        "startChar": 12,
+        "endLine": 365,
+        "endChar": 34
+      },
+      "revId": "1b511b8a90c2fbdb79dd0aa7c4fd300030b50ddf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8b0b6a25_b46992ed",
         "filename": "src/appcommands.cpp",
         "patchSetId": 8
@@ -36,6 +60,30 @@
       "writtenOn": "2020-09-23T20:23:11Z",
       "side": 1,
       "message": "30seconds timeout here isn\u0027t it too much? Usually 2seconds, we get the data.",
+      "range": {
+        "startLine": 396,
+        "startChar": 58,
+        "endLine": 396,
+        "endChar": 63
+      },
+      "revId": "1b511b8a90c2fbdb79dd0aa7c4fd300030b50ddf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8b053680_d1889d4a",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 396,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-25T04:54:12Z",
+      "side": 1,
+      "message": "Hi,\nThe Default value for \"IPMI_DBUS_TIMEOUT\" is 5s and by this time we query the \u0027ProductId\u0027 property from dbus not exposed by entity manager by considering system bootup time. So we gave the time out value as 30s to consider Worst-case scenario should not fail.\nRegards,\nAnoop S",
+      "parentUuid": "8b0b6a25_b46992ed",
       "range": {
         "startLine": 396,
         "startChar": 58,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "8b238032_9efe0d91",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 460,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-25T04:54:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a1438eb8_a6338068",
+      "range": {
+        "startLine": 460,
+        "startChar": 41,
+        "endLine": 460,
+        "endChar": 62
+      },
+      "revId": "1b511b8a90c2fbdb79dd0aa7c4fd300030b50ddf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "37755f9e_619fa902",
         "filename": "src/appcommands.cpp",
         "patchSetId": 8
@@ -82,6 +154,30 @@
       "writtenOn": "2020-09-23T20:23:11Z",
       "side": 1,
       "message": "You need to reset the signal only after you get data which is expected. So this reset should be done inside getProductId().",
+      "range": {
+        "startLine": 476,
+        "startChar": 16,
+        "endLine": 476,
+        "endChar": 47
+      },
+      "revId": "1b511b8a90c2fbdb79dd0aa7c4fd300030b50ddf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d18a1da9_66c5248d",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 476,
+      "author": {
+        "id": 1000915
+      },
+      "writtenOn": "2020-09-25T04:54:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "37755f9e_619fa902",
       "range": {
         "startLine": 476,
         "startChar": 16,
