@@ -187,6 +187,30 @@
       "revId": "1b511b8a90c2fbdb79dd0aa7c4fd300030b50ddf",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f022947a_bd0bd9a1",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 476,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-09-25T14:12:42Z",
+      "side": 1,
+      "message": "@Apparao Puli: As we discussed, when async_method_call() succeeds means already EntityManager exposed this property and so \u0027baseBoardUpdatedSignal\u0027 will not be hit. Hence, we reset the signal here itself and moved the reset to line 464 in the latest patch.",
+      "parentUuid": "37755f9e_619fa902",
+      "range": {
+        "startLine": 476,
+        "startChar": 16,
+        "endLine": 476,
+        "endChar": 47
+      },
+      "revId": "1b511b8a90c2fbdb79dd0aa7c4fd300030b50ddf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
