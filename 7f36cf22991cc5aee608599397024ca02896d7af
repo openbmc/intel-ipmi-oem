@@ -145,6 +145,30 @@
     },
     {
       "key": {
+        "uuid": "f6168f01_3780c826",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2020-10-05T06:09:34Z",
+      "side": 1,
+      "message": "@Andrei,Kartashev: Do you want the Product-ID to be part of dev_id.json ?  Or as a property exposed by EntityManager by reading from xx_baseboard.json ?  \n\nAs mentioned here, keeping this info in dev_id.json instead of xx_baseboard.json, is required to provide quick response to getDeviceID() calls during boot time.\n\nhttps://github.com/openbmc/intel-ipmi-oem/blob/d77489f18e044448778a7c651dddea7a13e3eaca/src/appcommands.cpp#L350",
+      "parentUuid": "36e4e696_c25cd32b",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 39
+      },
+      "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "94c15df4_408646c3",
         "filename": "src/appcommands.cpp",
         "patchSetId": 7
