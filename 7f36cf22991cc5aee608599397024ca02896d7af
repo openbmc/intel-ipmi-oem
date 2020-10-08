@@ -169,6 +169,30 @@
     },
     {
       "key": {
+        "uuid": "15f944d9_7d01653e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000879
+      },
+      "writtenOn": "2020-10-08T16:56:19Z",
+      "side": 1,
+      "message": "@Saravana\n\nHistorically it was dev_id.json who keep all the data and we in Yadro currently use this approach (we had to patch intel-ipmi-oem to get this back), but this is against with concept \"one binary for different platforms\".\nSo I would like to use EM config as the source of all the information. Then we can generate dev_id.json in the form we have it today in runtime (to provide quick response, as you said) - this would be similar to what you do with prodID file but more common across OpenBMC architecture while prodID is only Intel-specific thing.",
+      "parentUuid": "f6168f01_3780c826",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 39
+      },
+      "revId": "7f36cf22991cc5aee608599397024ca02896d7af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "94c15df4_408646c3",
         "filename": "src/appcommands.cpp",
         "patchSetId": 7
