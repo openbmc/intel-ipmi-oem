@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "46c3e853_bdcf3fd2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 21
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-10-18T19:08:37Z",
+      "side": 1,
+      "message": "Kwin, we need to rework on this below command based on the design.",
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c1a6d805_29b3603b",
         "filename": "include/biosconfigcommands.hpp",
         "patchSetId": 21
@@ -272,6 +289,23 @@
     },
     {
       "key": {
+        "uuid": "c079e8ad_be441581",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-10-18T19:08:37Z",
+      "side": 1,
+      "message": "we need to keep the recvd data in ipmi interfaces itself",
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c58b516f_9fb4da4e",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 21
@@ -289,6 +323,23 @@
         "endLine": 299,
         "endChar": 72
       },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c341ad0d_d9e640ff",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 301,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-10-18T19:08:37Z",
+      "side": 1,
+      "message": "we need to collect all data from interface and convert into naive-dbus format and set the AllBaseBiosTable property.",
       "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
