@@ -18,6 +18,7 @@
 #include "xyz/openbmc_project/Common/error.hpp"
 #include "xyz/openbmc_project/Led/Physical/server.hpp"
 
+#include <openssl/crypto.h>
 #include <systemd/sd-journal.h>
 
 #include <appcommands.hpp>
@@ -1116,6 +1117,8 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
             {
                 phosphor::logging::log<phosphor::logging::level::INFO>(
                     "ipmiOEMSetUser2Activation: user created successfully ");
+                OPENSSL_cleanse(userPassword.data(), userPassword.size());
+
                 return ipmi::responseSuccess();
             }
         }
@@ -1124,6 +1127,7 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
         ipmiUserSetUserName(ipmiDefaultUserId, static_cast<std::string>(""));
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMSetUser2Activation: password / priv setting is failed.");
+        OPENSSL_cleanse(userPassword.data(), userPassword.size());
     }
     else
     {
@@ -1213,10 +1217,13 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
         if (userPassword.size() < minPasswordSizeRequired ||
             userPassword.size() > ipmi::maxIpmi20PasswordSize)
         {
+            OPENSSL_cleanse(userPassword.data(), userPassword.size());
             return ipmi::responseReqDataLenInvalid();
         }
         passwd.assign(reinterpret_cast<const char*>(userPassword.data()),
                       userPassword.size());
+        // Clear sensitive data
+        OPENSSL_cleanse(userPassword.data(), userPassword.size());
         if (specialUserIndex ==
             static_cast<uint8_t>(SpecialUserIndex::atScaleDebugUser))
         {
@@ -1228,6 +1235,9 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
         {
             status = ipmiSetSpecialUserPassword("root", passwd);
         }
+        // Clear sensitive data
+        OPENSSL_cleanse(&passwd, passwd.length());
+
         return ipmi::response(status);
     }
     else
