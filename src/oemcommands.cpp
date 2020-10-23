@@ -1228,6 +1228,9 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
         {
             status = ipmiSetSpecialUserPassword("root", passwd);
         }
+        // Clear sensitive data
+        passwd.clear();
+        userPassword.clear();
         return ipmi::response(status);
     }
     else
