@@ -1096,7 +1096,10 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
 
     // ipmiUserSetUserName correctly handles char*, possibly non-null
     // terminated strings using ipmiMaxUserName size
-    auto userNameRaw = reinterpret_cast<const char*>(userName.data());
+    size_t nameLen = strnlen(reinterpret_cast<const char*>(userName.data()),
+                             sizeof(userName));
+    const std::string userNameRaw(
+        reinterpret_cast<const char*>(userName.data()), nameLen);
 
     if (ipmi::ccSuccess == ipmiUserSetUserName(ipmiDefaultUserId, userNameRaw))
     {
