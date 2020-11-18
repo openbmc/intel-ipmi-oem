@@ -441,7 +441,10 @@ ipmi::RspType<uint8_t>
     int lastWriteAddr = fruInventoryOffset + writeLen;
     if (fruCache.size() < lastWriteAddr)
     {
-        fruCache.resize(fruInventoryOffset + writeLen);
+        // fruCache.size() comes from GetRawFru, it's the total size of FRU,
+        // Fru device does not allow to write beyond this range,so return
+        // 0xc9 here.
+        return ipmi::responseParmOutOfRange();
     }
 
     std::copy(dataToWrite.begin(), dataToWrite.begin() + writeLen,
