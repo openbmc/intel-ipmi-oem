@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "49b44948_396a39f4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-11-23T05:14:23Z",
+      "side": 1,
+      "message": "Look good. Fix the build error.",
+      "revId": "53a05607b46c36b7539efadb264e3daa71d16d68",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
