@@ -16,6 +16,24 @@
       "revId": "53a05607b46c36b7539efadb264e3daa71d16d68",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "90d1a2d5_8d00e402",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2020-11-23T14:35:00Z",
+      "side": 1,
+      "message": "Pushed as independent patch. And fixed build issue as well in below patch.\nhttps://gerrit.openbmc-project.xyz/#/c/openbmc/intel-ipmi-oem/+/37781/",
+      "parentUuid": "49b44948_396a39f4",
+      "revId": "53a05607b46c36b7539efadb264e3daa71d16d68",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
