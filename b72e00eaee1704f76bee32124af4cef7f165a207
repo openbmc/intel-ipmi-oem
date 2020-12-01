@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "4e9adb6f_3aa779fa",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 29
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000218
+      },
+      "writtenOn": "2020-12-01T08:25:06Z",
+      "side": 1,
+      "message": "patch is submitted already:\nhttps://gerrit.openbmc-project.xyz/#/c/openbmc/intel-ipmi-oem/+/37781/3/src/oemcommands.cpp",
+      "parentUuid": "6c9a272f_d4c3240a",
+      "range": {
+        "startLine": 33,
+        "startChar": 0,
+        "endLine": 33,
+        "endChar": 52
+      },
+      "revId": "b72e00eaee1704f76bee32124af4cef7f165a207",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "fb354b05_33b8d208",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 29
