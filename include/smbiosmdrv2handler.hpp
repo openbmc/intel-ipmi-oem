@@ -57,8 +57,8 @@ static constexpr const size_t smbiosSMMemorySize =
     1024 * 1024; // Total size of VGA share memory
 static constexpr const size_t smbiosTableStorageSize =
     64 * 1024; // Total size of smbios table
-static constexpr const uint32_t defaultTimeout = 200;
-static constexpr const uint8_t sysClock = 100;
+static constexpr const uint32_t defaultTimeout = 5000;
+static constexpr const uint8_t sysClock = 1000;
 static constexpr const int lastAgentIndex = -1;
 static constexpr const uint16_t lastAgentId = 0xFFFF;
 constexpr const uint32_t invalidChecksum = 0xffffffff;
