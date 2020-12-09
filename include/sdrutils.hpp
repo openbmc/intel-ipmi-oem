@@ -195,6 +195,7 @@ enum class SensorTypeCodes : uint8_t
     voltage = 0x2,
     current = 0x3,
     fan = 0x4,
+    chassisIntrusion = 0x5,
     other = 0xB,
 };
 
@@ -204,6 +205,7 @@ const static boost::container::flat_map<const char*, SensorTypeCodes, CmpStr>
                  {"current", SensorTypeCodes::current},
                  {"fan_tach", SensorTypeCodes::fan},
                  {"fan_pwm", SensorTypeCodes::fan},
+                 {"intrusion", SensorTypeCodes::chassisIntrusion},
                  {"power", SensorTypeCodes::other}}};
 
 inline static std::string getSensorTypeStringFromPath(const std::string& path)
@@ -260,7 +262,13 @@ inline static uint16_t getSensorNumberFromPath(const std::string& path)
 
 inline static uint8_t getSensorEventTypeFromPath(const std::string& path)
 {
-    // TODO: Add support for additional reading types as needed
+    uint8_t type = getSensorTypeFromPath(path);
+
+    if (type == static_cast<uint8_t>(SensorTypeCodes::chassisIntrusion))
+    {
+        return 0x3; // digital discrete
+    }
+
     return 0x1; // reading type = threshold
 }
 
