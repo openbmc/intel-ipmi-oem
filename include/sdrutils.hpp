@@ -250,7 +250,8 @@ class IPMIWriteTable
     }
 };
 
-// These objects are global singletons, used from a variety of places
+// Store information for threshold sensors and they are not used by VR
+// sensors. These objects are global singletons, used from a variety of places.
 inline IPMIStatsTable sdrStatsTable;
 inline IPMIWriteTable sdrWriteTable;
 
