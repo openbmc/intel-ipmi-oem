@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "72af20e4_8d6df4ba",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 31
+      },
+      "lineNbr": 689,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-15T08:46:47Z",
+      "side": 1,
+      "message": "yes , we are storing the password hash in OEM command.  as we are storing the plain password. let us see. how to handle this. \nCan we  keep the password hash in OEMC command itself ?\nwhenever we bios requested . we have to read the new password from bioas config daemon and compute the new password hash using new password and give to the bios ?\n\nLet see how to validate the current password  in change password in redfish action.",
+      "parentUuid": "2357201a_e4716063",
+      "range": {
+        "startLine": 689,
+        "startChar": 5,
+        "endLine": 689,
+        "endChar": 45
+      },
+      "revId": "946a88614c3018c335f0d92638d7739153805194",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f35461ff_748b35d3",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 31
@@ -36,6 +60,30 @@
       "writtenOn": "2020-12-15T08:27:24Z",
       "side": 1,
       "message": "We don\u0027t design property to store bios password.",
+      "range": {
+        "startLine": 702,
+        "startChar": 6,
+        "endLine": 702,
+        "endChar": 39
+      },
+      "revId": "946a88614c3018c335f0d92638d7739153805194",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7849068f_2357a19d",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 31
+      },
+      "lineNbr": 702,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-15T08:46:47Z",
+      "side": 1,
+      "message": "mIsUserPwdInitDone, we have to maintain this in OEM command itself. as its  intel specific.\nwe have to keep in oem. Let see how to validate the current password  in change password action.",
+      "parentUuid": "f35461ff_748b35d3",
       "range": {
         "startLine": 702,
         "startChar": 6,
