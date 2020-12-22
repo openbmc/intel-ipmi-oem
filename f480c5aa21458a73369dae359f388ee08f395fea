@@ -2,6 +2,52 @@
   "comments": [
     {
       "key": {
+        "uuid": "d68867fe_11ec50ab",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 32
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-22T07:11:23Z",
+      "side": 1,
+      "message": "typo: between",
+      "range": {
+        "startLine": 10,
+        "startChar": 14,
+        "endLine": 10,
+        "endChar": 22
+      },
+      "revId": "f480c5aa21458a73369dae359f388ee08f395fea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d97164b5_fe394e3f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 32
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-22T07:11:23Z",
+      "side": 1,
+      "message": "I see 6 commands in description :)\n\nhave you tested all?",
+      "range": {
+        "startLine": 21,
+        "startChar": 38,
+        "endLine": 21,
+        "endChar": 48
+      },
+      "revId": "f480c5aa21458a73369dae359f388ee08f395fea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5dabc7e6_9315570e",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 32
