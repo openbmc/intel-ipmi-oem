@@ -65,6 +65,30 @@
     },
     {
       "key": {
+        "uuid": "cde207f8_600b5ab6",
+        "filename": "include/oemcommands.hpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2afd5fc0_7e52066e",
+      "range": {
+        "startLine": 80,
+        "startChar": 22,
+        "endLine": 81,
+        "endChar": 39
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d3b0d2ed_6ba7849a",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 21
@@ -154,6 +178,30 @@
       "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c9c532d0_cc334a1f",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 21
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fd81703d_785af194",
+      "range": {
+        "startLine": 173,
+        "startChar": 8,
+        "endLine": 178,
+        "endChar": 19
+      },
+      "revId": "75c86dd9d1886f25cdfa29194d1ffafcf2f9a654",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
