@@ -117,6 +117,29 @@
     },
     {
       "key": {
+        "uuid": "d40f235e_2df3b678",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 33
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "This is already defined in generic place( ./include/ipmid/utils.hpp). Use that.",
+      "range": {
+        "startLine": 113,
+        "startChar": 0,
+        "endLine": 133,
+        "endChar": 1
+      },
+      "revId": "4db2afaa53d071ddc622e5f6493e46a254f3fef4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d8262278_4cbd7e8b",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 33
