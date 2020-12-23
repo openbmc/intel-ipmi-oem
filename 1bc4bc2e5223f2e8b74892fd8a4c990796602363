@@ -1,0 +1,458 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "10c5680e_51580f22",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 36
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "nit: actually 6 :)",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 4
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "0abc8548_adb6a260",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "Not used. Remove it",
+      "range": {
+        "startLine": 55,
+        "startChar": 0,
+        "endLine": 55,
+        "endChar": 59
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dbf38020_d2d39159",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "On Fresh image, This folder might not be created. Did you added creating of this folder?",
+      "range": {
+        "startLine": 59,
+        "startChar": 48,
+        "endLine": 59,
+        "endChar": 56
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "51befe74_20f0ac06",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "adding check for checking open state.\n\nif (!outFile.good())\n{\n...\n}",
+      "range": {
+        "startLine": 140,
+        "startChar": 18,
+        "endLine": 140,
+        "endChar": 25
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a400ca7_7b690004",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "error checking needed.",
+      "range": {
+        "startLine": 143,
+        "startChar": 12,
+        "endLine": 143,
+        "endChar": 17
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6876de48_4bff0c59",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "This call throws the exception. You need to add it in try-catch block.",
+      "range": {
+        "startLine": 158,
+        "startChar": 8,
+        "endLine": 158,
+        "endChar": 23
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c664ded2_754b8f56",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "Where this is set? Not used.\n\nSame for other places too.",
+      "range": {
+        "startLine": 164,
+        "startChar": 8,
+        "endLine": 164,
+        "endChar": 10
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8c929859_a85702b0",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "Same as above and even in other places too.",
+      "range": {
+        "startLine": 182,
+        "startChar": 20,
+        "endLine": 182,
+        "endChar": 35
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "49052c57_1ce17a07",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 201,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "How long this function execution will takes? If this takes more time, Since its getting called in multiple IPMI commands which will have timeout impact. Have you considered it?\n\nSince its xml read and parse, which is take more time so it needs attention.",
+      "range": {
+        "startLine": 199,
+        "startChar": 4,
+        "endLine": 201,
+        "endChar": 25
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "86c16611_5fb7cd55",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 243,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "INFO/DEBUG??",
+      "range": {
+        "startLine": 243,
+        "startChar": 57,
+        "endLine": 243,
+        "endChar": 60
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1fcad09f_3c17efa7",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 340,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "c++ style",
+      "range": {
+        "startLine": 327,
+        "startChar": 1,
+        "endLine": 340,
+        "endChar": 17
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "60cc50bb_153fbb69",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 350,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "not used",
+      "range": {
+        "startLine": 350,
+        "startChar": 3,
+        "endLine": 350,
+        "endChar": 32
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fb2159ff_bef706ef",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 387,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "Forgot to remove??",
+      "range": {
+        "startLine": 385,
+        "startChar": 0,
+        "endLine": 387,
+        "endChar": 19
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a247afa_4276c168",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 446,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "-1: This global object need locking before update. Since its end user commands, This requires lock t protect the data as well as make it atomic nature. \n\nIn all other places where ever you are updating this.",
+      "range": {
+        "startLine": 446,
+        "startChar": 12,
+        "endLine": 446,
+        "endChar": 22
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "67d7de45_ac9c47cf",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 476,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "add log for better debugging.",
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "cafa766d_1105c879",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 493,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "Is this unit teste code and you forgot to return the ipmiCCPayloadChecksumFailed code here?",
+      "range": {
+        "startLine": 491,
+        "startChar": 16,
+        "endLine": 493,
+        "endChar": 29
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5e4782ed_ad6f80b3",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 499,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "This file also need locking else concurrent request leave this file in weird state.",
+      "range": {
+        "startLine": 498,
+        "startChar": 11,
+        "endLine": 499,
+        "endChar": 62
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e6188f3c_3ac115bb",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 743,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "supporting only SHA384, but why skipping for zero?",
+      "range": {
+        "startLine": 743,
+        "startChar": 38,
+        "endLine": 743,
+        "endChar": 51
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e4d5d0c2_d9d62176",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 748,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "is this folder created?",
+      "range": {
+        "startLine": 748,
+        "startChar": 45,
+        "endLine": 748,
+        "endChar": 66
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3628f0cb_ae92c821",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 795,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-23T13:32:20Z",
+      "side": 1,
+      "message": "this can throw exception, need to capture.",
+      "range": {
+        "startLine": 795,
+        "startChar": 11,
+        "endLine": 795,
+        "endChar": 73
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    }
+  ]
+}
