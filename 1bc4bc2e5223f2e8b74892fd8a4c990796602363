@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "8f6db1a2_3e9960c9",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "used now",
+      "parentUuid": "0abc8548_adb6a260",
+      "range": {
+        "startLine": 55,
+        "startChar": 0,
+        "endLine": 55,
+        "endChar": 59
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dbf38020_d2d39159",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -59,6 +83,30 @@
       "writtenOn": "2020-12-23T13:32:20Z",
       "side": 1,
       "message": "On Fresh image, This folder might not be created. Did you added creating of this folder?",
+      "range": {
+        "startLine": 59,
+        "startChar": 48,
+        "endLine": 59,
+        "endChar": 56
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "48b7fd56_7ebd8bc7",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "yes. we are creating in init",
+      "parentUuid": "dbf38020_d2d39159",
       "range": {
         "startLine": 59,
         "startChar": 48,
@@ -94,6 +142,30 @@
     },
     {
       "key": {
+        "uuid": "1b19fcb3_4c3902f7",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "51befe74_20f0ac06",
+      "range": {
+        "startLine": 140,
+        "startChar": 18,
+        "endLine": 140,
+        "endChar": 25
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a400ca7_7b690004",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -105,6 +177,30 @@
       "writtenOn": "2020-12-23T13:32:20Z",
       "side": 1,
       "message": "error checking needed.",
+      "range": {
+        "startLine": 143,
+        "startChar": 12,
+        "endLine": 143,
+        "endChar": 17
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "37f48498_16ede829",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "no need.",
+      "parentUuid": "7a400ca7_7b690004",
       "range": {
         "startLine": 143,
         "startChar": 12,
@@ -163,6 +259,30 @@
     },
     {
       "key": {
+        "uuid": "e01a0dcb_ea1253bc",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c664ded2_754b8f56",
+      "range": {
+        "startLine": 164,
+        "startChar": 8,
+        "endLine": 164,
+        "endChar": 10
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8c929859_a85702b0",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -174,6 +294,30 @@
       "writtenOn": "2020-12-23T13:32:20Z",
       "side": 1,
       "message": "Same as above and even in other places too.",
+      "range": {
+        "startLine": 182,
+        "startChar": 20,
+        "endLine": 182,
+        "endChar": 35
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c090db02_f321f556",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8c929859_a85702b0",
       "range": {
         "startLine": 182,
         "startChar": 20,
@@ -209,6 +353,30 @@
     },
     {
       "key": {
+        "uuid": "32a7dda6_25716a86",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 201,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "one at a time for  payload type 0 only.",
+      "parentUuid": "49052c57_1ce17a07",
+      "range": {
+        "startLine": 199,
+        "startChar": 4,
+        "endLine": 201,
+        "endChar": 25
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "86c16611_5fb7cd55",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -220,6 +388,30 @@
       "writtenOn": "2020-12-23T13:32:20Z",
       "side": 1,
       "message": "INFO/DEBUG??",
+      "range": {
+        "startLine": 243,
+        "startChar": 57,
+        "endLine": 243,
+        "endChar": 60
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "0393fe3d_773e3a16",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 243,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "86c16611_5fb7cd55",
       "range": {
         "startLine": 243,
         "startChar": 57,
@@ -255,6 +447,30 @@
     },
     {
       "key": {
+        "uuid": "fbc65f51_52156c1e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 340,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1fcad09f_3c17efa7",
+      "range": {
+        "startLine": 327,
+        "startChar": 1,
+        "endLine": 340,
+        "endChar": 17
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "60cc50bb_153fbb69",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -266,6 +482,30 @@
       "writtenOn": "2020-12-23T13:32:20Z",
       "side": 1,
       "message": "not used",
+      "range": {
+        "startLine": 350,
+        "startChar": 3,
+        "endLine": 350,
+        "endChar": 32
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8f97016b_92a9e0e2",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 350,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "No if system interface it will return zero",
+      "parentUuid": "60cc50bb_153fbb69",
       "range": {
         "startLine": 350,
         "startChar": 3,
@@ -301,6 +541,30 @@
     },
     {
       "key": {
+        "uuid": "cc8a4745_a48cebb1",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 387,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fb2159ff_bef706ef",
+      "range": {
+        "startLine": 385,
+        "startChar": 0,
+        "endLine": 387,
+        "endChar": 19
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3a247afa_4276c168",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -312,6 +576,30 @@
       "writtenOn": "2020-12-23T13:32:20Z",
       "side": 1,
       "message": "-1: This global object need locking before update. Since its end user commands, This requires lock t protect the data as well as make it atomic nature. \n\nIn all other places where ever you are updating this.",
+      "range": {
+        "startLine": 446,
+        "startChar": 12,
+        "endLine": 446,
+        "endChar": 22
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "21dc200c_3205bc0e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 446,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "this command is supported only in system interface. so one command at a time",
+      "parentUuid": "3a247afa_4276c168",
       "range": {
         "startLine": 446,
         "startChar": 12,
@@ -341,6 +629,24 @@
     },
     {
       "key": {
+        "uuid": "a1446599_bca8fa60",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 476,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "67d7de45_ac9c47cf",
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "cafa766d_1105c879",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -364,6 +670,30 @@
     },
     {
       "key": {
+        "uuid": "63bcbbdb_afd30503",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 493,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cafa766d_1105c879",
+      "range": {
+        "startLine": 491,
+        "startChar": 16,
+        "endLine": 493,
+        "endChar": 29
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5e4782ed_ad6f80b3",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -375,6 +705,30 @@
       "writtenOn": "2020-12-23T13:32:20Z",
       "side": 1,
       "message": "This file also need locking else concurrent request leave this file in weird state.",
+      "range": {
+        "startLine": 498,
+        "startChar": 11,
+        "endLine": 499,
+        "endChar": 62
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f4b95c20_c2830b34",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 499,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "set payload command support only in system interface and one payload at a time.",
+      "parentUuid": "5e4782ed_ad6f80b3",
       "range": {
         "startLine": 498,
         "startChar": 11,
@@ -433,6 +787,30 @@
     },
     {
       "key": {
+        "uuid": "30412768_9d742570",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 748,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "yes .its created in biosconfg- manager daemon.",
+      "parentUuid": "e4d5d0c2_d9d62176",
+      "range": {
+        "startLine": 748,
+        "startChar": 45,
+        "endLine": 748,
+        "endChar": 66
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3628f0cb_ae92c821",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -444,6 +822,30 @@
       "writtenOn": "2020-12-23T13:32:20Z",
       "side": 1,
       "message": "this can throw exception, need to capture.",
+      "range": {
+        "startLine": 795,
+        "startChar": 11,
+        "endLine": 795,
+        "endChar": 73
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9b4dc0c4_01736978",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 795,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-23T15:13:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3628f0cb_ae92c821",
       "range": {
         "startLine": 795,
         "startChar": 11,
