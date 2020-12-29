@@ -25,6 +25,29 @@
     },
     {
       "key": {
+        "uuid": "765fa931_eba80684",
+        "filename": "include/biosconfigcommands.hpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-29T08:30:28Z",
+      "side": 1,
+      "message": "UpperCamelCase",
+      "range": {
+        "startLine": 85,
+        "startChar": 7,
+        "endLine": 85,
+        "endChar": 16
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0abc8548_adb6a260",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -377,6 +400,30 @@
     },
     {
       "key": {
+        "uuid": "74c844e6_6d048721",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 201,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-29T08:30:28Z",
+      "side": 1,
+      "message": "Can you provide the execution time it takes even if it is one at a time?",
+      "parentUuid": "32a7dda6_25716a86",
+      "range": {
+        "startLine": 199,
+        "startChar": 4,
+        "endLine": 201,
+        "endChar": 25
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "86c16611_5fb7cd55",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -612,6 +659,30 @@
     },
     {
       "key": {
+        "uuid": "14faa49f_54257630",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 446,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-29T08:30:28Z",
+      "side": 1,
+      "message": "\u003e this command is supported only in system interface. so one command at a time\n\nWhere is the check for allowing this command only in system interface? even in that case also, All these global variables needs protection.",
+      "parentUuid": "21dc200c_3205bc0e",
+      "range": {
+        "startLine": 446,
+        "startChar": 12,
+        "endLine": 446,
+        "endChar": 22
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "67d7de45_ac9c47cf",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -741,6 +812,30 @@
     },
     {
       "key": {
+        "uuid": "ed2a8e6c_440553aa",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 499,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-29T08:30:28Z",
+      "side": 1,
+      "message": "This also needs protection else it causes undefined behavior in simultaneous commands.",
+      "parentUuid": "f4b95c20_c2830b34",
+      "range": {
+        "startLine": 498,
+        "startChar": 11,
+        "endLine": 499,
+        "endChar": 62
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e6188f3c_3ac115bb",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -799,6 +894,30 @@
       "side": 1,
       "message": "yes .its created in biosconfg- manager daemon.",
       "parentUuid": "e4d5d0c2_d9d62176",
+      "range": {
+        "startLine": 748,
+        "startChar": 45,
+        "endLine": 748,
+        "endChar": 66
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a80e0e9_a843b5f4",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 748,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2020-12-29T08:30:28Z",
+      "side": 1,
+      "message": "\u003e yes .its created in biosconfg- manager daemon.\n\nWhat if its not created or that daemon start late. \n\nadd check for existence of folder.",
+      "parentUuid": "30412768_9d742570",
       "range": {
         "startLine": 748,
         "startChar": 45,
