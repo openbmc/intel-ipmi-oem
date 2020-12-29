@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "858e823a_c2f8498c",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 37
+      },
+      "lineNbr": 321,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-29T13:18:53Z",
+      "side": 1,
+      "message": "we are not returning any CC for this.",
+      "parentUuid": "cbff9d40_53ad4099",
+      "range": {
+        "startLine": 321,
+        "startChar": 7,
+        "endLine": 321,
+        "endChar": 15
+      },
+      "revId": "e21fe6f0d4700b387534bcb9840d3983ce766450",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c441c01b_69f6306f",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 37
@@ -36,6 +60,30 @@
       "writtenOn": "2020-12-29T08:30:28Z",
       "side": 1,
       "message": "const",
+      "range": {
+        "startLine": 796,
+        "startChar": 19,
+        "endLine": 796,
+        "endChar": 27
+      },
+      "revId": "e21fe6f0d4700b387534bcb9840d3983ce766450",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "38b90608_bfffac85",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 37
+      },
+      "lineNbr": 796,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-29T13:18:53Z",
+      "side": 1,
+      "message": "Everywhere i can see plain nlohman error. whats advatnage of this ?",
+      "parentUuid": "c441c01b_69f6306f",
       "range": {
         "startLine": 796,
         "startChar": 19,
@@ -62,6 +110,24 @@
       "revId": "e21fe6f0d4700b387534bcb9840d3983ce766450",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4ec79a2d_60d083e2",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 37
+      },
+      "lineNbr": 799,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-29T13:18:53Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "77bed0a8_d5ff7d16",
+      "revId": "e21fe6f0d4700b387534bcb9840d3983ce766450",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }

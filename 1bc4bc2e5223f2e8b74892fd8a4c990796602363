@@ -424,6 +424,30 @@
     },
     {
       "key": {
+        "uuid": "1a7ac8cd_e318d1c9",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 201,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-29T13:18:53Z",
+      "side": 1,
+      "message": "35ms. This command executed only from BIOS to the BMC  and one at a time. there is no possibility for multiple times and other than BIOS no one can exeute this command.  what is the issue here?",
+      "parentUuid": "74c844e6_6d048721",
+      "range": {
+        "startLine": 199,
+        "startChar": 4,
+        "endLine": 201,
+        "endChar": 25
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "86c16611_5fb7cd55",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 36
@@ -671,6 +695,30 @@
       "side": 1,
       "message": "\u003e this command is supported only in system interface. so one command at a time\n\nWhere is the check for allowing this command only in system interface? even in that case also, All these global variables needs protection.",
       "parentUuid": "21dc200c_3205bc0e",
+      "range": {
+        "startLine": 446,
+        "startChar": 12,
+        "endLine": 446,
+        "endChar": 22
+      },
+      "revId": "1bc4bc2e5223f2e8b74892fd8a4c990796602363",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a0735718_ff9ffc54",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 36
+      },
+      "lineNbr": 446,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2020-12-29T13:18:53Z",
+      "side": 1,
+      "message": "no corruption, we already protecting the data by reservation id.  always one payload at a time. will be filled. its designed like this.",
+      "parentUuid": "14faa49f_54257630",
       "range": {
         "startLine": 446,
         "startChar": 12,
