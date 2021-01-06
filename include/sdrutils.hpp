@@ -215,6 +215,17 @@ class IPMIStatsTable
 // sensors. These objects are global singletons, used from a variety of places.
 inline IPMIStatsTable sdrStatsTable;
 
+/**
+ * Search ObjectMapper for sensors and update them to subtree.
+ *
+ * The function will search for sensors under either
+ * /xyz/openbmc_project/sensors or /xyz/openbmc_project/extsensors. It will
+ * optionally search VR typed sensors under /xyz/openbmc_project/vr
+ *
+ * @return the updated amount of times any of "sensors" or "extsensors" sensor
+ * paths updated successfully, previous amount if all failed. The "vr"
+ * sensor path is optional, and does not participate in the return value.
+ */
 inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
 {
     static std::shared_ptr<SensorSubTree> sensorTreePtr;
@@ -250,27 +261,59 @@ inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
 
     sensorTreePtr = std::make_shared<SensorSubTree>();
 
-    auto mapperCall =
-        dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
-                             "/xyz/openbmc_project/object_mapper",
-                             "xyz.openbmc_project.ObjectMapper", "GetSubTree");
     static constexpr const auto depth = 2;
-    static constexpr std::array<const char*, 3> interfaces = {
+
+    auto lbdUpdateSensorTree = [&dbus](const char* path,
+                                       const auto& interfaces) {
+        auto mapperCall = dbus.new_method_call(
+            "xyz.openbmc_project.ObjectMapper",
+            "/xyz/openbmc_project/object_mapper",
+            "xyz.openbmc_project.ObjectMapper", "GetSubTree");
+        SensorSubTree sensorTreePartial;
+
+        mapperCall.append(path, depth, interfaces);
+
+        try
+        {
+            auto mapperReply = dbus.call(mapperCall);
+            mapperReply.read(sensorTreePartial);
+        }
+        catch (sdbusplus::exception_t& e)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "fail to update subtree",
+                phosphor::logging::entry("PATH=%s", path),
+                phosphor::logging::entry("WHAT=%s", e.what()));
+            return false;
+        }
+        if constexpr (debug)
+        {
+            std::fprintf(stderr, "IPMI updated: %zu sensors under %s\n",
+                         sensorTreePartial.size(), path);
+        }
+        sensorTreePtr->merge(std::move(sensorTreePartial));
+        return true;
+    };
+
+    // Add sensors to SensorTree
+    static constexpr const std::array sensorInterfaces = {
         "xyz.openbmc_project.Sensor.Value",
         "xyz.openbmc_project.Sensor.Threshold.Warning",
         "xyz.openbmc_project.Sensor.Threshold.Critical"};
-    mapperCall.append("/xyz/openbmc_project/sensors", depth, interfaces);
+    static constexpr const std::array vrInterfaces = {
+        "xyz.openbmc_project.Control.VoltageRegulatorMode"};
 
-    try
+    bool sensorRez =
+        lbdUpdateSensorTree("/xyz/openbmc_project/sensors", sensorInterfaces);
+
+    // Error if searching for sensors failed.
+    if (!sensorRez)
     {
-        auto mapperReply = dbus.call(mapperCall);
-        mapperReply.read(*sensorTreePtr);
-    }
-    catch (sdbusplus::exception_t& e)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return sensorUpdatedIndex;
     }
+
+    // Add VR control as optional search path.
+    (void)lbdUpdateSensorTree("/xyz/openbmc_project/vr", vrInterfaces);
 
     subtree = sensorTreePtr;
     sensorUpdatedIndex++;
