@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "852e7917_208413be",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-01-10T18:00:43Z",
+      "side": 1,
+      "message": "magic number 0x3 ?",
+      "revId": "69e04e6e1605d04330226903a3cad1fd05b8be50",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
