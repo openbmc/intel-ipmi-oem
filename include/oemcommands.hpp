@@ -182,11 +182,6 @@ static constexpr const char* bmcResetDisablesPath =
 static constexpr const char* bmcResetDisablesIntf =
     "xyz.openbmc_project.Control.ResetDisables";
 
-static constexpr const char* postCodesObjPath =
-    "/xyz/openbmc_project/State/Boot/PostCode";
-static constexpr const char* postCodesIntf =
-    "xyz.openbmc_project.State.Boot.PostCode";
-
 static constexpr const char* identifyLEDObjPath =
     "/xyz/openbmc_project/led/physical/identify";
 static constexpr const char* ledIntf = "xyz.openbmc_project.Led.Physical";
