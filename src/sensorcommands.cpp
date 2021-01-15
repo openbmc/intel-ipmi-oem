@@ -1629,6 +1629,15 @@ ipmi::RspType<uint16_t,            // next record ID
     get_sdr::SensorDataRecordHeader* hdr =
         reinterpret_cast<get_sdr::SensorDataRecordHeader*>(
             sensorDataRecords[recordID].data());
+    if (!hdr)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Error: record header is null");
+        std::vector<uint8_t> emptyData;
+        uint16_t nextRecordId = lastRecord > recordID ? recordID + 1 : 0XFFFF;
+        return ipmi::responseSuccess(nextRecordId, emptyData);
+    }
+
     size_t sdrLength =
         sizeof(get_sdr::SensorDataRecordHeader) + hdr->record_length;
     if (sdrLength < (offset + bytesToRead))
@@ -1637,6 +1646,14 @@ ipmi::RspType<uint16_t,            // next record ID
     }
 
     uint8_t* respStart = reinterpret_cast<uint8_t*>(hdr) + offset;
+    if (!respStart)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Error: record is null");
+        std::vector<uint8_t> emptyData;
+        uint16_t nextRecordId = lastRecord > recordID ? recordID + 1 : 0XFFFF;
+        return ipmi::responseSuccess(nextRecordId, emptyData);
+    }
     std::vector<uint8_t> recordData(respStart, respStart + bytesToRead);
     uint16_t nextRecordId = lastRecord > recordID ? recordID + 1 : 0XFFFF;
     return ipmi::responseSuccess(nextRecordId, recordData);
