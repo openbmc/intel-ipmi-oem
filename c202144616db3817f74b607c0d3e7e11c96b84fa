@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fce6bc4d_7bc2372f",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1635,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-01-18T05:45:07Z",
+      "side": 1,
+      "message": "Adding some message text instead of conditions in journal logs.",
+      "range": {
+        "startLine": 1635,
+        "startChar": 13,
+        "endLine": 1635,
+        "endChar": 43
+      },
+      "revId": "c202144616db3817f74b607c0d3e7e11c96b84fa",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0d365de9_eb38782c",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1652,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-01-18T05:45:07Z",
+      "side": 1,
+      "message": "Same here",
+      "range": {
+        "startLine": 1652,
+        "startChar": 13,
+        "endLine": 1652,
+        "endChar": 30
+      },
+      "revId": "c202144616db3817f74b607c0d3e7e11c96b84fa",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
