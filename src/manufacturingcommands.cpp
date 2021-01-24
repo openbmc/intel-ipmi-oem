@@ -185,6 +185,7 @@ void Manufacturing::revertTimerHandler()
         return;
     }
 #endif
+
     if (revertFanPWM)
     {
         revertFanPWM = false;
@@ -200,6 +201,11 @@ void Manufacturing::revertTimerHandler()
     for (const auto& ledProperty : ledPropertyList)
     {
         const std::string& ledName = ledProperty.getName();
+        if (mtm.getMfgMode() == SpecialMode::mfg && ledName == "identify")
+        {
+            // Don't revert the behaviour for manufacturing mode
+            return;
+        }
         ledRevert(ledProperty.getSignal());
     }
 }
