@@ -200,6 +200,11 @@ void Manufacturing::revertTimerHandler()
     for (const auto& ledProperty : ledPropertyList)
     {
         const std::string& ledName = ledProperty.getName();
+        if (ledName == "identify" && mtm.getMfgMode() == SpecialMode::mfg)
+        {
+            // Don't revert the behaviour for manufacturing mode
+            continue;
+        }
         ledRevert(ledProperty.getSignal());
     }
 }
