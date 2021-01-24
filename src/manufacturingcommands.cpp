@@ -185,6 +185,13 @@ void Manufacturing::revertTimerHandler()
         return;
     }
 #endif
+
+    if (mtm.getMfgMode() == SpecialMode::mfg)
+    {
+        // Don't revert the behaviour for manufacturing mode
+        return;
+    }
+
     if (revertFanPWM)
     {
         revertFanPWM = false;
