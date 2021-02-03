@@ -372,15 +372,14 @@ static void setMeStatus(uint8_t eventData2, uint8_t eventData3, bool disable)
 
 namespace sensor
 {
-// Calculate VR Mode from input IPMI discrete event bytes
-static std::optional<std::string>
-    calculateVRMode(uint8_t assertOffset0_7, uint8_t assertOffset8_14,
-                    const ipmi::SensorMap::mapped_type& VRObject)
+// Read VR profiles from sensor(daemon) interface
+static std::optional<std::vector<std::string>>
+    getSupportedVrProfiles(const ipmi::SensorMap::mapped_type& object)
 {
     // get VR mode profiles from Supported Interface
-    auto supportedProperty = VRObject.find("Supported");
-    if (supportedProperty == VRObject.end() ||
-        VRObject.find("Selected") == VRObject.end())
+    auto supportedProperty = object.find("Supported");
+    if (supportedProperty == object.end() ||
+        object.find("Selected") == object.end())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "lack of desired properties");
@@ -394,6 +393,20 @@ static std::optional<std::string>
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "property is not array of string");
+        return std::nullopt;
+    }
+    return *profilesPtr;
+}
+
+// Calculate VR Mode from input IPMI discrete event bytes
+static std::optional<std::string>
+    calculateVRMode(uint8_t assertOffset0_7, uint8_t assertOffset8_14,
+                    const ipmi::SensorMap::mapped_type& VRObject)
+{
+    // get VR mode profiles from Supported Interface
+    auto profiles = getSupportedVrProfiles(VRObject);
+    if (!profiles)
+    {
         return std::nullopt;
     }
 
@@ -418,14 +431,14 @@ static std::optional<std::string>
         index++;
     }
 
-    if (index >= profilesPtr->size())
+    if (index >= profiles->size())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "profile index out of boundary");
         return std::nullopt;
     }
 
-    return profilesPtr->at(index);
+    return profiles->at(index);
 }
 
 // Calculate sensor value from IPMI reading byte
@@ -492,6 +505,85 @@ std::string parseSdrIdFromPath(const std::string& path)
     return name;
 }
 
+bool setVrEventStatus(const std::string& connection, const std::string& path,
+                      const ipmi::SensorMap::mapped_type& object,
+                      SensorEventStatusResp& resp)
+{
+    // both Event Message and Sensor Scanning are disable for VR.
+    resp.enabled = 0;
+
+    auto profiles = sensor::getSupportedVrProfiles(object);
+    if (!profiles)
+    {
+        return false;
+    }
+    ipmi::Value modeVariant;
+    try
+    {
+        modeVariant = getDbusProperty(*getSdBus(), connection, path,
+                                      sensor::vrInterface, "Selected");
+    }
+    // setDbusProperty intended to resolve dbus exception/rc within the
+    // function but failed to achieve that. Until the bug is fixed by
+    // b/177106254, we will catch SdBusError in the ipmi callback functions
+    // (e.g. ipmiSetSensorReading).
+    catch (const sdbusplus::exception_t& e)
+    {
+        using namespace phosphor::logging;
+        log<level::ERR>("Failed to set property",
+                        entry("PROPERTY=%s", "Selected"),
+                        entry("PATH=%s", path.c_str()),
+                        entry("INTERFACE=%s", sensor::sensorInterface),
+                        entry("WHAT=%s", e.what()));
+        return false;
+    }
+
+    auto mode = std::get_if<std::string>(&modeVariant);
+    if (mode == nullptr)
+    {
+        using namespace phosphor::logging;
+        log<level::ERR>("property is not a string",
+                        entry("PROPERTY=%s", "Selected"),
+                        entry("PATH=%s", path.c_str()),
+                        entry("INTERFACE=%s", sensor::sensorInterface));
+        return false;
+    }
+
+    auto itr = std::find(profiles->begin(), profiles->end(), *mode);
+    if (itr == profiles->end())
+    {
+        using namespace phosphor::logging;
+        log<level::ERR>("VR mode doesn't match any of its profiles",
+                        entry("PATH=%s", path.c_str()));
+        return false;
+    }
+    std::size_t index =
+        static_cast<std::size_t>(std::distance(profiles->begin(), itr));
+
+    // map index to reponse event assertion bit.
+    if (index < 8)
+    {
+        resp.assertionsLSB = 1u << index;
+    }
+    else if (index < 15)
+    {
+        resp.assertionsMSB = 1u << (index - 8);
+    }
+    else
+    {
+        using namespace phosphor::logging;
+        log<level::ERR>("VR profile index reaches max assertion bit",
+                        entry("PATH=%s", path.c_str()),
+                        entry("INDEX=%uz", index));
+        return false;
+    }
+    if (debug)
+    {
+        std::cerr << "VR sensor " << sensor::parseSdrIdFromPath(path)
+                  << " mode is: [" << index << "] " << *mode << std::endl;
+    }
+    return true;
+}
 } // namespace sensor
 
 static int getSensorDataRecord(ipmi::Context::ptr ctx,
@@ -1260,6 +1352,27 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
             phosphor::logging::entry("SENSOR=%s", path.c_str()));
         return ipmi::responseResponseError();
     }
+
+    // zero out response buff
+    auto responseClear = static_cast<uint8_t*>(response);
+    std::fill(responseClear, responseClear + sizeof(SensorEventStatusResp), 0);
+    auto resp = static_cast<SensorEventStatusResp*>(response);
+
+    // handle VR typed sensor
+    auto vrInterface = sensorMap.find(sensor::vrInterface);
+    if (vrInterface != sensorMap.end())
+    {
+        if (!sensor::setVrEventStatus(connection, path, vrInterface->second,
+                                      *resp))
+        {
+            return IPMI_CC_RESPONSE_ERROR;
+        }
+        // Currently VR don't use dessertion bytes
+        *dataLen = sizeof(resp) - (sizeof(resp->deassertionsLSB) +
+                                   sizeof(resp->deassertionsMSB));
+        return IPMI_CC_OK;
+    }
+
     auto warningInterface =
         sensorMap.find("xyz.openbmc_project.Sensor.Threshold.Warning");
     auto criticalInterface =
