@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "43187fdd_652e90fa",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 657,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-02-05T19:06:23Z",
+      "side": 1,
+      "message": "Would it be simpler if we just moved the std::string name declaration on line 681, up to line 624, put lines 685-690 here to fill in the name, then change the check on line 691 to \n\nif (name.empty())\n\nTracking the lifetime of the boardData pointer scares me, even though it looks correct in this case.",
+      "revId": "49dba49b8fcf0f3775c3184dd274ca0d326e0442",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
