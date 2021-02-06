@@ -124,18 +124,11 @@ inline static bool getSensorNumMap(std::shared_ptr<SensorNumMap>& sensorNumMap)
     bool sensorNumMapUpated = false;
 
     std::shared_ptr<SensorSubTree> sensorTree;
-    bool sensorTreeUpdated = details::getSensorSubtree(sensorTree);
+    details::getSensorSubtree(sensorTree);
     if (!sensorTree)
     {
         return sensorNumMapUpated;
     }
-
-    if (!sensorTreeUpdated && sensorNumMapPtr)
-    {
-        sensorNumMap = sensorNumMapPtr;
-        return sensorNumMapUpated;
-    }
-
     sensorNumMapPtr = std::make_shared<SensorNumMap>();
 
     uint16_t sensorNum = 0;

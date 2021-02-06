@@ -1592,25 +1592,51 @@ ipmi::RspType<uint16_t,            // next record ID
 {
     // reservation required for partial reads with non zero offset into
     // record
+    static SensorSubTree prevSubtree;
+    bool SubtreeUpdated;
+    std::string curPath;
     if ((sdrReservationID == 0 || reservationID != sdrReservationID) && offset)
     {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiStorageGetSDR: responseInvalidReservationId");
         return ipmi::responseInvalidReservationId();
     }
-
     if (sensorDataRecords.empty() && getSensorDataRecords(ctx))
     {
         return ipmi::responseResponseError();
     }
+    SubtreeUpdated = false;
+    getSensorSubtree(sensorTree);
 
-    if (sensorTree.empty() && !getSensorSubtree(sensorTree))
+    if (sensorTree.empty())
     {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiStorageGetSDR: getSensorSubtree error");
         return ipmi::responseResponseError();
+    }
+
+    for (const auto& sensor : sensorTree)
+    {
+        curPath = sensor.first;
+        if (prevSubtree.find(curPath) == prevSubtree.end())
+        {
+            SubtreeUpdated = true;
+            break;
+        }
+    }
+    prevSubtree = sensorTree;
+    //If the sensorTree is updated, SensorDataRecord need to be updated also.
+    if (SubtreeUpdated)
+    {
+        getSensorDataRecords(ctx);
     }
 
     size_t fruCount = 0;
     ipmi::Cc ret = ipmi::storage::getFruSdrCount(ctx, fruCount);
     if (ret != ipmi::ccSuccess)
     {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiStorageGetSDR: getFruSdrCount error");
         return ipmi::response(ret);
     }
 
@@ -1623,6 +1649,8 @@ ipmi::RspType<uint16_t,            // next record ID
     }
     if (recordID > lastRecord)
     {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiStorageGetSDR: recordID > lastRecord error");
         return ipmi::responseInvalidFieldRequest();
     }
 
