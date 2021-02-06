@@ -57,9 +57,10 @@ static constexpr uint8_t reservedSensorNumber = 0xFF;
 
 namespace details
 {
-inline static bool getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
+inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
 {
     static std::shared_ptr<SensorSubTree> sensorTreePtr;
+    static uint16_t sensorUpdatedIndex;
     sd_bus* bus = NULL;
     int ret = sd_bus_default_system(&bus);
     if (ret < 0)
@@ -68,7 +69,7 @@ inline static bool getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
             "Failed to connect to system bus",
             phosphor::logging::entry("ERRNO=0x%X", -ret));
         sd_bus_unref(bus);
-        return false;
+        return sensorUpdatedIndex;
     }
     sdbusplus::bus::bus dbus(bus);
     static sdbusplus::bus::match::match sensorAdded(
@@ -83,11 +84,10 @@ inline static bool getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
         "openbmc_project/sensors/'",
         [](sdbusplus::message::message& m) { sensorTreePtr.reset(); });
 
-    bool sensorTreeUpdated = false;
     if (sensorTreePtr)
     {
         subtree = sensorTreePtr;
-        return sensorTreeUpdated;
+        return sensorUpdatedIndex;
     }
 
     sensorTreePtr = std::make_shared<SensorSubTree>();
@@ -111,30 +111,31 @@ inline static bool getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
     catch (sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
-        return sensorTreeUpdated;
+        return sensorUpdatedIndex;
     }
     subtree = sensorTreePtr;
-    sensorTreeUpdated = true;
-    return sensorTreeUpdated;
+    sensorUpdatedIndex++;
+    return sensorUpdatedIndex;
 }
 
 inline static bool getSensorNumMap(std::shared_ptr<SensorNumMap>& sensorNumMap)
 {
     static std::shared_ptr<SensorNumMap> sensorNumMapPtr;
     bool sensorNumMapUpated = false;
-
+    static uint16_t prevSensorUpdatedIndex;
     std::shared_ptr<SensorSubTree> sensorTree;
-    bool sensorTreeUpdated = details::getSensorSubtree(sensorTree);
+    uint16_t curSensorUpdatedIndex = details::getSensorSubtree(sensorTree);
     if (!sensorTree)
     {
         return sensorNumMapUpated;
     }
 
-    if (!sensorTreeUpdated && sensorNumMapPtr)
+    if ((curSensorUpdatedIndex == prevSensorUpdatedIndex) && sensorNumMapPtr)
     {
         sensorNumMap = sensorNumMapPtr;
         return sensorNumMapUpated;
     }
+    prevSensorUpdatedIndex = curSensorUpdatedIndex;
 
     sensorNumMapPtr = std::make_shared<SensorNumMap>();
 
