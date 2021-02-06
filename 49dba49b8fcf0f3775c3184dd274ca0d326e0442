@@ -16,6 +16,24 @@
       "revId": "49dba49b8fcf0f3775c3184dd274ca0d326e0442",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4f8a2586_55d81035",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 657,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-02-06T07:31:26Z",
+      "side": 1,
+      "message": "yep, it would definitely be simpler and allow it to us to remove the declaration of `boardData`.\n\nI moved it outside of #ifdef USING_ENTITY_MANAGER_DECORATORS internally since it is also used outside of it. but use the `name` directly seems like it is cleaner and no need to worry about the pointer.",
+      "parentUuid": "43187fdd_652e90fa",
+      "revId": "49dba49b8fcf0f3775c3184dd274ca0d326e0442",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
