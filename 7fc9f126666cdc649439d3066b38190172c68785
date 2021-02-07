@@ -16,6 +16,24 @@
       "revId": "7fc9f126666cdc649439d3066b38190172c68785",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9a1543f7_a32829f2",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 257,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-02-07T08:30:40Z",
+      "side": 1,
+      "message": "Done. thanks for the comment. I have added a comment and in the commit message.",
+      "parentUuid": "7f9121bc_83097971",
+      "revId": "7fc9f126666cdc649439d3066b38190172c68785",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
