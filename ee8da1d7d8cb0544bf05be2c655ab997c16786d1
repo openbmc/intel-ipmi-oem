@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5f02d609_6de84725",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-02-07T17:49:52Z",
+      "side": 1,
+      "message": "When this function will be invoked ? What is the timeout value ?",
+      "revId": "ee8da1d7d8cb0544bf05be2c655ab997c16786d1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b7b995a7_b63d9a97",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-02-07T17:49:52Z",
+      "side": 1,
+      "message": "Line 207 to 210 tries to revert back the saved LED states, right?  If LEDs should not be reverted, in which circumstances it is required ?",
+      "revId": "ee8da1d7d8cb0544bf05be2c655ab997c16786d1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
