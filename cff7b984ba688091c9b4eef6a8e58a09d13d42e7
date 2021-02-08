@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c205bf45_33eda4f7",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1635,
+      "author": {
+        "id": 1000215
+      },
+      "writtenOn": "2021-02-08T00:21:30Z",
+      "side": 1,
+      "message": "Following code snippet seems to be a copy of ipmiStorageGetSDR. Could we define them as function to avoid duplication?",
+      "range": {
+        "startLine": 1635,
+        "startChar": 20,
+        "endLine": 1635,
+        "endChar": 30
+      },
+      "revId": "cff7b984ba688091c9b4eef6a8e58a09d13d42e7",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "69ea655a_499a7a9e",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1904,
+      "author": {
+        "id": 1000215
+      },
+      "writtenOn": "2021-02-08T00:21:30Z",
+      "side": 1,
+      "message": "typo？",
+      "range": {
+        "startLine": 1904,
+        "startChar": 43,
+        "endLine": 1904,
+        "endChar": 44
+      },
+      "revId": "cff7b984ba688091c9b4eef6a8e58a09d13d42e7",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "912f54f5_430545f6",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1906,
+      "author": {
+        "id": 1000215
+      },
+      "writtenOn": "2021-02-08T00:21:30Z",
+      "side": 1,
+      "message": "typo？",
+      "range": {
+        "startLine": 1906,
+        "startChar": 41,
+        "endLine": 1906,
+        "endChar": 42
+      },
+      "revId": "cff7b984ba688091c9b4eef6a8e58a09d13d42e7",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
