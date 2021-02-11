@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e5febcbe_aa17e7a9",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1596,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-02-11T06:09:59Z",
+      "side": 1,
+      "message": "nit: This can be initialized here.",
+      "range": {
+        "startLine": 1596,
+        "startChar": 4,
+        "endLine": 1596,
+        "endChar": 24
+      },
+      "revId": "69b58a89f740498ce4791caf8b70f9b25fa83c0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
