@@ -233,8 +233,10 @@ static bool getSensorMap(boost::asio::yield_context yield,
 
     auto now = std::chrono::steady_clock::now();
 
-    if (std::chrono::duration_cast<std::chrono::seconds>(now - lastUpdate)
-            .count() > updatePeriod)
+    auto connection = SensorCache.find(sensorConnection);
+    if ((connection == SensorCache.end()) ||
+        (std::chrono::duration_cast<std::chrono::seconds>(now - lastUpdate)
+             .count() > updatePeriod))
     {
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         boost::system::error_code ec;
@@ -254,8 +256,8 @@ static bool getSensorMap(boost::asio::yield_context yield,
         // Update time after finish building the map which allow the
         // data to be cached for updatePeriod plus the build time.
         updateTimeMap[sensorConnection] = std::chrono::steady_clock::now();
+        connection = SensorCache.find(sensorConnection);
     }
-    auto connection = SensorCache.find(sensorConnection);
     if (connection == SensorCache.end())
     {
         return false;
