@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "fd0125f2_ba3ff7fc",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1596,
+      "author": {
+        "id": 1000904
+      },
+      "writtenOn": "2021-02-13T15:15:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e5febcbe_aa17e7a9",
+      "range": {
+        "startLine": 1596,
+        "startChar": 4,
+        "endLine": 1596,
+        "endChar": 24
+      },
+      "revId": "69b58a89f740498ce4791caf8b70f9b25fa83c0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fdfc5cef_904b11b6",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 4
@@ -45,6 +69,30 @@
       "revId": "69b58a89f740498ce4791caf8b70f9b25fa83c0f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c0b6c553_7d764e1b",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1609,
+      "author": {
+        "id": 1000904
+      },
+      "writtenOn": "2021-02-13T15:15:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fdfc5cef_904b11b6",
+      "range": {
+        "startLine": 1609,
+        "startChar": 4,
+        "endLine": 1609,
+        "endChar": 33
+      },
+      "revId": "69b58a89f740498ce4791caf8b70f9b25fa83c0f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
