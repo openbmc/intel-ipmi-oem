@@ -46,6 +46,30 @@
       "revId": "b910987a7d832e38e9342f0946aeb555a48f9cb0",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2548281d_fc138a32",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1000168
+      },
+      "writtenOn": "2021-02-15T05:55:17Z",
+      "side": 0,
+      "message": "Good catch Helen, but at the same time, we need to see possible optimization we can do here. If we do the sensorTree loop for every call, then it is unnecessary. Probably instead returning as boolean for getSensorSubtree, it is better to return an updateIndex (i.e. whenever sensorTreePtr is reset or updated, increment the index and return the same. With this we will know whether the SensorTree data needs to be revisited, whenever the index doesn\u0027t match with previous stored static value by the caller.",
+      "parentUuid": "9f1c0b23_6694dcf5",
+      "range": {
+        "startLine": 132,
+        "startChar": 0,
+        "endLine": 138,
+        "endChar": 0
+      },
+      "revId": "b910987a7d832e38e9342f0946aeb555a48f9cb0",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
