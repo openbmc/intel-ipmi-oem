@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "10def077_984461fc",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T03:40:56Z",
+      "side": 1,
+      "message": "Why not? What ever the override values, It should get revert in mfg mode and get back to original/actual value. Which is working fine now.",
+      "range": {
+        "startLine": 12,
+        "startChar": 5,
+        "endLine": 13,
+        "endChar": 37
+      },
+      "revId": "ee8da1d7d8cb0544bf05be2c655ab997c16786d1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5f02d609_6de84725",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 2
@@ -19,6 +42,24 @@
     },
     {
       "key": {
+        "uuid": "ba628a9f_6dceead6",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T03:40:56Z",
+      "side": 1,
+      "message": "Whenever there is forceAssert or forceDeassert, This timer starts and make sure it get reverted back to original(actual) states after timeout(1 minute). So except in validation unsecure mode(Custom mode for validation purpose), It should revert back to actual state(if someone ofrce assert - Allowed only in mfg mode).",
+      "parentUuid": "5f02d609_6de84725",
+      "revId": "ee8da1d7d8cb0544bf05be2c655ab997c16786d1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b7b995a7_b63d9a97",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 2
@@ -30,6 +71,24 @@
       "writtenOn": "2021-02-07T17:49:52Z",
       "side": 1,
       "message": "Line 207 to 210 tries to revert back the saved LED states, right?  If LEDs should not be reverted, in which circumstances it is required ?",
+      "revId": "ee8da1d7d8cb0544bf05be2c655ab997c16786d1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "053fa75b_4964e35d",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T03:40:56Z",
+      "side": 1,
+      "message": "Good point. +1",
+      "parentUuid": "b7b995a7_b63d9a97",
       "revId": "ee8da1d7d8cb0544bf05be2c655ab997c16786d1",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
