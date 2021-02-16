@@ -1,0 +1,136 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "396a7737_d9663d1f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T04:54:57Z",
+      "side": 1,
+      "message": "Why do you want to log this information in ipmi commands? These information can be retrived in dbus-sensors and some parts of it are already logged in dbus-sensors.\n\nAlso there might be some performance impact on multiple things like BMC boot time, Host boot, IPMI commands(sensor, sdr etc..)",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 65
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b59080f4_779604d2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T04:54:57Z",
+      "side": 1,
+      "message": "Missing tested section.",
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3c6b2137_f64f16e8",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T04:54:57Z",
+      "side": 1,
+      "message": "Default should be false.",
+      "range": {
+        "startLine": 63,
+        "startChar": 46,
+        "endLine": 63,
+        "endChar": 50
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5b670d42_cd2c9ebd",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T04:54:57Z",
+      "side": 1,
+      "message": "you can move this as build time flag so that OEM can define there own behavior using bb file.",
+      "range": {
+        "startLine": 63,
+        "startChar": 22,
+        "endLine": 63,
+        "endChar": 44
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b35e88f8_1045ef2c",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 493,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T04:54:57Z",
+      "side": 1,
+      "message": "This should be masked under compile time flag.",
+      "range": {
+        "startLine": 469,
+        "startChar": 4,
+        "endLine": 493,
+        "endChar": 0
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c3bcd579_7b892048",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1293,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T04:54:57Z",
+      "side": 1,
+      "message": "same here. Add this under compile time flag.",
+      "range": {
+        "startLine": 1292,
+        "startChar": 0,
+        "endLine": 1293,
+        "endChar": 62
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
