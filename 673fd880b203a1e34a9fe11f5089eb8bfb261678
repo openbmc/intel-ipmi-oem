@@ -16,6 +16,24 @@
       "revId": "673fd880b203a1e34a9fe11f5089eb8bfb261678",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bf38b2ce_84d3cbf4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T03:45:52Z",
+      "side": 1,
+      "message": "As per EPS, These commands should be supported in SMS channel only. Refer section 13.5 \u0026 table 64 for information.\n\"Set BMC Global Enables 2Eh Admin 2\"\n2. Only available by means of the system (SMS) interface",
+      "parentUuid": "85c9af0a_45a93cb0",
+      "revId": "673fd880b203a1e34a9fe11f5089eb8bfb261678",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
