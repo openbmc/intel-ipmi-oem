@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "ec79cecd_03ac9ff5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-02-16T19:28:53Z",
+      "side": 1,
+      "message": "The IPMI layer is different from the dbus-sensors layer. There are bugs and misconfigurations we have caught in development by adding these checks at both layers. The code in this patch has already been in use locally for some time, and it is beneficial.\n\nOne of the nice things is that it only logs when a new minimum or a new maximum is achieved. So, it doesn\u0027t log every value. This causes the volume of logging to asymptotically drop to zero during the course of the runtime.",
+      "parentUuid": "396a7737_d9663d1f",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 65
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b59080f4_779604d2",
         "filename": "/COMMIT_MSG",
         "patchSetId": 2
@@ -36,6 +60,24 @@
       "writtenOn": "2021-02-16T04:54:57Z",
       "side": 1,
       "message": "Missing tested section.",
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "31321800_04b87a4b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-02-16T19:28:53Z",
+      "side": 1,
+      "message": "Agreed, some example output should be provided.",
+      "parentUuid": "b59080f4_779604d2",
       "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
@@ -88,6 +130,54 @@
     },
     {
       "key": {
+        "uuid": "c0509588_a6a92af5",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-02-16T19:28:53Z",
+      "side": 1,
+      "message": "When originally written, I wanted to intentionally minimize the blast radius of this feature. Expanding it to include the build files might affect more than was intended by this change. Also, I like having the constant defined near the code that uses it, instead of a distant file somewhere else.",
+      "parentUuid": "5b670d42_cd2c9ebd",
+      "range": {
+        "startLine": 63,
+        "startChar": 22,
+        "endLine": 63,
+        "endChar": 44
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "23827b5f_b95cd0d4",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-02-16T19:28:53Z",
+      "side": 1,
+      "message": "Agreed. As with https://gerrit.openbmc-project.xyz/c/openbmc/dbus-sensors/+/37777 which is the companion feature to this feature, the default should be false, and the developer can set it to true if needed for debugging.",
+      "parentUuid": "3c6b2137_f64f16e8",
+      "range": {
+        "startLine": 63,
+        "startChar": 46,
+        "endLine": 63,
+        "endChar": 50
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b35e88f8_1045ef2c",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 2
@@ -111,6 +201,30 @@
     },
     {
       "key": {
+        "uuid": "b0dddacd_570957cd",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 493,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-02-16T19:28:53Z",
+      "side": 1,
+      "message": "It already is, updateReading() tests the compile-time constant \"enableInstrumentation\" and quickly returns false if it is not enabled. So, the computationally expensive std::cerr statement won\u0027t take place if \"enableInstrumentation\" is false.",
+      "parentUuid": "b35e88f8_1045ef2c",
+      "range": {
+        "startLine": 469,
+        "startChar": 4,
+        "endLine": 493,
+        "endChar": 0
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c3bcd579_7b892048",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 2
@@ -122,6 +236,30 @@
       "writtenOn": "2021-02-16T04:54:57Z",
       "side": 1,
       "message": "same here. Add this under compile time flag.",
+      "range": {
+        "startLine": 1292,
+        "startChar": 0,
+        "endLine": 1293,
+        "endChar": 62
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "934969e5_e2e77cb4",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1293,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-02-16T19:28:53Z",
+      "side": 1,
+      "message": "Caching the name of the sensor is still useful for some things, especially features planned to add later, even if \"enableInstrumentation\" is false. I would like to cache the name in all cases here, it is lightweight, and it is beneficial.",
+      "parentUuid": "c3bcd579_7b892048",
       "range": {
         "startLine": 1292,
         "startChar": 0,
