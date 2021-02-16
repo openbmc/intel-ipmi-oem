@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1bc5e5bb_d65fb65a",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 1220,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-02-16T04:15:35Z",
+      "side": 1,
+      "message": "why are we using OPENSSL_cleanse() ? Is the memory allocated to userPassword using OPENSSL_x calls? I don\u0027t think see it.",
+      "range": {
+        "startLine": 1220,
+        "startChar": 12,
+        "endLine": 1220,
+        "endChar": 27
+      },
+      "revId": "909d3bd10e53fb1c6b295230d2eaf91cfbd38a14",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
