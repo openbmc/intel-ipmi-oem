@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "99f2441b_d533e1e8",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 258,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-02-16T18:52:39Z",
+      "side": 1,
+      "message": "This is not accurate, it can be overwritten, for example to sensorMapSdrUpdatePeriod at line 1113",
+      "range": {
+        "startLine": 258,
+        "startChar": 33,
+        "endLine": 258,
+        "endChar": 54
+      },
+      "revId": "2d0a67fbd2515670f2bdcf4860981394f4e182af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9c63c9c7_44143a74",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 2
@@ -13,6 +36,30 @@
       "writtenOn": "2021-02-16T04:41:02Z",
       "side": 1,
       "message": "Ideally tis is correct place for updateTimeMap. But This may delay the BMC boot time.\n\nDuring BMC boot, if there are request for Sensors/sdr\u0027s, It avoud heavy load on dbus by deferring the updateMap by 10 seconds(previous) without performing \"GetManagedObjects\". Now, Moving this updateTimeMap down, Make multiple dbus calls during BMC boot, causes heavy load on dbus and might causes BMC boot time increase.\n\nDo perform some test around it to confirm the same.",
+      "range": {
+        "startLine": 257,
+        "startChar": 8,
+        "endLine": 259,
+        "endChar": 75
+      },
+      "revId": "2d0a67fbd2515670f2bdcf4860981394f4e182af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3a0a5960_4ecf7921",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 259,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-02-16T18:52:39Z",
+      "side": 1,
+      "message": "@Appu - I might be missing your point. But, the update period test is still done at line 240. The change here will  increase the blocking time as the comments pointed out. So should help reduce the dbus load.",
+      "parentUuid": "9c63c9c7_44143a74",
       "range": {
         "startLine": 257,
         "startChar": 8,
