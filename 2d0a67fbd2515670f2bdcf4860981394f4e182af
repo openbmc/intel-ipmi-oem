@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "ebad1083_4ccecec1",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 258,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-02-17T07:14:03Z",
+      "side": 1,
+      "message": "oh yeah, my bad. I meant `updatePeriod`. thanks for catching this.",
+      "parentUuid": "99f2441b_d533e1e8",
+      "range": {
+        "startLine": 258,
+        "startChar": 33,
+        "endLine": 258,
+        "endChar": 54
+      },
+      "revId": "2d0a67fbd2515670f2bdcf4860981394f4e182af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9c63c9c7_44143a74",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 2
@@ -60,6 +84,30 @@
       "side": 1,
       "message": "@Appu - I might be missing your point. But, the update period test is still done at line 240. The change here will  increase the blocking time as the comments pointed out. So should help reduce the dbus load.",
       "parentUuid": "9c63c9c7_44143a74",
+      "range": {
+        "startLine": 257,
+        "startChar": 8,
+        "endLine": 259,
+        "endChar": 75
+      },
+      "revId": "2d0a67fbd2515670f2bdcf4860981394f4e182af",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3719c22a_e391521f",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 259,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-02-17T07:14:03Z",
+      "side": 1,
+      "message": "I am not sure if I fully understand the issue.\n\nWouldn\u0027t starting the cache time later help avoid multiple dbus calls. Don\u0027t we want to make the dbus call either way at the beginning?\n\nAre you referring to dbus failures? Since we never start the cache time, it will keep trying the failed dbus calls and increase the boot time. I can see this being an issue.",
+      "parentUuid": "3a0a5960_4ecf7921",
       "range": {
         "startLine": 257,
         "startChar": 8,
