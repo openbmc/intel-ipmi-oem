@@ -84,6 +84,24 @@
     },
     {
       "key": {
+        "uuid": "898a475f_26aa2bce",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-02-17T07:26:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "31321800_04b87a4b",
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3c6b2137_f64f16e8",
         "filename": "include/sdrutils.hpp",
         "patchSetId": 2
@@ -175,6 +193,30 @@
       "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4a37e084_272b56e5",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-02-17T07:26:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "23827b5f_b95cd0d4",
+      "range": {
+        "startLine": 63,
+        "startChar": 46,
+        "endLine": 63,
+        "endChar": 50
+      },
+      "revId": "d5029aeebc3468fa311eb8ec764e5637417fe29e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
