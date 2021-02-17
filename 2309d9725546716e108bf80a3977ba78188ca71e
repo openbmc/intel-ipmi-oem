@@ -71,6 +71,29 @@
     },
     {
       "key": {
+        "uuid": "53885076_0108ee89",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1624,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-02-17T01:03:31Z",
+      "side": 1,
+      "message": "This will copy the whole map, right? IS efficiency a concern here?",
+      "range": {
+        "startLine": 1624,
+        "startChar": 4,
+        "endLine": 1624,
+        "endChar": 29
+      },
+      "revId": "2309d9725546716e108bf80a3977ba78188ca71e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "59b3205c_5730b8c8",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
