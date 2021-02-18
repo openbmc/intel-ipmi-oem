@@ -72,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "f980e453_c8abe784",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1000904
+      },
+      "writtenOn": "2021-02-18T07:31:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fef5435a_66bf060c",
+      "range": {
+        "startLine": 117,
+        "startChar": 4,
+        "endLine": 117,
+        "endChar": 25
+      },
+      "revId": "2309d9725546716e108bf80a3977ba78188ca71e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "322c4fd0_eab9ab68",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
