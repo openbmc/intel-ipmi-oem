@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "fef5435a_66bf060c",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1000904
+      },
+      "writtenOn": "2021-02-18T06:15:16Z",
+      "side": 1,
+      "message": "This function is different from the original sensorTreeUpdated flag.\nSince details::getSensorSubtree is called by multiple functions. When the caller needs make sure the SensorSubtree is updated since its last call, it needs compare this sensorUpdatedIndex to with its own static index.\n\nsensorTreeUpdated flag could not fulfill this need. This change comes from Richard\u0027s suggestion.\nPlease refer to the previous comment:\nhttps://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/40362/4/include/sdrutils.hpp#b138",
+      "parentUuid": "503220f4_e784e24c",
+      "range": {
+        "startLine": 117,
+        "startChar": 4,
+        "endLine": 117,
+        "endChar": 25
+      },
+      "revId": "2309d9725546716e108bf80a3977ba78188ca71e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "322c4fd0_eab9ab68",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
@@ -59,6 +83,30 @@
       "writtenOn": "2021-02-17T00:58:28Z",
       "side": 1,
       "message": "This change seems to  be fixing a different bug, please add it to commit message",
+      "range": {
+        "startLine": 1609,
+        "startChar": 8,
+        "endLine": 1609,
+        "endChar": 59
+      },
+      "revId": "2309d9725546716e108bf80a3977ba78188ca71e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a0e7de09_2c8be85a",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1609,
+      "author": {
+        "id": 1000904
+      },
+      "writtenOn": "2021-02-18T06:15:16Z",
+      "side": 1,
+      "message": "This is for the current bug fix.\nThe original logic will short out getSensorSubtree() when sensorTree is not empty but updated.\nBut we need call getSensorSubtree() when sensorTree is updated even though it\u0027s not empty.",
+      "parentUuid": "322c4fd0_eab9ab68",
       "range": {
         "startLine": 1609,
         "startChar": 8,
@@ -94,6 +142,30 @@
     },
     {
       "key": {
+        "uuid": "c41138fb_2a15b39d",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1624,
+      "author": {
+        "id": 1000904
+      },
+      "writtenOn": "2021-02-18T06:15:16Z",
+      "side": 1,
+      "message": "Will update here.",
+      "parentUuid": "53885076_0108ee89",
+      "range": {
+        "startLine": 1624,
+        "startChar": 4,
+        "endLine": 1624,
+        "endChar": 29
+      },
+      "revId": "2309d9725546716e108bf80a3977ba78188ca71e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "59b3205c_5730b8c8",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
@@ -105,6 +177,30 @@
       "writtenOn": "2021-02-17T00:58:28Z",
       "side": 1,
       "message": "These changes seem to be the critical part of the bug fix.",
+      "range": {
+        "startLine": 1615,
+        "startChar": 0,
+        "endLine": 1629,
+        "endChar": 5
+      },
+      "revId": "2309d9725546716e108bf80a3977ba78188ca71e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5d365f75_1e70e84c",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1629,
+      "author": {
+        "id": 1000904
+      },
+      "writtenOn": "2021-02-18T06:15:16Z",
+      "side": 1,
+      "message": "Correct.",
+      "parentUuid": "59b3205c_5730b8c8",
       "range": {
         "startLine": 1615,
         "startChar": 0,
