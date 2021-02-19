@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "e861af15_efb9c2cb",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000218
+      },
+      "writtenOn": "2021-02-19T07:25:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "52b75862_30526192",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 53
+      },
+      "revId": "2309d9725546716e108bf80a3977ba78188ca71e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "503220f4_e784e24c",
         "filename": "include/sdrutils.hpp",
         "patchSetId": 6
@@ -296,6 +320,30 @@
       "writtenOn": "2021-02-17T00:58:28Z",
       "side": 1,
       "message": "Will this have the potential to flood the journal?",
+      "range": {
+        "startLine": 1635,
+        "startChar": 0,
+        "endLine": 1636,
+        "endChar": 55
+      },
+      "revId": "2309d9725546716e108bf80a3977ba78188ca71e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aee65d41_e5396a83",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1636,
+      "author": {
+        "id": 1000218
+      },
+      "writtenOn": "2021-02-19T07:25:01Z",
+      "side": 1,
+      "message": "no",
+      "parentUuid": "b238de4a_382d63fa",
       "range": {
         "startLine": 1635,
         "startChar": 0,
