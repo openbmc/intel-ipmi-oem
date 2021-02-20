@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "068474bd_19463fd7",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 251,
+      "author": {
+        "id": 1000904
+      },
+      "writtenOn": "2021-02-20T07:32:24Z",
+      "side": 1,
+      "message": "Should this line be moved to line 276? Since there might be exception in the following dbus call and the sensor tree is updated for sure at line 276.",
+      "revId": "485a8a7c3307de9391279f65c3a5ada51d32e8c4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
