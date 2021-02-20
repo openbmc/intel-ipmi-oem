@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "829418b0_5e06e13c",
+        "filename": "include/sensorcommands.hpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1000904
+      },
+      "writtenOn": "2021-02-20T06:25:23Z",
+      "side": 1,
+      "message": "Should sensorTree.empty() and !getSensorSubtree(sensorTree) be swapped?",
+      "revId": "e909f9dc1f782e33931e0c44280588c69e9e1a65",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
