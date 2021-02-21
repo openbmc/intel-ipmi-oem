@@ -34,6 +34,24 @@
       "revId": "485a8a7c3307de9391279f65c3a5ada51d32e8c4",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bfc0cb95_11657384",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 251,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-02-21T10:35:30Z",
+      "side": 1,
+      "message": "Wow, good catch. Correct. Please move it to line 276. The wiping of the SDR stats table should take place at that time, so it stays atomic with the replacement of \"subtree\" at that moment.",
+      "parentUuid": "bb9f39dd_4663a9ba",
+      "revId": "485a8a7c3307de9391279f65c3a5ada51d32e8c4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
