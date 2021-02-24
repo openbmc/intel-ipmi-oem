@@ -93,6 +93,7 @@ static sdbusplus::bus::match::match sensorAdded(
     "sensors/'",
     [](sdbusplus::message::message& m) {
         sensorTree.clear();
+        sensorDataRecords.clear();
         sdrLastAdd = std::chrono::duration_cast<std::chrono::seconds>(
                          std::chrono::system_clock::now().time_since_epoch())
                          .count();
@@ -104,6 +105,7 @@ static sdbusplus::bus::match::match sensorRemoved(
     "sensors/'",
     [](sdbusplus::message::message& m) {
         sensorTree.clear();
+        sensorDataRecords.clear();
         sdrLastRemove = std::chrono::duration_cast<std::chrono::seconds>(
                             std::chrono::system_clock::now().time_since_epoch())
                             .count();
@@ -1618,9 +1620,8 @@ ipmi::RspType<uint16_t,            // next record ID
         return ipmi::response(ret);
     }
 
-    size_t lastRecord = sensorTree.size() + fruCount +
-                        ipmi::storage::type12Count +
-                        ipmi::storage::nmDiscoverySDRCount - 1;
+    size_t lastRecord = sensorDataRecords.size() - 1;
+
     if (recordID == lastRecordIndex)
     {
         recordID = lastRecord;
