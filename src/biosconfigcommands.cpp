@@ -748,7 +748,7 @@ ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
     if (OSState != "OperatingState")
     {
 
-        if (algoInfo != algoSHA384)
+        if ((algoInfo & 0xF) != algoSHA384)
         {
             // Atpresent, we are supporting only SHA384- HASH algo in BIOS side
             return ipmi::responseInvalidFieldRequest();
@@ -762,6 +762,7 @@ ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
         json["AdminPwdHash"] = adminPwdHash;
         json["IsUserPwdChanged"] = false;
         json["UserPwdHash"] = userPwdHash;
+        json["StatusFlag"] = algoInfo;
         std::ofstream ofs(HashFilePath, std::ios::out);
         const auto& writeData = json.dump();
         ofs << writeData;
