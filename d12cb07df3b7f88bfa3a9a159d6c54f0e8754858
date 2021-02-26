@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "07d4b19c_feb3778d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-02-26T10:31:03Z",
+      "side": 1,
+      "message": "BIT3-BIT0 contain actual algo info but BIOS  setting status in BIT4 and BIT5 thats why we are masked with 0xF  and checking the Algo alone. \n\nRequest:\nByte 1:16 – System GUID (Seed)\nByte 17- Flag\nBIT 3: BIT 0 - Hash algorithm info\nBIT 4 – Valid Admin Password Hash present\nBIT4 – 1 – Valid Admin Password hash\nBIT4 -0 - It does not contain valid Admin Password hash\nBIT 5 – Valid User Password hash present\nBIT5 – 1 – Valid user Password hash\nBIT5 -0 - It does not contain valid user Password hash\n\nByte 18:81 – Admin Password Hash \nByte 82:145 – User Password Hash\nResponse:\nByte 1\nCompletion Code",
+      "parentUuid": "7d06c1c7_c08bf9f9",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 7
+      },
+      "revId": "d12cb07df3b7f88bfa3a9a159d6c54f0e8754858",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a848cd39_b5a9ebdb",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 1
