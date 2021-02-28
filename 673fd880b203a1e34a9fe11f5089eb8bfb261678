@@ -34,6 +34,41 @@
       "revId": "673fd880b203a1e34a9fe11f5089eb8bfb261678",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aaf6bc43_9936b606",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-02-28T18:26:05Z",
+      "side": 1,
+      "message": "ok. Thanks.\n\nIsn\u0027t SMS channel number is channel 15?\n  \"15\" : {\n    \"name\" : \"ipmi_kcs3\",\n    \"is_valid\" : true,\n    \"active_sessions\" : 0,\n    \"channel_info\" : {\n      \"medium_type\" : \"system-interface\",\n      \"protocol_type\" : \"kcs\",\n      \"session_supported\" : \"session-less\",\n      \"is_ipmi\" : true\n    }",
+      "parentUuid": "bf38b2ce_84d3cbf4",
+      "revId": "673fd880b203a1e34a9fe11f5089eb8bfb261678",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "faae8288_2b1ae8a9",
+        "filename": "ipmi-whitelist.conf",
+        "patchSetId": 1
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-02-28T18:26:05Z",
+      "side": 1,
+      "message": "As per EPS (Table 73), It is supported for both SMS and SMM channels, 0x8080 looks more appropriate value to me.",
+      "revId": "673fd880b203a1e34a9fe11f5089eb8bfb261678",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
