@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "4ee2115a_5686861b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-03-01T11:38:47Z",
+      "side": 1,
+      "message": "Thanks for clarification.\n\nAs per my understanding, Added mask for checking supported HashAlgo.\n\nOnly Bit3-BIT0 contains Hash algo info. Add mask for checking same. \n\nUn claimed: Added StatusFlag to seedData file for future use.\n\nMy comment is about improving commit message, How about changing commit message to reflect above.",
+      "parentUuid": "07d4b19c_feb3778d",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 7
+      },
+      "revId": "d12cb07df3b7f88bfa3a9a159d6c54f0e8754858",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a848cd39_b5a9ebdb",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 1
