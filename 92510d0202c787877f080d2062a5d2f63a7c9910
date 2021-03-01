@@ -16,6 +16,24 @@
       "revId": "92510d0202c787877f080d2062a5d2f63a7c9910",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6cf9be7f_34fdf5c1",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-03-01T05:06:19Z",
+      "side": 1,
+      "message": "Also, You change the order of condition:\n\n        if (ledName \u003d\u003d \"identify\" \u0026\u0026 mtm.getMfgMode() \u003d\u003d SpecialMode::mfg)",
+      "parentUuid": "fa456c80_132b669a",
+      "revId": "92510d0202c787877f080d2062a5d2f63a7c9910",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
