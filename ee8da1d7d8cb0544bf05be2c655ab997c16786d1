@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "7ebc5b47_6e6617f6",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-03-02T23:15:08Z",
+      "side": 1,
+      "message": "Only for Identify LED need not to revert. So updated the code now.",
+      "parentUuid": "10def077_984461fc",
+      "range": {
+        "startLine": 12,
+        "startChar": 5,
+        "endLine": 13,
+        "endChar": 37
+      },
+      "revId": "ee8da1d7d8cb0544bf05be2c655ab997c16786d1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5f02d609_6de84725",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 2

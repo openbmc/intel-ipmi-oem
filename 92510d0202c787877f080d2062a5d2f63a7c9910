@@ -34,6 +34,24 @@
       "revId": "92510d0202c787877f080d2062a5d2f63a7c9910",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d03d3ec0_3f717d76",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-03-02T23:15:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6cf9be7f_34fdf5c1",
+      "revId": "92510d0202c787877f080d2062a5d2f63a7c9910",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
