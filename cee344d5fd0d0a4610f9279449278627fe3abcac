@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a36681cd_1e2db804",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 10
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-03-02T20:25:51Z",
+      "side": 1,
+      "message": "The description here is still not very clear to me. \n1. Is the issue that sensorDataRecords did not reparse sensorTree when new interfaces have been added to dbus?  \n2. \"getSensorDataRecords not working as expected\" is not a clear description that can help review the changes",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 20,
+        "endChar": 20
+      },
+      "revId": "cee344d5fd0d0a4610f9279449278627fe3abcac",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fa35454b_b0f96f7a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 10
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-03-02T20:25:51Z",
+      "side": 1,
+      "message": "Is this just to make sensor list available sooner? So eventually sensor list works correctly without the change, right?",
+      "range": {
+        "startLine": 21,
+        "startChar": 0,
+        "endLine": 23,
+        "endChar": 32
+      },
+      "revId": "cee344d5fd0d0a4610f9279449278627fe3abcac",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
