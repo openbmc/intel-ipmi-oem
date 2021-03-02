@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "12bc2614_89db41dc",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-03-02T00:38:53Z",
+      "side": 1,
+      "message": "is sensorTreePtr.reset() needed here?",
+      "range": {
+        "startLine": 114,
+        "startChar": 0,
+        "endLine": 114,
+        "endChar": 34
+      },
+      "revId": "d75dd680878963359566ed31e92faddd1046799e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "26ca5988_4ebe84ea",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 1146,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-03-02T00:38:53Z",
+      "side": 1,
+      "message": "\u003e\u003e 8 ?",
+      "range": {
+        "startLine": 1146,
+        "startChar": 49,
+        "endLine": 1146,
+        "endChar": 51
+      },
+      "revId": "d75dd680878963359566ed31e92faddd1046799e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
