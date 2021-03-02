@@ -46,6 +46,30 @@
       "revId": "76e29b623fa81be6e853b6236c7700ae483038a8",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8206afa2_bb3af7ed",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-02T17:16:18Z",
+      "side": 1,
+      "message": "\u003e It only uses the Name parameter when available, but without it it acts exactly the same as before.\n\u003e \n\u003e I think the main motivation it to allow us to have a way to have customize name for the devices. It can be useful to insert index for each device, instead of having the same name for all of them.\n\u003e \n\nBut.... you can customize the dbus paths, so what have you really gained with this patch?\n\n\u003e I have updated the message.",
+      "parentUuid": "158ba001_b1fab915",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 10
+      },
+      "revId": "76e29b623fa81be6e853b6236c7700ae483038a8",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }

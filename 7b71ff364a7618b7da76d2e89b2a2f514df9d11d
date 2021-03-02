@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "39314e4a_57db36f8",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-02T17:16:18Z",
+      "side": 1,
+      "message": "The board interface doesn\u0027t have a name property.\n\nhttps://github.com/openbmc/phosphor-dbus-interfaces/blob/master/xyz/openbmc_project/Inventory/Item/Board.interface.yaml",
+      "range": {
+        "startLine": 9,
+        "startChar": 8,
+        "endLine": 9,
+        "endChar": 65
+      },
+      "revId": "7b71ff364a7618b7da76d2e89b2a2f514df9d11d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bfe71cf8_8b7d40b7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-02T17:16:18Z",
+      "side": 1,
+      "message": "In this context, why can\u0027t we do that with dbus paths.  For some reason I thought that in entity-manager the last element of the dbus path was literally just the name, escaped for dbus.  Based on the fact that you write this patch, you\u0027re making me question that.",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 30
+      },
+      "revId": "7b71ff364a7618b7da76d2e89b2a2f514df9d11d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
