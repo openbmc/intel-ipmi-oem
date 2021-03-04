@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "beb1af66_f3fde714",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 12
+      },
+      "lineNbr": 1154,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-03-04T06:45:24Z",
+      "side": 1,
+      "message": "nit: Below code can be refactored in to separate functions, probably in a separate patchset.\nLike getting getSensorNumFromRecordID(), updateRecord(), like that so that it will be more readable.",
+      "revId": "d47a2eb535168176ce2e0327f961a3673db970fe",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
