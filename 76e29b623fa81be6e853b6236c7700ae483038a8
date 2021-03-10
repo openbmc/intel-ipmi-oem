@@ -70,6 +70,30 @@
       "revId": "76e29b623fa81be6e853b6236c7700ae483038a8",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6b585306_d4206993",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-03-10T21:29:42Z",
+      "side": 1,
+      "message": "ok, sounds good. I\u0027ll check with the team to see if they can get what they want by customizing the dbus path. Maybe they don\u0027t need this patch after that.",
+      "parentUuid": "8206afa2_bb3af7ed",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 10
+      },
+      "revId": "76e29b623fa81be6e853b6236c7700ae483038a8",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
