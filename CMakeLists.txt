@@ -11,6 +11,9 @@ set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 option (USING_ENTITY_MANAGER_DECORATORS
         "Enable using EM decorators to map FRUs to entity IDs" ON)
 
+option (USING_FRU_DEVICE_OBJECT_PATH
+        "Enable using the object path as the device name" OFF)
+
 set (
     CMAKE_CXX_FLAGS
     "${CMAKE_CXX_FLAGS} \
@@ -136,6 +139,8 @@ target_compile_definitions (
     $<$<BOOL:${MDR_V1_SUPPORT}>: -DMDR_V1_SUPPORT>
     $<$<BOOL:${USING_ENTITY_MANAGER_DECORATORS}>:
     -DUSING_ENTITY_MANAGER_DECORATORS>
+    $<$<BOOL:${USING_FRU_DEVICE_OBJECT_PATH}>:
+    -DUSING_FRU_DEVICE_OBJECT_PATH>
 )
 
 # Code Coverage
