@@ -21,6 +21,8 @@
 #include "sdrutils.hpp"
 #include "types.hpp"
 
+#include <systemd/sd-bus.h>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <boost/process.hpp>
@@ -601,6 +603,8 @@ ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
         return IPMI_CC_RESPONSE_ERROR;
     }
 
+    std::string name;
+
 #ifdef USING_ENTITY_MANAGER_DECORATORS
 
     boost::container::flat_map<std::string, DbusVariant>* entityData = nullptr;
@@ -622,7 +626,7 @@ ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
 
     auto entity = std::find_if(
         entities.begin(), entities.end(),
-        [bus, address, &entityData](ManagedEntry& entry) {
+        [bus, address, &entityData, &name](ManagedEntry& entry) {
             auto findFruDevice = entry.second.find(
                 "xyz.openbmc_project.Inventory.Decorator.FruDevice");
             if (findFruDevice == entry.second.end())
@@ -655,6 +659,13 @@ ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
                 entityData = &(findIpmiDevice->second);
             }
 
+            auto objectPath = entry.first;
+            if (objectPath.filename().empty())
+            {
+                return false;
+            }
+            name = objectPath.filename();
+
             return true;
         });
 
@@ -669,20 +680,22 @@ ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
 
 #endif
 
-    std::string name;
-    auto findProductName = fruData->find("BOARD_PRODUCT_NAME");
-    auto findBoardName = fruData->find("PRODUCT_PRODUCT_NAME");
-    if (findProductName != fruData->end())
+    if (name.empty())
     {
-        name = std::get<std::string>(findProductName->second);
-    }
-    else if (findBoardName != fruData->end())
-    {
-        name = std::get<std::string>(findBoardName->second);
-    }
-    else
-    {
-        name = "UNKNOWN";
+        auto findProductName = fruData->find("BOARD_PRODUCT_NAME");
+        auto findBoardName = fruData->find("PRODUCT_PRODUCT_NAME");
+        if (findProductName != fruData->end())
+        {
+            name = std::get<std::string>(findProductName->second);
+        }
+        else if (findBoardName != fruData->end())
+        {
+            name = std::get<std::string>(findBoardName->second);
+        }
+        else
+        {
+            name = "UNKNOWN";
+        }
     }
     if (name.size() > maxFruSdrNameSize)
     {
