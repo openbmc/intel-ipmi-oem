@@ -348,12 +348,24 @@ ipmi::RspType<std::vector<uint8_t>> mdr2GetDir(uint16_t agentId,
     return ipmi::responseSuccess(dataOut);
 }
 
+/** @brief implements mdr2 send directory info command
+ *  @param agentId
+ *  @param dirVersion
+ *  @param dirIndex
+ *  @param returnedEntries
+ *  @param remainingEntries
+ *  @param dataInfo
+ *   dataInfo is 32 Bytes in size and contains below parameters
+ *       - dataInfo, size, dataSetSize, dataVersion, timestamp
+ *
+ *  @returns IPMI completion code plus response data
+ *  - bool
+ */
+
 ipmi::RspType<bool> mdr2SendDir(uint16_t agentId, uint8_t dirVersion,
                                 uint8_t dirIndex, uint8_t returnedEntries,
                                 uint8_t remainingEntries,
-                                std::array<uint8_t, 16> dataInfo, uint32_t size,
-                                uint32_t dataSetSize, uint32_t dataVersion,
-                                uint32_t timestamp)
+                                std::array<uint8_t, 32> dataInfo)
 {
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     std::string service = ipmi::getService(*bus, mdrv2Interface, mdrv2Path);
@@ -381,7 +393,7 @@ ipmi::RspType<bool> mdr2SendDir(uint16_t agentId, uint8_t dirVersion,
     sdbusplus::message::message method = bus->new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "SendDirectoryInformation");
     method.append(dirVersion, dirIndex, returnedEntries, remainingEntries,
-                  dataInfo, size, dataSetSize, dataVersion, timestamp);
+                  dataInfo);
 
     bool terminate = false;
     try
