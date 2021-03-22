@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "f8963c8d_3175248c",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-22T17:58:03Z",
+      "side": 1,
+      "message": "Does this need to be configurable?  The only thing we\u0027re really changing is making escaped values work properly, right?",
+      "range": {
+        "startLine": 13,
+        "startChar": 0,
+        "endLine": 15,
+        "endChar": 62
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "20389b36_77579b78",
         "filename": "src/storagecommands.cpp",
         "patchSetId": 3
