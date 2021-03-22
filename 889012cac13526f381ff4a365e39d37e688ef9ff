@@ -1,0 +1,113 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "20389b36_77579b78",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 665,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-22T17:55:07Z",
+      "side": 1,
+      "message": "nit: declare your variables where they\u0027re used.",
+      "range": {
+        "startLine": 665,
+        "startChar": 49,
+        "endLine": 665,
+        "endChar": 55
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2cde3de4_08155590",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 667,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-22T17:55:07Z",
+      "side": 1,
+      "message": "If this is empty shouldn\u0027t this function return false?",
+      "range": {
+        "startLine": 666,
+        "startChar": 0,
+        "endLine": 667,
+        "endChar": 13
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0015411b_fac58fc5",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 671,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-22T17:55:07Z",
+      "side": 1,
+      "message": "use objectPath.filename() here to get the file, and objectPath.parentPath() to get the prefix.\n\nPart of me actually wonders if we could put the sd_bus_path_decode logic into the filename() method itself.  That seems much simpler.  It would mean filename would now give properly unescaped paths instead of escaped ones, but that seems unlikely to break anything, and better.",
+      "range": {
+        "startLine": 671,
+        "startChar": 0,
+        "endLine": 671,
+        "endChar": 62
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d5168566_2d372a2e",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 682,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-22T17:55:07Z",
+      "side": 1,
+      "message": "Is this variable needed?  Can we just use name here, and populate it through?  They look equivalent.",
+      "range": {
+        "startLine": 682,
+        "startChar": 24,
+        "endLine": 682,
+        "endChar": 30
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0d526bda_20b9c5fa",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 683,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-22T17:55:07Z",
+      "side": 1,
+      "message": "This method should return, right?\n\nPresumably if sd_bus_path_decode fails we shouldn\u0027t be freeing the string.",
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
