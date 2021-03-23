@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "a31397a8_d473e19b",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-03-23T05:40:00Z",
+      "side": 1,
+      "message": "right. Is it expected that the name always be the escaped values? If so, we can also remove the other options?\n\nI was just thinking that maybe some people are dependent on the current setup.\n\nWe can also force them to switch to using the object path.",
+      "parentUuid": "f8963c8d_3175248c",
+      "range": {
+        "startLine": 13,
+        "startChar": 0,
+        "endLine": 15,
+        "endChar": 62
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "20389b36_77579b78",
         "filename": "src/storagecommands.cpp",
         "patchSetId": 3
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "4cacd848_6c687b97",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 665,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-03-23T05:40:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "20389b36_77579b78",
+      "range": {
+        "startLine": 665,
+        "startChar": 49,
+        "endLine": 665,
+        "endChar": 55
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2cde3de4_08155590",
         "filename": "src/storagecommands.cpp",
         "patchSetId": 3
@@ -68,6 +116,30 @@
       "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "08fc9cd8_27ecfdae",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 667,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-03-23T05:40:00Z",
+      "side": 1,
+      "message": "Done.\n\nI am not even sure if it is possible to have an empty object path. Maybe we can force the entity manager to have that with this.",
+      "parentUuid": "2cde3de4_08155590",
+      "range": {
+        "startLine": 666,
+        "startChar": 0,
+        "endLine": 667,
+        "endChar": 13
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
@@ -117,6 +189,30 @@
     },
     {
       "key": {
+        "uuid": "fe5ea52a_89668a12",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 682,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-03-23T05:40:00Z",
+      "side": 1,
+      "message": "Done.\n\nyeah, don\u0027t need it anymore. I think I wanted to do some check on the output first before setting it to name... but looks like no extra is needed.",
+      "parentUuid": "d5168566_2d372a2e",
+      "range": {
+        "startLine": 682,
+        "startChar": 24,
+        "endLine": 682,
+        "endChar": 30
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0d526bda_20b9c5fa",
         "filename": "src/storagecommands.cpp",
         "patchSetId": 3
@@ -128,6 +224,24 @@
       "writtenOn": "2021-03-22T17:55:07Z",
       "side": 1,
       "message": "This method should return, right?\n\nPresumably if sd_bus_path_decode fails we shouldn\u0027t be freeing the string.",
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ca7be5f3_9cb43f75",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 683,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-03-23T05:40:00Z",
+      "side": 1,
+      "message": "Do we want to return false on failure or just not set the `name`?\n\nIf it fail, we can just use `BOARD_PRODUCT_NAME` or `PRODUCT_PRODUCT_NAME` as the name.?",
+      "parentUuid": "0d526bda_20b9c5fa",
       "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
