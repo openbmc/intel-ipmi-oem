@@ -166,6 +166,30 @@
     },
     {
       "key": {
+        "uuid": "29931f4e_2cb4fe5e",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 671,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-03-23T17:30:03Z",
+      "side": 1,
+      "message": "Oh yeah, that would make more sense and covers other cases other than this repo.\n\nThe only issue I have is that it may have delays in getting the filename(). This will force all object path to have to go through the decode process every time it is create... It looks like each object path is created and not linked, so they will be forced to decode for every path even if some are the same. Is there a way to cache them like what we have here, but on a larger scale?\n\nJust for my reference: https://github.com/openbmc/sdbusplus/blob/4b646236df12b52205d2098ef985280190b358a7/include/sdbusplus/message/native_types.hpp#L144",
+      "parentUuid": "0015411b_fac58fc5",
+      "range": {
+        "startLine": 671,
+        "startChar": 0,
+        "endLine": 671,
+        "endChar": 62
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d5168566_2d372a2e",
         "filename": "src/storagecommands.cpp",
         "patchSetId": 3
