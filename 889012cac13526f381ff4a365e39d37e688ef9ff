@@ -190,6 +190,30 @@
     },
     {
       "key": {
+        "uuid": "f06b34b3_49ae22d0",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 671,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-23T19:08:44Z",
+      "side": 1,
+      "message": "\u003e Oh yeah, that would make more sense and covers other cases other than this repo.\n\u003e \n\u003e The only issue I have is that it may have delays in getting the filename(). This will force all object path to have to go through the decode process every time it is create... It looks like each object path is created and not linked, so they will be forced to decode for every path even if some are the same. Is there a way to cache them like what we have here, but on a larger scale?\n\nI would expect the decoding process to be pretty trivial cpu-wise.  I\u0027m really not a fan of the caching behavior.  If we cache anything, we should be caching the full SDR, not just the decoded strings.  Considering the decode is significantly less CPU intensive than some of the string copies this file already does, I wouldn\u0027t expect any new performance issues here.\n\n\u003e \n\u003e Just for my reference: https://github.com/openbmc/sdbusplus/blob/4b646236df12b52205d2098ef985280190b358a7/include/sdbusplus/message/native_types.hpp#L144",
+      "parentUuid": "29931f4e_2cb4fe5e",
+      "range": {
+        "startLine": 671,
+        "startChar": 0,
+        "endLine": 671,
+        "endChar": 62
+      },
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d5168566_2d372a2e",
         "filename": "src/storagecommands.cpp",
         "patchSetId": 3
@@ -266,6 +290,24 @@
       "side": 1,
       "message": "Do we want to return false on failure or just not set the `name`?\n\nIf it fail, we can just use `BOARD_PRODUCT_NAME` or `PRODUCT_PRODUCT_NAME` as the name.?",
       "parentUuid": "0d526bda_20b9c5fa",
+      "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3cf38834_8b001fe0",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 683,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-03-23T19:08:44Z",
+      "side": 1,
+      "message": "\u003e Do we want to return false on failure or just not set the `name`?\n\u003e \n\nI think so.\n\n\u003e If it fail, we can just use `BOARD_PRODUCT_NAME` or `PRODUCT_PRODUCT_NAME` as the name.?\n\nConsidering that we don\u0027t expect this to fail, ever, considering we got the string from dbus that seems like it would be confusing behavior.",
+      "parentUuid": "ca7be5f3_9cb43f75",
       "revId": "889012cac13526f381ff4a365e39d37e688ef9ff",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
