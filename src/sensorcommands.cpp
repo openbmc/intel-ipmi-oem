@@ -29,6 +29,7 @@
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/bus.hpp>
+#include <sdbusplus/message/types.hpp>
 
 #include <algorithm>
 #include <array>
@@ -1328,15 +1329,18 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     // These seem redundant, but derivable from the above 5 attributes
     // Original comment said "todo fill out rest of units"
 
-    // populate sensor name from path
-    std::string name;
-    size_t nameStart = path.rfind("/");
-    if (nameStart != std::string::npos)
+    // Unescape the escaped D-Bus name, populating it from the path,
+    // to recover the correct name of the sensor, as configured.
+    // This is the reverse of the escaping of D-Bus names done here:
+    // https://gerrit.openbmc-project.xyz/c/openbmc/dbus-sensors/+/41453
+    std::string name = sdbusplus::message::object_path(path).filename();
+    if (name.empty())
     {
-        name = path.substr(nameStart + 1, std::string::npos - nameStart);
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getSensorDataRecord: object_path filename error");
+        return GENERAL_ERROR;
     }
 
-    std::replace(name.begin(), name.end(), '_', ' ');
     if (name.size() > FULL_RECORD_ID_STR_MAX_LENGTH)
     {
         // try to not truncate by replacing common words
