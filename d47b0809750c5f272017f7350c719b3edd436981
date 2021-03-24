@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c1eb1c79_b977bbf6",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 1371,
+      "author": {
+        "id": 1000539
+      },
+      "writtenOn": "2021-03-24T03:14:07Z",
+      "side": 1,
+      "message": "Looking at the other code review, looks like this should be checked before checking decodeResult? Also, log the decodeResult value.",
+      "revId": "d47b0809750c5f272017f7350c719b3edd436981",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
