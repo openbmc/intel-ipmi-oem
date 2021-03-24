@@ -23,6 +23,8 @@
 #include "storagecommands.hpp"
 #include "types.hpp"
 
+#include <systemd/sd-bus.h>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <ipmid/api.hpp>
@@ -1329,14 +1331,50 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     // Original comment said "todo fill out rest of units"
 
     // populate sensor name from path
-    std::string name;
+    std::string pathPrefix;
+    std::string pathFull;
     size_t nameStart = path.rfind("/");
     if (nameStart != std::string::npos)
     {
-        name = path.substr(nameStart + 1, std::string::npos - nameStart);
+        if (nameStart > 0)
+        {
+            // Path looks good, prefix is all content before the slash
+            pathPrefix = path.substr(0, nameStart);
+            pathFull = path;
+        }
+    }
+    if (pathPrefix.empty())
+    {
+        // Path is not split by slash, synthesize a dummy path
+        // This is to meet the API requirement of sd_bus_path_decode()
+        // https://www.freedesktop.org/software/systemd/man/sd_bus_path_encode.html
+        pathPrefix = "/x";
+        pathFull = pathPrefix + '/' + path;
     }
 
-    std::replace(name.begin(), name.end(), '_', ' ');
+    // Unescape the escaped D-Bus name,
+    // to recover the correct name of the sensor, as configured.
+    // This is the reverse of the escaping of D-Bus names done here:
+    // https://gerrit.openbmc-project.xyz/c/openbmc/dbus-sensors/+/41453
+    char* nameBuf = nullptr;
+    int decodeResult =
+        sd_bus_path_decode(pathFull.c_str(), pathPrefix.c_str(), &nameBuf);
+
+    // Convert C string to C++ string, clean up output parameter
+    std::string name;
+    if (nameBuf)
+    {
+        name = nameBuf;
+        free(nameBuf);
+    }
+
+    if ((decodeResult < 0) || (name.empty()))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getSensorDataRecord: sd_bus_path_decode error");
+        return GENERAL_ERROR;
+    }
+
     if (name.size() > FULL_RECORD_ID_STR_MAX_LENGTH)
     {
         // try to not truncate by replacing common words
