@@ -16,6 +16,24 @@
       "revId": "d47b0809750c5f272017f7350c719b3edd436981",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8d1169a9_c273f4c5",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 1371,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-03-25T03:36:48Z",
+      "side": 1,
+      "message": "OK, done. Split up the two error cases. Although I disagree with it, because it could leave a dangling pointer, I moved the error return above the pointer freeing, because people seem to prefer it written that way.",
+      "parentUuid": "c1eb1c79_b977bbf6",
+      "revId": "d47b0809750c5f272017f7350c719b3edd436981",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
