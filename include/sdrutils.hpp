@@ -211,8 +211,67 @@ class IPMIStatsTable
     }
 };
 
-// This object is global singleton, used from a variety of places
+class IPMIWriteEntry
+{
+  private:
+    bool writePermission = false;
+
+  public:
+    bool getWritePermission(void) const
+    {
+        return writePermission;
+    }
+
+    void setWritePermission(bool permission)
+    {
+        writePermission = permission;
+    }
+};
+
+class IPMIWriteTable
+{
+  private:
+    std::vector<IPMIWriteEntry> entries;
+
+  private:
+    void padEntries(size_t index)
+    {
+        // Pad vector until entries[index] becomes a valid index
+        while (entries.size() <= index)
+        {
+            IPMIWriteEntry newEntry;
+
+            entries.push_back(std::move(newEntry));
+        }
+    }
+
+  public:
+    void wipeTable(void)
+    {
+        entries.clear();
+    }
+
+    bool empty(void)
+    {
+        return entries.empty();
+    }
+
+    bool getWritePermission(size_t index)
+    {
+        padEntries(index);
+        return entries[index].getWritePermission();
+    }
+
+    void setWritePermission(size_t index, bool permission)
+    {
+        padEntries(index);
+        entries[index].setWritePermission(permission);
+    }
+};
+
+// These objects are global singletons, used from a variety of places
 inline IPMIStatsTable sdrStatsTable;
+inline IPMIWriteTable sdrWriteTable;
 
 inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
 {
@@ -235,10 +294,22 @@ inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
         "sensors/'",
         [](sdbusplus::message::message& m) { sensorTreePtr.reset(); });
 
+    static sdbusplus::bus::match::match sensorExtAdded(
+        dbus,
+        "type='signal',member='InterfacesAdded',arg0path='/xyz/openbmc_project/"
+        "extsensors/'",
+        [](sdbusplus::message::message& m) { sensorTreePtr.reset(); });
+
     static sdbusplus::bus::match::match sensorRemoved(
         dbus,
         "type='signal',member='InterfacesRemoved',arg0path='/xyz/"
         "openbmc_project/sensors/'",
+        [](sdbusplus::message::message& m) { sensorTreePtr.reset(); });
+
+    static sdbusplus::bus::match::match sensorExtRemoved(
+        dbus,
+        "type='signal',member='InterfacesRemoved',arg0path='/xyz/"
+        "openbmc_project/extsensors/'",
         [](sdbusplus::message::message& m) { sensorTreePtr.reset(); });
 
     if (sensorTreePtr)
@@ -270,10 +341,40 @@ inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return sensorUpdatedIndex;
     }
+
+    SensorSubTree sensorExtTree;
+
+    // Make a second call, to also get the external sensors
+    auto mapperExtCall =
+        dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
+                             "/xyz/openbmc_project/object_mapper",
+                             "xyz.openbmc_project.ObjectMapper", "GetSubTree");
+    mapperExtCall.append("/xyz/openbmc_project/extsensors", depth, interfaces);
+
+    try
+    {
+        auto mapperExtReply = dbus.call(mapperExtCall);
+        mapperExtReply.read(sensorExtTree);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return sensorTreeUpdated;
+    }
+
+    if constexpr (debug)
+    {
+        std::fprintf(stderr, "IPMI updated: %d sensors, %d extsensors\n",
+                     (int)(sensorTreePtr->size()), (int)(sensorExtTree.size()));
+    }
+
+    // Combine the external sensors with the regular sensors
+    sensorTreePtr->merge(std::move(sensorExtTree));
     subtree = sensorTreePtr;
     sensorUpdatedIndex++;
-    // The SDR is being regenerated, wipe the old stats
+    // The SDR is being regenerated, wipe the old helper tables
     sdrStatsTable.wipeTable();
+    sdrWriteTable.wipeTable();
     return sensorUpdatedIndex;
 }
 
@@ -369,7 +470,7 @@ const static boost::container::flat_map<const char*, SensorTypeCodes, CmpStr>
 inline static std::string getSensorTypeStringFromPath(const std::string& path)
 {
     // get sensor type string from path, path is defined as
-    // /xyz/openbmc_project/sensors/<type>/label
+    // /xyz/openbmc_project/[ext]sensors/<type>/label
     size_t typeEnd = path.rfind("/");
     if (typeEnd == std::string::npos)
     {
