@@ -161,4 +161,7 @@ struct IPMIThresholds
     std::optional<uint8_t> criticalHigh;
 };
 
+int getSensorDataRecord(ipmi::Context::ptr ctx,
+                        std::vector<uint8_t>& recordData, uint16_t recordID);
+
 } // namespace ipmi
