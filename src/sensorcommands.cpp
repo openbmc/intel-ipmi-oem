@@ -1681,6 +1681,75 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     return 0;
 }
 
+// Construct a type 3 SDR for VR typed sensor(daemon).
+static int getVRSensorDataRecord(ipmi::Context::ptr ctx,
+                                 std::vector<uint8_t>& recordData,
+                                 uint16_t recordID)
+{
+    std::string connection;
+    std::string path;
+    auto status = getSensorConnection(ctx, recordID, connection, path);
+    if (status)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getSensorDataRecord: getSensorConnection error");
+        return GENERAL_ERROR;
+    }
+    SensorMap sensorMap;
+    if (!getSensorMap(ctx->yield, connection, path, sensorMap,
+                      sensorMapUpdatePeriod))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getSensorDataRecord: getSensorMap error");
+        return GENERAL_ERROR;
+    }
+
+    uint8_t sensornumber = (recordID & 0xFF);
+
+    record.header.record_id_msb = (recordID >> 8) & 0xFF;
+    record.header.record_id_lsb = recordID & 0xFF;
+    record.header.sdr_version = ipmiSdrVersion;
+    record.header.record_type = get_sdr::SENSOR_DATA_EVENT_RECORD;
+    record.header.record_length = sizeof(get_sdr::SensorDataEventRecord) -
+                                  sizeof(get_sdr::SensorDataRecordHeader);
+    record.key.owner_id = bmcI2CAddr;
+    record.key.owner_lun = 0x0;
+    record.key.sensor_number = sensornumber;
+
+    record.body.entity_id = 0x00;
+    record.body.entity_instance = 0x01;
+
+    // follow the association chain to get the parent board's entityid and
+    // entityInstance
+    updateIpmiFromAssociation(path, sensorMap, record.body.entity_id,
+                              record.body.entity_instance, false);
+
+    // Sensor type is hardcoded as a module/board type instead of parsing from
+    // sensor path. This is because VR control is allocated in an independent
+    // path(/xyz/openbmc_project/vr/profile/...) which is not categorized by
+    // types.
+    static constexpr const uint8_t module_board_type = 0x15;
+    record.body.sensor_type = module_board_type;
+    record.body.event_reading_type = 0x00;
+
+    record.body.sensor_record_sharing_1 = 0x00;
+    record.body.sensor_record_sharing_2 = 0x00;
+
+    // populate sensor name from path
+    auto name = sensor::parseSdrIdFromPath(path);
+    int nameSize = std::min(name.size(), sizeof(record.body.id_string));
+    record.body.id_string_info = nameSize;
+    std::memset(record.body.id_string, 0x00, sizeof(record.body.id_string));
+    std::memcpy(record.body.id_string, name.c_str(), nameSize);
+
+    // Remember the sensor name, as determined for this sensor number
+    details::sdrStatsTable.updateName(sensornumber, name);
+
+    recordData.insert(recordData.end(), (uint8_t*)&record,
+                      ((uint8_t*)&record) + sizeof(record));
+    return 0;
+}
+
 /** @brief implements the get SDR Info command
  *  @param count - Operation
  *
@@ -1949,6 +2018,34 @@ ipmi::RspType<uint16_t,            // next record ID
         if (sdrLength < (offset + bytesToRead))
         {
             bytesToRead = sdrLength - offset;
+        }
+
+        uint8_t* respStart = reinterpret_cast<uint8_t*>(hdr) + offset;
+        if (!respStart)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiStorageGetSDR: record is null");
+            return ipmi::responseSuccess(nextRecordId, record);
+        }
+        std::vector<uint8_t> recordData(respStart, respStart + bytesToRead);
+
+        return ipmi::responseSuccess(nextRecordId, recordData);
+    }
+
+    // Contruct SDR type 3 record for VR sensor (daemon)
+    sensorObject = sensorMap.find(sensor::vrInterface);
+    if (sensorObject != sensorMap.end())
+    {
+        std::vector<uint8_t> record;
+        if (getVRSensorDataRecord(ctx, record, recordID))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiStorageGetSDR: fail to get VR SDR");
+            return ipmi::responseInvalidFieldRequest();
+        }
+        if (sizeof(get_sdr::SensorDataEventRecord) < (offset + bytesToRead))
+        {
+            bytesToRead = sizeof(get_sdr::SensorDataEventRecord) - offset;
         }
 
         uint8_t* respStart = reinterpret_cast<uint8_t*>(hdr) + offset;
