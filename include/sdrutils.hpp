@@ -235,10 +235,22 @@ inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
         "sensors/'",
         [](sdbusplus::message::message& m) { sensorTreePtr.reset(); });
 
+    static sdbusplus::bus::match::match sensorExtAdded(
+        dbus,
+        "type='signal',member='InterfacesAdded',arg0path='/xyz/openbmc_project/"
+        "extsensors/'",
+        [](sdbusplus::message::message& m) { sensorTreePtr.reset(); });
+
     static sdbusplus::bus::match::match sensorRemoved(
         dbus,
         "type='signal',member='InterfacesRemoved',arg0path='/xyz/"
         "openbmc_project/sensors/'",
+        [](sdbusplus::message::message& m) { sensorTreePtr.reset(); });
+
+    static sdbusplus::bus::match::match sensorExtRemoved(
+        dbus,
+        "type='signal',member='InterfacesRemoved',arg0path='/xyz/"
+        "openbmc_project/extsensors/'",
         [](sdbusplus::message::message& m) { sensorTreePtr.reset(); });
 
     if (sensorTreePtr)
@@ -270,6 +282,35 @@ inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return sensorUpdatedIndex;
     }
+
+    SensorSubTree sensorExtTree;
+
+    // Make a second call, to also get the external sensors
+    auto mapperExtCall =
+        dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
+                             "/xyz/openbmc_project/object_mapper",
+                             "xyz.openbmc_project.ObjectMapper", "GetSubTree");
+    mapperExtCall.append("/xyz/openbmc_project/extsensors", depth, interfaces);
+
+    try
+    {
+        auto mapperExtReply = dbus.call(mapperExtCall);
+        mapperExtReply.read(sensorExtTree);
+    }
+    catch (sdbusplus::exception_t& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return sensorUpdatedIndex;
+    }
+
+    if constexpr (debug)
+    {
+        std::fprintf(stderr, "IPMI updated: %d sensors, %d extsensors\n",
+                     (int)(sensorTreePtr->size()), (int)(sensorExtTree.size()));
+    }
+
+    // Combine the external sensors with the regular sensors
+    sensorTreePtr->merge(std::move(sensorExtTree));
     subtree = sensorTreePtr;
     sensorUpdatedIndex++;
     // The SDR is being regenerated, wipe the old stats
@@ -369,7 +410,7 @@ const static boost::container::flat_map<const char*, SensorTypeCodes, CmpStr>
 inline static std::string getSensorTypeStringFromPath(const std::string& path)
 {
     // get sensor type string from path, path is defined as
-    // /xyz/openbmc_project/sensors/<type>/label
+    // /xyz/openbmc_project/[ext]sensors/<type>/label
     size_t typeEnd = path.rfind("/");
     if (typeEnd == std::string::npos)
     {
