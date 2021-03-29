@@ -270,6 +270,7 @@ inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return sensorUpdatedIndex;
     }
+
     subtree = sensorTreePtr;
     sensorUpdatedIndex++;
     // The SDR is being regenerated, wipe the old stats
