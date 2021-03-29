@@ -95,10 +95,32 @@ static sdbusplus::bus::match::match sensorAdded(
                          .count();
     });
 
+static sdbusplus::bus::match::match sensorExtAdded(
+    *getSdBus(),
+    "type='signal',member='InterfacesAdded',arg0path='/xyz/openbmc_project/"
+    "extsensors/'",
+    [](sdbusplus::message::message& m) {
+        sensorTree.clear();
+        sdrLastAdd = std::chrono::duration_cast<std::chrono::seconds>(
+                         std::chrono::system_clock::now().time_since_epoch())
+                         .count();
+    });
+
 static sdbusplus::bus::match::match sensorRemoved(
     *getSdBus(),
     "type='signal',member='InterfacesRemoved',arg0path='/xyz/openbmc_project/"
     "sensors/'",
+    [](sdbusplus::message::message& m) {
+        sensorTree.clear();
+        sdrLastRemove = std::chrono::duration_cast<std::chrono::seconds>(
+                            std::chrono::system_clock::now().time_since_epoch())
+                            .count();
+    });
+
+static sdbusplus::bus::match::match sensorExtRemoved(
+    *getSdBus(),
+    "type='signal',member='InterfacesRemoved',arg0path='/xyz/openbmc_project/"
+    "extsensors/'",
     [](sdbusplus::message::message& m) {
         sensorTree.clear();
         sdrLastRemove = std::chrono::duration_cast<std::chrono::seconds>(
@@ -337,6 +359,10 @@ static void setMeStatus(uint8_t eventData2, uint8_t eventData3, bool disable)
     }
 }
 
+static int getSensorDataRecord(ipmi::Context::ptr ctx,
+                               std::vector<uint8_t>& recordData,
+                               uint16_t recordID);
+
 ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload& p)
 {
     constexpr const uint8_t meId = 0x2C;
@@ -388,6 +414,84 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload& p)
     {
         setMeStatus(*eventData2, *eventData3, (eventType & disabled));
     }
+
+    return ipmi::responseSuccess();
+}
+
+ipmi::RspType<> ipmiSetSensorReading(
+    ipmi::Context::ptr ctx, uint8_t sensorNumber, uint8_t operation,
+    uint8_t reading, uint8_t assertOffset0_7, uint8_t assertOffset8_14,
+    uint8_t deassertOffset0_7, uint8_t deassertOffset8_14, uint8_t eventData1,
+    uint8_t eventData2, uint8_t eventData3)
+{
+    std::string connection;
+    std::string path;
+    ipmi::Cc status = getSensorConnection(ctx, sensorNumber, connection, path);
+    if (status)
+    {
+        return ipmi::response(status);
+    }
+
+    SensorMap sensorMap;
+    if (!getSensorMap(ctx->yield, connection, path, sensorMap))
+    {
+        return ipmi::responseResponseError();
+    }
+    auto sensorObject = sensorMap.find("xyz.openbmc_project.Sensor.Value");
+
+    if (sensorObject == sensorMap.end() ||
+        sensorObject->second.find("Value") == sensorObject->second.end())
+    {
+        return ipmi::responseResponseError();
+    }
+
+    // Construct the sdrWriteTable in getSensorDataRecord
+    if (details::sdrWriteTable.empty())
+    {
+        std::vector<uint8_t> record;
+        uint16_t recordID = 0;
+        while (!getSensorDataRecord(ctx, record, recordID++))
+        {}
+    }
+
+    // Only allow external SetSensor if write permission granted
+    if (!details::sdrWriteTable.getWritePermission(sensorNumber))
+    {
+        return ipmi::responseResponseError();
+    }
+
+    double max = 0;
+    double min = 0;
+    getSensorMaxMin(sensorMap, max, min);
+
+    int16_t mValue = 0;
+    int16_t bValue = 0;
+    int8_t rExp = 0;
+    int8_t bExp = 0;
+    bool bSigned = false;
+
+    if (!getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned))
+    {
+        return ipmi::responseResponseError();
+    }
+
+    double value = bSigned ? ((int8_t)reading) : reading;
+
+    value *= ((double)mValue);
+    value += ((double)bValue) * std::pow(10.0, bExp);
+    value *= std::pow(10.0, rExp);
+
+    if constexpr (debug)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "IPMI SET_SENSOR",
+            phosphor::logging::entry("SENSOR_NUM=%d", sensorNumber),
+            phosphor::logging::entry("BYTE=%u", (unsigned int)reading),
+            phosphor::logging::entry("VALUE=%f", value));
+    }
+    setDbusProperty(*getSdBus(), connection, path,
+                    "xyz.openbmc_project.Sensor.Value", "Value",
+                    ipmi::Value(value));
 
     return ipmi::responseSuccess();
 }
@@ -1357,6 +1461,14 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     // Remember the sensor name, as determined for this sensor number
     details::sdrStatsTable.updateName(sensornumber, name);
 
+    // By definition, all external sensors need to be externally settable
+    if (path.find("/extsensors/") != std::string::npos)
+    {
+        get_sdr::body::init_settable_state(true, &record.body);
+        // Grant write permission to sensors deemed externally settable
+        details::sdrWriteTable.setWritePermission(sensornumber, true);
+    }
+
     IPMIThresholds thresholdData;
     try
     {
@@ -1559,6 +1671,12 @@ ipmi::RspType<uint8_t,  // sdr version
     uint16_t recordCount =
         sensorTree.size() + fruCount + ipmi::storage::type12Count;
 
+    if constexpr (debug)
+    {
+        std::fprintf(stderr, "IPMI counted %d records: %d sensors, %d FRUs\n",
+                     (int)recordCount, (int)(sensorTree.size()), (int)fruCount);
+    }
+
     uint8_t operationSupport = static_cast<uint8_t>(
         SdrRepositoryInfoOps::overflow); // write not supported
 
@@ -1692,6 +1810,11 @@ void registerSensorFunctions()
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
                           ipmi::sensor_event::cmdPlatformEvent,
                           ipmi::Privilege::Operator, ipmiSenPlatformEvent);
+
+    // <Set Sensor Reading and Event Status>
+    ipmi::registerHandler(ipmi::prioOpenBmcBase, ipmi::netFnSensor,
+                          ipmi::sensor_event::cmdSetSensorReadingAndEvtSts,
+                          ipmi::Privilege::Operator, ipmiSetSensorReading);
 
     // <Get Sensor Reading>
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::netFnSensor,
