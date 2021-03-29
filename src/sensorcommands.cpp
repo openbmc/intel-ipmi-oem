@@ -53,6 +53,9 @@ using ManagedObjectType =
 static constexpr int sensorMapUpdatePeriod = 10;
 static constexpr int sensorMapSdrUpdatePeriod = 60;
 
+// BMC I2C address is generally at 0x20
+static constexpr uint8_t bmcI2CAddr = 0x20;
+
 constexpr size_t maxSDRTotalSize =
     76; // Largest SDR Record Size (type 01) + SDR Overheader Size
 constexpr static const uint32_t noTimestamp = 0xFFFFFFFF;
@@ -459,6 +462,34 @@ static std::optional<double>
     value *= std::pow(10.0, rExp);
 
     return value;
+}
+
+// Extract file name from sensor path as the sensors SDR ID. Simplify the name
+// if it is too long.
+std::string parseSdrIdFromPath(const std::string& path)
+{
+    std::string name;
+    size_t nameStart = path.rfind("/");
+    if (nameStart != std::string::npos)
+    {
+        name = path.substr(nameStart + 1, std::string::npos - nameStart);
+    }
+
+    std::replace(name.begin(), name.end(), '_', ' ');
+    if (name.size() > FULL_RECORD_ID_STR_MAX_LENGTH)
+    {
+        // try to not truncate by replacing common words
+        constexpr std::array<std::pair<const char*, const char*>, 2>
+            replaceWords = {std::make_pair("Output", "Out"),
+                            std::make_pair("Input", "In")};
+        for (const auto& [find, replace] : replaceWords)
+        {
+            boost::replace_all(name, find, replace);
+        }
+
+        name.resize(FULL_RECORD_ID_STR_MAX_LENGTH);
+    }
+    return name;
 }
 
 } // namespace sensor
@@ -1458,7 +1489,7 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     record.header.record_type = get_sdr::SENSOR_DATA_FULL_RECORD;
     record.header.record_length = sizeof(get_sdr::SensorDataFullRecord) -
                                   sizeof(get_sdr::SensorDataRecordHeader);
-    record.key.owner_id = 0x20;
+    record.key.owner_id = bmcI2CAddr;
     record.key.owner_lun = lun;
     record.key.sensor_number = sensornumber;
 
@@ -1574,27 +1605,7 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     // Original comment said "todo fill out rest of units"
 
     // populate sensor name from path
-    std::string name;
-    size_t nameStart = path.rfind("/");
-    if (nameStart != std::string::npos)
-    {
-        name = path.substr(nameStart + 1, std::string::npos - nameStart);
-    }
-
-    std::replace(name.begin(), name.end(), '_', ' ');
-    if (name.size() > FULL_RECORD_ID_STR_MAX_LENGTH)
-    {
-        // try to not truncate by replacing common words
-        constexpr std::array<std::pair<const char*, const char*>, 2>
-            replaceWords = {std::make_pair("Output", "Out"),
-                            std::make_pair("Input", "In")};
-        for (const auto& [find, replace] : replaceWords)
-        {
-            boost::replace_all(name, find, replace);
-        }
-
-        name.resize(FULL_RECORD_ID_STR_MAX_LENGTH);
-    }
+    auto name = sensor::parseSdrIdFromPath(path);
     record.body.id_string_info = name.size();
     std::strncpy(record.body.id_string, name.c_str(),
                  sizeof(record.body.id_string));
@@ -1909,39 +1920,58 @@ ipmi::RspType<uint16_t,            // next record ID
         return ipmi::responseResponseError();
     }
 
-    std::vector<uint8_t> record;
-    if (getSensorDataRecord(ctx, record, recordID))
+    std::string connection;
+    std::string path;
+    auto status = getSensorConnection(ctx, recordID, connection, path);
+    if (status)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiStorageGetSDR: fail to get SDR");
-        return ipmi::responseInvalidFieldRequest();
+        return ipmi::responseResponseError();
     }
-    get_sdr::SensorDataRecordHeader* hdr =
-        reinterpret_cast<get_sdr::SensorDataRecordHeader*>(record.data());
-    if (!hdr)
+    SensorMap sensorMap;
+    if (!getSensorMap(ctx->yield, connection, path, sensorMap,
+                      sensorMapUpdatePeriod))
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiStorageGetSDR: record header is null");
-        return ipmi::responseSuccess(nextRecordId, record);
+        return ipmi::responseResponseError();
     }
 
-    size_t sdrLength =
-        sizeof(get_sdr::SensorDataRecordHeader) + hdr->record_length;
-    if (sdrLength < (offset + bytesToRead))
+    auto sensorObject = sensorMap.find(sensor::sensorInterface);
+    if (sensorObject != sensorMap.end())
     {
-        bytesToRead = sdrLength - offset;
-    }
+        std::vector<uint8_t> record;
+        if (getSensorDataRecord(ctx, record, recordID))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiStorageGetSDR: fail to get SDR");
+            return ipmi::responseInvalidFieldRequest();
+        }
+        get_sdr::SensorDataRecordHeader* hdr =
+            reinterpret_cast<get_sdr::SensorDataRecordHeader*>(record.data());
+        if (!hdr)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiStorageGetSDR: record header is null");
+            return ipmi::responseSuccess(nextRecordId, record);
+        }
 
-    uint8_t* respStart = reinterpret_cast<uint8_t*>(hdr) + offset;
-    if (!respStart)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmiStorageGetSDR: record is null");
-        return ipmi::responseSuccess(nextRecordId, record);
-    }
-    std::vector<uint8_t> recordData(respStart, respStart + bytesToRead);
+        size_t sdrLength =
+            sizeof(get_sdr::SensorDataRecordHeader) + hdr->record_length;
+        if (sdrLength < (offset + bytesToRead))
+        {
+            bytesToRead = sdrLength - offset;
+        }
 
-    return ipmi::responseSuccess(nextRecordId, recordData);
+        uint8_t* respStart = reinterpret_cast<uint8_t*>(hdr) + offset;
+        if (!respStart)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiStorageGetSDR: record is null");
+            return ipmi::responseSuccess(nextRecordId, record);
+        }
+        std::vector<uint8_t> recordData(respStart, respStart + bytesToRead);
+
+        return ipmi::responseSuccess(nextRecordId, recordData);
+    }
+    return ipmi::responseResponseError();
 }
 /* end storage commands */
 
