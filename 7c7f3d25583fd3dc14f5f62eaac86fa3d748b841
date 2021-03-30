@@ -62,6 +62,30 @@
       "revId": "7c7f3d25583fd3dc14f5f62eaac86fa3d748b841",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "969a7fab_85465baf",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 577,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-03-30T21:42:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d1cf42c8_aa882fa8",
+      "range": {
+        "startLine": 577,
+        "startChar": 48,
+        "endLine": 577,
+        "endChar": 54
+      },
+      "revId": "7c7f3d25583fd3dc14f5f62eaac86fa3d748b841",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
