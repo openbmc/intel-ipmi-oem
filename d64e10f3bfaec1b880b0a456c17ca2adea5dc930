@@ -37,6 +37,57 @@
     },
     {
       "key": {
+        "uuid": "2630101d_0148d635",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-03-30T18:30:29Z",
+      "side": 1,
+      "message": "Split the sentence up:\n\nAdd external sensors to the SDR. Because of phosphor-pid-control requirements...",
+      "revId": "d64e10f3bfaec1b880b0a456c17ca2adea5dc930",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8bd90b5a_82d96035",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-03-30T18:30:29Z",
+      "side": 1,
+      "message": "This is /extsensors/ as per the phosphor-pid-control source.\n\nImportant: Please don\u0027t confuse phosphor-pid-control extsensors with dbus-sensors ExternalSensor sensors. Although they serve a similar purpose, they are different things!",
+      "revId": "d64e10f3bfaec1b880b0a456c17ca2adea5dc930",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "baf1a4f6_defc5cd2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-03-30T18:30:29Z",
+      "side": 1,
+      "message": "The \"---\" here tells me that this patch might be better split up into two patches. The above could build on the functionality established by the below. It might be easier to be accepted upstream if this large patch were split into smaller.",
+      "revId": "d64e10f3bfaec1b880b0a456c17ca2adea5dc930",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7d66f7e9_a20765cc",
         "filename": "/COMMIT_MSG",
         "patchSetId": 4
@@ -69,6 +120,40 @@
       "revId": "d64e10f3bfaec1b880b0a456c17ca2adea5dc930",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8ea18035_38817fc9",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 484,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-03-30T18:30:29Z",
+      "side": 1,
+      "message": "Please wrap this: if constexpr (debug) ...\n\nOtherwise, this logging message will get spammy, during frequent sensor writing.",
+      "revId": "d64e10f3bfaec1b880b0a456c17ca2adea5dc930",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "16635597_0cd77c14",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1469,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-03-30T18:30:29Z",
+      "side": 1,
+      "message": "No action needed for now, but FYI: when we add the Mutable feature, all sensors with Mutable flagged true will also need to be marked as externally settable here.",
+      "revId": "d64e10f3bfaec1b880b0a456c17ca2adea5dc930",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
