@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ac01b259_0f1c67e5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1000539
+      },
+      "writtenOn": "2021-03-30T20:53:51Z",
+      "side": 1,
+      "message": "I would like lines regarding VDD_SRAM and VDD_CORE removed. They are not necessary in the log.",
+      "revId": "8d4f8ac0cac5cea6ea66728ccf98229ac85edc96",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
