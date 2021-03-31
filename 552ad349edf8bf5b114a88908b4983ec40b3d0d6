@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0f8f4ff3_cd3cabc2",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 1695,
+      "author": {
+        "id": 1000539
+      },
+      "writtenOn": "2021-03-31T01:21:29Z",
+      "side": 1,
+      "message": "Maybe you can try __func__ or similar macro here?\nhttps://www.geeksforgeeks.org/predefined-identifier-__func__-c/",
+      "revId": "552ad349edf8bf5b114a88908b4983ec40b3d0d6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b07125e0_ce18b9f6",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 1748,
+      "author": {
+        "id": 1000539
+      },
+      "writtenOn": "2021-03-31T01:21:29Z",
+      "side": 1,
+      "message": "Since the recordData was passed in as an empty vector by reference, can we change the name to sth like recordOut or etc., and initialize it from assuming an empty one instead of using insert()? We may pass in unique_ptr\u003cvector\u003e if we\u0027d like to save some constructor cost.\n\nLooking at variable \u0027record\u0027 and \u0027recordData\u0027 back and forth gives me a lot of confusion... Would appreciate making them clearer. Thanks!",
+      "revId": "552ad349edf8bf5b114a88908b4983ec40b3d0d6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
