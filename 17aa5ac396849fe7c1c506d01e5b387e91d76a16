@@ -143,6 +143,30 @@
     },
     {
       "key": {
+        "uuid": "5d131799_76e86cef",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-01T21:20:34Z",
+      "side": 1,
+      "message": "\u003e Josh added this and in the original changes he mentioned that he needs it as a prerequisite for some new features that he wants.\n\u003e \n\u003e Maybe we can add that once that features comes in later?\n\nFor the moment lets keep it simple.  If we need to add this class later for the features that necessitate it, we can always add it back then.",
+      "parentUuid": "53cdcbe6_6cc6345c",
+      "range": {
+        "startLine": 214,
+        "startChar": 0,
+        "endLine": 229,
+        "endChar": 2
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "aa0c7c3a_a4662671",
         "filename": "include/sdrutils.hpp",
         "patchSetId": 6
@@ -178,6 +202,30 @@
       "side": 1,
       "message": "Are they all under sensors/ now?",
       "parentUuid": "aa0c7c3a_a4662671",
+      "range": {
+        "startLine": 300,
+        "startChar": 9,
+        "endLine": 300,
+        "endChar": 19
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6453765d_26ada2f8",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-01T21:20:34Z",
+      "side": 1,
+      "message": "yes: https://github.com/openbmc/dbus-sensors/blob/6205092af8f265933f11c3b92c4ca87f2b3bb8a2/src/ExternalSensor.cpp#L44",
+      "parentUuid": "ac42f666_75c27253",
       "range": {
         "startLine": 300,
         "startChar": 9,
@@ -237,6 +285,30 @@
     },
     {
       "key": {
+        "uuid": "18e3d19a_94f3dc15",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-01T21:20:34Z",
+      "side": 1,
+      "message": "Doesn\u0027t seem unreasonable to expose to other compile units.",
+      "parentUuid": "fc37f6a8_ea135ca7",
+      "range": {
+        "startLine": 362,
+        "startChar": 0,
+        "endLine": 364,
+        "endChar": 50
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3dc4e0df_d7c7e11f",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
@@ -272,6 +344,30 @@
       "side": 1,
       "message": "I guess we can just catch the error in setDbusProperty? when writing unsupported writes?\n\n@Josh, is there a reason that we don\u0027t just let the sensor write fail itself?",
       "parentUuid": "3dc4e0df_d7c7e11f",
+      "range": {
+        "startLine": 457,
+        "startChar": 0,
+        "endLine": 461,
+        "endChar": 5
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a7edd4ae_ef8eb581",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 461,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-01T21:20:34Z",
+      "side": 1,
+      "message": "\u003e I guess we can just catch the error in setDbusProperty? when writing unsupported writes?\n\n+1.  This is also what Quanta is working on implementing, and what was discussed on the mailing list.  That keeps us consistent between ipmi and redfish.\n\n\u003e \n\u003e @Josh, is there a reason that we don\u0027t just let the sensor write fail itself?",
+      "parentUuid": "22bdbad7_2218de34",
       "range": {
         "startLine": 457,
         "startChar": 0,
