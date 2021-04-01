@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "0ffa1ca4_22ca2260",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-01T18:55:58Z",
+      "side": 1,
+      "message": "Are they all under sensors/ path now?\n\nJosh@, do we have that issue internally?",
+      "parentUuid": "7a26dd37_27d2169c",
+      "range": {
+        "startLine": 13,
+        "startChar": 0,
+        "endLine": 15,
+        "endChar": 42
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "266f452a_47f87d68",
         "filename": "/COMMIT_MSG",
         "patchSetId": 6
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "0cf6a906_0e23c180",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-01T18:55:58Z",
+      "side": 1,
+      "message": "Ack. I accidentally removed the message from the last patch.",
+      "parentUuid": "266f452a_47f87d68",
+      "range": {
+        "startLine": 44,
+        "startChar": 0,
+        "endLine": 44,
+        "endChar": 34
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d061383a_71ab584e",
         "filename": "include/sdrutils.hpp",
         "patchSetId": 6
@@ -59,6 +107,30 @@
       "writtenOn": "2021-03-31T17:48:12Z",
       "side": 1,
       "message": "Does this class need to exist?  It\u0027s essentially a fancy wrapper around bool.  I suspect you can just use bool (or possibly enum class if you want to keep the definitions).",
+      "range": {
+        "startLine": 214,
+        "startChar": 0,
+        "endLine": 229,
+        "endChar": 2
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "53cdcbe6_6cc6345c",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-01T18:55:58Z",
+      "side": 1,
+      "message": "Josh added this and in the original changes he mentioned that he needs it as a prerequisite for some new features that he wants.\n\nMaybe we can add that once that features comes in later?",
+      "parentUuid": "d061383a_71ab584e",
       "range": {
         "startLine": 214,
         "startChar": 0,
@@ -94,6 +166,30 @@
     },
     {
       "key": {
+        "uuid": "ac42f666_75c27253",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-01T18:55:58Z",
+      "side": 1,
+      "message": "Are they all under sensors/ now?",
+      "parentUuid": "aa0c7c3a_a4662671",
+      "range": {
+        "startLine": 300,
+        "startChar": 9,
+        "endLine": 300,
+        "endChar": 19
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d2617471_2001c0e1",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "fc37f6a8_ea135ca7",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-01T18:55:58Z",
+      "side": 1,
+      "message": "Do we want to expose this function to other code? Does that matter at all?",
+      "parentUuid": "d2617471_2001c0e1",
+      "range": {
+        "startLine": 362,
+        "startChar": 0,
+        "endLine": 364,
+        "endChar": 50
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3dc4e0df_d7c7e11f",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
@@ -128,6 +248,30 @@
       "writtenOn": "2021-03-31T17:48:12Z",
       "side": 1,
       "message": "This seems like an odd check to do here.  It requires caching of values, which really should be avoided if possible.  Should this instead just rely on the sensor itself to block unsupported writes?",
+      "range": {
+        "startLine": 457,
+        "startChar": 0,
+        "endLine": 461,
+        "endChar": 5
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "22bdbad7_2218de34",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 461,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-01T18:55:58Z",
+      "side": 1,
+      "message": "I guess we can just catch the error in setDbusProperty? when writing unsupported writes?\n\n@Josh, is there a reason that we don\u0027t just let the sensor write fail itself?",
+      "parentUuid": "3dc4e0df_d7c7e11f",
       "range": {
         "startLine": 457,
         "startChar": 0,
