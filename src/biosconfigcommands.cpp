@@ -185,7 +185,24 @@ static int getResetBIOSSettings(uint8_t& ResetFlag)
             getService(*dbus, biosConfigIntf, biosConfigBaseMgrPath);
         Value variant = getDbusProperty(*dbus, service, biosConfigBaseMgrPath,
                                         biosConfigIntf, resetBIOSSettingsProp);
-        ResetFlag = static_cast<uint8_t>(std::get<std::uint8_t>(variant));
+
+        std::string ResetStr = std::get<std::string>(variant);
+        if (ResetStr ==
+            "xyz.openbmc_project.BIOSConfig.Manager.ResetFlag.NoAction")
+        {
+            ResetFlag = 0;
+        }
+        else if (ResetStr == "xyz.openbmc_project.BIOSConfig.Manager.ResetFlag."
+                             "FactoryDefaults")
+        {
+            ResetFlag = 1;
+        }
+        else if (ResetStr == "xyz.openbmc_project.BIOSConfig.Manager.ResetFlag."
+                             "FailSafeDefaults")
+        {
+            ResetFlag = 2;
+        }
+
         return ipmi::ccSuccess;
     }
     catch (const std::exception& e)
@@ -796,8 +813,7 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxHashSize>,
 
     if (OSState != "OperatingState")
     {
-        std::string HashFilePath =
-            "/var/lib/bios-settings-manager/passwordData";
+        std::string HashFilePath = "/var/lib/bios-settings-manager/seedData";
 
         std::ifstream devIdFile(HashFilePath);
         if (devIdFile.is_open())
