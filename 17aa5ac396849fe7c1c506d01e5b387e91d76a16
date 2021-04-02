@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "06ecf1d6_749a972f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-04-02T03:03:28Z",
+      "side": 1,
+      "message": "This is for the phosphor-pid-control internally-generated sensors (used in the old JSON path, not the entity-manager path, of phosphor-pid-control configuration).\n\nThis is different from the new ExternalSensor module that I just recently added into dbus-sensors. The new ExternalSensor module keeps the standard /sensors/ object path. \n\nThe phosphor-pid-control program has the capability to synthesize sensors into existence, and it uses the /extsensors/ directory to hold them.\n\nhttps://github.com/openbmc/phosphor-pid-control/search?q\u003dextsensors\u0026type\u003dcode\n\nI\u0027m not sure why phosphor-pid-control chose to use the alternative /extsensors/ directory, and I\u0027m open to a patch that changes it back to /sensors/ which would make more sense.\n\nIt\u0027s also used in many different places, which is bad practice. It should be defined as a constant, in one place.",
+      "parentUuid": "0ffa1ca4_22ca2260",
+      "range": {
+        "startLine": 13,
+        "startChar": 0,
+        "endLine": 15,
+        "endChar": 42
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "266f452a_47f87d68",
         "filename": "/COMMIT_MSG",
         "patchSetId": 6
@@ -167,6 +191,30 @@
     },
     {
       "key": {
+        "uuid": "fee60377_603bcdbc",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-04-02T03:03:28Z",
+      "side": 1,
+      "message": "I agree, this class is over-engineered. It was a skeleton for a later feature I ended up implementing elsewhere (it ended up being the timeout feature in ExternalSensor itself). I have no further plans for IPMIWriteEntry here. Feel free to refactor it.\n\nSince it\u0027s basically a wrapper around bool, feel free to make it just a bool somewhere. If there\u0027s a way to access the IPMI SDR from here, then we can pull it out of the SDR, since the external-set-allowed bit is one of the fields in the SDR.",
+      "parentUuid": "5d131799_76e86cef",
+      "range": {
+        "startLine": 214,
+        "startChar": 0,
+        "endLine": 229,
+        "endChar": 2
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "aa0c7c3a_a4662671",
         "filename": "include/sdrutils.hpp",
         "patchSetId": 6
@@ -226,6 +274,30 @@
       "side": 1,
       "message": "yes: https://github.com/openbmc/dbus-sensors/blob/6205092af8f265933f11c3b92c4ca87f2b3bb8a2/src/ExternalSensor.cpp#L44",
       "parentUuid": "ac42f666_75c27253",
+      "range": {
+        "startLine": 300,
+        "startChar": 9,
+        "endLine": 300,
+        "endChar": 19
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "70ca7e5c_4d3c1983",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-04-02T03:03:28Z",
+      "side": 1,
+      "message": "See the other comment I made. This was for the phosphor-pid-control internally-generated sensors, which are not part of the dbus-sensors package. Be careful not to confuse them with ExternalSensor which is a dbus-sensors module.",
+      "parentUuid": "6453765d_26ada2f8",
       "range": {
         "startLine": 300,
         "startChar": 9,
@@ -368,6 +440,30 @@
       "side": 1,
       "message": "\u003e I guess we can just catch the error in setDbusProperty? when writing unsupported writes?\n\n+1.  This is also what Quanta is working on implementing, and what was discussed on the mailing list.  That keeps us consistent between ipmi and redfish.\n\n\u003e \n\u003e @Josh, is there a reason that we don\u0027t just let the sensor write fail itself?",
       "parentUuid": "22bdbad7_2218de34",
+      "range": {
+        "startLine": 457,
+        "startChar": 0,
+        "endLine": 461,
+        "endChar": 5
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d139b0c4_f2cb04e9",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 461,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-04-02T03:03:28Z",
+      "side": 1,
+      "message": "Right now, there\u0027s no checking in setDbusProperty, so it allows all writing to be done. In fact, this is called \"override mode\" in dbus-sensors, and is supported for testing purposes. I\u0027m not sure if it\u0027s something we should be exposing to the external world via IPMI.\n\nIt opens up a security hole if we allow all sensors to be freely written to, by external IPMI users. That\u0027s why I wanted to add the \"Mutable\" property, to the D-Bus sensor interface. I wish that feature had been accepted, it would have made this design simpler.\n\nThe \"Mutable\" field could be checked, by an external server like IPMI or Redfish, and use that to validate user permissions when they are trying to perform a sensor write. Then, we could preserve the ability for \"override mode\" during internal testing, and still be able to lock down sensor values we don\u0027t want external users to be able to modify.",
+      "parentUuid": "a7edd4ae_ef8eb581",
       "range": {
         "startLine": 457,
         "startChar": 0,
