@@ -2,6 +2,40 @@
   "comments": [
     {
       "key": {
+        "uuid": "1b52097e_2ccfa177",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-04-03T16:56:31Z",
+      "side": 1,
+      "message": "nit: may be move this word to next line : \n\u0027function\u0027.",
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "98443d17_3954763d",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-04-03T16:56:31Z",
+      "side": 1,
+      "message": "Here, you are setting Bit-1 to 1. I don\u0027t see definition for Bit-1 in EPS. Is this intended ?",
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1322b5df_abd54705",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 1
