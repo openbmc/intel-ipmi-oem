@@ -46,6 +46,23 @@
       "revId": "278f4326ee436e12f903e4ede4e4db8d239598c4",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ad280c39_7dc5b241",
+        "filename": "src/smbiosmdrv2handler.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 396,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-04-03T17:20:37Z",
+      "side": 1,
+      "message": "Is \"SendDirectoryInformation\" D-Bus method signature changed recently (from its earlier generation) ?",
+      "revId": "278f4326ee436e12f903e4ede4e4db8d239598c4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
