@@ -22,6 +22,30 @@
       "revId": "d3872f5312932d61cc880e779ecf6e8ce05c8dbd",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1d3b1d5c_b197500c",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-05T07:00:20Z",
+      "side": 1,
+      "message": "I think it is because we want to have don\u0027t want to have the case where both sensors/extsensors fail but only vr passes to be consider as passing.\n\njianghao@, what was the main reasoning behind the decision?",
+      "parentUuid": "cdb63150_3946214e",
+      "range": {
+        "startLine": 285,
+        "startChar": 63,
+        "endLine": 286,
+        "endChar": 73
+      },
+      "revId": "d3872f5312932d61cc880e779ecf6e8ce05c8dbd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
