@@ -215,6 +215,30 @@
     },
     {
       "key": {
+        "uuid": "8f4fd284_24c801d9",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-05T23:35:26Z",
+      "side": 1,
+      "message": "Done. I have just cleaned it up to use bool directly.",
+      "parentUuid": "fee60377_603bcdbc",
+      "range": {
+        "startLine": 214,
+        "startChar": 0,
+        "endLine": 229,
+        "endChar": 2
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "aa0c7c3a_a4662671",
         "filename": "include/sdrutils.hpp",
         "patchSetId": 6
@@ -378,6 +402,30 @@
       "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2dfb8283_1aa21ac5",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-05T23:35:26Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "18e3d19a_94f3dc15",
+      "range": {
+        "startLine": 362,
+        "startChar": 0,
+        "endLine": 364,
+        "endChar": 50
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
