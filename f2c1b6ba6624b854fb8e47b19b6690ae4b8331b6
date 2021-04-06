@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "563e88ee_9ac25e7d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000218
+      },
+      "writtenOn": "2021-04-06T03:30:38Z",
+      "side": 1,
+      "message": "duplicate. remove it.",
+      "range": {
+        "startLine": 10,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 3
+      },
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1b52097e_2ccfa177",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -13,6 +36,52 @@
       "writtenOn": "2021-04-03T16:56:31Z",
       "side": 1,
       "message": "nit: may be move this word to next line : \n\u0027function\u0027.",
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "224e8a4e_fa0e67bd",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000218
+      },
+      "writtenOn": "2021-04-06T03:30:38Z",
+      "side": 1,
+      "message": "could review it.",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 4
+      },
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5b1b7a47_e385b252",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 1000218
+      },
+      "writtenOn": "2021-04-06T03:30:38Z",
+      "side": 1,
+      "message": "string_view is better to avoid copy?",
+      "range": {
+        "startLine": 189,
+        "startChar": 13,
+        "endLine": 189,
+        "endChar": 20
+      },
       "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
