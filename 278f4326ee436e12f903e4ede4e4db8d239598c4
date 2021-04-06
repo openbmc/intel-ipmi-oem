@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "ef11481d_9cd7053c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-04-06T17:42:42Z",
+      "side": 1,
+      "message": "This command might be used by BIOS while sending SMBIOS data. So perform some test with Warm reboot, cold reboot and AC cycle test and check smbios data is properly getting updated or not.  Update those test results here.",
+      "range": {
+        "startLine": 26,
+        "startChar": 22,
+        "endLine": 26,
+        "endChar": 27
+      },
+      "revId": "278f4326ee436e12f903e4ede4e4db8d239598c4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "aec46811_579290fe",
         "filename": "src/smbiosmdrv2handler.cpp",
         "patchSetId": 2
@@ -49,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "48777723_a1063071",
+        "filename": "src/smbiosmdrv2handler.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 368,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-04-06T17:42:42Z",
+      "side": 1,
+      "message": "This is of variable size (16 multiples of remianingEnries i.e N 8 16). Actually this is wrong. You need to use the vector here instead of fixed size array. Then in code you need to validate for correctness of size with 16 * remianingEntries(Byte 6).",
+      "parentUuid": "6161b160_df7bf1e4",
+      "range": {
+        "startLine": 368,
+        "startChar": 52,
+        "endLine": 368,
+        "endChar": 54
+      },
+      "revId": "278f4326ee436e12f903e4ede4e4db8d239598c4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ad280c39_7dc5b241",
         "filename": "src/smbiosmdrv2handler.cpp",
         "patchSetId": 2
@@ -60,6 +107,24 @@
       "writtenOn": "2021-04-03T17:20:37Z",
       "side": 1,
       "message": "Is \"SendDirectoryInformation\" D-Bus method signature changed recently (from its earlier generation) ?",
+      "revId": "278f4326ee436e12f903e4ede4e4db8d239598c4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5c9b2fa2_1b2f5ec9",
+        "filename": "src/smbiosmdrv2handler.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 396,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-04-06T17:42:42Z",
+      "side": 1,
+      "message": "Not really, it accepts the vector.",
+      "parentUuid": "ad280c39_7dc5b241",
       "revId": "278f4326ee436e12f903e4ede4e4db8d239598c4",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
