@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "21dc3dbd_909af56a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-04-06T17:37:52Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "563e88ee_9ac25e7d",
+      "range": {
+        "startLine": 10,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 3
+      },
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1b52097e_2ccfa177",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -65,6 +89,48 @@
     },
     {
       "key": {
+        "uuid": "955c87a7_6fe624fe",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-04-06T17:37:52Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "224e8a4e_fa0e67bd",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 4
+      },
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "904b9cdd_077084f0",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-04-06T17:37:52Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1b52097e_2ccfa177",
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5b1b7a47_e385b252",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 1
@@ -76,6 +142,30 @@
       "writtenOn": "2021-04-06T03:30:38Z",
       "side": 1,
       "message": "string_view is better to avoid copy?",
+      "range": {
+        "startLine": 189,
+        "startChar": 13,
+        "endLine": 189,
+        "endChar": 20
+      },
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9b06aa46_4e9bd2fd",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-04-06T17:37:52Z",
+      "side": 1,
+      "message": "HI Kwin, I didnt get ur comments. can u please explain",
+      "parentUuid": "5b1b7a47_e385b252",
       "range": {
         "startLine": 189,
         "startChar": 13,
