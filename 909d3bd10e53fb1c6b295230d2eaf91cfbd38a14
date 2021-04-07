@@ -46,6 +46,30 @@
       "revId": "909d3bd10e53fb1c6b295230d2eaf91cfbd38a14",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54b754e8_f922603a",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 1220,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-04-07T16:47:07Z",
+      "side": 1,
+      "message": "Ok , Thanks for clarification Vernon. I was under assumption that we need to allocate memory also using OPENSSL_\u003cx\u003e calls so while cleaning we can use OPENSSL_Cleanse. Quick google doesn\u0027t show any such thing.",
+      "parentUuid": "27dfcbdf_bc195b27",
+      "range": {
+        "startLine": 1220,
+        "startChar": 12,
+        "endLine": 1220,
+        "endChar": 27
+      },
+      "revId": "909d3bd10e53fb1c6b295230d2eaf91cfbd38a14",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
