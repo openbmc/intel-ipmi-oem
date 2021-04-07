@@ -22,6 +22,30 @@
       "revId": "909d3bd10e53fb1c6b295230d2eaf91cfbd38a14",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "27dfcbdf_bc195b27",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 1220,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-04-07T14:35:25Z",
+      "side": 1,
+      "message": "OPENSSL_cleanse is a safe way to ensure that the memory clearing does not get optimized out by the compiler.",
+      "parentUuid": "1bc5e5bb_d65fb65a",
+      "range": {
+        "startLine": 1220,
+        "startChar": 12,
+        "endLine": 1220,
+        "endChar": 27
+      },
+      "revId": "909d3bd10e53fb1c6b295230d2eaf91cfbd38a14",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
