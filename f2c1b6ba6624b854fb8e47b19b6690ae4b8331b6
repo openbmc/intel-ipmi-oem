@@ -202,6 +202,30 @@
     },
     {
       "key": {
+        "uuid": "e749c2d9_cb5653a3",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-04-07T07:01:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "41b1361b_96803bea",
+      "range": {
+        "startLine": 189,
+        "startChar": 13,
+        "endLine": 189,
+        "endChar": 20
+      },
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "98443d17_3954763d",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 1
@@ -234,6 +258,24 @@
       "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "db0e77bd_c1b137e8",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-04-07T07:01:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5ede7836_257aca52",
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
@@ -296,6 +338,30 @@
       "side": 1,
       "message": "return success if no str matches, is that OK? \nAlso, code would be more robust not to depend on the ResetFlag is initialized to 0.",
       "parentUuid": "3e04f934_f9912398",
+      "range": {
+        "startLine": 204,
+        "startChar": 0,
+        "endLine": 204,
+        "endChar": 9
+      },
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ddfb07e1_d869d0f4",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-04-07T07:01:18Z",
+      "side": 1,
+      "message": "yes. 0 means No action.  only supported value is NoAction, DefaultSettings, FailSafeSettings. any way other than this string, everything will be rejected by oob-biosconfig-daemon itself. \nSo it should match with any one of string.  Worst case, no matches. it will take no action as default. as no harm in this.",
+      "parentUuid": "bc052112_f91512cc",
       "range": {
         "startLine": 204,
         "startChar": 0,
