@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "df3fc096_044d4e5c",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 664,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-07T23:50:29Z",
+      "side": 1,
+      "message": "FYI, filename() will now give you the decoded version of the string automatically.  Sorry, I probably should\u0027ve told you I was doing this, but it seemed like a better solution to stick it in sdbusplus, and I needed it in other places as well.\n\nI suspect this makes this patchset a lot smaller.\n\nhttps://github.com/openbmc/sdbusplus/commit/fa0fa3b0fa5a9d59c37b6edbc53cc21b7c2a16b0",
+      "range": {
+        "startLine": 664,
+        "startChar": 27,
+        "endLine": 664,
+        "endChar": 37
+      },
+      "revId": "2eb6066bbee3c171019112fb15d3430ece09ddf2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
