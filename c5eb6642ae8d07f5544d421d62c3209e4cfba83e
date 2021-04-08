@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "be274056_62e617a5",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 668,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-08T16:27:09Z",
+      "side": 1,
+      "message": "Nit, this block should probably go on line 680, and reference entity-\u003efirst.filename().  Technically std::find_if doesn\u0027t have any implied ordering, even though it might be linear today.  that would also allow you to:\n\n1. Not capture the name parameter by reference\n2. Declare the name param where you use it, which helps in readability.",
+      "range": {
+        "startLine": 662,
+        "startChar": 0,
+        "endLine": 668,
+        "endChar": 0
+      },
+      "revId": "c5eb6642ae8d07f5544d421d62c3209e4cfba83e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
