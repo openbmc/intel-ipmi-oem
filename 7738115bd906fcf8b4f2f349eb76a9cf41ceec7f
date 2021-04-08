@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "90e16baa_360f2197",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1361,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-08T00:00:31Z",
+      "side": 1,
+      "message": "FYI, there\u0027s helper functions in sdbusplus for this now.\n\nIn theory this whole chunk just becomes \nsdbusplus::message::object_path fullPath(path);\nstd::string name \u003d fullPath.filename();\nif (name.empty()){\n  handle error\n}",
+      "range": {
+        "startLine": 1361,
+        "startChar": 8,
+        "endLine": 1361,
+        "endChar": 26
+      },
+      "revId": "7738115bd906fcf8b4f2f349eb76a9cf41ceec7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
