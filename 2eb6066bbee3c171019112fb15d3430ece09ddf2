@@ -22,6 +22,30 @@
       "revId": "2eb6066bbee3c171019112fb15d3430ece09ddf2",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ade6e358_3c4d0cb0",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 664,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-08T07:52:50Z",
+      "side": 1,
+      "message": "no worries.\n\nI have cleaned up the code to just use filename() and just use the objectPath by default unless it is empty.",
+      "parentUuid": "df3fc096_044d4e5c",
+      "range": {
+        "startLine": 664,
+        "startChar": 27,
+        "endLine": 664,
+        "endChar": 37
+      },
+      "revId": "2eb6066bbee3c171019112fb15d3430ece09ddf2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
