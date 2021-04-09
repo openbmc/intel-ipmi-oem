@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ad243668_881b058a",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 451,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-04-09T22:38:32Z",
+      "side": 1,
+      "message": "This seems incorrect to me. What is the purpose of doing this? It seems strange to have this loop here. Is it needed? The \"sensorMap\" variable should already have all the information necessary in it.\n\nSee my comment below. I would recommend removing this block entirely, and not using sdrWriteTable in this patch at all.",
+      "revId": "db1535ee3a71b799cc85eea172e8a6aee239f129",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6fa2fe9e_44871da3",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1000520
+      },
+      "writtenOn": "2021-04-09T22:38:32Z",
+      "side": 1,
+      "message": "I think we should split this patch up. Remove all references to sdrWriteTable in this patch, since it is not complete. We need the Mutable feature, in order to give sdrWriteTable a purpose. However, Mutable did not pass upstream review yet: https://gerrit.openbmc-project.xyz/c/openbmc/dbus-sensors/+/36275\n\nI recommend adding to the top of this file:\n\n// Change to true if you wish to allow external IPMI users to modify your sensor\n// values, and you are OK with the security implications of doing so.\nstatic constexpr bool externalWritePermission \u003d false;\n\nThat way, the decision is deferred to the implementor, since there are still unresolved design issues regarding Mutable. The code for the rest of ipmiSetSensorReading() in this patch is still good, though, so we should continue to use it here.",
+      "revId": "db1535ee3a71b799cc85eea172e8a6aee239f129",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
