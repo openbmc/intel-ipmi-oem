@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "2002b46a_e3dc5805",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 451,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-09T23:27:09Z",
+      "side": 1,
+      "message": "This is used to construct the sdrWriteTable.\n\nBut if we don\u0027t use it, then we can remove it.",
+      "parentUuid": "ad243668_881b058a",
+      "revId": "db1535ee3a71b799cc85eea172e8a6aee239f129",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6fa2fe9e_44871da3",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 10
@@ -33,6 +51,24 @@
       "revId": "db1535ee3a71b799cc85eea172e8a6aee239f129",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e1ae3da1_8870d907",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-09T23:27:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6fa2fe9e_44871da3",
+      "revId": "db1535ee3a71b799cc85eea172e8a6aee239f129",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
