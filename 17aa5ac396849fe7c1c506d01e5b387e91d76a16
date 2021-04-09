@@ -617,6 +617,30 @@
       "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9f0f7a8a_a0b4cd5d",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 461,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-09T22:46:10Z",
+      "side": 1,
+      "message": "\u003e Your comments have merit, however, it will have to be server-specific work. IPMI has its own bit in the SDR that tells clients what the permission is: read-write or read-only. This is IPMI-specific, by definition. Also, the server will need to check these permissions, just as it already checks other input coming from the user for validity.\n\nI agree with the first half, disagree with the second.  I would much rather IPMI itself not check against those bits.  If a sensor publishes mutable but isn\u0027t, or doesn\u0027t publish mutable, but is, that\u0027s a bug on dbus, not a bug in IPMI.\n\n\u003e Otherwise, it wouldn\u0027t be a very secure or robust server.\n\nNot sure I agree there.  These aren\u0027t ACLs.  Can you elaborate on what\u0027s less robust about putting logic in the sensors themselves?  I would\u0027ve thought it would be more robust, because we wouldn\u0027t be duplicating logic, and we\u0027d be putting the checks in the component responsible for them.\n\n\u003e Redfish will have the same concerns. However, making this permission check is trivial, so it should be simple to add, regardless of what service is in use.\n\nWith respect, this permissions check is non-trivial, and as this patchset shows and requires maintaining a state cache or doing two calls for every request;  For something that\u0027s heavily used, that duplication of dbus reqeusts is waste of effort.  The per-request overhead on dbus is largely the driver of any dbus performance, so we should minimize requests where possible.\n\n\u003e \n\u003e The permissions already come from one place, as you said: the Mutable flag, in D-Bus. There would be no duplication here. The various services won\u0027t need to each keep track of this, unless they wanted to do some optional caching (to avoid excessive D-Bus calls). There\u0027s no need for state tables, as this carries no state: it\u0027s just a boolean, either true or false, used to let the server make the permissions check before allowing the write to go through.\n\nI didn\u0027t think about this until after, but rest-dbus should need to be correct, which doesn\u0027t have its own ACLs, and relies on dbus daemons to enforce correctness.  PLDM is in the same boat.\n\nThis would need to track a bool per-sensor, so some kind of table is needed, it\u0027s not just a single boolean.\n\nSo if this patchset wants to add that to Redfish, PLDM, IPMI, and rest-dbus, I guess we could, but that seems way worse than just enforcing it in the sensor subsystem.\n\n\u003e \n\u003e As for the sensors, the sensor daemons in dbus-sensors make the decision whether or not to be mutable. It comes from configuration in entity-manager, same as the other parameters of each sensor. I have a WIP patch https://gerrit.openbmc-project.xyz/c/openbmc/dbus-sensors/+/36275 that supports this. It\u0027s a simple flag added to each sensor, that is then exposed over D-Bus, so the servers can read it.\n\nYep, I think that patchset is part of what\u0027s needed, we probably need to get the other reviews rebased and updated as well.",
+      "parentUuid": "2068c088_ba6b8cf5",
+      "range": {
+        "startLine": 457,
+        "startChar": 0,
+        "endLine": 461,
+        "endChar": 5
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
