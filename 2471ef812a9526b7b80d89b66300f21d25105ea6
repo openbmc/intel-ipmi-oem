@@ -22,6 +22,30 @@
       "revId": "2471ef812a9526b7b80d89b66300f21d25105ea6",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2099b6a4_f4e86711",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 817,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-04-12T13:24:36Z",
+      "side": 1,
+      "message": "This is actual bug. we wrote in seedData and read in passwordData file. whihc causes 0xCE for GetStoredPassword and RestBIOS value also not set properly.",
+      "parentUuid": "04702dab_156a3229",
+      "range": {
+        "startLine": 817,
+        "startChar": 67,
+        "endLine": 817,
+        "endChar": 75
+      },
+      "revId": "2471ef812a9526b7b80d89b66300f21d25105ea6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
