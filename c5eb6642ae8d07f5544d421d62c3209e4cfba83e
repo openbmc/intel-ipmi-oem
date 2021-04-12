@@ -46,6 +46,30 @@
       "revId": "c5eb6642ae8d07f5544d421d62c3209e4cfba83e",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7bed28a4_4a892727",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 668,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-12T04:06:18Z",
+      "side": 1,
+      "message": "\u003e Done.\n\u003e \n\u003e I have cleaned up the code even more now. Although I still have to declare the name param before \n\u003e \n\u003e ```\n\u003e #ifdef USING_ENTITY_MANAGER_DECORATORS\n\u003e ```\n\u003e \n\u003e It is kind of messing things up... kind of want to just remove it if we want to force everyone to use entity manager decorators.\n\nI\u0027m not even sure why you would compile it out.  Vernon, do you remember any context here?\n\n\u003e \n\u003e \n\u003e ----\n\u003e \n\u003e But I have simply set the name to \n\u003e ```\n\u003e name \u003d entity-\u003efirst.filename();\n\u003e ```\n\u003e \n\u003e and if it is empty, then the previous logic takes place.",
+      "parentUuid": "0414033f_2794c9ee",
+      "range": {
+        "startLine": 662,
+        "startChar": 0,
+        "endLine": 668,
+        "endChar": 0
+      },
+      "revId": "c5eb6642ae8d07f5544d421d62c3209e4cfba83e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
