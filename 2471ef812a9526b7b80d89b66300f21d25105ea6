@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "04702dab_156a3229",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 817,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-04-12T12:55:13Z",
+      "side": 1,
+      "message": "nit: I don\u0027t see scope of this change in commit message. Id this intentional filename change? If yes, Can you update commit message?",
+      "range": {
+        "startLine": 817,
+        "startChar": 67,
+        "endLine": 817,
+        "endChar": 75
+      },
+      "revId": "2471ef812a9526b7b80d89b66300f21d25105ea6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
