@@ -371,6 +371,30 @@
       "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2459b347_84f50a05",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-04-12T14:26:23Z",
+      "side": 1,
+      "message": "I understand it works as intended. My question is:  should the function return some error code if the string did not match, i.e. rejected.",
+      "parentUuid": "ddfb07e1_d869d0f4",
+      "range": {
+        "startLine": 204,
+        "startChar": 0,
+        "endLine": 204,
+        "endChar": 9
+      },
+      "revId": "f2c1b6ba6624b854fb8e47b19b6690ae4b8331b6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
