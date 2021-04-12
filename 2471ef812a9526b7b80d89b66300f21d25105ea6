@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "dbbb83d2_a6068f5e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-04-12T14:27:48Z",
+      "side": 1,
+      "message": "nit: As Zhikui mentioned, you can add else condition with ResetFlag \u003d 0 (or) 0xff - a failure value to catch unexpected input string in future (if any), so that this will not have dependency with caller.",
+      "revId": "2471ef812a9526b7b80d89b66300f21d25105ea6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "04702dab_156a3229",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 2
