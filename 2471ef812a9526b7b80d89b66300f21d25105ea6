@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "64f4dc96_8c2d4c47",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-04-12T14:33:52Z",
+      "side": 1,
+      "message": "else is not needed. only 0,1,2 is valid in bios setting-manager. If its not matching. if someone set any not valid value via busctl then BMC have to consider as Noaction. thats 0 by default value.",
+      "parentUuid": "dbbb83d2_a6068f5e",
+      "revId": "2471ef812a9526b7b80d89b66300f21d25105ea6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "04702dab_156a3229",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 2
