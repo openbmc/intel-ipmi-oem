@@ -382,6 +382,30 @@
     },
     {
       "key": {
+        "uuid": "8ff3e3b0_5e1effca",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-15T19:24:46Z",
+      "side": 1,
+      "message": "In this case, I\u0027m confusing them with fan sensor, which is part of dbus sensors and has spec correct dbus interfaces.\n\nIf we plan to use phosphor-pid-controls external sensors long term, we should make them dbus-path compliant, but I suspect just using fansensor and externalsensor would be a better path forward here than adding new matches into sdrutils.",
+      "parentUuid": "2aa19f31_62875db1",
+      "range": {
+        "startLine": 300,
+        "startChar": 9,
+        "endLine": 300,
+        "endChar": 19
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d2617471_2001c0e1",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
