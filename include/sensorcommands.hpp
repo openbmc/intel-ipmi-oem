@@ -123,7 +123,8 @@ namespace ipmi
 extern SensorSubTree sensorTree;
 static ipmi_ret_t getSensorConnection(ipmi::Context::ptr ctx, uint16_t sensnum,
                                       std::string& connection,
-                                      std::string& path)
+                                      std::string& path,
+                                      std::vector<std::string>& interfaces)
 {
     if (!getSensorSubtree(sensorTree) && sensorTree.empty())
     {
@@ -146,6 +147,7 @@ static ipmi_ret_t getSensorConnection(ipmi::Context::ptr ctx, uint16_t sensnum,
         if (path == sensor.first)
         {
             connection = sensor.second.begin()->first;
+            interfaces = sensor.second.begin()->second;
             break;
         }
     }
