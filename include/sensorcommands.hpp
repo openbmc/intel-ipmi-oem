@@ -123,7 +123,8 @@ namespace ipmi
 extern SensorSubTree sensorTree;
 static ipmi_ret_t getSensorConnection(ipmi::Context::ptr ctx, uint16_t sensnum,
                                       std::string& connection,
-                                      std::string& path)
+                                      std::string& path,
+                                      std::vector<std::string>& interfaces)
 {
     if (!getSensorSubtree(sensorTree) && sensorTree.empty())
     {
@@ -146,6 +147,7 @@ static ipmi_ret_t getSensorConnection(ipmi::Context::ptr ctx, uint16_t sensnum,
         if (path == sensor.first)
         {
             connection = sensor.second.begin()->first;
+            interfaces = sensor.second.begin()->second;
             break;
         }
     }
@@ -161,7 +163,8 @@ struct IPMIThresholds
     std::optional<uint8_t> criticalHigh;
 };
 
-int getSensorDataRecord(ipmi::Context::ptr ctx,
-                        std::vector<uint8_t>& recordData, uint16_t recordID);
+int getSensorDataRecord(
+    ipmi::Context::ptr ctx, std::vector<uint8_t>& recordData, uint16_t recordID,
+    uint8_t readBytes = std::numeric_limits<uint8_t>::max());
 
 } // namespace ipmi
