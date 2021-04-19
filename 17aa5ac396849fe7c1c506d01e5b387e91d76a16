@@ -430,6 +430,30 @@
     },
     {
       "key": {
+        "uuid": "007bf913_29eec15a",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-04-19T18:09:11Z",
+      "side": 1,
+      "message": "I am a bit confused about dbus-sensors ExternalSensors and phosphor-pid-control extsensors. They seem to overlap. Are there requirement differences or just different implementation?\nIf they do need to coexist and both need to be included in dynamic SDR, updating phosphor-pid-control to use sensors dbus path seems like a cleaner approach IMO.",
+      "parentUuid": "f96c1f53_f186cdad",
+      "range": {
+        "startLine": 300,
+        "startChar": 9,
+        "endLine": 300,
+        "endChar": 19
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d2617471_2001c0e1",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
