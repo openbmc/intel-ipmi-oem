@@ -406,6 +406,30 @@
     },
     {
       "key": {
+        "uuid": "f96c1f53_f186cdad",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-04-19T16:15:33Z",
+      "side": 1,
+      "message": "So for now it sounds like I should remove the support for pid extsensors for now to get this patch forward... and maybe revisit it once we either fix extsensors to make them dbus-path compliant or just use existing fansensor and externalsensor.\n\n\n@Josh, can you comment on this?\n\nWould using fansensor and externalsensor take away some feature that we want to enable with pid\u0027s extsensors? Would this required just internal config changes?",
+      "parentUuid": "8ff3e3b0_5e1effca",
+      "range": {
+        "startLine": 300,
+        "startChar": 9,
+        "endLine": 300,
+        "endChar": 19
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d2617471_2001c0e1",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
