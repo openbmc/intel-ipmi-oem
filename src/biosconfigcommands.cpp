@@ -71,12 +71,16 @@ map{attributeName,struct{attributeType,readonlyStatus,displayname,
               description,menuPath,current,default,
               array{struct{optionstring,optionvalue}}}}
 */
-std::map<std::string,
-         std::tuple<std::string, bool, std::string, std::string, std::string,
-                    std::variant<int64_t, std::string>,
-                    std::variant<int64_t, std::string>,
-                    std::map<std::string, std::variant<int64_t, std::string>>>>
-    AttributesData;
+using BiosBaseTableType =
+    std::map<std::string,
+             std::tuple<std::string, bool, std::string, std::string,
+                        std::string, std::variant<int64_t, std::string>,
+                        std::variant<int64_t, std::string>,
+                        std::vector<std::tuple<
+                            std::string, std::variant<int64_t, std::string>>>>>;
+using OptionType =
+    std::vector<std::tuple<std::string, std::variant<int64_t, std::string>>>;
+BiosBaseTableType attributesData;
 
 NVOOBdata gNVOOBdata;
 
@@ -123,7 +127,7 @@ static int sendAllAttributes(ipmi::Context::ptr ctx)
     ctx->bus->yield_method_call<>(
         ctx->yield, ec, service, biosConfigBaseMgrPath,
         "org.freedesktop.DBus.Properties", "Set", biosConfigIntf,
-        "BaseBIOSTable", AttributesData);
+        "BaseBIOSTable", std::variant<BiosBaseTableType>(attributesData));
     if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -271,7 +275,7 @@ static int generateAttributesData()
         {
             std::string rootPath = "./" + std::string(menupath);
 
-            std::map<std::string, std::variant<int64_t, std::string>> optionMap;
+            OptionType optionArray;
             tinyxml2::XMLElement* pOptionsElement =
                 pKnobsElement->FirstChildElement("options");
             nlohmann::json optionsArray = nlohmann::json::array();
@@ -281,24 +285,26 @@ static int generateAttributesData()
                     pOptionsElement->FirstChildElement("option");
                 while (pOptionElement != nullptr)
                 {
-                    const std::string text = pOptionElement->Attribute("text");
+                    const std::string optType =
+                        "xyz.openbmc_project.BIOSConfig.Manager.BoundType."
+                        "OneOf";
                     const std::string attrValue =
                         pOptionElement->Attribute("value");
-                    if (!text.empty() && !attrValue.empty())
+                    if (!optType.empty() && !attrValue.empty())
                     {
 
-                        optionMap.emplace(std::make_pair(std::move(text),
-                                                         std::move(attrValue)));
+                        optionArray.push_back(
+                            std::make_pair(optType, attrValue));
                     }
                     pOptionElement =
                         pOptionElement->NextSiblingElement("option");
                 }
             }
 
-            AttributesData.emplace(std::make_pair(
-                name,
-                std::make_tuple(attrType, readOnlyStatus, dname, description,
-                                rootPath, curvalue, defaultvalue, optionMap)));
+            attributesData.emplace(std::make_pair(
+                name, std::make_tuple(attrType, readOnlyStatus, dname,
+                                      description, rootPath, curvalue,
+                                      defaultvalue, optionArray)));
         }
         pKnobsElement = pKnobsElement->NextSiblingElement("knob");
     }
