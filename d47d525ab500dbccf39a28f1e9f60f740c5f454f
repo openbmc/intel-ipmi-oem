@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "82083b5b_98ce3584",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-04-26T17:25:50Z",
+      "side": 1,
+      "message": "What if this action done from redfish side? Did you added logs for redfish flow as well?\n\nnot quires sure why we are directly changing files in intel-ipmi-oem code. Instead that should go via d-bus which both Redfish and IPMI can make sure of it. Currently redfish is using below d-bus command to perform restore action(updater service). But this is out of context of this change though.",
+      "range": {
+        "startLine": 10,
+        "startChar": 28,
+        "endLine": 10,
+        "endChar": 37
+      },
+      "revId": "d47d525ab500dbccf39a28f1e9f60f740c5f454f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1001d8a3_b1ba6057",
         "filename": "src/oemcommands.cpp",
         "patchSetId": 1
@@ -13,6 +36,30 @@
       "writtenOn": "2021-04-26T15:53:14Z",
       "side": 1,
       "message": "Is this true for all three commands? What is the difference for the three commands?",
+      "range": {
+        "startLine": 2919,
+        "startChar": 17,
+        "endLine": 2919,
+        "endChar": 43
+      },
+      "revId": "d47d525ab500dbccf39a28f1e9f60f740c5f454f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "936c4336_a140b825",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 2919,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-04-26T17:25:50Z",
+      "side": 1,
+      "message": "+1\n\nAbove 3 actions represent different actions:\n - Default restore: This won\u0027t clean FRU Info, SSH Keys, SSL certs etc. Its cleans all settings and /var/ which includes logs, other config data.\n - Full restore: Cleans everything including FRU Info, SSH keys, SSL certs etc..\n - Format: Just does format of .rwfs\n\n\nSo this debug message can be more granularized depending user selected action.",
+      "parentUuid": "1001d8a3_b1ba6057",
       "range": {
         "startLine": 2919,
         "startChar": 17,
