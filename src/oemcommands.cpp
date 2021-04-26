@@ -2914,6 +2914,12 @@ ipmi::RspType<uint8_t /* restore status */>
                 return ipmi::responseUnspecifiedError();
             }
             restoreFile << value << "\n";
+
+            phosphor::logging::log<phosphor::logging::level::WARNING>(
+                "All BMC configurable items will be restored to defaults on "
+                "next BMC reboot",
+                phosphor::logging::entry("VALUE=0x%0X", cmd));
+
             break;
         }
         default:
