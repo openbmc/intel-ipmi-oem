@@ -478,6 +478,30 @@
     },
     {
       "key": {
+        "uuid": "c7905d6a_dab7e4ae",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2021-04-27T18:59:06Z",
+      "side": 1,
+      "message": "\u003e As for phosphor-pid-control internally-generated sensors, I\u0027m not sure why they used the /extsensor/ name prefix, but I\u0027m sure there was a reason. Perhaps venture@ might know? Does anybody still have any active deployments that depend on this naming?\n\nI suspect it\u0027s because something didn\u0027t exist at the time, so Patrick built something that did what he needed.  I would expect anything that needs this behavior should be moving to external sensor, so this code isn\u0027t necessary to have on master, and propagates a known incorrect API.\n\n\n\u003e \n\u003e I did not change it, on purpose, because I didn\u0027t want to break existing configuration, and if it\u0027s still working and not causing problems, I see no reason to change it. I\u0027m open to changing it for new deployments, however.\n\n\nSure, but this code is proposing we now include it in ipmi-dynamic, which has a solution here.\n\n\u003e \n\u003e There is no overlap between dbus-sensors FanSensor and ExternalSensor objects, and these phosphor-pid-control internally-generated sensor objects.\n\nThere isn\u0027t?  Isn\u0027t this doing exactly the same thing as those two?\n\n\u003e That might be one of the reasons the name prefix was different, to guarantee no overlap, but that\u0027s not necessary if names are carefully chosen. As for your second question, no, there would be no feature conflict that I can see. They both can coexist.\n\nnot from an interface perspective they can\u0027t.  If we want to propose this change to phosphor-dbus-interfaces, we can, but I suspect we\u0027re going to get told that the existing APIs meet this need already.",
+      "parentUuid": "daeea2a6_138358c8",
+      "range": {
+        "startLine": 300,
+        "startChar": 9,
+        "endLine": 300,
+        "endChar": 19
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d2617471_2001c0e1",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
