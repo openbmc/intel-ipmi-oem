@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "008f2f6e_a4940790",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-04-27T03:01:46Z",
+      "side": 1,
+      "message": "Agree, As i said above redfish is out of scope here.  But make sure to add log entry in Redfish flow as well.",
+      "parentUuid": "ad61403b_d697d299",
+      "range": {
+        "startLine": 10,
+        "startChar": 28,
+        "endLine": 10,
+        "endChar": 37
+      },
+      "revId": "d47d525ab500dbccf39a28f1e9f60f740c5f454f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1001d8a3_b1ba6057",
         "filename": "src/oemcommands.cpp",
         "patchSetId": 1
@@ -108,6 +132,30 @@
       "side": 1,
       "message": "Instead of granularizing with 3-different messages, this message can be made generic and depending on the \u0027cmd\u0027 value one can infer the type of reset.",
       "parentUuid": "936c4336_a140b825",
+      "range": {
+        "startLine": 2919,
+        "startChar": 17,
+        "endLine": 2919,
+        "endChar": 43
+      },
+      "revId": "d47d525ab500dbccf39a28f1e9f60f740c5f454f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f04f2f2f_c819ddc9",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 2919,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-04-27T03:01:46Z",
+      "side": 1,
+      "message": "Yes, make Generic message with cmd parameter for differentiation. Anyway its journal log so that should be ok.",
+      "parentUuid": "14146f69_c0e0e903",
       "range": {
         "startLine": 2919,
         "startChar": 17,
