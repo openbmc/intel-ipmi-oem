@@ -73,6 +73,30 @@
     },
     {
       "key": {
+        "uuid": "05e25852_a350634a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-04-27T04:15:10Z",
+      "side": 1,
+      "message": "Redfish clearing does not use .restore_op file, and here the issue we chase is specific to .restore_op file. Log in the redfish query can be added separately.",
+      "parentUuid": "008f2f6e_a4940790",
+      "range": {
+        "startLine": 10,
+        "startChar": 28,
+        "endLine": 10,
+        "endChar": 37
+      },
+      "revId": "d47d525ab500dbccf39a28f1e9f60f740c5f454f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1001d8a3_b1ba6057",
         "filename": "src/oemcommands.cpp",
         "patchSetId": 1
@@ -165,6 +189,30 @@
       "revId": "d47d525ab500dbccf39a28f1e9f60f740c5f454f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b1e9c9c7_762d9c16",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 2919,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-04-27T04:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f04f2f2f_c819ddc9",
+      "range": {
+        "startLine": 2919,
+        "startChar": 17,
+        "endLine": 2919,
+        "endChar": 43
+      },
+      "revId": "d47d525ab500dbccf39a28f1e9f60f740c5f454f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
