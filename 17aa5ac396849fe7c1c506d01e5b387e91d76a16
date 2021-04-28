@@ -550,6 +550,30 @@
     },
     {
       "key": {
+        "uuid": "2077f1c1_d236db08",
+        "filename": "include/sdrutils.hpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-04-28T00:14:27Z",
+      "side": 1,
+      "message": "\u003e I think the best course of action to get this moving is to remove `/extsensor/` from this patch for now and we will test it internally the new dbus-sensors configurations and add a new patch moving forware.\n\n+1",
+      "parentUuid": "f73a034c_c097f32c",
+      "range": {
+        "startLine": 300,
+        "startChar": 9,
+        "endLine": 300,
+        "endChar": 19
+      },
+      "revId": "17aa5ac396849fe7c1c506d01e5b387e91d76a16",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d2617471_2001c0e1",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 6
