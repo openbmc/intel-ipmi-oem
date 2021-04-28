@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "d9714be8_da27649b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-04-28T11:24:48Z",
+      "side": 1,
+      "message": "I performed AC cycle, warm reboot and cold reboot. But SMMDR get dir info always giving fixed values. May be this other issue. We can verify this an other issue.",
+      "parentUuid": "ef11481d_9cd7053c",
+      "range": {
+        "startLine": 26,
+        "startChar": 22,
+        "endLine": 26,
+        "endChar": 27
+      },
+      "revId": "278f4326ee436e12f903e4ede4e4db8d239598c4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "aec46811_579290fe",
         "filename": "src/smbiosmdrv2handler.cpp",
         "patchSetId": 2
@@ -84,6 +108,30 @@
       "side": 1,
       "message": "This is of variable size (16 multiples of remianingEnries i.e N 8 16). Actually this is wrong. You need to use the vector here instead of fixed size array. Then in code you need to validate for correctness of size with 16 * remianingEntries(Byte 6).",
       "parentUuid": "6161b160_df7bf1e4",
+      "range": {
+        "startLine": 368,
+        "startChar": 52,
+        "endLine": 368,
+        "endChar": 54
+      },
+      "revId": "278f4326ee436e12f903e4ede4e4db8d239598c4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e65eb262_4ecdbf0f",
+        "filename": "src/smbiosmdrv2handler.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 368,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-04-28T11:24:48Z",
+      "side": 1,
+      "message": "fixed. Thanks",
+      "parentUuid": "48777723_a1063071",
       "range": {
         "startLine": 368,
         "startChar": 52,
