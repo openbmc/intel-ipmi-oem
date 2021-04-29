@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "91bcc8f7_3fab9aaf",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 18
+      },
+      "lineNbr": 463,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-04-29T16:25:11Z",
+      "side": 1,
+      "message": "rather than a blocking call here, use the yielding version of setDbusProperty. You pass in ctx instead of a bus. The flow is the same, but it allows ipmid to execute other contexts while waiting for the response.",
+      "range": {
+        "startLine": 463,
+        "startChar": 24,
+        "endLine": 463,
+        "endChar": 35
+      },
+      "revId": "e1745ae1d5b89e7c034935663d4a1018f97d3f6b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
