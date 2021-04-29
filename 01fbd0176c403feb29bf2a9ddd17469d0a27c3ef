@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6950f5e2_69895e6e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2021-04-29T17:08:53Z",
+      "side": 1,
+      "message": "This is always true, fight?",
+      "range": {
+        "startLine": 293,
+        "startChar": 24,
+        "endLine": 293,
+        "endChar": 40
+      },
+      "revId": "01fbd0176c403feb29bf2a9ddd17469d0a27c3ef",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
