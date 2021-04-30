@@ -46,6 +46,30 @@
       "revId": "01fbd0176c403feb29bf2a9ddd17469d0a27c3ef",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f1079c7a_604a8d67",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1000218
+      },
+      "writtenOn": "2021-04-30T00:49:40Z",
+      "side": 1,
+      "message": "It is to leave the opportunity to extend the optType in the future.",
+      "parentUuid": "6ede8400_a2a0760b",
+      "range": {
+        "startLine": 293,
+        "startChar": 24,
+        "endLine": 293,
+        "endChar": 40
+      },
+      "revId": "01fbd0176c403feb29bf2a9ddd17469d0a27c3ef",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
