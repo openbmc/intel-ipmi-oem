@@ -290,6 +290,15 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         return IPMI_CC_REQ_DATA_LEN_INVALID;
     }
     std::string idString((char*)data->biosId, data->biosIDLength);
+    for (auto idChar : idString)
+    {
+        if (!std::isprint(static_cast<unsigned char>(idChar)))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "BIOS ID contains non printable character");
+            return IPMI_CC_INVALID_FIELD_REQUEST;
+        }
+    }
 
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     std::string service = getService(*dbus, biosVersionIntf, biosActiveObjPath);
