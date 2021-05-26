@@ -117,6 +117,7 @@ static uint8_t lastDevId = 0xFF;
 static uint8_t writeBus = 0xFF;
 static uint8_t writeAddr = 0XFF;
 
+static bool delayFruWriteDisabled = true;
 std::unique_ptr<phosphor::Timer> writeTimer = nullptr;
 static std::vector<sdbusplus::bus::match::match> fruMatches;
 
@@ -500,15 +501,16 @@ ipmi::RspType<uint8_t>
 
     writeBus = cacheBus;
     writeAddr = cacheAddr;
-    if (atEnd)
+    if (delayFruWriteDisabled || atEnd)
     {
         // cancel timer, we're at the end so might as well send it
         writeTimer->stop();
         if (!writeFru())
         {
+            lastDevId = 0xFF; // Force update ‘fruCache'.
             return ipmi::responseInvalidFieldRequest();
         }
-        countWritten = std::min(fruCache.size(), static_cast<size_t>(0xFF));
+        countWritten = dataToWrite.size();
     }
     else
     {
