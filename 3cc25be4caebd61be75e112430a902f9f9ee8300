@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "c370f40e_a9ca8301",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1001094
+      },
+      "writtenOn": "2021-05-31T05:08:03Z",
+      "side": 1,
+      "message": "Updated.",
+      "parentUuid": "138cce43_7e4c3676",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 51
+      },
+      "revId": "3cc25be4caebd61be75e112430a902f9f9ee8300",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "720f9a34_9c6ad766",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -36,6 +60,30 @@
       "writtenOn": "2021-05-30T17:21:39Z",
       "side": 1,
       "message": "I believe, it is \"invalid\" offsets.",
+      "range": {
+        "startLine": 13,
+        "startChar": 48,
+        "endLine": 13,
+        "endChar": 53
+      },
+      "revId": "3cc25be4caebd61be75e112430a902f9f9ee8300",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3b502cf2_f64cede7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1001094
+      },
+      "writtenOn": "2021-05-31T05:08:03Z",
+      "side": 1,
+      "message": "Updated.",
+      "parentUuid": "720f9a34_9c6ad766",
       "range": {
         "startLine": 13,
         "startChar": 48,
