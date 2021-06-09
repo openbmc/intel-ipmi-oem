@@ -613,6 +613,10 @@ ipmi::RspType<> ipmiSetFrontPanelButtonEnables(bool disablePowerButton,
                                                bool disableSleepButton,
                                                uint4_t reserved)
 {
+    if (reserved)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
     bool error = false;
 
     error |= setButtonEnabled(powerButtonPath, disablePowerButton);
@@ -623,6 +627,7 @@ ipmi::RspType<> ipmiSetFrontPanelButtonEnables(bool disablePowerButton,
     {
         return ipmi::responseUnspecifiedError();
     }
+
     return ipmi::responseSuccess();
 }
 
