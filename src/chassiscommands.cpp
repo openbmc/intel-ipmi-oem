@@ -512,7 +512,7 @@ ipmi::RspType<bool,    // Power is on
     constexpr bool coolingFanFault = false;
     // chassisIdentifySupport set because this command is implemented
     constexpr bool chassisIdentifySupport = true;
-    uint2_t chassisIdentifyState = chassisIDState;
+    uint2_t chassisIdentifyState = types::enum_cast<uint2_t>(chassisIDState);
     constexpr bool sleepButtonDisabled = false;
     constexpr bool sleepButtonDisableAllow = false;
 

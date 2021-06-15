@@ -741,14 +741,18 @@ ipmi::RspType<bool,    // CATERR Reset Enabled
     uint6_t cpu3CATERRCount = 0;
     uint6_t cpu4CATERRCount = 0;
     uint8_t crashdumpCount = 0;
-    uint2_t cpu1Status =
-        cpuPresent("CPU_1") ? CPUStatus::enabled : CPUStatus::notPresent;
-    uint2_t cpu2Status =
-        cpuPresent("CPU_2") ? CPUStatus::enabled : CPUStatus::notPresent;
-    uint2_t cpu3Status =
-        cpuPresent("CPU_3") ? CPUStatus::enabled : CPUStatus::notPresent;
-    uint2_t cpu4Status =
-        cpuPresent("CPU_4") ? CPUStatus::enabled : CPUStatus::notPresent;
+    uint2_t cpu1Status = cpuPresent("CPU_1")
+                             ? types::enum_cast<uint8_t>(CPUStatus::enabled)
+                             : types::enum_cast<uint8_t>(CPUStatus::notPresent);
+    uint2_t cpu2Status = cpuPresent("CPU_2")
+                             ? types::enum_cast<uint8_t>(CPUStatus::enabled)
+                             : types::enum_cast<uint8_t>(CPUStatus::notPresent);
+    uint2_t cpu3Status = cpuPresent("CPU_3")
+                             ? types::enum_cast<uint8_t>(CPUStatus::enabled)
+                             : types::enum_cast<uint8_t>(CPUStatus::notPresent);
+    uint2_t cpu4Status = cpuPresent("CPU_4")
+                             ? types::enum_cast<uint8_t>(CPUStatus::enabled)
+                             : types::enum_cast<uint8_t>(CPUStatus::notPresent);
 
     std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
     try

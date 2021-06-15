@@ -38,4 +38,32 @@ using GetSubTreeType = std::vector<
 
 using SensorMap = std::map<std::string, std::map<std::string, DbusVariant>>;
 
+namespace types
+{
+namespace details
+{
+
+template <typename U>
+using underlying_t =
+    typename std::conditional_t<std::is_enum_v<U>, std::underlying_type<U>,
+                                std::enable_if<true, U>>::type;
+} // namespace details
+
+/**
+ * @brief Converts a number or enum class to another
+ * @tparam R - The output type
+ * @tparam T - The input type
+ * @param t - An enum or integer value to cast
+ * @return The value in R form
+ */
+template <typename R, typename T>
+inline R enum_cast(T t)
+{
+    auto tu = static_cast<details::underlying_t<T>>(t);
+    auto ru = static_cast<details::underlying_t<R>>(tu);
+    return static_cast<R>(ru);
+}
+
+} // namespace types
+
 } // namespace ipmi
