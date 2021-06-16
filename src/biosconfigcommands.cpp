@@ -143,7 +143,7 @@ static int sendAllAttributes(ipmi::Context::ptr ctx)
  */
 static uint8_t flushNVOOBdata()
 {
-    std::ofstream outFile(biosConfigNVPath, std::ios::binary | std::ios::app);
+    std::ofstream outFile(biosConfigNVPath, std::ios::binary);
     if (outFile.good())
     {
         outFile.seekp(std::ios_base::beg);
@@ -237,12 +237,12 @@ static int generateAttributesData()
     tinyxml2::XMLNode* pRoot = xmlDoc.FirstChild();
     if (pRoot == nullptr)
     {
-        return 0;
+        return ipmi::ccUnspecifiedError;
     }
     tinyxml2::XMLElement* pElement = pRoot->FirstChildElement("biosknobs");
     if (pElement == nullptr)
     {
-        return 0;
+        return ipmi::ccUnspecifiedError;
     }
     tinyxml2::XMLElement* pKnobsElement = pElement->FirstChildElement("knob");
 
@@ -270,7 +270,6 @@ static int generateAttributesData()
         description = pKnobsElement->Attribute("description")
                           ? pKnobsElement->Attribute("description")
                           : "";
-        phosphor::logging::log<phosphor::logging::level::INFO>(name.c_str());
         if (!name.empty() && !curvalue.empty() && !dname.empty() &&
             !menupath.empty() && !defaultvalue.empty())
         {
@@ -310,7 +309,7 @@ static int generateAttributesData()
         pKnobsElement = pKnobsElement->NextSiblingElement("knob");
     }
 
-    return 0;
+    return ipmi::ccSuccess;
 }
 
 /** @brief implement executing the linux command to uncompress and generate the
@@ -357,12 +356,12 @@ static Cc InitNVOOBdata()
         std::filesystem::create_directory(biosConfigFolder);
     }
 
-    std::ifstream ifs(biosConfigNVPath,
-                      std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream ifs(biosConfigNVPath, std::ios::in | std::ios::binary);
 
     if (ifs.good())
     {
 
+        ifs.seekg(std::ios_base::beg);
         ifs.read(reinterpret_cast<char*>(&gNVOOBdata),
                  sizeof(struct NVOOBdata));
         ifs.close();
@@ -491,6 +490,7 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
             gNVOOBdata.payloadInfo[payloadType].actualTotalPayloadWritten = 0;
             gNVOOBdata.payloadInfo[payloadType].payloadStatus =
                 static_cast<uint8_t>(ipmi::PStatus::Unknown);
+            gNVOOBdata.payloadInfo[payloadType].payloadType = payloadType;
 
             return ipmi::responseSuccess(
                 gNVOOBdata.payloadInfo[payloadType].payloadReservationID);
@@ -573,23 +573,21 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
             }
             std::string tempFilePath =
                 "/var/oob/temp" + std::to_string(payloadType);
-            std::string PayloadFilePath =
+            std::string payloadFilePath =
                 "/var/oob/Payload" + std::to_string(payloadType);
             auto renamestatus =
-                std::rename(tempFilePath.c_str(), PayloadFilePath.c_str());
+                std::rename(tempFilePath.c_str(), payloadFilePath.c_str());
             if (renamestatus)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "ipmiOEMSetPayload: Renaming Payload file - failed");
             }
 
-            gNVOOBdata.payloadInfo[payloadType].payloadFilePath =
-                PayloadFilePath;
             if (payloadType == static_cast<uint8_t>(ipmi::PType::IntelXMLType0))
             {
                 // Unzip the Intel format XML file type 0
                 auto response = generateBIOSXMLFile("/usr/bin/lzcat", "-d",
-                                                    PayloadFilePath.c_str());
+                                                    payloadFilePath.c_str());
                 if (response)
                 {
 
@@ -599,6 +597,29 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
                         static_cast<uint8_t>(ipmi::PStatus::Corrupted);
                     return ipmi::response(ipmiCCPayloadPayloadPacketMissed);
                 }
+                phosphor::logging::log<phosphor::logging::level::INFO>(
+                    " ipmiOEMSetPayload : Convert XML into native-dbus DONE");
+                response = generateAttributesData();
+                if (response)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ipmiOEMSetPayload: generateAttributesData - failed");
+                    gNVOOBdata.payloadInfo[payloadType].payloadStatus =
+                        static_cast<uint8_t>(ipmi::PStatus::Corrupted);
+                    return ipmi::responseResponseError();
+                }
+
+                phosphor::logging::log<phosphor::logging::level::INFO>(
+                    " ipmiOEMSetPayload : BaseBIOSTable Property  is set");
+                response = sendAllAttributes(ctx);
+                if (response)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ipmiOEMSetPayload: sendAllAttributes - failed");
+                    gNVOOBdata.payloadInfo[payloadType].payloadStatus =
+                        static_cast<uint8_t>(ipmi::PStatus::Corrupted);
+                    return ipmi::responseResponseError();
+                }
             }
             gNVOOBdata.payloadInfo[payloadType].payloadStatus =
                 static_cast<uint8_t>(ipmi::PStatus::Valid);
@@ -606,28 +627,17 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
             struct stat filestat;
 
             /* Get entry's information. */
-            if (!stat(PayloadFilePath.c_str(), &filestat))
+            if (!stat(payloadFilePath.c_str(), &filestat))
             {
                 gNVOOBdata.payloadInfo[payloadType].payloadTimeStamp =
                     filestat.st_mtime;
                 gNVOOBdata.payloadInfo[payloadType].payloadTotalSize =
                     filestat.st_size;
-                gNVOOBdata.payloadInfo[payloadType].payloadFilePath =
-                    PayloadFilePath;
             }
             else
             {
                 return ipmi::responseResponseError();
             }
-
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                " ipmiOEMSetPayload : Convert XML into native-dbus DONE");
-            generateAttributesData();
-
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                " ipmiOEMSetPayload : BaseBIOSTable Property  is set");
-            sendAllAttributes(ctx);
-
             flushNVOOBdata();
             return ipmi::responseSuccess(
                 gNVOOBdata.payloadInfo[payloadType].actualTotalPayloadWritten);
@@ -683,8 +693,24 @@ ipmi::RspType<message::Payload>
     {
         case ipmi::GetPayloadParameter::GetPayloadInfo:
         {
+
+            std::string payloadFilePath =
+                "/var/oob/Payload" + std::to_string(payloadType);
+
+            std::ifstream ifs(payloadFilePath,
+                              std::ios::in | std::ios::binary | std::ios::ate);
+
+            if (!ifs.good())
+            {
+
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "ipmiOEMGetPayload: Payload File Error");
+                // File does not exist code here
+                return ipmi::response(ipmi::ccUnspecifiedError);
+            }
+            ifs.close();
             retValue.pack(res.payloadVersion);
-            retValue.pack(res.payloadType);
+            retValue.pack(payloadType);
             retValue.pack(res.payloadTotalSize);
             retValue.pack(res.payloadTotalChecksum);
             retValue.pack(res.payloadflag);
@@ -707,10 +733,21 @@ ipmi::RspType<message::Payload>
                 }
                 uint32_t offset = reqData.at(0);
                 uint32_t length = reqData.at(1);
+                std::string payloadFilePath =
+                    "/var/oob/Payload" + std::to_string(payloadType);
 
-                std::ifstream ifs(res.payloadFilePath, std::ios::in |
-                                                           std::ios::binary |
-                                                           std::ios::ate);
+                std::ifstream ifs(payloadFilePath, std::ios::in |
+                                                       std::ios::binary |
+                                                       std::ios::ate);
+
+                if (!ifs.good())
+                {
+
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ipmiOEMGetPayload: Payload File Error");
+                    // File does not exist code here
+                    return ipmi::response(ipmi::ccUnspecifiedError);
+                }
                 std::ifstream::pos_type fileSize = ifs.tellg();
                 // Total file data within given offset
                 if (fileSize < static_cast<uint64_t>(offset))
