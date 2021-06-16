@@ -367,27 +367,27 @@ static bool setButtonEnabled(const std::string& buttonPath, const bool disabled)
     return 0;
 }
 
-static bool getRestartCause(std::string& restartCause)
+static bool getRestartCause(ipmi::Context::ptr& ctx, std::string& restartCause)
 {
     constexpr const char* restartCausePath =
         "/xyz/openbmc_project/control/host0/restart_cause";
     constexpr const char* restartCauseIntf =
         "xyz.openbmc_project.Control.Host.RestartCause";
-    std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
 
-    try
+    std::string service;
+    boost::system::error_code ec =
+        ipmi::getService(ctx, restartCauseIntf, restartCausePath, service);
+
+    if (!ec)
     {
-        auto service =
-            ipmi::getService(*busp, restartCauseIntf, restartCausePath);
-
-        ipmi::Value result = ipmi::getDbusProperty(
-            *busp, service, restartCausePath, restartCauseIntf, "RestartCause");
-        restartCause = std::get<std::string>(result);
+        ec = ipmi::getDbusProperty(ctx, service, restartCausePath,
+                                   restartCauseIntf, "RestartCause",
+                                   restartCause);
     }
-    catch (const std::exception& e)
+    if (ec)
     {
         log<level::ERR>("Failed to fetch RestartCause property",
-                        entry("ERROR=%s", e.what()),
+                        entry("ERROR=%s", ec.message().c_str()),
                         entry("PATH=%s", restartCausePath),
                         entry("INTERFACE=%s", restartCauseIntf));
         return false;
@@ -395,10 +395,11 @@ static bool getRestartCause(std::string& restartCause)
     return true;
 }
 
-static bool checkIPMIRestartCause(bool& ipmiRestartCause)
+static bool checkIPMIRestartCause(ipmi::Context::ptr& ctx,
+                                  bool& ipmiRestartCause)
 {
     std::string restartCause;
-    if (!getRestartCause(restartCause))
+    if (!getRestartCause(ctx, restartCause))
     {
         return false;
     }
@@ -443,7 +444,7 @@ ipmi::RspType<bool,    // Power is on
               bool, // Diagnostic Interrupt button disable allowed
               bool  // Standby (sleep) button disable allowed
               >
-    ipmiGetChassisStatus()
+    ipmiGetChassisStatus(ipmi::Context::ptr ctx)
 {
     std::optional<uint2_t> restorePolicy =
         power_policy::getPowerRestorePolicy();
@@ -492,7 +493,7 @@ ipmi::RspType<bool,    // Power is on
     bool powerDownAcFailed = power_policy::getACFailStatus();
 
     bool powerStatusIPMI = false;
-    if (!checkIPMIRestartCause(powerStatusIPMI))
+    if (!checkIPMIRestartCause(ctx, powerStatusIPMI))
     {
         return ipmi::responseUnspecifiedError();
     }
@@ -594,17 +595,19 @@ static uint4_t getRestartCauseValue(const std::string& cause)
 
 ipmi::RspType<uint4_t, // Restart Cause
               uint4_t, // reserved
-              uint8_t  // channel number (not supported)
+              uint8_t  // channel number
               >
-    ipmiGetSystemRestartCause()
+    ipmiGetSystemRestartCause(ipmi::Context::ptr ctx)
 {
     std::string restartCauseStr;
-    if (!getRestartCause(restartCauseStr))
+    if (!getRestartCause(ctx, restartCauseStr))
     {
         return ipmi::responseUnspecifiedError();
     }
-
-    return ipmi::responseSuccess(getRestartCauseValue(restartCauseStr), 0, 0);
+    constexpr uint4_t reserved = 0;
+    auto channel = static_cast<uint8_t>(ctx->channel);
+    return ipmi::responseSuccess(getRestartCauseValue(restartCauseStr),
+                                 reserved, channel);
 }
 
 ipmi::RspType<> ipmiSetFrontPanelButtonEnables(bool disablePowerButton,
