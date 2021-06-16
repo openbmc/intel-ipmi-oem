@@ -79,7 +79,6 @@ struct PayloadInfo
     uint32_t payloadCurrentSize;
     uint32_t payloadCurrentChecksum;
     uint32_t actualTotalPayloadWritten;
-    std::string payloadFilePath;
 };
 
 struct NVOOBdata
