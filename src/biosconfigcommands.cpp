@@ -56,6 +56,7 @@ static constexpr uint8_t adminPasswordChanged = (1 << 4);
 static constexpr const char* biosConfigFolder = "/var/oob";
 static constexpr const char* biosConfigNVPath = "/var/oob/nvoobdata.dat";
 static constexpr const uint8_t algoSHA384 = 2;
+static constexpr const uint8_t algoSHA256 = 0;
 static constexpr const uint8_t biosCapOffsetBit = 0x3;
 static constexpr uint16_t maxGetPayloadDataSize = 4096;
 static constexpr const char* biosXMLFilePath = "/var/oob/bios.xml";
@@ -142,7 +143,7 @@ static int sendAllAttributes(ipmi::Context::ptr ctx)
  */
 static uint8_t flushNVOOBdata()
 {
-    std::ofstream outFile(biosConfigNVPath, std::ios::binary | std::ios::app);
+    std::ofstream outFile(biosConfigNVPath, std::ios::binary);
     if (outFile.good())
     {
         outFile.seekp(std::ios_base::beg);
@@ -269,7 +270,6 @@ static int generateAttributesData()
         description = pKnobsElement->Attribute("description")
                           ? pKnobsElement->Attribute("description")
                           : "";
-        phosphor::logging::log<phosphor::logging::level::INFO>(name.c_str());
         if (!name.empty() && !curvalue.empty() && !dname.empty() &&
             !menupath.empty() && !defaultvalue.empty())
         {
@@ -356,12 +356,12 @@ static Cc InitNVOOBdata()
         std::filesystem::create_directory(biosConfigFolder);
     }
 
-    std::ifstream ifs(biosConfigNVPath,
-                      std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream ifs(biosConfigNVPath, std::ios::in | std::ios::binary);
 
     if (ifs.good())
     {
 
+        ifs.seekg(std::ios_base::beg);
         ifs.read(reinterpret_cast<char*>(&gNVOOBdata),
                  sizeof(struct NVOOBdata));
         ifs.close();
@@ -490,6 +490,7 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
             gNVOOBdata.payloadInfo[payloadType].actualTotalPayloadWritten = 0;
             gNVOOBdata.payloadInfo[payloadType].payloadStatus =
                 static_cast<uint8_t>(ipmi::PStatus::Unknown);
+            gNVOOBdata.payloadInfo[payloadType].payloadType = payloadType;
 
             return ipmi::responseSuccess(
                 gNVOOBdata.payloadInfo[payloadType].payloadReservationID);
@@ -582,8 +583,6 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
                     "ipmiOEMSetPayload: Renaming Payload file - failed");
             }
 
-            gNVOOBdata.payloadInfo[payloadType].payloadFilePath =
-                PayloadFilePath;
             if (payloadType == static_cast<uint8_t>(ipmi::PType::IntelXMLType0))
             {
                 // Unzip the Intel format XML file type 0
@@ -598,6 +597,13 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
                         static_cast<uint8_t>(ipmi::PStatus::Corrupted);
                     return ipmi::response(ipmiCCPayloadPayloadPacketMissed);
                 }
+                phosphor::logging::log<phosphor::logging::level::INFO>(
+                    " ipmiOEMSetPayload : Convert XML into native-dbus DONE");
+                generateAttributesData();
+
+                phosphor::logging::log<phosphor::logging::level::INFO>(
+                    " ipmiOEMSetPayload : BaseBIOSTable Property  is set");
+                sendAllAttributes(ctx);
             }
             gNVOOBdata.payloadInfo[payloadType].payloadStatus =
                 static_cast<uint8_t>(ipmi::PStatus::Valid);
@@ -611,22 +617,11 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
                     filestat.st_mtime;
                 gNVOOBdata.payloadInfo[payloadType].payloadTotalSize =
                     filestat.st_size;
-                gNVOOBdata.payloadInfo[payloadType].payloadFilePath =
-                    PayloadFilePath;
             }
             else
             {
                 return ipmi::responseResponseError();
             }
-
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                " ipmiOEMSetPayload : Convert XML into native-dbus DONE");
-            generateAttributesData();
-
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                " ipmiOEMSetPayload : BaseBIOSTable Property  is set");
-            sendAllAttributes(ctx);
-
             flushNVOOBdata();
             return ipmi::responseSuccess(
                 gNVOOBdata.payloadInfo[payloadType].actualTotalPayloadWritten);
@@ -682,8 +677,21 @@ ipmi::RspType<message::Payload>
     {
         case ipmi::GetPayloadParameter::GetPayloadInfo:
         {
+
+            std::string PayloadFilePath =
+                "/var/oob/Payload" + std::to_string(payloadType);
+
+            std::ifstream ifs(PayloadFilePath,
+                              std::ios::in | std::ios::binary | std::ios::ate);
+
+            if (ifs.fail())
+            {
+                // File does not exist code here
+                return ipmi::response(ipmi::ccUnspecifiedError);
+            }
+            ifs.close();
             retValue.pack(res.payloadVersion);
-            retValue.pack(res.payloadType);
+            retValue.pack(payloadType);
             retValue.pack(res.payloadTotalSize);
             retValue.pack(res.payloadTotalChecksum);
             retValue.pack(res.payloadflag);
@@ -706,10 +714,18 @@ ipmi::RspType<message::Payload>
                 }
                 uint32_t offset = reqData.at(0);
                 uint32_t length = reqData.at(1);
+                std::string PayloadFilePath =
+                    "/var/oob/Payload" + std::to_string(payloadType);
 
-                std::ifstream ifs(res.payloadFilePath, std::ios::in |
-                                                           std::ios::binary |
-                                                           std::ios::ate);
+                std::ifstream ifs(PayloadFilePath, std::ios::in |
+                                                       std::ios::binary |
+                                                       std::ios::ate);
+
+                if (ifs.fail())
+                {
+                    // File does not exist code here
+                    return ipmi::response(ipmi::ccUnspecifiedError);
+                }
                 std::ifstream::pos_type fileSize = ifs.tellg();
                 // Total file data within given offset
                 if (fileSize < static_cast<uint64_t>(offset))
@@ -776,7 +792,7 @@ ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
     if (OSState != "OperatingState")
     {
 
-        if ((algoInfo & 0xF) != algoSHA384)
+        if ((algoInfo & 0xF) != algoSHA384 && ((algoInfo & 0xF) != algoSHA256))
         {
             // Atpresent, we are supporting only SHA384- HASH algo in BIOS side
             return ipmi::responseInvalidFieldRequest();
@@ -785,7 +801,17 @@ ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
 
         nlohmann::json json;
         json["Seed"] = pwdSeed;
-        json["HashAlgo"] = "SHA384";
+
+        // Atpresent, we are supporting only SHA384- HASH algo in BIOS side
+        if ((algoInfo & 0xF) == algoSHA384)
+        {
+            json["HashAlgo"] = "SHA384";
+        }
+        else
+        {
+            json["HashAlgo"] = "SHA256";
+        }
+
         json["IsAdminPwdChanged"] = false;
         json["AdminPwdHash"] = adminPwdHash;
         json["IsUserPwdChanged"] = false;
