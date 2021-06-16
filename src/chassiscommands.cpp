@@ -538,55 +538,56 @@ ipmi::RspType<bool,    // Power is on
 static uint4_t getRestartCauseValue(const std::string& cause)
 {
     uint4_t restartCauseValue = 0;
-    if (cause == "xyz.openbmc_project.State.Host.RestartCause.Unknown")
+    constexpr char causeBase[] = "xyz.openbmc_project.State.Host.RestartCause.";
+    constexpr size_t causeBaseLen = sizeof(causeBase) - 1;
+    if (cause.find(causeBase) != 0)
+        return restartCauseValue;
+
+    if (cause.find("Unknown", causeBaseLen) == 0)
     {
         restartCauseValue = 0x0;
     }
-    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.IpmiCommand")
+    else if (cause.find("IpmiCommand", causeBaseLen) == 0)
     {
         restartCauseValue = 0x1;
     }
-    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.ResetButton")
+    else if (cause.find("ResetButton", causeBaseLen) == 0)
     {
         restartCauseValue = 0x2;
     }
-    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.PowerButton")
+    else if (cause.find("PowerButton", causeBaseLen) == 0)
     {
         restartCauseValue = 0x3;
     }
-    else if (cause ==
-             "xyz.openbmc_project.State.Host.RestartCause.WatchdogTimer")
+    else if (cause.find("WatchdogTimer", causeBaseLen) == 0)
     {
         restartCauseValue = 0x4;
     }
-    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.OEM")
+    else if (cause.find("OEM", causeBaseLen) == 0)
     {
         restartCauseValue = 0x5;
     }
-    else if (cause ==
-             "xyz.openbmc_project.State.Host.RestartCause.PowerPolicyAlwaysOn")
+    else if (cause.find("PowerPolicyAlwaysOn", causeBaseLen) == 0)
     {
         restartCauseValue = 0x6;
     }
-    else if (cause == "xyz.openbmc_project.State.Host.RestartCause."
-                      "PowerPolicyPreviousState")
+    else if (cause.find("PowerPolicyPreviousState", causeBaseLen) == 0)
     {
         restartCauseValue = 0x7;
     }
-    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.PEFReset")
+    else if (cause.find("PEFReset", causeBaseLen) == 0)
     {
         restartCauseValue = 0x8;
     }
-    else if (cause ==
-             "xyz.openbmc_project.State.Host.RestartCause.PEFPowerCycle")
+    else if (cause.find("PEFPowerCycle", causeBaseLen) == 0)
     {
         restartCauseValue = 0x9;
     }
-    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.SoftReset")
+    else if (cause.find("SoftReset", causeBaseLen) == 0)
     {
         restartCauseValue = 0xa;
     }
-    else if (cause == "xyz.openbmc_project.State.Host.RestartCause.RTCWakeup")
+    else if (cause.find("RTCWakeup", causeBaseLen) == 0)
     {
         restartCauseValue = 0xb;
     }
