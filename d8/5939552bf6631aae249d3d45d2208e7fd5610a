@@ -1,0 +1,8 @@
+Code-Review+2: AppaRao Puli <apparao.puli@linux.intel.com>
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Ok-To-Test+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Submitted-by: Willy Tu <wltu@google.com>
+Submitted-at: Wed, 16 Jun 2021 16:52:16 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/41701
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
