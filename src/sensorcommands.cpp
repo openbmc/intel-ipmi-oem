@@ -337,7 +337,8 @@ static void setMeStatus(uint8_t eventData2, uint8_t eventData3, bool disable)
     }
 }
 
-ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload& p)
+ipmi::RspType<> ipmiSenPlatformEvent(ipmi::Context::ptr ctx,
+                                     ipmi::message::Payload& p)
 {
     constexpr const uint8_t meId = 0x2C;
     constexpr const uint8_t meSensorNum = 0x17;
@@ -351,30 +352,44 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::message::Payload& p)
     uint8_t eventData1 = 0;
     std::optional<uint8_t> eventData2 = 0;
     std::optional<uint8_t> eventData3 = 0;
+    ipmi::ChannelInfo chInfo;
 
-    // todo: This check is supposed to be based on the incoming channel.
-    //      e.g. system channel will provide upto 8 bytes including generator
-    //      ID, but ipmb channel will provide only up to 7 bytes without the
-    //      generator ID.
-    // Support for this check is coming in future patches, so for now just base
-    // it on if the first byte is the EvMRev (0x04).
-    if (p.size() && p.data()[0] == 0x04)
+    if (ipmi::getChannelInfo(ctx->channel, chInfo) != ipmi::ccSuccess)
     {
-        p.unpack(evmRev, sensorType, sensorNum, eventType, eventData1,
-                 eventData2, eventData3);
-        // todo: the generator ID for this channel is supposed to come from the
-        // IPMB requesters slave address. Support for this is coming in future
-        // patches, so for now just assume it is coming from the ME (0x2C).
-        generatorID = 0x2C;
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to get Channel Info",
+            phosphor::logging::entry("CHANNEL=%d", ctx->channel));
+        return ipmi::responseUnspecifiedError();
     }
-    else
+
+    if (static_cast<ipmi::EChannelMediumType>(chInfo.mediumType) ==
+        ipmi::EChannelMediumType::systemInterface)
     {
+
         p.unpack(generatorID, evmRev, sensorType, sensorNum, eventType,
                  eventData1, eventData2, eventData3);
     }
+    else
+    {
+
+        p.unpack(evmRev, sensorType, sensorNum, eventType, eventData1,
+                 eventData2, eventData3);
+        generatorID = ctx->rqSA;
+    }
+
     if (!p.fullyUnpacked())
     {
         return ipmi::responseReqDataLenInvalid();
+    }
+
+    // Check for valid evmRev and Sensor Type(per Table 42 of spec)
+    if (evmRev != 0x04)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+    if ((sensorType > 0x2C) && (sensorType < 0xC0))
+    {
+        return ipmi::responseInvalidFieldRequest();
     }
 
     // Send this request to the Redfish hooks to log it as a Redfish message
