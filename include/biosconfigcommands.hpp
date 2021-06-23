@@ -25,7 +25,7 @@
 
 constexpr uint8_t maxPayloadSupported = 0x6;
 constexpr uint8_t maxHashSize = 64;
-constexpr uint8_t maxSeedSize = 16;
+constexpr uint8_t maxSeedSize = 32;
 constexpr uint8_t maxPasswordSize = 64;
 
 #pragma pack(push, 1)
