@@ -56,6 +56,7 @@ static constexpr uint8_t adminPasswordChanged = (1 << 4);
 static constexpr const char* biosConfigFolder = "/var/oob";
 static constexpr const char* biosConfigNVPath = "/var/oob/nvoobdata.dat";
 static constexpr const uint8_t algoSHA384 = 2;
+static constexpr const uint8_t algoSHA256 = 1;
 static constexpr const uint8_t biosCapOffsetBit = 0x3;
 static constexpr uint16_t maxGetPayloadDataSize = 4096;
 static constexpr const char* biosXMLFilePath = "/var/oob/bios.xml";
@@ -758,8 +759,7 @@ ipmi::RspType<message::Payload>
 
 ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
     ipmi::Context::ptr ctx, std::array<uint8_t, maxSeedSize>& pwdSeed,
-    uint8_t algoInfo, std::array<uint8_t, maxHashSize>& adminPwdHash,
-    std::array<uint8_t, maxHashSize>& userPwdHash)
+    uint8_t algoInfo, std::array<uint8_t, maxHashSize>& adminPwdHash)
 {
 
     std::string OSState;
@@ -773,38 +773,46 @@ ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
     // We should not support this command after System Booted - After Exit Boot
     // service called
 
-    if (OSState != "OperatingState")
+    if (OSState == "OperatingState")
     {
+        return ipmi::response(ipmiCCNotSupportedInCurrentState);
+    }
 
-        if ((algoInfo & 0xF) != algoSHA384)
-        {
-            // Atpresent, we are supporting only SHA384- HASH algo in BIOS side
-            return ipmi::responseInvalidFieldRequest();
-        }
-        std::string HashFilePath = "/var/lib/bios-settings-manager/seedData";
+    nlohmann::json json;
 
-        nlohmann::json json;
-        json["Seed"] = pwdSeed;
+    if ((algoInfo & 0xF) == algoSHA384)
+    {
         json["HashAlgo"] = "SHA384";
-        json["IsAdminPwdChanged"] = false;
-        json["AdminPwdHash"] = adminPwdHash;
-        json["IsUserPwdChanged"] = false;
-        json["UserPwdHash"] = userPwdHash;
-        json["StatusFlag"] = algoInfo;
-        std::ofstream ofs(HashFilePath, std::ios::out);
-        const auto& writeData = json.dump();
-        ofs << writeData;
-        ofs.close();
-        return ipmi::responseSuccess();
+    }
+    else if ((algoInfo & 0xF) == algoSHA256)
+    {
+        json["HashAlgo"] = "SHA256";
     }
     else
     {
-
-        return ipmi::response(ipmiCCNotSupportedInCurrentState);
+        return ipmi::responseInvalidFieldRequest();
     }
+
+    json["Seed"] = pwdSeed;
+    json["IsAdminPwdChanged"] = false;
+    json["AdminPwdHash"] = adminPwdHash;
+    json["IsUserPwdChanged"] = false;
+
+    std::array<uint8_t, maxHashSize> userPwdHash;
+    userPwdHash.fill({}); // initializing with 0 as user password hash field
+                          // is not used presently
+    json["UserPwdHash"] = userPwdHash;
+    json["StatusFlag"] = algoInfo;
+
+    std::string hashFilePath = "/var/lib/bios-settings-manager/seedData";
+    std::ofstream ofs(hashFilePath, std::ios::out);
+    const auto& writeData = json.dump();
+    ofs << writeData;
+    ofs.close();
+    return ipmi::responseSuccess();
 }
 
-ipmi::RspType<uint8_t, std::array<uint8_t, maxHashSize>,
+ipmi::RspType<std::array<uint8_t, maxSeedSize>, uint8_t,
               std::array<uint8_t, maxHashSize>>
     ipmiOEMGetBIOSHash(ipmi::Context::ptr ctx)
 {
@@ -845,25 +853,18 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxHashSize>,
             }
 
             std::array<uint8_t, maxHashSize> newAdminHash;
-            std::array<uint8_t, maxHashSize> newUserHash;
+            std::array<uint8_t, maxSeedSize> seed;
+
             uint8_t flag = 0;
             uint8_t adminPwdChangedFlag = 0;
-            uint8_t userPwdChangedFlag = 0;
             if (!data.is_discarded())
             {
 
                 adminPwdChangedFlag = data["IsAdminPwdChanged"];
                 newAdminHash = data["AdminPwdHash"];
-                newUserHash = data["UserPwdHash"];
-                userPwdChangedFlag = data["IsUserPwdChanged"];
+                seed = data["Seed"];
             }
 
-            // 0: BIT 4 - New Admin Password Not Present
-            // 1: BIT 4 - New Admin Password Hash Present
-            // 0: BIT 5 - New User Password Not Present
-            // 1: BIT 5 - New User Password Hash Present
-            // 0: BIT 0 - Default Setting flag is not set
-            // 1: BIT 0 - Default Setting flag is set
             auto status = getResetBIOSSettings(flag);
             if (status)
             {
@@ -873,16 +874,11 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxHashSize>,
             {
                 flag |= adminPasswordChanged;
             }
-            if (userPwdChangedFlag)
-            {
-                flag |= userPasswordChanged;
-            }
 
             std::copy(std::begin(newAdminHash), std::end(newAdminHash),
                       std::begin(newAdminHash));
-            std::copy(std::begin(newUserHash), std::end(newUserHash),
-                      std::begin(newUserHash));
-            return ipmi::responseSuccess(flag, newAdminHash, newUserHash);
+
+            return ipmi::responseSuccess(seed, flag, newAdminHash);
         }
         else
         {
