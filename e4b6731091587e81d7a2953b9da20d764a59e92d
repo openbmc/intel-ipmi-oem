@@ -2,6 +2,98 @@
   "comments": [
     {
       "key": {
+        "uuid": "ead171de_02bda58a",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 576,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-06-24T05:57:52Z",
+      "side": 1,
+      "message": "lowerCamelCase",
+      "range": {
+        "startLine": 576,
+        "startChar": 24,
+        "endLine": 576,
+        "endChar": 40
+      },
+      "revId": "e4b6731091587e81d7a2953b9da20d764a59e92d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "099fc30d_5e2b9a32",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 579,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-06-24T05:57:52Z",
+      "side": 1,
+      "message": "Not clear on what is purpose of this code? I see some issue with this approach. \n\nAssume a case where original file is renamed and then control return the error from any of below return status ( Line no: 598, 623, 626 etc..) before calling and recreating that file?\n\nThis seems to be existing code missed in past but as there were some changes related to \"PayloadFilePath\" in this commit, So mentioned on this.",
+      "range": {
+        "startLine": 574,
+        "startChar": 0,
+        "endLine": 579,
+        "endChar": 75
+      },
+      "revId": "e4b6731091587e81d7a2953b9da20d764a59e92d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c78ec589_fce541ee",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 606,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-06-24T05:57:52Z",
+      "side": 1,
+      "message": "Missing return code handle.",
+      "range": {
+        "startLine": 604,
+        "startChar": 0,
+        "endLine": 606,
+        "endChar": 39
+      },
+      "revId": "e4b6731091587e81d7a2953b9da20d764a59e92d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3d88f49f_6a3889f1",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 687,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-06-24T05:57:52Z",
+      "side": 1,
+      "message": "use good() method instead of fail(), which checks all error state flags.",
+      "range": {
+        "startLine": 687,
+        "startChar": 11,
+        "endLine": 687,
+        "endChar": 27
+      },
+      "revId": "e4b6731091587e81d7a2953b9da20d764a59e92d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1a239539_619a1fb8",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -13,6 +105,52 @@
       "writtenOn": "2021-06-21T13:10:36Z",
       "side": 1,
       "message": "Include phosphor loggging? Same in 726.",
+      "revId": "e4b6731091587e81d7a2953b9da20d764a59e92d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "66e61437_640657d8",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 717,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-06-24T05:57:52Z",
+      "side": 1,
+      "message": "lowerCamelCase",
+      "range": {
+        "startLine": 717,
+        "startChar": 28,
+        "endLine": 717,
+        "endChar": 44
+      },
+      "revId": "e4b6731091587e81d7a2953b9da20d764a59e92d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "64fe3732_139dae87",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 724,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-06-24T05:57:52Z",
+      "side": 1,
+      "message": "same as above, use good() instead of fail()",
+      "range": {
+        "startLine": 724,
+        "startChar": 16,
+        "endLine": 724,
+        "endChar": 31
+      },
       "revId": "e4b6731091587e81d7a2953b9da20d764a59e92d",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
