@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3c93cc51_57ad866b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-06-24T06:17:25Z",
+      "side": 1,
+      "message": "nit: Format is correctly.",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 54
+      },
+      "revId": "27a7cc93baf127996655d6a2e6a168058e7dbc7b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6b55b255_24e73c2b",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 390,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-06-24T06:17:25Z",
+      "side": 1,
+      "message": "nit: Why is this else if? evmRev and SensorTypes should be checked independently right?\n\nNo functional impact but making separate if() conditions makes more sense.",
+      "range": {
+        "startLine": 390,
+        "startChar": 4,
+        "endLine": 390,
+        "endChar": 11
+      },
+      "revId": "27a7cc93baf127996655d6a2e6a168058e7dbc7b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
