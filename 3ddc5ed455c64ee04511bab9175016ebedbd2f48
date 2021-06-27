@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "4f3819c6_8d5540f7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-06-27T18:29:22Z",
+      "side": 1,
+      "message": "Up on receiving writeFRU command,\n    If IPMI layer cached FRU size is going to be increased beyond its current size because of input write FRU data,\n    {\n        IPMI layer (intel-ipmi-oem) updates the FRU layer (EntityManager_FruDevice.cpp) immediately.  \n        FRU layer have full validation checks and write will return negative completion code if input FRU is invalid.\nhttps://github.com/openbmc/intel-ipmi-oem/blob/3ff6371ba7e5c7f02d6851d6a87e7dbbdfa093e6/src/storagecommands.cpp#L503\n    }\n    else\n    {\n         IPMI layer just updates its IPMI layer FRU cache, and always return success completion code to \u0027ipmitool fru write\u0027 client.\n         IPMI layer flushes its cache to FRU layer every 10-seconds.  The actual write to FRU layer will fail if the FRU cache content is not passing validation checks, but it can not be notified to \u0027ipmitool fru write\u0027 client.\n         This gerrit review code changes forces the IPMI layer FRU cache flush for every write; there by \u0027ipmitool fru write\u0027 client will be correctly notified about completion code.\n     }\n\nPros of this fix:\n    1. Always correct completion code notified to the client.\n    2. FRU write is usually one time, manufacturing mode operation, so performance impact caused by flushing the cache for every FRU write is ignorable.\n\nCons of this fix:\n    1. IPMI spec defines IPMI layer as just interface to FRU layer, and it does not enforce any validation checks in IPMI layer.  So, IPMI cache flushing every 10-seconds still correct implementation meeting spec.  IPMI FRU caching is beneficial if FRU write is performed as multiple 1-byte writes.  No need to change current behavior.\n\n@sunita: Please abandon this review after 1 week, if you don\u0027t hear no requirements/comments for immediate cache write.",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 46
+      },
+      "revId": "3ddc5ed455c64ee04511bab9175016ebedbd2f48",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a0336bbd_84406dd9",
         "filename": "src/storagecommands.cpp",
         "patchSetId": 3
