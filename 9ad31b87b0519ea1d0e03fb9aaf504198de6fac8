@@ -25,6 +25,52 @@
     },
     {
       "key": {
+        "uuid": "8656a2e7_3e8b33b5",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 600,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-06-29T06:28:35Z",
+      "side": 1,
+      "message": "nit: Success logs can be at DEBUG level",
+      "range": {
+        "startLine": 600,
+        "startChar": 65,
+        "endLine": 600,
+        "endChar": 69
+      },
+      "revId": "9ad31b87b0519ea1d0e03fb9aaf504198de6fac8",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cbe079de_5c39f12d",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 612,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-06-29T06:28:35Z",
+      "side": 1,
+      "message": "Same here.",
+      "range": {
+        "startLine": 612,
+        "startChar": 65,
+        "endLine": 612,
+        "endChar": 69
+      },
+      "revId": "9ad31b87b0519ea1d0e03fb9aaf504198de6fac8",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b47ce820_762abc40",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 5
@@ -110,6 +156,29 @@
         "startChar": 8,
         "endLine": 827,
         "endChar": 75
+      },
+      "revId": "9ad31b87b0519ea1d0e03fb9aaf504198de6fac8",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f3ec7dd3_ccd6b2e2",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 835,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-06-29T06:28:35Z",
+      "side": 1,
+      "message": "Query - I am not familiar with the code flow, but do we need a check for proper algorithm number? i.e\n\n        if ((algoInfo \u0026 0xF) \u003d\u003d algoSHA384)\n        {\n            json[\"HashAlgo\"] \u003d \"SHA384\";\n        }\n        else if((algoInfo \u0026 0xF) \u003d\u003d algoSHA256)\n        {\n            json[\"HashAlgo\"] \u003d \"SHA256\";\n        }\n        else {\n            ... return error?\n         }",
+      "range": {
+        "startLine": 832,
+        "startChar": 8,
+        "endLine": 835,
+        "endChar": 9
       },
       "revId": "9ad31b87b0519ea1d0e03fb9aaf504198de6fac8",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
