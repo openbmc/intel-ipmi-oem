@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "fb9c2492_c9e08df3",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 600,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-06-30T03:27:31Z",
+      "side": 1,
+      "message": "No need . we can easily verify the same  in  generated file.",
+      "parentUuid": "8656a2e7_3e8b33b5",
+      "range": {
+        "startLine": 600,
+        "startChar": 65,
+        "endLine": 600,
+        "endChar": 69
+      },
+      "revId": "9ad31b87b0519ea1d0e03fb9aaf504198de6fac8",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "cbe079de_5c39f12d",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 5
@@ -59,6 +83,30 @@
       "writtenOn": "2021-06-29T06:28:35Z",
       "side": 1,
       "message": "Same here.",
+      "range": {
+        "startLine": 612,
+        "startChar": 65,
+        "endLine": 612,
+        "endChar": 69
+      },
+      "revId": "9ad31b87b0519ea1d0e03fb9aaf504198de6fac8",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dab2ab79_8fadafde",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 612,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-06-30T03:27:31Z",
+      "side": 1,
+      "message": "No need. Easily verify by d-bus or redfish query.",
+      "parentUuid": "cbe079de_5c39f12d",
       "range": {
         "startLine": 612,
         "startChar": 65,
@@ -174,6 +222,30 @@
       "writtenOn": "2021-06-29T06:28:35Z",
       "side": 1,
       "message": "Query - I am not familiar with the code flow, but do we need a check for proper algorithm number? i.e\n\n        if ((algoInfo \u0026 0xF) \u003d\u003d algoSHA384)\n        {\n            json[\"HashAlgo\"] \u003d \"SHA384\";\n        }\n        else if((algoInfo \u0026 0xF) \u003d\u003d algoSHA256)\n        {\n            json[\"HashAlgo\"] \u003d \"SHA256\";\n        }\n        else {\n            ... return error?\n         }",
+      "range": {
+        "startLine": 832,
+        "startChar": 8,
+        "endLine": 835,
+        "endChar": 9
+      },
+      "revId": "9ad31b87b0519ea1d0e03fb9aaf504198de6fac8",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e3ceb2bd_f17bbb74",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 835,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-06-30T03:27:31Z",
+      "side": 1,
+      "message": "We already validate the algo in 817. so no need only 1 and 2 is allowed.",
+      "parentUuid": "f3ec7dd3_ccd6b2e2",
       "range": {
         "startLine": 832,
         "startChar": 8,
