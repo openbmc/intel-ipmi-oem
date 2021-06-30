@@ -90,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "3408d965_471c253e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000411
+      },
+      "writtenOn": "2021-06-30T08:26:50Z",
+      "side": 1,
+      "message": "yes my bad! I missed to publish edits on commit message. Done now.",
+      "parentUuid": "0ed77d4c_5ddb7306",
+      "revId": "80adcbf426be99cb0a64eec9732d93108a87fb51",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "31f4e841_ff945b08",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 1
@@ -101,6 +119,30 @@
       "writtenOn": "2021-06-30T08:19:29Z",
       "side": 1,
       "message": "This conditions is redundant, you move this to above( line no: 779)and avoid redundant checks.",
+      "range": {
+        "startLine": 788,
+        "startChar": 8,
+        "endLine": 795,
+        "endChar": 9
+      },
+      "revId": "80adcbf426be99cb0a64eec9732d93108a87fb51",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d6e68c9b_35ef363e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 795,
+      "author": {
+        "id": 1000411
+      },
+      "writtenOn": "2021-06-30T08:26:50Z",
+      "side": 1,
+      "message": "Okay.",
+      "parentUuid": "31f4e841_ff945b08",
       "range": {
         "startLine": 788,
         "startChar": 8,
