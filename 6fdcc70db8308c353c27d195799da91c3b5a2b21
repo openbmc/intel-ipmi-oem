@@ -22,6 +22,30 @@
       "revId": "6fdcc70db8308c353c27d195799da91c3b5a2b21",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d85c2410_8e6afee5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000433
+      },
+      "writtenOn": "2021-07-01T10:50:32Z",
+      "side": 1,
+      "message": "EPS does not mention about these commands, that is why they are removed from the whitelist.",
+      "parentUuid": "be237ae4_87a71fa6",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 7
+      },
+      "revId": "6fdcc70db8308c353c27d195799da91c3b5a2b21",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
