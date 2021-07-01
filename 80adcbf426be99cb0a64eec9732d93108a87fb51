@@ -152,6 +152,30 @@
       "revId": "80adcbf426be99cb0a64eec9732d93108a87fb51",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5fb937b4_bf0164e0",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 795,
+      "author": {
+        "id": 1000411
+      },
+      "writtenOn": "2021-07-01T07:11:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d6e68c9b_35ef363e",
+      "range": {
+        "startLine": 788,
+        "startChar": 8,
+        "endLine": 795,
+        "endChar": 9
+      },
+      "revId": "80adcbf426be99cb0a64eec9732d93108a87fb51",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
