@@ -81,6 +81,48 @@
       "revId": "fb1e4b66e0a284d95ab328a2071122205aff840d",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "41f3205a_d0248fe4",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 835,
+      "author": {
+        "id": 1000411
+      },
+      "writtenOn": "2021-07-01T16:27:08Z",
+      "side": 1,
+      "message": "change is merged https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/44362",
+      "parentUuid": "3f631384_35beeb4e",
+      "range": {
+        "startLine": 817,
+        "startChar": 8,
+        "endLine": 835,
+        "endChar": 0
+      },
+      "revId": "fb1e4b66e0a284d95ab328a2071122205aff840d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "06b2df1f_1855a0b7",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 835,
+      "author": {
+        "id": 1000411
+      },
+      "writtenOn": "2021-07-01T16:27:08Z",
+      "side": 1,
+      "message": "merged the change https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/44362",
+      "parentUuid": "a3d54d3a_92dc2075",
+      "revId": "fb1e4b66e0a284d95ab328a2071122205aff840d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
