@@ -22,6 +22,23 @@
       "revId": "fb1e4b66e0a284d95ab328a2071122205aff840d",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9c7428c4_4a7df88a",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 835,
+      "author": {
+        "id": 1000414
+      },
+      "writtenOn": "2021-07-01T13:29:49Z",
+      "side": 1,
+      "message": "+1. \nPlease make the changes accordingly in one of the commits.",
+      "revId": "fb1e4b66e0a284d95ab328a2071122205aff840d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
