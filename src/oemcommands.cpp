@@ -229,6 +229,11 @@ ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
 ipmi::RspType<> ipmiOEMDisableBMCSystemReset(bool disableResetOnSMI,
                                              uint7_t reserved1)
 {
+    if (reserved1)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
     std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
 
     try
@@ -789,10 +794,19 @@ ipmi::RspType<> ipmiOEMSetProcessorErrConfig(
     std::optional<bool> clearCPUErrorCount,
     std::optional<bool> clearCrashdumpCount, std::optional<uint6_t> reserved3)
 {
+    if (reserved1 || reserved2)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
     std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
 
     try
     {
+        if (reserved3.value_or(0))
+        {
+            return ipmi::responseInvalidFieldRequest();
+        }
         auto service = ipmi::getService(*busp, processorErrConfigIntf,
                                         processorErrConfigObjPath);
         ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
