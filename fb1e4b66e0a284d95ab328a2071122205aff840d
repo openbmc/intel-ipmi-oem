@@ -39,6 +39,48 @@
       "revId": "fb1e4b66e0a284d95ab328a2071122205aff840d",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3f631384_35beeb4e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 835,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-07-01T15:35:30Z",
+      "side": 1,
+      "message": "It will be taken care while resolving the merge conflict. Depends on  is which is merging first",
+      "parentUuid": "004b7ec7_1c958338",
+      "range": {
+        "startLine": 817,
+        "startChar": 8,
+        "endLine": 835,
+        "endChar": 0
+      },
+      "revId": "fb1e4b66e0a284d95ab328a2071122205aff840d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a3d54d3a_92dc2075",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 835,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-07-01T15:35:30Z",
+      "side": 1,
+      "message": "It will be taken care while resolving the merge conflict. Depends on  is which is merging first",
+      "parentUuid": "9c7428c4_4a7df88a",
+      "revId": "fb1e4b66e0a284d95ab328a2071122205aff840d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
