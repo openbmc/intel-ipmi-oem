@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "155f5935_bfb5b6b5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-07-01T07:42:17Z",
+      "side": 1,
+      "message": "Above specified patch is already merged. You can try the latest code and check issues what you are observing. If you still feels this change need, do rebase on top for further review.",
+      "parentUuid": "1ddd0081_e472b9c2",
+      "range": {
+        "startLine": 7,
+        "startChar": 5,
+        "endLine": 7,
+        "endChar": 38
+      },
+      "revId": "7ac59618bc1a6084370769b486757213d386fb8b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a53be1f3_e788dea4",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 3
