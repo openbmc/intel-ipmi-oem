@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d4c06ad4_74005f28",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-07-09T12:20:32Z",
+      "side": 1,
+      "message": "UT-A-1.) Please post the results of Unit Test with a.) reserved1 zero, b.) reserved1 non-zero, c.) reserved2 zero, d.) reserved2 not zero.\n\nUT-A-2.) Please post the results of Unit Test with a.) no byte-3, b.) byte-3 with reserved portion(reserved3)  zero, byte-3 with reserved portion (reserved3) non-zero.",
+      "range": {
+        "startLine": 15,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 59
+      },
+      "revId": "3555c4205d562497d1bc04353ba04cf422773f82",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "268f78d2_6463d1ee",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-07-09T12:20:32Z",
+      "side": 1,
+      "message": "UT-B-1.) Please post the results of Unit Test with a.) reserved1 as zero, b.) reserved1 as non-zero",
+      "range": {
+        "startLine": 19,
+        "startChar": 0,
+        "endLine": 21,
+        "endChar": 59
+      },
+      "revId": "3555c4205d562497d1bc04353ba04cf422773f82",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e2425831_4efe07f9",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 797,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-07-09T12:20:32Z",
+      "side": 1,
+      "message": "Since this is \u0027optional\u0027 argument, if you construct the IPMI command without this param, it would throw exception, I believe. Please try and update me the results.\n\nUse this one: \u0027reserved3.value_or(0)\u0027\nEven better move this reserved3 check alone inside the try catch block, like other byte-3 params handled.",
+      "range": {
+        "startLine": 797,
+        "startChar": 34,
+        "endLine": 797,
+        "endChar": 51
+      },
+      "revId": "3555c4205d562497d1bc04353ba04cf422773f82",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
