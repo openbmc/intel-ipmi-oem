@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "92b313db_53cf51a2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-07-10T17:26:03Z",
+      "side": 1,
+      "message": "Tested and added all the UT-A in commit message.",
+      "parentUuid": "d4c06ad4_74005f28",
+      "range": {
+        "startLine": 15,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 59
+      },
+      "revId": "3555c4205d562497d1bc04353ba04cf422773f82",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "268f78d2_6463d1ee",
         "filename": "/COMMIT_MSG",
         "patchSetId": 2
@@ -59,6 +83,30 @@
       "writtenOn": "2021-07-09T12:20:32Z",
       "side": 1,
       "message": "Since this is \u0027optional\u0027 argument, if you construct the IPMI command without this param, it would throw exception, I believe. Please try and update me the results.\n\nUse this one: \u0027reserved3.value_or(0)\u0027\nEven better move this reserved3 check alone inside the try catch block, like other byte-3 params handled.",
+      "range": {
+        "startLine": 797,
+        "startChar": 34,
+        "endLine": 797,
+        "endChar": 51
+      },
+      "revId": "3555c4205d562497d1bc04353ba04cf422773f82",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "661248b7_58745b33",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 797,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-07-10T17:26:03Z",
+      "side": 1,
+      "message": "Hi Saravanan,\n\nFor 1st comment -\u003e Yes code is throwing an exception when if(reserved3.value()) condition.\nCommand: ipmitool raw 0x30 0x9b 0x03 0x0\nResponse: Unable to send RAW command (channel\u003d0x0 netfn\u003d0x30 lun\u003d0x0 cmd\u003d0x9b rsp\u003d0xff): Unspecified error\n\n2nd comment-\u003e with this change as 3rd byte is optional, IPMI command is successfully set without 3rd byte.\n\nFixed now. Thanks.",
+      "parentUuid": "e2425831_4efe07f9",
       "range": {
         "startLine": 797,
         "startChar": 34,
