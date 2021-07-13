@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "b5f24f51_61bc8405",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-07-13T16:48:34Z",
+      "side": 1,
+      "message": "Thanks!",
+      "parentUuid": "92b313db_53cf51a2",
+      "range": {
+        "startLine": 15,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 59
+      },
+      "revId": "3555c4205d562497d1bc04353ba04cf422773f82",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "268f78d2_6463d1ee",
         "filename": "/COMMIT_MSG",
         "patchSetId": 2
