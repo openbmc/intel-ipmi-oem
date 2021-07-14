@@ -194,7 +194,7 @@ int MDRV2::findLockHandle(const uint16_t& lockHandle)
 
 bool MDRV2::smbiosIsUpdating(uint8_t index)
 {
-    if (index > maxDirEntries)
+    if (index >= maxDirEntries)
     {
         return false;
     }
