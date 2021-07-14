@@ -273,8 +273,12 @@ class MappedFile
     {
         std::error_code ec;
         size_t sz = std::filesystem::file_size(fname, ec);
+        if (!ec)
+        {
+            return;
+        }
         int fd = open(fname.c_str(), O_RDONLY);
-        if (!ec || fd < 0)
+        if (fd < 0)
         {
             return;
         }
