@@ -36,6 +36,8 @@
 #include <filesystem>
 #include <string_view>
 
+#include "biosxml.hpp"
+
 namespace ipmi
 {
 static void registerBIOSConfigFunctions() __attribute__((constructor));
@@ -72,15 +74,7 @@ map{attributeName,struct{attributeType,readonlyStatus,displayname,
               description,menuPath,current,default,
               array{struct{optionstring,optionvalue}}}}
 */
-using BiosBaseTableType =
-    std::map<std::string,
-             std::tuple<std::string, bool, std::string, std::string,
-                        std::string, std::variant<int64_t, std::string>,
-                        std::variant<int64_t, std::string>,
-                        std::vector<std::tuple<
-                            std::string, std::variant<int64_t, std::string>>>>>;
-using OptionType =
-    std::vector<std::tuple<std::string, std::variant<int64_t, std::string>>>;
+
 BiosBaseTableType attributesData;
 
 NVOOBdata gNVOOBdata;
@@ -118,24 +112,32 @@ enum class GetPayloadParameter : uint8_t
 /** @brief implement to set the BaseBIOSTable property
  *  @returns status
  */
-static int sendAllAttributes(ipmi::Context::ptr ctx)
+static void sendAllAttributes()
 {
-    boost::system::error_code ec;
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     std::string service =
         getService(*dbus, biosConfigIntf, biosConfigBaseMgrPath);
-    ec.clear();
-    ctx->bus->yield_method_call<>(
-        ctx->yield, ec, service, biosConfigBaseMgrPath,
-        "org.freedesktop.DBus.Properties", "Set", biosConfigIntf,
-        "BaseBIOSTable", std::variant<BiosBaseTableType>(attributesData));
-    if (ec)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Failed to sendAllAttributes");
-        return -1;
-    }
-    return 0;
+
+    dbus->async_method_call(
+        [](const boost::system::error_code ec) {
+
+            if (ec)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "async_method_call error: send all attributes - failed");
+                return;
+            }
+
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "async_method_call error: send all attributes - done");
+        },
+        service, 
+        biosConfigBaseMgrPath,
+        "org.freedesktop.DBus.Properties", 
+        "Set", 
+        biosConfigIntf,
+        "BaseBIOSTable",
+        std::variant<BiosBaseTableType>(attributesData));
 }
 
 /** @brief implement to flush the updated data in nv space
@@ -221,95 +223,49 @@ static int getResetBIOSSettings(uint8_t& ResetFlag)
     }
 }
 
-/** @brief implement generate naive- dbus from XML file
- *  @returns status
+/** @brief Get attributes data (bios base table) from bios.xml
  */
-static int generateAttributesData()
+static bool generateAttributesData()
 {
-    // Open the bios.xml and parse it
-    // Extract the needed data and store it in AttributesData variable
-    // Close the bios.xml
-    phosphor::logging::log<phosphor::logging::level::ERR>(
-        "generateAttributesData");
-    tinyxml2::XMLDocument xmlDoc;
+    try
+    {
+        bios::Xml biosxml(biosXMLFilePath);
 
-    xmlDoc.LoadFile(biosXMLFilePath);
-    tinyxml2::XMLNode* pRoot = xmlDoc.FirstChild();
-    if (pRoot == nullptr)
-    {
-        return ipmi::ccUnspecifiedError;
-    }
-    tinyxml2::XMLElement* pElement = pRoot->FirstChildElement("biosknobs");
-    if (pElement == nullptr)
-    {
-        return ipmi::ccUnspecifiedError;
-    }
-    tinyxml2::XMLElement* pKnobsElement = pElement->FirstChildElement("knob");
-
-    while (pKnobsElement != nullptr)
-    {
-        bool readOnlyStatus = false;
-        std::string attrType =
-            "xyz.openbmc_project.BIOSConfig.Manager.AttributeType.String";
-        std::string name, curvalue, dname, menupath, defaultvalue, description;
-        name = pKnobsElement->Attribute("name")
-                   ? pKnobsElement->Attribute("name")
-                   : "";
-        curvalue = pKnobsElement->Attribute("CurrentVal")
-                       ? pKnobsElement->Attribute("CurrentVal")
-                       : "";
-        dname = pKnobsElement->Attribute("prompt")
-                    ? pKnobsElement->Attribute("prompt")
-                    : "";
-        menupath = pKnobsElement->Attribute("SetupPgPtr")
-                       ? pKnobsElement->Attribute("SetupPgPtr")
-                       : "";
-        defaultvalue = pKnobsElement->Attribute("default")
-                           ? pKnobsElement->Attribute("default")
-                           : "";
-        description = pKnobsElement->Attribute("description")
-                          ? pKnobsElement->Attribute("description")
-                          : "";
-        if (!name.empty() && !curvalue.empty() && !dname.empty() &&
-            !menupath.empty() && !defaultvalue.empty())
+        if (!biosxml.doDepexCompute())
         {
-            std::string rootPath = "./" + std::string(menupath);
-
-            OptionType optionArray;
-            tinyxml2::XMLElement* pOptionsElement =
-                pKnobsElement->FirstChildElement("options");
-            nlohmann::json optionsArray = nlohmann::json::array();
-            if (pOptionsElement != nullptr)
-            {
-                tinyxml2::XMLElement* pOptionElement =
-                    pOptionsElement->FirstChildElement("option");
-                while (pOptionElement != nullptr)
-                {
-                    const std::string optType =
-                        "xyz.openbmc_project.BIOSConfig.Manager.BoundType."
-                        "OneOf";
-                    const std::string attrValue =
-                        pOptionElement->Attribute("value");
-                    if (!optType.empty() && !attrValue.empty())
-                    {
-
-                        optionArray.push_back(
-                            std::make_pair(optType, attrValue));
-                    }
-                    pOptionElement =
-                        pOptionElement->NextSiblingElement("option");
-                }
-            }
-
-            attributesData.emplace(std::make_pair(
-                name, std::make_tuple(attrType, readOnlyStatus, dname,
-                                      description, rootPath, curvalue,
-                                      defaultvalue, optionArray)));
+            std::cerr << "'depex' compute failed\n";
         }
-        pKnobsElement = pKnobsElement->NextSiblingElement("knob");
+
+        if (!biosxml.getBaseTable(attributesData))
+        {
+            std::cerr << "failed to get bios base table\n";
+        }
+    }
+    catch (std::exception& ex)
+    {
+        std::cerr << ex.what() << "\n";
+        return false;
     }
 
-    return ipmi::ccSuccess;
+    return true;
+}
+
+/** @brief Generate attributes data from bios.xml
+ * and send attributes data (bios base table) to dbus using set method.
+ */
+static void generateAndSendAttributesData()
+{
+    if (!generateAttributesData())
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "generateAndSendAttributesData: generateAttributesData - failed");
+        return;
+    }
+
+    phosphor::logging::log<phosphor::logging::level::INFO>(
+        "ipmiOEMSetPayload : generateAttributesData is done");
+
+    sendAllAttributes();
 }
 
 /** @brief implement executing the linux command to uncompress and generate the
@@ -599,27 +555,10 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
                 }
                 phosphor::logging::log<phosphor::logging::level::INFO>(
                     " ipmiOEMSetPayload : Convert XML into native-dbus DONE");
-                response = generateAttributesData();
-                if (response)
-                {
-                    phosphor::logging::log<phosphor::logging::level::ERR>(
-                        "ipmiOEMSetPayload: generateAttributesData - failed");
-                    gNVOOBdata.payloadInfo[payloadType].payloadStatus =
-                        static_cast<uint8_t>(ipmi::PStatus::Corrupted);
-                    return ipmi::responseResponseError();
-                }
 
-                phosphor::logging::log<phosphor::logging::level::INFO>(
-                    " ipmiOEMSetPayload : BaseBIOSTable Property  is set");
-                response = sendAllAttributes(ctx);
-                if (response)
-                {
-                    phosphor::logging::log<phosphor::logging::level::ERR>(
-                        "ipmiOEMSetPayload: sendAllAttributes - failed");
-                    gNVOOBdata.payloadInfo[payloadType].payloadStatus =
-                        static_cast<uint8_t>(ipmi::PStatus::Corrupted);
-                    return ipmi::responseResponseError();
-                }
+                /* So that we don't block the call */
+                std::thread t(generateAndSendAttributesData);
+                t.detach();
             }
             gNVOOBdata.payloadInfo[payloadType].payloadStatus =
                 static_cast<uint8_t>(ipmi::PStatus::Valid);
