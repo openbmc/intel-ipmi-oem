@@ -1057,7 +1057,7 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
     // Check for System Interface not exist and LAN should be static
     for (uint8_t channel = 0; channel < maxIpmiChannels; channel++)
     {
-        ChannelInfo chInfo;
+        ChannelInfo chInfo{};
         try
         {
             getChannelInfo(channel, chInfo);
