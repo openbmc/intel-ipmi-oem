@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6cc5c7f5_410c1687",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-07-16T10:46:37Z",
+      "side": 1,
+      "message": "2. Limit the subject line to 50 characters\n5. Use the imperative mood in the subject line\n\nBetter rewrite as:\n\"Reset ChannelInfo before calling getChannelInfo()\"\n\nRef: https://chris.beams.io/posts/git-commit/#seven-rules",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 72
+      },
+      "revId": "92a0ad34564b44c020248bb1fea0c522a54ba165",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "331a9a2a_51901690",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-07-16T10:46:37Z",
+      "side": 1,
+      "message": "7. Wrap the body at 72 characters\n\nMove the word \u0027chInfo\u0027 to next line.\nSimilarly move the word \u0027execution\u0027 in line number 11 to next line.",
+      "range": {
+        "startLine": 10,
+        "startChar": 1,
+        "endLine": 10,
+        "endChar": 77
+      },
+      "revId": "92a0ad34564b44c020248bb1fea0c522a54ba165",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "03175840_02ac0ba2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-07-16T10:46:37Z",
+      "side": 1,
+      "message": "Rewrite it as:\n\u0027intialized with zeroes\u0027",
+      "range": {
+        "startLine": 17,
+        "startChar": 20,
+        "endLine": 17,
+        "endChar": 35
+      },
+      "revId": "92a0ad34564b44c020248bb1fea0c522a54ba165",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
