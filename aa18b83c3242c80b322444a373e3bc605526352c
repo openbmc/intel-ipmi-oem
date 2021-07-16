@@ -1,0 +1,211 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9d3eba1a_2b242e5d",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 1,
+      "message": "NIT : \"Can hold options\" should suffice",
+      "range": {
+        "startLine": 18,
+        "startChar": 3,
+        "endLine": 18,
+        "endChar": 25
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c2b50b89_b5039179",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 1,
+      "message": "Nit : Unable to map to the definition below. Am i missing something?",
+      "range": {
+        "startLine": 30,
+        "startChar": 4,
+        "endLine": 41,
+        "endChar": 10
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d003f3c0_6b473b0c",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 1,
+      "message": "Nit : no need of \"one\"",
+      "range": {
+        "startLine": 48,
+        "startChar": 12,
+        "endLine": 48,
+        "endChar": 15
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "de6154fb_d8503a88",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 1,
+      "message": "Nit: Redundant.",
+      "range": {
+        "startLine": 99,
+        "startChar": 8,
+        "endLine": 99,
+        "endChar": 22
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d370d394_f36b6238",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 501,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 1,
+      "message": "Nit : Can using stringstream be useful here ?",
+      "range": {
+        "startLine": 497,
+        "startChar": 16,
+        "endLine": 501,
+        "endChar": 17
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "37acba1c_812b4539",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 768,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 1,
+      "message": "would any check be needed on this value ? if this string is empty or non-numeric, stoi in the constructor of knob might throw an exception right ?",
+      "range": {
+        "startLine": 768,
+        "startChar": 42,
+        "endLine": 768,
+        "endChar": 55
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1a6bfe4c_d591b2f6",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 828,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 1,
+      "message": "do we need to store this ? Other than constructor, i do not see any one else using this variable.",
+      "range": {
+        "startLine": 827,
+        "startChar": 4,
+        "endLine": 828,
+        "endChar": 27
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "65fa7272_92abadc1",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 559,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 1,
+      "message": "Any reason for this non blocking call ?",
+      "range": {
+        "startLine": 559,
+        "startChar": 19,
+        "endLine": 559,
+        "endChar": 50
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bc191729_94515226",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 564,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 1,
+      "message": "irrespective of whether generate attributes and send attributes was successful or filure, payloadStatus would be set to ipmi::PStatus::Valid, and also it might return success at line 581. Wouldn\u0027t that be incorrect ?",
+      "range": {
+        "startLine": 563,
+        "startChar": 12,
+        "endLine": 564,
+        "endChar": 59
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}

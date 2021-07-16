@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5454e798_465b59e0",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 609,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 0,
+      "message": "Wouldn\u0027t we miss on these if non-blocking call is used ?",
+      "range": {
+        "startLine": 607,
+        "startChar": 20,
+        "endLine": 609,
+        "endChar": 57
+      },
+      "revId": "9f8d027a411c77b13a92d3eae2fcc9747f484a3c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ccd61907_a5fc97bc",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 621,
+      "author": {
+        "id": 1000907
+      },
+      "writtenOn": "2021-07-16T20:33:00Z",
+      "side": 0,
+      "message": "same as above",
+      "range": {
+        "startLine": 619,
+        "startChar": 20,
+        "endLine": 621,
+        "endChar": 57
+      },
+      "revId": "9f8d027a411c77b13a92d3eae2fcc9747f484a3c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
