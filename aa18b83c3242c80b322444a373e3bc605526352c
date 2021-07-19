@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "b9eeabc6_1f329dcb",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-19T06:58:26Z",
+      "side": 1,
+      "message": "\u0027options\u0027 is xml node name. That is why it is written like that.",
+      "parentUuid": "9d3eba1a_2b242e5d",
+      "range": {
+        "startLine": 18,
+        "startChar": 3,
+        "endLine": 18,
+        "endChar": 25
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c2b50b89_b5039179",
         "filename": "include/biosxml.hpp",
         "patchSetId": 4
@@ -36,6 +60,30 @@
       "writtenOn": "2021-07-16T20:33:00Z",
       "side": 1,
       "message": "Nit : Unable to map to the definition below. Am i missing something?",
+      "range": {
+        "startLine": 30,
+        "startChar": 4,
+        "endLine": 41,
+        "endChar": 10
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "29cc8887_43a81787",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-19T06:58:26Z",
+      "side": 1,
+      "message": "Attributes such as name, description, CurrentVal, default and options from knob is used to fill BiosBaseTableTypeEntry. You can look at BiosBaseTableTypeEntry baseTableEntry \u003d std::make_tuple(...); in line number 653 for more clarity.",
+      "parentUuid": "c2b50b89_b5039179",
       "range": {
         "startLine": 30,
         "startChar": 4,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "79e9b8dd_44ee39a2",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-19T06:58:26Z",
+      "side": 1,
+      "message": "\u0027biosknobs\u0027 is xml node name. That is why it is written like that.",
+      "parentUuid": "d003f3c0_6b473b0c",
+      "range": {
+        "startLine": 48,
+        "startChar": 12,
+        "endLine": 48,
+        "endChar": 15
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "de6154fb_d8503a88",
         "filename": "include/biosxml.hpp",
         "patchSetId": 4
@@ -82,6 +154,30 @@
       "writtenOn": "2021-07-16T20:33:00Z",
       "side": 1,
       "message": "Nit: Redundant.",
+      "range": {
+        "startLine": 99,
+        "startChar": 8,
+        "endLine": 99,
+        "endChar": 22
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2576b4fd_3b7509c5",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-19T06:58:26Z",
+      "side": 1,
+      "message": "Will remove this.",
+      "parentUuid": "de6154fb_d8503a88",
       "range": {
         "startLine": 99,
         "startChar": 8,
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "a2c182cf_4628ee94",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 501,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-19T06:58:26Z",
+      "side": 1,
+      "message": "My use case is to get the next word, and not to split the string into words, And yes stringstream can be used but since evaluateExpression is a recursive function splitting the whole statement into words will, in most cases, be an unwanted step. \n\nThe design of the recursive function evaluateExpression can be changed in such a way that it uses only stringstream and effectively, but that might take more changes.",
+      "parentUuid": "d370d394_f36b6238",
+      "range": {
+        "startLine": 497,
+        "startChar": 16,
+        "endLine": 501,
+        "endChar": 17
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "37acba1c_812b4539",
         "filename": "include/biosxml.hpp",
         "patchSetId": 4
@@ -128,6 +248,30 @@
       "writtenOn": "2021-07-16T20:33:00Z",
       "side": 1,
       "message": "would any check be needed on this value ? if this string is empty or non-numeric, stoi in the constructor of knob might throw an exception right ?",
+      "range": {
+        "startLine": 768,
+        "startChar": 42,
+        "endLine": 768,
+        "endChar": 55
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5bee36f8_3062ebf3",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 768,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-19T06:58:26Z",
+      "side": 1,
+      "message": "Yes, this is correct. I will add the check.",
+      "parentUuid": "37acba1c_812b4539",
       "range": {
         "startLine": 768,
         "startChar": 42,
@@ -163,6 +307,30 @@
     },
     {
       "key": {
+        "uuid": "3549c825_08db31c4",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 828,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-19T06:58:26Z",
+      "side": 1,
+      "message": "Yes, it can be removed. I will remove this as it is only used in constructor.",
+      "parentUuid": "1a6bfe4c_d591b2f6",
+      "range": {
+        "startLine": 827,
+        "startChar": 4,
+        "endLine": 828,
+        "endChar": 27
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "65fa7272_92abadc1",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 4
@@ -186,6 +354,30 @@
     },
     {
       "key": {
+        "uuid": "695f29a7_649c4db6",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 559,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-19T06:58:26Z",
+      "side": 1,
+      "message": "generateAndSendAttributesData takes around 1 minute and 10 seconds to complete. And since ipmiOEMSetPayload is an ipmi call, we dont want to keep it blocked for that much time.",
+      "parentUuid": "65fa7272_92abadc1",
+      "range": {
+        "startLine": 559,
+        "startChar": 19,
+        "endLine": 559,
+        "endChar": 50
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bc191729_94515226",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 4
@@ -197,6 +389,30 @@
       "writtenOn": "2021-07-16T20:33:00Z",
       "side": 1,
       "message": "irrespective of whether generate attributes and send attributes was successful or filure, payloadStatus would be set to ipmi::PStatus::Valid, and also it might return success at line 581. Wouldn\u0027t that be incorrect ?",
+      "range": {
+        "startLine": 563,
+        "startChar": 12,
+        "endLine": 564,
+        "endChar": 59
+      },
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "865ab0c0_8e8f46db",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 564,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-19T06:58:26Z",
+      "side": 1,
+      "message": "As you said irrespective of generateAndSendAttributesData status, we return success to ipmiOEMSetPayload function, if steps till generateBIOSXMLFile is success. This is inevitable as generateAndSendAttributesData is called in a thread. But on the question that if it is incorrect behavior, we can assume that if generateBIOSXMLFile is successful bios.xml and all other required information is passed from bios to bmc. And generateAndSendAttributesData is to populate this given information to dbus and in-turn enabling the data to be visible through redfish GET to redfish/v1/Registries/BiosAttributeRegistry/BiosAttributeRegistry.",
+      "parentUuid": "bc191729_94515226",
       "range": {
         "startLine": 563,
         "startChar": 12,
