@@ -3393,7 +3393,7 @@ ipmi::RspType<> ipmiOemSetEfiBootOptions(uint8_t bootFlag, uint8_t bootParam,
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Unsupported parameter");
-        return ipmi::responseResponseError();
+        return ipmi::response(ccParameterNotSupported);
     }
 
     if (!bootOption)
