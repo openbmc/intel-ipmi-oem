@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cfe27ccb_098fc9cc",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1001006
+      },
+      "writtenOn": "2021-07-23T06:24:52Z",
+      "side": 1,
+      "message": "what will happen if a case of clearing the attributes and then the execution of async_method_call is ended up in error state and returns from if(ec)? Just to make sure that the previous data is not lost when you are not able to execute the current function in place which fails.",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2a0321cf_5222761e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1001006
+      },
+      "writtenOn": "2021-07-23T06:24:52Z",
+      "side": 1,
+      "message": "Should you have to return an error value in this case instead of just return alone?",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "52a448f9_08a8d6bc",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1001006
+      },
+      "writtenOn": "2021-07-23T06:24:52Z",
+      "side": 1,
+      "message": "Should it be replaced with const string instead of hard coding in place?",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
