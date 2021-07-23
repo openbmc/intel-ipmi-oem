@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "b4b3ea40_fbf99856",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-23T12:11:23Z",
+      "side": 1,
+      "message": "The only time the function will be called is when bios boots up. And the call comes to this function from ipmi call ipmiOEMSetPayload. And for a retry to happen ipmiOEMSetPayload has to be called again. In that case we will again generate attributesData. So, in effect, we can clear attributesData if the dbus call is successful or not.",
+      "parentUuid": "cfe27ccb_098fc9cc",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2a0321cf_5222761e",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 5
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "1ee3d62f_e5333ed9",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-23T12:11:23Z",
+      "side": 1,
+      "message": "This is return for the lambda function. It is put there so that \"phosphor::logging::log\u003cphosphor::logging::level::INFO\u003e(\"sendAllAttributes: send all attributes - done\");\" is not called in case of error. \nEven if I return \"false\" it is not being used because the lambda function is the completion handler.",
+      "parentUuid": "2a0321cf_5222761e",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "52a448f9_08a8d6bc",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 5
@@ -47,6 +83,24 @@
       "writtenOn": "2021-07-23T06:24:52Z",
       "side": 1,
       "message": "Should it be replaced with const string instead of hard coding in place?",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ef847dd1_e9dccc4b",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-23T12:11:23Z",
+      "side": 1,
+      "message": "Is there any advantage of doing that?",
+      "parentUuid": "52a448f9_08a8d6bc",
       "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true

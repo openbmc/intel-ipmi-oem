@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "117f1af5_70823fa7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-23T12:11:23Z",
+      "side": 1,
+      "message": "If depex is false it means that that option(knob) will not be seen in bios menu. So we don\u0027t show the same in redfish.",
+      "parentUuid": "b49e6a3f_85b4c0c2",
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9d3eba1a_2b242e5d",
         "filename": "include/biosxml.hpp",
         "patchSetId": 4
