@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "b49e6a3f_85b4c0c2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000414
+      },
+      "writtenOn": "2021-07-23T07:02:41Z",
+      "side": 1,
+      "message": "Are we fine with this approach? @Suryakanth, @ArunLal. What if the users want to read the existing values of those knobs through redfish?",
+      "parentUuid": "b6c81bb9_b91a247b",
+      "revId": "aa18b83c3242c80b322444a373e3bc605526352c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9d3eba1a_2b242e5d",
         "filename": "include/biosxml.hpp",
         "patchSetId": 4
