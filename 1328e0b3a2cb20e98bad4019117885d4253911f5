@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "478ea3ac_696935a9",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1001006
+      },
+      "writtenOn": "2021-07-26T05:30:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b4b3ea40_fbf99856",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2a0321cf_5222761e",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 5
@@ -72,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "6238e07b_9dd70e11",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1001006
+      },
+      "writtenOn": "2021-07-26T05:30:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1ee3d62f_e5333ed9",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "52a448f9_08a8d6bc",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 5
@@ -101,6 +137,24 @@
       "side": 1,
       "message": "Is there any advantage of doing that?",
       "parentUuid": "52a448f9_08a8d6bc",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "869006e0_3f16a875",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1001006
+      },
+      "writtenOn": "2021-07-26T05:30:46Z",
+      "side": 1,
+      "message": "Code readability will be improved if we aren\u0027t hard coding and one header place to change any of the hard coding values should be good enough i think.",
+      "parentUuid": "ef847dd1_e9dccc4b",
       "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
