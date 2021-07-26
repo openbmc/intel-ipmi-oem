@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dee89842_0a0074e1",
+        "filename": "src/chassiscommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-07-26T22:31:09Z",
+      "side": 1,
+      "message": "The proper fix for this would be to make this uint8_t into a std::optional\u003cstd::tuple\u003cbool, uint7_t\u003e\u003e force. Then the unpacker can extract the parts for you.\n\nThen you check that std::get\u003cuint7_t\u003e(force) is 0 and forceIdentify is std::get\u003cbool\u003e(force);",
+      "range": {
+        "startLine": 185,
+        "startChar": 50,
+        "endLine": 185,
+        "endChar": 57
+      },
+      "revId": "05ca68fda2ba14692cdc364c1e8e929d48ca18f3",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
