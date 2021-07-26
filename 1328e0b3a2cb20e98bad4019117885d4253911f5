@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "310d3fab_7100f476",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "Will change this.",
+      "parentUuid": "2b9077d2_8b44c788",
+      "range": {
+        "startLine": 60,
+        "startChar": 11,
+        "endLine": 60,
+        "endChar": 26
+      },
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "8ae4707d_3b2f302c",
         "filename": "include/biosxml.hpp",
         "patchSetId": 5
@@ -59,6 +83,30 @@
       "writtenOn": "2021-07-26T13:08:01Z",
       "side": 1,
       "message": "nit: This also can be moved to Initializer list like below.\nreadonly((\"ReadOnly\" \u003d\u003d setupTypeStr) ? true: false)",
+      "range": {
+        "startLine": 99,
+        "startChar": 8,
+        "endLine": 102,
+        "endChar": 9
+      },
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ed38e557_d3e3b2c7",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "Will change this.",
+      "parentUuid": "8ae4707d_3b2f302c",
       "range": {
         "startLine": 99,
         "startChar": 8,
@@ -88,6 +136,24 @@
     },
     {
       "key": {
+        "uuid": "02abdcf3_374d53e8",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "depex is initialized to false. So modification of value is required only when we have to make it true.",
+      "parentUuid": "5e22e808_d486db46",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e5e57a6b_a3bc1014",
         "filename": "include/biosxml.hpp",
         "patchSetId": 5
@@ -105,6 +171,24 @@
     },
     {
       "key": {
+        "uuid": "325f9c04_7810e807",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "depex is initialized to false. So modification of value is required only when we have to make it true.",
+      "parentUuid": "e5e57a6b_a3bc1014",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "8de07c32_876249a3",
         "filename": "include/biosxml.hpp",
         "patchSetId": 5
@@ -116,6 +200,30 @@
       "writtenOn": "2021-07-26T13:08:01Z",
       "side": 1,
       "message": "is this \"getErrorCount\"?",
+      "range": {
+        "startLine": 161,
+        "startChar": 11,
+        "endLine": 161,
+        "endChar": 19
+      },
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a55625c1_e88e20f8",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 161,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "Yes, and will change to getErrorCount.",
+      "parentUuid": "8de07c32_876249a3",
       "range": {
         "startLine": 161,
         "startChar": 11,
@@ -151,6 +259,30 @@
     },
     {
       "key": {
+        "uuid": "e0bd170c_a2805e45",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 216,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "Will address this.",
+      "parentUuid": "9d4695fb_4d3ec54c",
+      "range": {
+        "startLine": 216,
+        "startChar": 26,
+        "endLine": 216,
+        "endChar": 49
+      },
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5073dca6_5071359b",
         "filename": "include/biosxml.hpp",
         "patchSetId": 5
@@ -174,6 +306,30 @@
     },
     {
       "key": {
+        "uuid": "538d9ceb_859eb8af",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 252,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "Will address this.",
+      "parentUuid": "5073dca6_5071359b",
+      "range": {
+        "startLine": 252,
+        "startChar": 27,
+        "endLine": 252,
+        "endChar": 51
+      },
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "cbdd7855_dee1d973",
         "filename": "include/biosxml.hpp",
         "patchSetId": 5
@@ -185,6 +341,30 @@
       "writtenOn": "2021-07-26T13:08:01Z",
       "side": 1,
       "message": "Better to check for validity of filepath(Empty, existence etc..) before calling getKnobs()",
+      "range": {
+        "startLine": 633,
+        "startChar": 22,
+        "endLine": 633,
+        "endChar": 30
+      },
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "783e98f4_5ffd3096",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 633,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "We are checking for validity of file in getKnobs.",
+      "parentUuid": "cbdd7855_dee1d973",
       "range": {
         "startLine": 633,
         "startChar": 22,
@@ -356,6 +536,24 @@
     },
     {
       "key": {
+        "uuid": "4c26f81c_ad6f7400",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "\"org.freedesktop.DBus.Properties\" is hard coded in all places that I checked. In intel-ipmi-oem code base. Hence it is kept like this to be consistent with rest of the code. \nAnd yes, I do agree to point you made.",
+      "parentUuid": "869006e0_3f16a875",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "06de4778_eee04cb2",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 5
@@ -373,6 +571,24 @@
     },
     {
       "key": {
+        "uuid": "0887a58e_6aaad655",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 252,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "In doDepexCompute() it is common that some knobs will have a invalid depex, I have observed around 14 failure knobs and 16048 successful knobs from the bios.xml that I used for testing.\nSo we just log the errors and continue operation, instead of aborting the operation. \ngetBaseTable() returns false when size is zero. In this case we need to still make the sendAllAttributes() call so that a redfish call to Registries/BiosAttributeRegistry/BiosAttributeRegistry will not return the old list.",
+      "parentUuid": "06de4778_eee04cb2",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b5846abb_f8e7430c",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 5
@@ -384,6 +600,30 @@
       "writtenOn": "2021-07-26T13:08:01Z",
       "side": 1,
       "message": "This is not unable to post, Check is for unable to get ioContext or bus",
+      "range": {
+        "startLine": 593,
+        "startChar": 43,
+        "endLine": 593,
+        "endChar": 58
+      },
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ab94da8f_61668989",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 593,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-07-26T15:05:21Z",
+      "side": 1,
+      "message": "Will correct the error string.",
+      "parentUuid": "b5846abb_f8e7430c",
       "range": {
         "startLine": 593,
         "startChar": 43,
