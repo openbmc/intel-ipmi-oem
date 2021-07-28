@@ -1214,7 +1214,25 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
 
     std::string connection;
     std::string path;
-    auto status = getSensorConnection(ctx, recordID, connection, path);
+    uint16_t sensNumFromRecID{recordID};
+    if ((recordID >= reservedSensorNumber) &&
+        (recordID < (2 * maxSensorsPerLUN)))
+    {
+        sensNumFromRecID = (recordID + 1) & maxSensorsPerLUN;
+        ctx->lun = 1;
+    }
+    else if ((recordID >= (2 * maxSensorsPerLUN)) &&
+             (recordID < maxIPMISensors))
+    {
+        sensNumFromRecID = (recordID + 2) & maxSensorsPerLUN;
+        ctx->lun = 3;
+    }
+    else if (recordID >= maxIPMISensors)
+    {
+        return GENERAL_ERROR;
+    }
+
+    auto status = getSensorConnection(ctx, sensNumFromRecID, connection, path);
     if (status)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -1230,7 +1248,7 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
         return GENERAL_ERROR;
     }
     uint16_t sensorNum = getSensorNumberFromPath(path);
-    if (sensorNum == invalidSensorNumber)
+    if (sensorNum >= maxIPMISensors)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "getSensorDataRecord: invalidSensorNumber");
@@ -1239,6 +1257,12 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     uint8_t sensornumber = static_cast<uint8_t>(sensorNum);
     uint8_t lun = static_cast<uint8_t>(sensorNum >> 8);
 
+    if ((sensornumber != sensNumFromRecID) && (lun != ctx->lun))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getSensorDataRecord: sensor record mismatch");
+        return GENERAL_ERROR;
+    }
     get_sdr::SensorDataFullRecord record = {0};
 
     get_sdr::header::set_record_id(
