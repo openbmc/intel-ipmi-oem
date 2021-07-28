@@ -181,13 +181,19 @@ void createIdentifyTimer()
     }
 }
 
-ipmi::RspType<> ipmiChassisIdentify(std::optional<uint8_t> interval,
-                                    std::optional<uint8_t> force)
+ipmi::RspType<>
+    ipmiChassisIdentify(std::optional<uint8_t> interval,
+                        std::optional<std::tuple<bool, uint7_t>> force)
 {
     uint8_t identifyInterval = interval.value_or(defaultIdentifyTimeOut);
-    bool forceIdentify = force.value_or(0) & 0x01;
-    uint8_t reserveFields = force.value_or(0) & 0xFE; // bits [7:1] are
-                                                      // reserved
+    // Byte2  [7:1] - reserved
+    //        [0] - 1b = Turn on Identify indefinitely. This overrides the
+    //        values in byte 1.
+    //              0b = Identify state driven according to byte 1.
+    bool forceIdentify =
+        std::get<bool>(force.value_or(std::tuple<bool, uint7_t>{0, 0}));
+    uint7_t reserveFields =
+        std::get<uint7_t>(force.value_or(std::tuple<bool, uint7_t>{0, 0}));
 
     if (reserveFields)
     {
