@@ -1264,6 +1264,7 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
         }
         // Clear sensitive data
         OPENSSL_cleanse(&passwd, passwd.length());
+        std::cerr << "test\n";
 
         return ipmi::response(status);
     }
