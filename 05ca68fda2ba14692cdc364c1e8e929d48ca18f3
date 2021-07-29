@@ -22,6 +22,30 @@
       "revId": "05ca68fda2ba14692cdc364c1e8e929d48ca18f3",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c6ab8d0a_79a63f68",
+        "filename": "src/chassiscommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1001175
+      },
+      "writtenOn": "2021-07-29T06:44:54Z",
+      "side": 1,
+      "message": "Updated code to use tuple to parse the reserve fields and \nthe force identify bit.",
+      "parentUuid": "dee89842_0a0074e1",
+      "range": {
+        "startLine": 185,
+        "startChar": 50,
+        "endLine": 185,
+        "endChar": 57
+      },
+      "revId": "05ca68fda2ba14692cdc364c1e8e929d48ca18f3",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
