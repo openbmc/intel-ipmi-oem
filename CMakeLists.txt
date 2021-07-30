@@ -31,6 +31,7 @@ add_definitions (-DBOOST_ASIO_DISABLE_THREADS)
 add_definitions (-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 add_definitions (-Wno-psabi)
 
+# add a comment to make git think there was a change.
 if (NOT YOCTO) # headers that can't be built without yocto
     include_directories (SYSTEM non-yocto)
 
