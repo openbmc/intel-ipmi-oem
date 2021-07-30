@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b7313ba6_3c3e7b7b",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 694,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-07-30T18:51:03Z",
+      "side": 1,
+      "message": "Do we want to submit this now?\n\nI don\u0027t think the dbus-sensors or entity side are supporting the encoding/decodding that this used yet.",
+      "range": {
+        "startLine": 678,
+        "startChar": 4,
+        "endLine": 694,
+        "endChar": 5
+      },
+      "revId": "7b5b907bc696572cba043c49b94e3f044db8c1a9",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
