@@ -31,58 +31,17 @@ add_definitions (-DBOOST_ASIO_DISABLE_THREADS)
 add_definitions (-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 add_definitions (-Wno-psabi)
 
-if (NOT YOCTO) # headers that can't be built without yocto
-    include_directories (SYSTEM non-yocto)
+find_package (PkgConfig REQUIRED)
+pkg_check_modules (LOGGING phosphor-logging REQUIRED)
+include_directories (SYSTEM ${LOGGING_INCLUDE_DIRS})
+link_directories (${LOGGING_LIBRARY_DIRS})
 
-    configure_file (CMakeLists.txt.in 3rdparty/CMakeLists.txt)
-    execute_process (COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty)
-    execute_process (COMMAND ${CMAKE_COMMAND} --build .
-                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/3rdparty)
-
-    set (CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/prefix ${CMAKE_PREFIX_PATH})
-    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/prefix/include)
-    link_directories (${CMAKE_BINARY_DIR}/prefix/lib)
-
-    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/sdbusplus-src)
-    link_directories (${CMAKE_BINARY_DIR}/sdbusplus-src/.libs)
-    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/phosphor-logging-src)
-    link_directories (${CMAKE_BINARY_DIR}/phosphor-logging-src/.libs)
-    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src)
-    link_directories (${CMAKE_BINARY_DIR}/intel-dbus-interfaces-src/.libs)
-    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/phosphor-ipmi-host/include)
-    include_directories (SYSTEM ${CMAKE_BINARY_DIR}/ipmid/user_channel)
-    include_directories (SYSTEM ${CMAKE_BINARY_DIR}) # link_directories  (${CMAK
-                                                     # E_BINARY_DIR}/sdbusplus-
-                                                     # src/.libs)
-endif ()
-
-if (YOCTO)
-    find_package (PkgConfig REQUIRED)
-    pkg_check_modules (LOGGING phosphor-logging REQUIRED)
-    include_directories (SYSTEM ${LOGGING_INCLUDE_DIRS})
-    link_directories (${LOGGING_LIBRARY_DIRS})
-
-    pkg_check_modules (LIBIPMID libipmid REQUIRED)
-    include_directories (SYSTEM ${LIBIPMID_INCLUDE_DIRS})
-    link_directories (${LIBIPMID_LIBRARY_DIRS})
-
-endif ()
+pkg_check_modules (LIBIPMID libipmid REQUIRED)
+include_directories (SYSTEM ${LIBIPMID_INCLUDE_DIRS})
+link_directories (${LIBIPMID_LIBRARY_DIRS})
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-if (NOT YOCTO)
-    set (SENSOR_TEST_SRC tests/test_sensorcommands.cpp)
-
-    find_package (GTest REQUIRED)
-
-    enable_testing ()
-
-    add_executable (runSensorTests ${SENSOR_TEST_SRC})
-    add_test (NAME test_sensorcommands COMMAND runSensorTests)
-    target_link_libraries (runSensorTests ${GTEST_BOTH_LIBRARIES}
-                           ${CMAKE_THREAD_LIBS_INIT} sdbusplus -lsystemd)
-endif ()
 #
 # import OpenSSL (crypto)
 find_package (OpenSSL REQUIRED)
