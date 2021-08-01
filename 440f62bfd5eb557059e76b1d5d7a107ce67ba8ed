@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "cc8c11ab_b6169cb8",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 608,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-01T15:59:42Z",
+      "side": 0,
+      "message": "Will address this.",
+      "parentUuid": "4bbead10_ec73e809",
+      "range": {
+        "startLine": 607,
+        "startChar": 20,
+        "endLine": 608,
+        "endChar": 71
+      },
+      "revId": "440f62bfd5eb557059e76b1d5d7a107ce67ba8ed",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e9a654bf_04f0abff",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 5
@@ -36,6 +60,30 @@
       "writtenOn": "2021-07-26T13:08:01Z",
       "side": 0,
       "message": "Same as above, This is missing in latest code.",
+      "range": {
+        "startLine": 619,
+        "startChar": 20,
+        "endLine": 620,
+        "endChar": 71
+      },
+      "revId": "440f62bfd5eb557059e76b1d5d7a107ce67ba8ed",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f91f49c4_26b2c106",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 620,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-01T15:59:42Z",
+      "side": 0,
+      "message": "Will address this.",
+      "parentUuid": "e9a654bf_04f0abff",
       "range": {
         "startLine": 619,
         "startChar": 20,
