@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "851ad6ea_c565e427",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-01T16:17:47Z",
+      "side": 1,
+      "message": "Turns out tinyxml2.h is a C++ header and uses template inside it. So will not be changing this.",
+      "parentUuid": "422563bf_e1bbab8f",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "664a6641_7637b8c2",
         "filename": "include/biosxml.hpp",
         "patchSetId": 5
