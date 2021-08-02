@@ -207,6 +207,24 @@
     },
     {
       "key": {
+        "uuid": "5c766a61_aff2155d",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-08-02T15:36:56Z",
+      "side": 1,
+      "message": "ok, Thanks for confirming.",
+      "parentUuid": "02abdcf3_374d53e8",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e5e57a6b_a3bc1014",
         "filename": "include/biosxml.hpp",
         "patchSetId": 5
@@ -430,6 +448,30 @@
     },
     {
       "key": {
+        "uuid": "914427a8_2e33b278",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 633,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-08-02T15:36:56Z",
+      "side": 1,
+      "message": "Ok, Thanks for clarification.",
+      "parentUuid": "783e98f4_5ffd3096",
+      "range": {
+        "startLine": 633,
+        "startChar": 22,
+        "endLine": 633,
+        "endChar": 30
+      },
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "cfe27ccb_098fc9cc",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 5
@@ -639,6 +681,24 @@
       "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bba1a829_f55390a1",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 252,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-08-02T15:36:56Z",
+      "side": 1,
+      "message": "Thanks for clarification.",
+      "parentUuid": "0887a58e_6aaad655",
+      "revId": "1328e0b3a2cb20e98bad4019117885d4253911f5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
