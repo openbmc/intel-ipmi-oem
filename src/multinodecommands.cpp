@@ -67,6 +67,12 @@ std::optional<uint8_t> getMultiNodeRole()
             value = static_cast<uint8_t>(NodeRole::slave);
         else if (valueStr == "arbitrating")
             value = static_cast<uint8_t>(NodeRole::arbitrating);
+        else
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "getMultiNodeRole: Invalid dbus value!");
+            return std::nullopt;
+        }
         return value;
     }
     catch (const std::exception& e)
