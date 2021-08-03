@@ -872,7 +872,7 @@ void SharedMemoryArea::Initialize(uint32_t addr, uint32_t areaSize)
 
 bool MDRV2::smbiosUnlock(uint8_t index)
 {
-    bool ret;
+    bool ret = false;
     switch (smbiosDir.dir[index].stage)
     {
         case MDR2SMBIOSStatusEnum::mdr2Updating:
