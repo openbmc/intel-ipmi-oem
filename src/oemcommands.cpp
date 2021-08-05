@@ -1052,8 +1052,12 @@ static bool isDHCPIPv6Enabled(uint8_t Channel)
  */
 ipmi::RspType<> ipmiOEMSetUser2Activation(
     std::array<uint8_t, ipmi::ipmiMaxUserName>& userName,
-    std::array<uint8_t, ipmi::maxIpmi20PasswordSize>& userPassword)
+    const SecureBuffer& userPassword)
 {
+    if (userPassword.size() != ipmi::maxIpmi20PasswordSize)
+    {
+        return ipmi::responseReqDataLenInvalid();
+    }
     bool userState = false;
     // Check for System Interface not exist and LAN should be static
     for (uint8_t channel = 0; channel < maxIpmiChannels; channel++)
@@ -1145,7 +1149,6 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
             {
                 phosphor::logging::log<phosphor::logging::level::INFO>(
                     "ipmiOEMSetUser2Activation: user created successfully ");
-                OPENSSL_cleanse(userPassword.data(), userPassword.size());
 
                 return ipmi::responseSuccess();
             }
@@ -1155,7 +1158,6 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
         ipmiUserSetUserName(ipmiDefaultUserId, static_cast<std::string>(""));
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMSetUser2Activation: password / priv setting is failed.");
-        OPENSSL_cleanse(userPassword.data(), userPassword.size());
     }
     else
     {
@@ -1263,9 +1265,6 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
         {
             status = ipmiSetSpecialUserPassword("root", passwd);
         }
-        // Clear sensitive data
-        OPENSSL_cleanse(passwd.data(), passwd.length());
-
         return ipmi::response(status);
     }
     else
