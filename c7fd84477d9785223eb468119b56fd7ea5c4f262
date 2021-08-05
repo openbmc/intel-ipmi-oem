@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "21983b2d_e4259112",
+        "filename": "src/multinodecommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-05T22:42:39Z",
+      "side": 1,
+      "message": "this should be a single thing, usually all caps to match the rest of the key-value entries that are added to the log.\n\ntry just VALUE\u003d%s",
+      "range": {
+        "startLine": 74,
+        "startChar": 42,
+        "endLine": 74,
+        "endChar": 61
+      },
+      "revId": "c7fd84477d9785223eb468119b56fd7ea5c4f262",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
