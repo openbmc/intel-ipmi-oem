@@ -61,6 +61,17 @@ static uint16_t sdrReservationID;
 static uint32_t sdrLastAdd = noTimestamp;
 static uint32_t sdrLastRemove = noTimestamp;
 static constexpr size_t lastRecordIndex = 0xFFFF;
+
+// The IPMI spec defines four Logical Units (LUN), each capable of supporting
+// 254 sensors. The 256 values assigned to LUN 2 are special and are not used
+// for general purpose sensors. Each LUN reserves location 0xFF. The maximum
+// number of IPMI sensors are LUN 0 + LUN 1 + LUN 2, less the reserved
+// location.
+static constexpr size_t maxIPMISensors = ((3 * 256) - (3 * 1));
+
+static constexpr size_t lun0MaxSensorNum = 0xfe;
+static constexpr size_t lun1MaxSensorNum = 0x1fe;
+static constexpr size_t lun3MaxSensorNum = 0x3fe;
 static constexpr int GENERAL_ERROR = -1;
 
 SensorSubTree sensorTree;
@@ -1137,6 +1148,12 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
     return ipmi::responseSuccess(sensorEventStatus, assertions, deassertions);
 }
 
+static inline uint16_t getNumberOfSensors(void)
+{
+    return sensorTree.size() > maxIPMISensors ? maxIPMISensors
+                                              : sensorTree.size();
+}
+
 static int getSensorDataRecord(ipmi::Context::ptr ctx,
                                std::vector<uint8_t>& recordData,
                                uint16_t recordID)
@@ -1150,7 +1167,7 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
         return GENERAL_ERROR;
     }
 
-    size_t lastRecord = sensorTree.size() + fruCount +
+    size_t lastRecord = getNumberOfSensors() + fruCount +
                         ipmi::storage::type12Count +
                         ipmi::storage::nmDiscoverySDRCount - 1;
     if (recordID == lastRecordIndex)
@@ -1164,9 +1181,9 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
         return GENERAL_ERROR;
     }
 
-    if (recordID >= sensorTree.size())
+    if (recordID >= getNumberOfSensors())
     {
-        size_t fruIndex = recordID - sensorTree.size();
+        size_t fruIndex = recordID - getNumberOfSensors();
         size_t type12End = fruCount + ipmi::storage::type12Count;
 
         if (fruIndex >= type12End)
@@ -1212,27 +1229,32 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
         return 0;
     }
 
+    // Perform a incremental scan of the SDR Record ID's and translate the
+    // first 765 SDR records (i.e. maxIPMISensors) into IPMI Sensor
+    // Numbers. The IPMI sensor numbers are not linear, and have a reserved
+    // gap at 0xff. This code creates 254 sensors per LUN, excepting LUN 2
+    // which has special meaning.
     std::string connection;
     std::string path;
     uint16_t sensNumFromRecID{recordID};
-    if ((recordID >= reservedSensorNumber) &&
-        (recordID < (2 * maxSensorsPerLUN)))
+    if ((recordID > lun0MaxSensorNum) && (recordID < lun1MaxSensorNum))
     {
-        sensNumFromRecID = (recordID + 1) & maxSensorsPerLUN;
+        // LUN 0 has one reserved sensor number. Compensate here by adding one
+        // to the record ID
+        sensNumFromRecID = recordID + 1;
         ctx->lun = 1;
     }
-    else if ((recordID >= (2 * maxSensorsPerLUN)) &&
-             (recordID < maxIPMISensors))
+    else if ((recordID >= lun1MaxSensorNum) && (recordID < maxIPMISensors))
     {
-        sensNumFromRecID = (recordID + 2) & maxSensorsPerLUN;
+        // LUN 0, 1 have a reserved sensor number. Compensate here by adding 2
+        // to the record ID. Skip all 256 sensors in LUN 2, as it has special
+        // rules governing its use.
+        sensNumFromRecID = recordID + (maxSensorsPerLUN + 1) + 2;
         ctx->lun = 3;
     }
-    else if (recordID >= maxIPMISensors)
-    {
-        return GENERAL_ERROR;
-    }
 
-    auto status = getSensorConnection(ctx, sensNumFromRecID, connection, path);
+    auto status = getSensorConnection(
+        ctx, static_cast<uint8_t>(sensNumFromRecID), connection, path);
     if (status)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -1248,7 +1270,10 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
         return GENERAL_ERROR;
     }
     uint16_t sensorNum = getSensorNumberFromPath(path);
-    if (sensorNum >= maxIPMISensors)
+    // Return an error on LUN 2 assingments, and any sensor number beyond the
+    // range of LUN 3
+    if (((sensorNum > lun1MaxSensorNum) && (sensorNum <= maxIPMISensors)) ||
+        (sensorNum > lun3MaxSensorNum))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "getSensorDataRecord: invalidSensorNumber");
@@ -1257,7 +1282,8 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     uint8_t sensornumber = static_cast<uint8_t>(sensorNum);
     uint8_t lun = static_cast<uint8_t>(sensorNum >> 8);
 
-    if ((sensornumber != sensNumFromRecID) && (lun != ctx->lun))
+    if ((sensornumber != static_cast<uint8_t>(sensNumFromRecID)) &&
+        (lun != ctx->lun))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "getSensorDataRecord: sensor record mismatch");
@@ -1511,7 +1537,7 @@ static ipmi::RspType<uint8_t, // respcount
     {
         return ipmi::responseResponseError();
     }
-    uint16_t numSensors = sensorTree.size();
+    uint16_t numSensors = getNumberOfSensors();
     if (count.value_or(0) == getSdrCount)
     {
         // Count the number of Type 1 SDR entries assigned to the LUN
@@ -1616,7 +1642,7 @@ ipmi::RspType<uint8_t,  // sdr version
     }
 
     uint16_t recordCount =
-        sensorTree.size() + fruCount + ipmi::storage::type12Count;
+        getNumberOfSensors() + fruCount + ipmi::storage::type12Count;
 
     uint8_t operationSupport = static_cast<uint8_t>(
         SdrRepositoryInfoOps::overflow); // write not supported
@@ -1697,7 +1723,7 @@ ipmi::RspType<uint16_t,            // next record ID
         return ipmi::response(ret);
     }
 
-    size_t lastRecord = sensorTree.size() + fruCount +
+    size_t lastRecord = getNumberOfSensors() + fruCount +
                         ipmi::storage::type12Count +
                         ipmi::storage::nmDiscoverySDRCount - 1;
     uint16_t nextRecordId = lastRecord > recordID ? recordID + 1 : 0XFFFF;
