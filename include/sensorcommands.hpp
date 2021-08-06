@@ -121,7 +121,7 @@ enum class IPMINetfnSensorCmds : ipmi_cmd_t
 namespace ipmi
 {
 extern SensorSubTree sensorTree;
-static ipmi_ret_t getSensorConnection(ipmi::Context::ptr ctx, uint16_t sensnum,
+static ipmi_ret_t getSensorConnection(ipmi::Context::ptr ctx, uint8_t sensnum,
                                       std::string& connection,
                                       std::string& path)
 {
