@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "5221bde2_867812e3",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2021-08-10T23:08:24Z",
+      "side": 1,
+      "message": "Each LUN can have a sensor from 0 -\u003e 0xFE (aka 254)\n255 is resserved, and we\u0027ll never know why.",
+      "parentUuid": "38067b35_5232f0e0",
+      "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "dfcda16a_ae7801bf",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2021-08-10T22:19:19Z",
       "side": 1,
       "message": "This is 512 - 2.",
+      "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b4178d7d_3b48d857",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2021-08-10T23:08:24Z",
+      "side": 1,
+      "message": "510 \u003d\u003d 0x1fe",
+      "parentUuid": "dfcda16a_ae7801bf",
       "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "c787bf78_3ce8a351",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2021-08-10T23:08:24Z",
+      "side": 1,
+      "message": "This is used to do SDR record number comparisons.\nThe maximum number of sensors available in IPMI is\nLUN0 0-\u003e254 less 0xFF (i.e. -1)\nLUN1 (same)\nLUN2 (same)\nMaking the 1:1 linear count of SDR\u0027s to sensor numbers 768 - 3\nThe variable value is crossing domains between SDR Record Number and IPMI/LUN sensor number. It\u0027s going to be confusing regardless of the name I give this variable.",
+      "parentUuid": "c5aef07c_be9bd515",
+      "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d41c825a_4bdb0cac",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 1
@@ -64,6 +118,24 @@
       "writtenOn": "2021-08-10T22:19:19Z",
       "side": 1,
       "message": "This is 1024 - 2.",
+      "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3a62cf5c_e499698b",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2021-08-10T23:08:24Z",
+      "side": 1,
+      "message": "1022 is 0x3FE (i.e. sensor 254 of LUN 3), which is the largest value that can be assigned to LUN 3. Once again, we\u0027ll never know what 0xff was to be reserved to do.\n\nShould I migrate these to hex to make the values easier to understand?",
+      "parentUuid": "d41c825a_4bdb0cac",
       "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
