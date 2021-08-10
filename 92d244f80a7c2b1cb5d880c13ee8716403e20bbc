@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "38067b35_5232f0e0",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1000524
+      },
+      "writtenOn": "2021-08-10T22:19:19Z",
+      "side": 1,
+      "message": "This is 256 - 2.",
+      "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dfcda16a_ae7801bf",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000524
+      },
+      "writtenOn": "2021-08-10T22:19:19Z",
+      "side": 1,
+      "message": "This is 512 - 2.",
+      "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c5aef07c_be9bd515",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1000524
+      },
+      "writtenOn": "2021-08-10T22:19:19Z",
+      "side": 1,
+      "message": "Yet this is 768 - 3.\nSeem I do not understand the reason for this value.",
+      "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d41c825a_4bdb0cac",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1000524
+      },
+      "writtenOn": "2021-08-10T22:19:19Z",
+      "side": 1,
+      "message": "This is 1024 - 2.",
+      "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
