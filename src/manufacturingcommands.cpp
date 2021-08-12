@@ -793,6 +793,8 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
                         ipmi::intel::general::cmdSetManufacturingData):
         case makeCmdKey(ipmi::netFnOemOne,
                         ipmi::intel::general::cmdGetManufacturingData):
+        case makeCmdKey(ipmi::intel::netFnGeneral,
+                        ipmi::intel::general::cmdSetFITcLayout):
         case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdWriteFruData):
         case makeCmdKey(ipmi::netFnOemTwo, ipmi::intel::platform::cmdClearCMOS):
 
@@ -979,6 +981,34 @@ ipmi::RspType<> clearCMOS()
     ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
     return ipmi::response(retI2C);
 }
+
+ipmi::RspType<> setFITcLayout(uint32_t layout)
+{
+    static constexpr const char* factoryFITcLayout =
+        "/var/sofs/factory-settings/layout/fitc";
+    std::filesystem::path fitcDir =
+        std::filesystem::path(factoryFITcLayout).parent_path();
+    std::error_code ec;
+    std::filesystem::create_directories(fitcDir, ec);
+    if (ec)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+    try
+    {
+        std::ofstream file(factoryFITcLayout);
+        file << layout;
+        file.flush();
+        file.close();
+    }
+    catch (const std::exception& e)
+    {
+        return ipmi::responseUnspecifiedError();
+    }
+
+    return ipmi::responseSuccess();
+}
+
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -1004,6 +1034,10 @@ void register_mtm_commands()
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
                           ipmi::intel::general::cmdGetManufacturingData,
                           ipmi::Privilege::Admin, ipmi::getManufacturingData);
+
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdSetFITcLayout,
+                          ipmi::Privilege::Admin, ipmi::setFITcLayout);
 
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
                           ipmi::intel::general::cmdSlotI2CMasterWriteRead,
