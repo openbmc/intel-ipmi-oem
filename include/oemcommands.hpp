@@ -67,7 +67,11 @@ static constexpr Cmd cmdGetProcessorErrConfig = 0x9A;
 static constexpr Cmd cmdSetProcessorErrConfig = 0x9B;
 static constexpr Cmd cmdSetManufacturingData = 0xA1;
 static constexpr Cmd cmdGetManufacturingData = 0xA2;
+<<<<<<< HEAD   (36ed8d Fix Klocwork Issue: Uninitialized variable)
 static constexpr Cmd cmdSetFITcLayout = 0xA3;
+=======
+static constexpr Cmd cmdMTMBMCFeatureControl = 0xA4;
+>>>>>>> CHANGE (3af6d5 Add MTM BMC Feature Control IPMI command)
 static constexpr Cmd cmdGetLEDStatus = 0xB0;
 static constexpr Cmd cmdControlBmcServices = 0xB1;
 static constexpr Cmd cmdGetBmcServiceStatus = 0xB2;
