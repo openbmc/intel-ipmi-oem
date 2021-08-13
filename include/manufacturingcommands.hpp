@@ -149,6 +149,26 @@ enum class IntrusionStatus : uint8_t
     tamperingDetected
 };
 
+enum SupportedFeatureControls : uint8_t
+{
+    mctp = 0,
+};
+
+enum SupportedFeatureActions : uint8_t
+{
+    stop = 0,
+    start,
+    disable,
+    enable,
+};
+
+enum SupportedMCTPBindings : uint8_t
+{
+    mctpPCIe = 0,
+    mctpSMBusHSBP,
+    mctpSMBusPCIeSlot
+};
+
 struct SetSmSignalReq
 {
     SmSignalSet Signal;
