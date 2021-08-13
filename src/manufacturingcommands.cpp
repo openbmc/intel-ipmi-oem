@@ -16,6 +16,7 @@
 
 #include <linux/input.h>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
@@ -795,6 +796,8 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
                         ipmi::intel::general::cmdGetManufacturingData):
         case makeCmdKey(ipmi::intel::netFnGeneral,
                         ipmi::intel::general::cmdSetFITcLayout):
+        case makeCmdKey(ipmi::netFnOemOne,
+                        ipmi::intel::general::cmdMTMBMCFeatureControl):
         case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdWriteFruData):
         case makeCmdKey(ipmi::netFnOemTwo, ipmi::intel::platform::cmdClearCMOS):
 
@@ -1009,6 +1012,164 @@ ipmi::RspType<> setFITcLayout(uint32_t layout)
     return ipmi::responseSuccess();
 }
 
+static std::vector<std::string>
+    getMCTPServiceConfigPaths(ipmi::Context::ptr& ctx)
+{
+    boost::system::error_code ec;
+    auto configPaths = ctx->bus->yield_method_call<std::vector<std::string>>(
+        ctx->yield, ec, "xyz.openbmc_project.ObjectMapper",
+        "/xyz/openbmc_project/object_mapper",
+        "xyz.openbmc_project.ObjectMapper", "GetSubTreePaths",
+        "/xyz/openbmc_project/inventory/system/board", 2,
+        std::array<const char*, 1>{
+            "xyz.openbmc_project.Configuration.MctpConfiguration"});
+    if (ec)
+    {
+        throw std::runtime_error(
+            "Failed to query configuration sub tree objects");
+    }
+    return configPaths;
+}
+
+static ipmi::RspType<> startOrStopService(ipmi::Context::ptr& ctx,
+                                          const uint8_t enable,
+                                          const std::string& serviceName)
+{
+    constexpr bool runtimeOnly = false;
+    constexpr bool force = false;
+
+    boost::system::error_code ec;
+    switch (enable)
+    {
+        case ipmi::SupportedFeatureActions::stop:
+            ctx->bus->yield_method_call(ctx->yield, ec, systemDService,
+                                    systemDObjPath, systemDMgrIntf, "StopUnit",
+                                    serviceName, "replace");
+            break;
+        case ipmi::SupportedFeatureActions::start:
+            ctx->bus->yield_method_call(ctx->yield, ec, systemDService, systemDObjPath,
+                                    systemDMgrIntf, "StartUnit", serviceName,
+                                    "replace");
+            break;
+        case ipmi::SupportedFeatureActions::disable:
+            ctx->bus->yield_method_call(
+                ctx->yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
+                "MaskUnitFiles",
+                std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly,
+                force);
+            ctx->bus->yield_method_call(
+                ctx->yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
+                "DisableUnitFiles",
+                std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly);
+            break;
+        case ipmi::SupportedFeatureActions::enable:
+            ctx->bus->yield_method_call(
+                ctx->yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
+                "UnmaskUnitFiles",
+                std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly);
+            ctx->bus->yield_method_call(
+                ctx->yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
+                "EnableUnitFiles",
+                std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly,
+                force);
+            break;
+        default:
+            phosphor::logging::log<phosphor::logging::level::WARNING>(
+                "ERROR: Invalid feature action selected",
+                phosphor::logging::entry("ACTION=%d", enable));
+            return ipmi::responseInvalidFieldRequest();
+    }
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::WARNING>(
+            "ERROR: Service start or stop failed",
+            phosphor::logging::entry("SERVICE=%s", serviceName.c_str()));
+        return ipmi::responseUnspecifiedError();
+    }
+    return ipmi::responseSuccess();
+}
+
+static std::string getMCTPServiceName(const std::string& objectPath)
+{
+    const auto serviceArgument = boost::algorithm::replace_all_copy(
+        boost::algorithm::replace_first_copy(
+            objectPath, "/xyz/openbmc_project/inventory/system/board/", ""),
+        "/", "_2f");
+    std::string unitName =
+        "xyz.openbmc_project.mctpd@" + serviceArgument + ".service";
+    return unitName;
+}
+
+static ipmi::RspType<> handleMCTPFeature(ipmi::Context::ptr& ctx,
+                                         const uint8_t enable,
+                                         const std::string& binding)
+{
+    std::vector<std::string> configPaths;
+    try
+    {
+        configPaths = getMCTPServiceConfigPaths(ctx);
+    }
+    catch (const std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseUnspecifiedError();
+    }
+
+    for (const auto& objectPath : configPaths)
+    {
+        auto const pos = objectPath.find_last_of('/');
+        if (binding == objectPath.substr(pos + 1))
+        {
+            return startOrStopService(ctx, enable,
+                                      getMCTPServiceName(objectPath));
+        }
+    }
+    return ipmi::responseSuccess();
+}
+
+/** @brief implements MTM BMC Feature Control IPMI command which can be
+ * used to enable or disable the supported BMC features.
+ * @param yield - context object that represents the currently executing
+ * coroutine
+ * @param feature - feature enum to enable or disable
+ * @param enable - enable or disable the feature
+ * @param featureArg - custom arguments for that feature
+ * @param reserved - reserved for future use
+ *
+ * @returns IPMI completion code
+ */
+ipmi::RspType<> mtmBMCFeatureControl(ipmi::Context::ptr ctx,
+                                     const uint8_t feature,
+                                     const uint8_t enable,
+                                     const uint8_t featureArg,
+                                     const uint16_t reserved)
+{
+    if (reserved != 0)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    switch (feature)
+    {
+        case ipmi::SupportedFeatureControls::mctp:
+            switch (featureArg)
+            {
+                case ipmi::SupportedMCTPBindings::mctpPCIe:
+                    return handleMCTPFeature(ctx, enable, "MCTP_PCIe");
+                case ipmi::SupportedMCTPBindings::mctpSMBusHSBP:
+                    return handleMCTPFeature(ctx, enable, "MCTP_SMBus_HSBP");
+                case ipmi::SupportedMCTPBindings::mctpSMBusPCIeSlot:
+                    return handleMCTPFeature(ctx, enable,
+                                             "MCTP_SMBus_PCIe_slot");
+                default:
+                    return ipmi::responseInvalidFieldRequest();
+            }
+            break;
+        default:
+            return ipmi::responseInvalidFieldRequest();
+    }
+    return ipmi::responseSuccess();
+}
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -1038,6 +1199,10 @@ void register_mtm_commands()
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
                           ipmi::intel::general::cmdSetFITcLayout,
                           ipmi::Privilege::Admin, ipmi::setFITcLayout);
+
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdMTMBMCFeatureControl,
+                          ipmi::Privilege::Admin, ipmi::mtmBMCFeatureControl);
 
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
                           ipmi::intel::general::cmdSlotI2CMasterWriteRead,
