@@ -16,6 +16,7 @@
 
 #include <linux/input.h>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
@@ -36,6 +37,7 @@ static auto revertTimeOut =
 static constexpr uint8_t slotAddressTypeBus = 0;
 static constexpr uint8_t slotAddressTypeUniqueid = 1;
 static constexpr uint8_t slotI2CMaxReadSize = 35;
+static constexpr uint8_t maxSupportedRange = 0x08;
 
 static constexpr const char* callbackMgrService =
     "xyz.openbmc_project.CallbackManager";
@@ -793,6 +795,8 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
                         ipmi::intel::general::cmdSetManufacturingData):
         case makeCmdKey(ipmi::netFnOemOne,
                         ipmi::intel::general::cmdGetManufacturingData):
+        case makeCmdKey(ipmi::netFnOemOne,
+                        ipmi::intel::general::cmdMTMBMCFeatureControl):
         case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdWriteFruData):
         case makeCmdKey(ipmi::netFnOemTwo, ipmi::intel::platform::cmdClearCMOS):
 
@@ -979,6 +983,125 @@ ipmi::RspType<> clearCMOS()
     ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
     return ipmi::response(retI2C);
 }
+
+static std::vector<std::string>
+    getMCTPServiceConfigPaths(boost::asio::yield_context yield)
+{
+    boost::system::error_code ec;
+    auto dbus = getSdBus();
+    auto configPaths = dbus->yield_method_call<std::vector<std::string>>(
+        yield, ec, "xyz.openbmc_project.ObjectMapper",
+        "/xyz/openbmc_project/object_mapper",
+        "xyz.openbmc_project.ObjectMapper", "GetSubTreePaths",
+        "/xyz/openbmc_project/inventory/system/board", 2,
+        std::array<const char*, 1>{
+            "xyz.openbmc_project.Configuration.MctpConfiguration"});
+    if (ec)
+    {
+        throw std::runtime_error(
+            "Failed to query configuration sub tree objects");
+    }
+    return configPaths;
+}
+
+static void startOrStopService(boost::asio::yield_context yield, uint8_t enable,
+                               std::string serviceName)
+{
+    boost::system::error_code ec;
+    auto dbus = getSdBus();
+    dbus->yield_method_call(yield, ec, systemDService, systemDObjPath,
+                            systemDMgrIntf, enable ? "StartUnit" : "StopUnit",
+                            serviceName, "replace");
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::WARNING>(
+            "ERROR: Service start or stop failed",
+            phosphor::logging::entry("SERVICE=%s", serviceName.c_str()));
+        return;
+    }
+}
+
+static std::string getMCTPServiceName(const std::string& objectPath)
+{
+    const auto serviceArgument = boost::algorithm::replace_all_copy(
+        boost::algorithm::replace_first_copy(
+            objectPath, "/xyz/openbmc_project/inventory/system/board/", ""),
+        "/", "_2f");
+    std::string unitName =
+        "xyz.openbmc_project.mctpd@" + serviceArgument + ".service";
+    return unitName;
+}
+
+static void handleMCTPFeature(boost::asio::yield_context yield, uint8_t enable,
+                              std::string binding)
+{
+    std::vector<std::string> configPaths;
+    try
+    {
+        configPaths = getMCTPServiceConfigPaths(yield);
+    }
+    catch (const std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return;
+    }
+
+    for (const auto& objectPath : configPaths)
+    {
+        auto const pos = objectPath.find_last_of('/');
+        if (binding == objectPath.substr(pos + 1))
+        {
+            startOrStopService(yield, enable, getMCTPServiceName(objectPath));
+        }
+    }
+}
+
+/** @brief implements MTM BMC Feature Control IPMI command which can be
+ * used to enable or disable the supported BMC features.
+ * @param yield - context object that represents the currently executing
+ * coroutine
+ * @param enable - enable or disable the feature
+ * @param feature - feature enum to enable or disable
+ * @param featureArg - custom arguments for that feature
+ * @param reserved - reserved for future use
+ *
+ * @returns IPMI completion code
+ */
+ipmi::RspType<> mtmBMCFeatureControl(boost::asio::yield_context yield,
+                                     uint8_t enable, uint8_t feature,
+                                     uint8_t featureArg, uint16_t reserved)
+{
+    constexpr uint8_t disableService = 0x00;
+    constexpr uint8_t enableService = 0x01;
+
+    if (!(enable == enableService || enable == disableService) || reserved != 0)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    switch (feature)
+    {
+        case ipmi::SupportedFeatureControls::mctp:
+            switch (featureArg)
+            {
+                case ipmi::SupportedMCTPBindings::mctpPCIe:
+                    handleMCTPFeature(yield, enable, "MCTP_PCIe");
+                    break;
+                case ipmi::SupportedMCTPBindings::mctpSMBusHSBP:
+                    handleMCTPFeature(yield, enable, "MCTP_SMBus_HSBP");
+                    break;
+                case ipmi::SupportedMCTPBindings::mctpSMBusPCIeSlot:
+                    handleMCTPFeature(yield, enable, "MCTP_SMBus_PCIe_slot");
+                    break;
+                default:
+                    return ipmi::responseInvalidFieldRequest();
+            }
+            break;
+        default:
+            return ipmi::responseInvalidFieldRequest();
+    }
+    return ipmi::responseSuccess();
+}
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -1009,6 +1132,10 @@ void register_mtm_commands()
                           ipmi::intel::general::cmdSlotI2CMasterWriteRead,
                           ipmi::Privilege::Admin,
                           ipmi::appSlotI2CMasterWriteRead);
+
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdMTMBMCFeatureControl,
+                          ipmi::Privilege::Admin, ipmi::mtmBMCFeatureControl);
 
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnPlatform,
                           ipmi::intel::platform::cmdClearCMOS,
