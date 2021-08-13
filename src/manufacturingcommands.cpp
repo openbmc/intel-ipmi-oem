@@ -36,6 +36,7 @@ static auto revertTimeOut =
 static constexpr uint8_t slotAddressTypeBus = 0;
 static constexpr uint8_t slotAddressTypeUniqueid = 1;
 static constexpr uint8_t slotI2CMaxReadSize = 35;
+static constexpr uint8_t maxSupportedRange = 0x08;
 
 static constexpr const char* callbackMgrService =
     "xyz.openbmc_project.CallbackManager";
@@ -793,6 +794,8 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
                         ipmi::intel::general::cmdSetManufacturingData):
         case makeCmdKey(ipmi::netFnOemOne,
                         ipmi::intel::general::cmdGetManufacturingData):
+        case makeCmdKey(ipmi::netFnOemOne,
+                        ipmi::intel::general::cmdModifyBMCServiceStatus):
         case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdWriteFruData):
         case makeCmdKey(ipmi::netFnOemTwo, ipmi::intel::platform::cmdClearCMOS):
 
@@ -979,6 +982,155 @@ ipmi::RspType<> clearCMOS()
     ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
     return ipmi::response(retI2C);
 }
+
+using ConfigField = std::variant<uint64_t, std::string>;
+using ConfigMap = std::unordered_map<std::string, ConfigField>;
+
+template <typename T>
+static bool getField(const ConfigMap& config, const std::string& fieldName,
+                     T& value)
+{
+    auto it = config.find(fieldName);
+    if (it != config.end())
+    {
+        const T* ptrValue = std::get_if<T>(&it->second);
+        if (ptrValue != nullptr)
+        {
+            value = *ptrValue;
+            return true;
+        }
+    }
+    phosphor::logging::log<phosphor::logging::level::WARNING>(
+        ("Missing configuration field " + fieldName).c_str());
+    return false;
+}
+
+static std::string getServiceConfigPath(boost::asio::yield_context yield)
+{
+    boost::system::error_code ec;
+    auto dbus = getSdBus();
+    auto configPath = dbus->yield_method_call<std::vector<std::string>>(
+        yield, ec, "xyz.openbmc_project.ObjectMapper",
+        "/xyz/openbmc_project/object_mapper",
+        "xyz.openbmc_project.ObjectMapper", "GetSubTreePaths",
+        "/xyz/openbmc_project/inventory/system/board", 2,
+        std::array<const char*, 1>{
+            "xyz.openbmc_project.Configuration.MTMModifiableService"});
+    if (ec)
+    {
+        throw std::runtime_error(
+            "Failed to query configuration sub tree objects");
+    }
+    if (configPath.size() == 0)
+    {
+        throw std::runtime_error("Configuration subtree path empty");
+    }
+
+    return configPath.front();
+}
+
+static uint64_t getServiceConfigCount(boost::asio::yield_context yield,
+                                      std::string configPath)
+{
+    boost::system::error_code ec;
+    auto dbus = getSdBus();
+    auto configMap = dbus->yield_method_call<ConfigMap>(
+        yield, ec, "xyz.openbmc_project.EntityManager", configPath,
+        "org.freedesktop.DBus.Properties", "GetAll",
+        "xyz.openbmc_project.Configuration.MTMModifiableService");
+    if (ec)
+    {
+        throw std::runtime_error("Failed to query service configuration count");
+    }
+    uint64_t count;
+    if (!getField(configMap, "ServiceCount", count))
+    {
+        throw std::runtime_error("Unable to get service config count");
+    }
+    return count;
+}
+
+static void startOrStopService(boost::asio::yield_context yield, uint8_t enable,
+                               std::string serviceName)
+{
+    boost::system::error_code ec;
+    auto dbus = getSdBus();
+    dbus->yield_method_call(yield, ec, systemDService, systemDObjPath,
+                            systemDMgrIntf, enable ? "StartUnit" : "StopUnit",
+                            serviceName, "replace");
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::WARNING>(
+            "ERROR: Service start or stop failed",
+            phosphor::logging::entry("SERVICE=%s", serviceName.c_str()));
+        return;
+    }
+}
+
+/** @brief implements Modify BMC Service Status IPMI command which can be used
+ * to enable or disable the supported BMC services.
+ * @param yield - context object that represents the currently executing
+ * coroutine
+ * @param enable - enable or disable the service
+ * @param service - services to enable or disable
+ * @param reserved - reserved fo future use
+ *
+ * @returns IPMI completion code
+ */
+ipmi::RspType<> modifyBMCServiceStatus(boost::asio::yield_context yield,
+                                       uint8_t enable,
+                                       std::bitset<maxSupportedRange> service,
+                                       uint32_t reserved)
+{
+    constexpr uint8_t disableService = 0x00;
+    constexpr uint8_t enableService = 0x01;
+
+    if (!(enable == enableService || enable == disableService) || reserved != 0)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    std::string configPath{};
+    uint64_t serviceCount{};
+    try
+    {
+        configPath = getServiceConfigPath(yield);
+        serviceCount = getServiceConfigCount(yield, configPath);
+    }
+    catch (std::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        return ipmi::responseUnspecifiedError();
+    }
+
+    const std::string baseInterface =
+        "xyz.openbmc_project.Configuration.MTMModifiableService";
+    auto dbus = getSdBus();
+    for (size_t ii = 0; ii < serviceCount && ii < maxSupportedRange; ii++)
+    {
+        boost::system::error_code ec;
+        std::string serviceName =
+            baseInterface + ".Service" + std::to_string(ii);
+        auto configMap = dbus->yield_method_call<ConfigMap>(
+            yield, ec, "xyz.openbmc_project.EntityManager", configPath,
+            "org.freedesktop.DBus.Properties", "GetAll", serviceName);
+
+        uint64_t bitPosition;
+        std::string name;
+        if (!getField(configMap, "BitPosition", bitPosition) ||
+            !getField(configMap, "Name", name))
+        {
+            continue;
+        }
+
+        if (service[bitPosition])
+        {
+            startOrStopService(yield, enable, name);
+        }
+    }
+
+    return ipmi::responseSuccess();
+}
 } // namespace ipmi
 
 void register_mtm_commands() __attribute__((constructor));
@@ -1009,6 +1161,10 @@ void register_mtm_commands()
                           ipmi::intel::general::cmdSlotI2CMasterWriteRead,
                           ipmi::Privilege::Admin,
                           ipmi::appSlotI2CMasterWriteRead);
+
+    ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnGeneral,
+                          ipmi::intel::general::cmdModifyBMCServiceStatus,
+                          ipmi::Privilege::Admin, ipmi::modifyBMCServiceStatus);
 
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnPlatform,
                           ipmi::intel::platform::cmdClearCMOS,
