@@ -1097,6 +1097,14 @@ ipmi::RspType<> mtmBMCFeatureControl(boost::asio::yield_context yield,
                     return ipmi::responseInvalidFieldRequest();
             }
             break;
+        case ipmi::SupportedFeatureControls::pcieScan:
+            if (featureArg != 0)
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            startOrStopService(yield, enable,
+                               "xyz.openbmc_project.PCIe.service");
+            break;
         default:
             return ipmi::responseInvalidFieldRequest();
     }
