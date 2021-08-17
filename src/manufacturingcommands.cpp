@@ -1007,11 +1007,42 @@ static std::vector<std::string>
 static void startOrStopService(boost::asio::yield_context yield, uint8_t enable,
                                std::string serviceName)
 {
+    constexpr bool runtimeOnly = false;
+    constexpr bool force = false;
+
     boost::system::error_code ec;
     auto dbus = getSdBus();
-    dbus->yield_method_call(yield, ec, systemDService, systemDObjPath,
-                            systemDMgrIntf, enable ? "StartUnit" : "StopUnit",
-                            serviceName, "replace");
+    switch (enable)
+    {
+        case ipmi::SupportedFeatureActions::stop:
+            dbus->yield_method_call(yield, ec, systemDService, systemDObjPath,
+                                    systemDMgrIntf, "StopUnit", serviceName,
+                                    "replace");
+            break;
+        case ipmi::SupportedFeatureActions::start:
+            dbus->yield_method_call(yield, ec, systemDService, systemDObjPath,
+                                    systemDMgrIntf, "StartUnit", serviceName,
+                                    "replace");
+            break;
+        case ipmi::SupportedFeatureActions::disable:
+            dbus->yield_method_call(
+                yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
+                "DisableUnitFiles",
+                std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly);
+            break;
+        case ipmi::SupportedFeatureActions::enable:
+            dbus->yield_method_call(
+                yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
+                "EnableUnitFiles",
+                std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly,
+                force);
+            break;
+        default:
+            phosphor::logging::log<phosphor::logging::level::WARNING>(
+                "ERROR: Invalid feature action selected",
+                phosphor::logging::entry("ACTION=%d", enable));
+            return;
+    }
     if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::WARNING>(
@@ -1071,10 +1102,11 @@ ipmi::RspType<> mtmBMCFeatureControl(boost::asio::yield_context yield,
                                      uint8_t enable, uint8_t feature,
                                      uint8_t featureArg, uint16_t reserved)
 {
-    constexpr uint8_t disableService = 0x00;
-    constexpr uint8_t enableService = 0x01;
-
-    if (!(enable == enableService || enable == disableService) || reserved != 0)
+    if (!(enable == ipmi::SupportedFeatureActions::stop ||
+          enable == ipmi::SupportedFeatureActions::start ||
+          enable == ipmi::SupportedFeatureActions::enable ||
+          enable == ipmi::SupportedFeatureActions::disable) ||
+        reserved != 0)
     {
         return ipmi::responseInvalidFieldRequest();
     }
