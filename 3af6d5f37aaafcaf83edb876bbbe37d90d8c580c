@@ -36,6 +36,24 @@
     },
     {
       "key": {
+        "uuid": "1ede1e37_f0a632bf",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1000276
+      },
+      "writtenOn": "2021-08-17T21:11:51Z",
+      "side": 1,
+      "message": "I extended the command to provide service enable and disable options that will persist across AC cycles here: gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/45970.\n\nThis is required for the PCIe scan disable.  Feel free to pull those changes into this commit if it makes more sense.  Thanks!",
+      "parentUuid": "1708cc37_5622891b",
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d7ea7aeb_8d6a10a6",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 2
