@@ -1165,6 +1165,13 @@ ipmi::RspType<> mtmBMCFeatureControl(ipmi::Context::ptr ctx,
                     return ipmi::responseInvalidFieldRequest();
             }
             break;
+        case ipmi::SupportedFeatureControls::pcieScan:
+            if (featureArg != 0)
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            startOrStopService(ctx, enable, "xyz.openbmc_project.PCIe.service");
+            break;
         default:
             return ipmi::responseInvalidFieldRequest();
     }
