@@ -152,6 +152,7 @@ enum class IntrusionStatus : uint8_t
 enum SupportedFeatureControls : uint8_t
 {
     mctp = 0,
+    pcieScan,
 };
 
 enum SupportedFeatureActions : uint8_t
