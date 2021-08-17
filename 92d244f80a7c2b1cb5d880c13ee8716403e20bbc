@@ -237,6 +237,30 @@
     },
     {
       "key": {
+        "uuid": "3d37e041_c5399d9b",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1228,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2021-08-17T19:39:33Z",
+      "side": 1,
+      "message": "No. You don\u0027t want sensor number 254 to be included in LUN 1. Only when the recordID hits 255 do you want to move into LUN 1.",
+      "parentUuid": "9ce3f497_14e68064",
+      "range": {
+        "startLine": 1228,
+        "startChar": 17,
+        "endLine": 1228,
+        "endChar": 20
+      },
+      "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3f32b2b9_a6374e4e",
         "filename": "src/sensorcommands.cpp",
         "patchSetId": 1
@@ -248,6 +272,30 @@
       "writtenOn": "2021-08-15T18:08:56Z",
       "side": 1,
       "message": "No else if condition required here like in base version ?\n    else if (recordID \u003e\u003d maxIPMISensors)\n    {\n        return GENERAL_ERROR;\n    }",
+      "range": {
+        "startLine": 1242,
+        "startChar": 4,
+        "endLine": 1242,
+        "endChar": 5
+      },
+      "revId": "92d244f80a7c2b1cb5d880c13ee8716403e20bbc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ffc0a67f_17ca083a",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1242,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2021-08-17T19:39:33Z",
+      "side": 1,
+      "message": "Line 1177 covers that condition. No need to test twice.",
+      "parentUuid": "3f32b2b9_a6374e4e",
       "range": {
         "startLine": 1242,
         "startChar": 4,
