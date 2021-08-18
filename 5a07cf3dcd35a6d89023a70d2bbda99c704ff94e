@@ -22,6 +22,30 @@
       "revId": "5a07cf3dcd35a6d89023a70d2bbda99c704ff94e",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ff1d8d99_9b18f8fa",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2021-08-18T18:35:59Z",
+      "side": 1,
+      "message": "You missed that the count is zero based. There are 255 sensors per LUN, not 256. So my comment is incorrect and I need to change 254 to 255.",
+      "parentUuid": "14ab19ae_895f8f84",
+      "range": {
+        "startLine": 65,
+        "startChar": 51,
+        "endLine": 69,
+        "endChar": 12
+      },
+      "revId": "5a07cf3dcd35a6d89023a70d2bbda99c704ff94e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
