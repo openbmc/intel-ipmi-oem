@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "b0be4b7e_197269f1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000412
+      },
+      "writtenOn": "2021-08-19T12:04:00Z",
+      "side": 1,
+      "message": "at present it supports only mctp related services. We can extend it to other services on the need bassis.",
+      "parentUuid": "86c6f9af_6693cef2",
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0db1d3de_a7ef4507",
         "filename": "/COMMIT_MSG",
         "patchSetId": 2
@@ -30,6 +48,30 @@
       "writtenOn": "2021-08-19T05:09:08Z",
       "side": 1,
       "message": "nit: it might be conventional to provide the supported feature as first byte and enable/disable feature as subsequent byte",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 21,
+        "endChar": 10
+      },
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8d647f8c_7cd7da56",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000412
+      },
+      "writtenOn": "2021-08-19T12:04:00Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "0db1d3de_a7ef4507",
       "range": {
         "startLine": 14,
         "startChar": 0,
@@ -77,6 +119,52 @@
     },
     {
       "key": {
+        "uuid": "fe3f024d_289d2c45",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1000412
+      },
+      "writtenOn": "2021-08-19T12:04:00Z",
+      "side": 1,
+      "message": "it is not used any where.",
+      "range": {
+        "startLine": 40,
+        "startChar": 25,
+        "endLine": 40,
+        "endChar": 43
+      },
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e8dacb79_1f8f6fed",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1007,
+      "author": {
+        "id": 1000412
+      },
+      "writtenOn": "2021-08-19T12:04:00Z",
+      "side": 1,
+      "message": "i think it will be good if can return some status so that in failure cases we can return some error completion code.",
+      "range": {
+        "startLine": 1007,
+        "startChar": 7,
+        "endLine": 1007,
+        "endChar": 12
+      },
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d7ea7aeb_8d6a10a6",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 2
@@ -88,6 +176,64 @@
       "writtenOn": "2021-08-16T14:17:40Z",
       "side": 1,
       "message": "Since idea is to extend for other needed features as well,can the method be made generic?",
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0511e552_1ce2725e",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1024,
+      "author": {
+        "id": 1000412
+      },
+      "writtenOn": "2021-08-19T12:04:00Z",
+      "side": 1,
+      "message": "I think this method is indented only for  mctp. The same will not help for other services.",
+      "parentUuid": "d7ea7aeb_8d6a10a6",
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4d7a39ef_10688748",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1054,
+      "author": {
+        "id": 1000412
+      },
+      "writtenOn": "2021-08-19T12:04:00Z",
+      "side": 1,
+      "message": "we can break here. I don`t think we will have multiple services for same binding",
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f42d0b90_f614b581",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1072,
+      "author": {
+        "id": 1000412
+      },
+      "writtenOn": "2021-08-19T12:04:00Z",
+      "side": 1,
+      "message": "const?",
+      "range": {
+        "startLine": 1071,
+        "startChar": 36,
+        "endLine": 1072,
+        "endChar": 74
+      },
       "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
