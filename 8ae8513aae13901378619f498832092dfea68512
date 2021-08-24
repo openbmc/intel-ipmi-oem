@@ -16,6 +16,24 @@
       "revId": "8ae8513aae13901378619f498832092dfea68512",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ad2589c7_58d2a660",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000276
+      },
+      "writtenOn": "2021-08-24T15:41:09Z",
+      "side": 1,
+      "message": "Yes, I verified that disable and enable (options 02h and 03h) work across AC cycles.",
+      "parentUuid": "54ba54eb_e7bb2c6f",
+      "revId": "8ae8513aae13901378619f498832092dfea68512",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
