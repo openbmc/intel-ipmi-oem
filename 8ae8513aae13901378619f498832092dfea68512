@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "54ba54eb_e7bb2c6f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000414
+      },
+      "writtenOn": "2021-08-24T12:06:15Z",
+      "side": 1,
+      "message": "I assume its verified across AC cycle as well for disable?",
+      "revId": "8ae8513aae13901378619f498832092dfea68512",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
