@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "b5de22b3_a54377db",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-08-25T07:05:09Z",
+      "side": 1,
+      "message": "yes. we will add support based on need.",
+      "parentUuid": "b0be4b7e_197269f1",
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0db1d3de_a7ef4507",
         "filename": "/COMMIT_MSG",
         "patchSetId": 2
@@ -84,6 +102,30 @@
     },
     {
       "key": {
+        "uuid": "5579acb0_be2e10a7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-08-25T07:05:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8d647f8c_7cd7da56",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 21,
+        "endChar": 10
+      },
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1708cc37_5622891b",
         "filename": "/COMMIT_MSG",
         "patchSetId": 2
@@ -119,6 +161,24 @@
     },
     {
       "key": {
+        "uuid": "5dfb3d73_9a223eb0",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-08-25T07:05:09Z",
+      "side": 1,
+      "message": "I pulled the changes to preserve service status across reboots to this commit.",
+      "parentUuid": "1ede1e37_f0a632bf",
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "fe3f024d_289d2c45",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 2
@@ -142,6 +202,30 @@
     },
     {
       "key": {
+        "uuid": "3c6690d1_f9260975",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-08-25T07:05:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fe3f024d_289d2c45",
+      "range": {
+        "startLine": 40,
+        "startChar": 25,
+        "endLine": 40,
+        "endChar": 43
+      },
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e8dacb79_1f8f6fed",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 2
@@ -162,6 +246,30 @@
       "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9a55bcf1_fd8f1ba3",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1007,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-08-25T07:05:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e8dacb79_1f8f6fed",
+      "range": {
+        "startLine": 1007,
+        "startChar": 7,
+        "endLine": 1007,
+        "endChar": 12
+      },
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
@@ -200,6 +308,24 @@
     },
     {
       "key": {
+        "uuid": "f367711e_0baa41b8",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1024,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-08-25T07:05:09Z",
+      "side": 1,
+      "message": "This is mctp specific. Only startOrStopService() can be generic.",
+      "parentUuid": "d7ea7aeb_8d6a10a6",
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4d7a39ef_10688748",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 2
@@ -214,6 +340,24 @@
       "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e056187b_637fe8cd",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1054,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-08-25T07:05:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4d7a39ef_10688748",
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
@@ -237,6 +381,30 @@
       "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b18e07e2_a2013a11",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1072,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-08-25T07:05:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f42d0b90_f614b581",
+      "range": {
+        "startLine": 1071,
+        "startChar": 36,
+        "endLine": 1072,
+        "endChar": 74
+      },
+      "revId": "3af6d5f37aaafcaf83edb876bbbe37d90d8c580c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
