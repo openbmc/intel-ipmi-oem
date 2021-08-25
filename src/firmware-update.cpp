@@ -206,12 +206,18 @@ class TransferHashCheck
             ctx = NULL;
         }
     }
-    void init(const std::vector<uint8_t>& expected)
+    bool init(const std::vector<uint8_t>& expected)
     {
         expectedHash = expected;
         check = HashCheck::requested;
         ctx = EVP_MD_CTX_create();
+        if (!ctx)
+        {
+            return false;
+        }
         EVP_DigestInit(ctx, EVP_sha256());
+
+        return true;
     }
     void hash(const std::vector<uint8_t>& data)
     {
@@ -221,7 +227,7 @@ class TransferHashCheck
         }
         EVP_DigestUpdate(ctx, data.data(), data.size());
     }
-    void clear()
+    bool clear()
     {
         // if not started, nothing to clear
         if (started)
@@ -235,8 +241,15 @@ class TransferHashCheck
                 check = HashCheck::requested;
             }
             ctx = EVP_MD_CTX_create();
+            if (!ctx)
+            {
+                return false;
+            }
+
             EVP_DigestInit(ctx, EVP_sha256());
         }
+
+        return true;
     }
     enum HashCheck verify()
     {
@@ -1326,7 +1339,12 @@ ipmi::RspType<bool, bool, bool, bool, uint4_t>
             fwXferUriPath = std::string("file://") + firmwareBufferFile;
             if (xferHashCheck)
             {
-                xferHashCheck->clear();
+                if (!xferHashCheck->clear())
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "clear() for xferHashCheck failed");
+                    return ipmi::responseUnspecifiedError();
+                }
             }
             // Setting state to download
             fwUpdateStatus.setState(
@@ -1526,7 +1544,12 @@ ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
                 return ipmi::responseInvalidFieldRequest();
             }
             xferHashCheck = std::make_shared<TransferHashCheck>();
-            xferHashCheck->init(*integrityCheckVal);
+            if (!xferHashCheck->init(*integrityCheckVal))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "init() failed for xferHashCheck.");
+                return ipmi::responseUnspecifiedError();
+            }
         }
         else
         {
