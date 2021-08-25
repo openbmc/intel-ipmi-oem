@@ -1,0 +1,211 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e741fee6_27788d4c",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1016,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:40:28Z",
+      "side": 1,
+      "message": "ipmi::Context::ptr\u0026 ctx\n\nThen you don\u0027t have to call getSdBus() below:\n\nauto configPaths \u003d ctx-\u003ebus-\u003eyield_method_call\u003cstd::vector\u003cstd::string\u003e\u003e(ctx-\u003eyield, ...);",
+      "range": {
+        "startLine": 1016,
+        "startChar": 30,
+        "endLine": 1016,
+        "endChar": 62
+      },
+      "revId": "85a5e64c87f37d8600d1fb5e51395090f2325801",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b13477e8_f8c7b7c5",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1035,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:40:28Z",
+      "side": 1,
+      "message": "ipmi::Context::ptr ctx",
+      "range": {
+        "startLine": 1035,
+        "startChar": 43,
+        "endLine": 1035,
+        "endChar": 74
+      },
+      "revId": "85a5e64c87f37d8600d1fb5e51395090f2325801",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "55d0308d_e7b9cee3",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1043,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:40:28Z",
+      "side": 1,
+      "message": "remove in favor of ctx-\u003ebus",
+      "range": {
+        "startLine": 1043,
+        "startChar": 0,
+        "endLine": 1043,
+        "endChar": 27
+      },
+      "revId": "85a5e64c87f37d8600d1fb5e51395090f2325801",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4de189cc_ebc2c075",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1047,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:40:28Z",
+      "side": 1,
+      "message": "here and below:\n\nctx-\u003ebus-\u003eyield_method_call(ctx-\u003eyield,...",
+      "range": {
+        "startLine": 1047,
+        "startChar": 12,
+        "endLine": 1047,
+        "endChar": 43
+      },
+      "revId": "85a5e64c87f37d8600d1fb5e51395090f2325801",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4477d176_98d4c76a",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1105,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:40:28Z",
+      "side": 1,
+      "message": "ipmi::Context::ptr ctx",
+      "range": {
+        "startLine": 1105,
+        "startChar": 41,
+        "endLine": 1105,
+        "endChar": 73
+      },
+      "revId": "85a5e64c87f37d8600d1fb5e51395090f2325801",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c8596056_c4123bf9",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1112,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:40:28Z",
+      "side": 1,
+      "message": "ctx",
+      "range": {
+        "startLine": 1112,
+        "startChar": 48,
+        "endLine": 1112,
+        "endChar": 53
+      },
+      "revId": "85a5e64c87f37d8600d1fb5e51395090f2325801",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dfad84a2_9fa6cd9d",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1125,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:40:28Z",
+      "side": 1,
+      "message": "ctx",
+      "range": {
+        "startLine": 1125,
+        "startChar": 38,
+        "endLine": 1125,
+        "endChar": 43
+      },
+      "revId": "85a5e64c87f37d8600d1fb5e51395090f2325801",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ca408314_f367662a",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1143,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:40:28Z",
+      "side": 1,
+      "message": "ipmi::Context::ptr ctx",
+      "range": {
+        "startLine": 1143,
+        "startChar": 37,
+        "endLine": 1143,
+        "endChar": 69
+      },
+      "revId": "85a5e64c87f37d8600d1fb5e51395090f2325801",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "81419b15_8e737679",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1160,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:40:28Z",
+      "side": 1,
+      "message": "ctx",
+      "range": {
+        "startLine": 1160,
+        "startChar": 45,
+        "endLine": 1160,
+        "endChar": 50
+      },
+      "revId": "85a5e64c87f37d8600d1fb5e51395090f2325801",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
