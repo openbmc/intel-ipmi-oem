@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "08c3f7f1_df11ca3d",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:49:03Z",
+      "side": 1,
+      "message": "I understand that Klocwork did not catch this, but if we are to be pedantic here, we should be checking the return value of every function.\n\n// top level\nstatic constexpr int openSslSuccess \u003d 1;\n\n// here\nreturn (EVP_DigestInit(ctx, EVP_sha256()) \u003d\u003d openSslSuccess);",
+      "range": {
+        "startLine": 218,
+        "startChar": 8,
+        "endLine": 218,
+        "endChar": 22
+      },
+      "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dd694264_8402dcfa",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 228,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:49:03Z",
+      "side": 1,
+      "message": "same comment as above",
+      "range": {
+        "startLine": 228,
+        "startChar": 8,
+        "endLine": 228,
+        "endChar": 24
+      },
+      "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "008737fc_0eab9089",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:49:03Z",
+      "side": 1,
+      "message": "same comment",
+      "range": {
+        "startLine": 249,
+        "startChar": 12,
+        "endLine": 249,
+        "endChar": 26
+      },
+      "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "894d87d3_f7a1f11d",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:49:03Z",
+      "side": 1,
+      "message": "if (EVP_DigestFinal(...) !\u003d openSslSuccess)\n{\n    return HashChcek::sha2Failed;\n}",
+      "range": {
+        "startLine": 260,
+        "startChar": 12,
+        "endLine": 260,
+        "endChar": 27
+      },
+      "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
