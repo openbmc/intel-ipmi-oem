@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2f9665ad_467bd9d3",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1175,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-08-25T22:41:12Z",
+      "side": 1,
+      "message": "with changes to parent patch, this should be ctx",
+      "range": {
+        "startLine": 1175,
+        "startChar": 31,
+        "endLine": 1175,
+        "endChar": 36
+      },
+      "revId": "d7853486ff5c6d1594e8d6f879d3deb789a65970",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
