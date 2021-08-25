@@ -34,6 +34,7 @@
 #include <spiDev.hpp>
 #endif
 
+static constexpr int openSslSuccess = 1;
 static constexpr bool DEBUG = true;
 static void registerFirmwareFunctions() __attribute__((constructor));
 
@@ -206,22 +207,38 @@ class TransferHashCheck
             ctx = NULL;
         }
     }
-    void init(const std::vector<uint8_t>& expected)
+    bool init(const std::vector<uint8_t>& expected)
     {
         expectedHash = expected;
         check = HashCheck::requested;
         ctx = EVP_MD_CTX_create();
-        EVP_DigestInit(ctx, EVP_sha256());
+        if (!ctx)
+        {
+            return false;
+        }
+
+        if (EVP_DigestInit(ctx, EVP_sha256()) != openSslSuccess)
+        {
+            return false;
+        }
+
+        return true;
     }
-    void hash(const std::vector<uint8_t>& data)
+    bool hash(const std::vector<uint8_t>& data)
     {
         if (!started)
         {
             started = true;
         }
-        EVP_DigestUpdate(ctx, data.data(), data.size());
+
+        if (EVP_DigestUpdate(ctx, data.data(), data.size()) != openSslSuccess)
+        {
+            return false;
+        }
+
+        return true;
     }
-    void clear()
+    bool clear()
     {
         // if not started, nothing to clear
         if (started)
@@ -235,8 +252,18 @@ class TransferHashCheck
                 check = HashCheck::requested;
             }
             ctx = EVP_MD_CTX_create();
-            EVP_DigestInit(ctx, EVP_sha256());
+            if (!ctx)
+            {
+                return false;
+            }
+
+            if (EVP_DigestInit(ctx, EVP_sha256()) != openSslSuccess)
+            {
+                return false;
+            }
         }
+
+        return true;
     }
     enum HashCheck verify()
     {
@@ -244,7 +271,12 @@ class TransferHashCheck
         {
             unsigned int len = 0;
             std::vector<uint8_t> digest(EVP_MD_size(EVP_sha256()));
-            EVP_DigestFinal(ctx, digest.data(), &len);
+
+            if (EVP_DigestFinal(ctx, digest.data(), &len) != openSslSuccess)
+            {
+                return HashCheck::sha2Failed;
+            }
+
             if (digest == expectedHash)
             {
                 phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -652,7 +684,7 @@ static bool startFirmwareUpdate(const std::string& uri)
     return true;
 }
 
-static int transferImageFromFile(const std::string& uri, bool move = true)
+static bool transferImageFromFile(const std::string& uri, bool move = true)
 {
     std::error_code ec;
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -671,15 +703,22 @@ static int transferImageFromFile(const std::string& uri, bool move = true)
     if (xferHashCheck)
     {
         MappedFile mappedfw(uri);
-        xferHashCheck->hash(
-            {mappedfw.data(), mappedfw.data() + mappedfw.size()});
+        if (!xferHashCheck->hash(
+                {mappedfw.data(), mappedfw.data() + mappedfw.size()}))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "transferImageFromFile: xferHashCheck->hash failed.");
+            return false;
+        }
     }
     if (ec.value())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Image copy failed.");
+        return false;
     }
-    return ec.value();
+
+    return true;
 }
 
 template <typename... ArgTypes>
@@ -692,22 +731,23 @@ static int executeCmd(const char* path, ArgTypes&&... tArgs)
 
 static int transferImageFromUsb(const std::string& uri)
 {
-    int ret, sysret;
+    bool ret = false;
+    int sysret;
     char fwpath[fwPathMaxLength];
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Transfer Image From USB.",
         phosphor::logging::entry("URI=%s", uri.c_str()));
-    ret = executeCmd(usbCtrlPath, "mount", fwUpdateUsbVolImage,
-                     fwUpdateMountPoint);
-    if (ret)
+
+    if (executeCmd(usbCtrlPath, "mount", fwUpdateUsbVolImage,
+                   fwUpdateMountPoint) == 0)
     {
-        return ret;
+        std::string usb_path = std::string(fwUpdateMountPoint) + "/" + uri;
+        ret = transferImageFromFile(usb_path, false);
+
+        executeCmd(usbCtrlPath, "cleanup", fwUpdateUsbVolImage,
+                   fwUpdateMountPoint);
     }
 
-    std::string usb_path = std::string(fwUpdateMountPoint) + "/" + uri;
-    ret = transferImageFromFile(usb_path, false);
-
-    executeCmd(usbCtrlPath, "cleanup", fwUpdateUsbVolImage, fwUpdateMountPoint);
     return ret;
 }
 
@@ -723,14 +763,14 @@ static bool transferFirmwareFromUri(const std::string& uri)
         std::string fname = uri.substr(sizeof(fwUriFile) - 1);
         if (fname != firmwareBufferFile)
         {
-            return 0 == transferImageFromFile(fname);
+            return transferImageFromFile(fname);
         }
         return true;
     }
     if (boost::algorithm::starts_with(uri, fwUriUsb))
     {
         std::string fname = uri.substr(sizeof(fwUriUsb) - 1);
-        return 0 == transferImageFromUsb(fname);
+        return transferImageFromUsb(fname);
     }
     return false;
 }
@@ -1326,7 +1366,12 @@ ipmi::RspType<bool, bool, bool, bool, uint4_t>
             fwXferUriPath = std::string("file://") + firmwareBufferFile;
             if (xferHashCheck)
             {
-                xferHashCheck->clear();
+                if (!xferHashCheck->clear())
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "clear() for xferHashCheck failed");
+                    return ipmi::responseUnspecifiedError();
+                }
             }
             // Setting state to download
             fwUpdateStatus.setState(
@@ -1526,7 +1571,12 @@ ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
                 return ipmi::responseInvalidFieldRequest();
             }
             xferHashCheck = std::make_shared<TransferHashCheck>();
-            xferHashCheck->init(*integrityCheckVal);
+            if (!xferHashCheck->init(*integrityCheckVal))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "init() failed for xferHashCheck.");
+                return ipmi::responseUnspecifiedError();
+            }
         }
         else
         {
@@ -1581,7 +1631,12 @@ ipmi::RspType<uint32_t>
 
     if (xferHashCheck)
     {
-        xferHashCheck->hash(writeData);
+        if (!xferHashCheck->hash(writeData))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiFwImageWriteData: xferHashCheck->hash failed.");
+            return ipmi::responseUnspecifiedError();
+        }
     }
 
 #ifdef INTEL_PFR_ENABLED
