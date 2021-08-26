@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "50fd955b_8f9866e9",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1016,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-08-26T15:17:58Z",
+      "side": 1,
+      "message": "Ack. Replaced with ipmi context pointers everywhere.",
+      "parentUuid": "e741fee6_27788d4c",
+      "range": {
+        "startLine": 1016,
+        "startChar": 30,
+        "endLine": 1016,
+        "endChar": 62
+      },
+      "revId": "85a5e64c87f37d8600d1fb5e51395090f2325801",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b13477e8_f8c7b7c5",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 8
