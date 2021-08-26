@@ -350,7 +350,8 @@ bool getSwVerInfo(ipmi::Context::ptr ctx, uint8_t& bmcMajor, uint8_t& bmcMinor,
         if (results.size() == matchedPhosphor)
         {
             meMajor = static_cast<uint8_t>(std::stoi(results[1]));
-            meMinor = static_cast<uint8_t>(std::stoi(results[2]));
+            meMinor = static_cast<uint8_t>(std::stoi(results[2]) << 4 |
+                                           std::stoi(results[3]));
         }
     }
     return true;
