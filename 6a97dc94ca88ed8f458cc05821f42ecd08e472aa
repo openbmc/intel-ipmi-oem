@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3ce4d677_042fc8c3",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-08-30T15:38:40Z",
+      "side": 1,
+      "message": "Not clear on this: What do you mean by Redfish ME version of Minor? and hot fix??\n\nUpdate the commit message to clarify the above queries",
+      "range": {
+        "startLine": 12,
+        "startChar": 49,
+        "endLine": 13,
+        "endChar": 18
+      },
+      "revId": "6a97dc94ca88ed8f458cc05821f42ecd08e472aa",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
