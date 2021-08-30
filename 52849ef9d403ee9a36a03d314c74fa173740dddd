@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "1745c2fc_79d5d9ac",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-30T15:46:34Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "08c3f7f1_df11ca3d",
+      "range": {
+        "startLine": 218,
+        "startChar": 8,
+        "endLine": 218,
+        "endChar": 22
+      },
+      "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dd694264_8402dcfa",
         "filename": "src/firmware-update.cpp",
         "patchSetId": 1
@@ -45,6 +69,30 @@
       "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7639f9bf_810ddbcb",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 228,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-30T15:46:34Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "dd694264_8402dcfa",
+      "range": {
+        "startLine": 228,
+        "startChar": 8,
+        "endLine": 228,
+        "endChar": 24
+      },
+      "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "51978abf_558bfd94",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-30T15:46:34Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "008737fc_0eab9089",
+      "range": {
+        "startLine": 249,
+        "startChar": 12,
+        "endLine": 249,
+        "endChar": 26
+      },
+      "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "894d87d3_f7a1f11d",
         "filename": "src/firmware-update.cpp",
         "patchSetId": 1
@@ -91,6 +163,30 @@
       "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ae83bf3d_339293dd",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-30T15:46:34Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "894d87d3_f7a1f11d",
+      "range": {
+        "startLine": 260,
+        "startChar": 12,
+        "endLine": 260,
+        "endChar": 27
+      },
+      "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
