@@ -68,6 +68,30 @@
       "revId": "08aba1616511ca5c24a88654bfb1e014f389e976",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a05539c7_7bbeb20b",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 773,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-30T16:26:35Z",
+      "side": 1,
+      "message": "transferImageFromUsb was suppose to be bool. I had modified the function (transferImageFromUsb) for same. But missed the part of making it bool. Will change it.",
+      "parentUuid": "39abfed0_8ac4d5dd",
+      "range": {
+        "startLine": 773,
+        "startChar": 15,
+        "endLine": 773,
+        "endChar": 43
+      },
+      "revId": "08aba1616511ca5c24a88654bfb1e014f389e976",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
