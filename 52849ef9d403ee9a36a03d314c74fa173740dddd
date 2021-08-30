@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "69d747ab_832d83af",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-08-30T15:59:40Z",
+      "side": 1,
+      "message": "Yes Agree with Vernon, We need to check for return code here above code. \n\nNote: When its returns failure(0), Don\u0027t forget to free/destroy the ctx using EVP_MD_CTX_free(ctx).\n\nif(!EVP_DigestInit(ctx, EVP_sha256()))\n{\n    EVP_MD_CTX_free(ctx);\n    return false;\n}",
+      "parentUuid": "08c3f7f1_df11ca3d",
+      "range": {
+        "startLine": 218,
+        "startChar": 8,
+        "endLine": 218,
+        "endChar": 22
+      },
+      "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "dd694264_8402dcfa",
         "filename": "src/firmware-update.cpp",
         "patchSetId": 1
@@ -187,6 +211,30 @@
       "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7fbd3496_6077864f",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-08-30T15:59:40Z",
+      "side": 1,
+      "message": "same as above, If it fails free the free the ctx using EVP_MD_CTX_free(ctx), before return.",
+      "parentUuid": "894d87d3_f7a1f11d",
+      "range": {
+        "startLine": 260,
+        "startChar": 12,
+        "endLine": 260,
+        "endChar": 27
+      },
+      "revId": "52849ef9d403ee9a36a03d314c74fa173740dddd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
