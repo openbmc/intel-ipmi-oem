@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "63a98dd2_94df0b28",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-31T06:38:55Z",
+      "side": 1,
+      "message": "The original code flow was making started \u003d true irrespective of EVP_DigestUpdate \u003d\u003d openSslSuccess, that is why I have kept the same flow. If this needs to be moved to line 240, should I force started \u003d false in case of failure (in case started was \u003d true at line 231)?",
+      "parentUuid": "55a922ad_b30b2530",
+      "range": {
+        "startLine": 231,
+        "startChar": 0,
+        "endLine": 234,
+        "endChar": 9
+      },
+      "revId": "12574bfd077af0048194bdad2ffeb22a9c26c420",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a06055ba_f216b19a",
         "filename": "src/firmware-update.cpp",
         "patchSetId": 3
@@ -60,6 +84,30 @@
       "writtenOn": "2021-08-31T04:04:30Z",
       "side": 1,
       "message": "This case also you need to go for clean up ctx right? Why its not done here? Is caller of this hash(), doing cleanup up on failure? Please confirm.",
+      "range": {
+        "startLine": 236,
+        "startChar": 6,
+        "endLine": 239,
+        "endChar": 9
+      },
+      "revId": "12574bfd077af0048194bdad2ffeb22a9c26c420",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a38b6fc5_919c237f",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-31T06:38:55Z",
+      "side": 1,
+      "message": "hash function does not call EVP_MD_CTX_create(), that is why we are not calling EVP_MD_CTX_destroy(ctx) in hash function. In all the functions where EVP_MD_CTX_create() is called we are calling EVP_MD_CTX_destroy(ctx) on failure. EVP_MD_CTX_destroy(ctx) is also called from destructor, making sure ctx won\u0027t leak memory.",
+      "parentUuid": "a06055ba_f216b19a",
       "range": {
         "startLine": 236,
         "startChar": 6,
