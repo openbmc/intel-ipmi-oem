@@ -73,6 +73,30 @@
     },
     {
       "key": {
+        "uuid": "f16e7bbe_4ff20c26",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-31T07:10:06Z",
+      "side": 1,
+      "message": "clear() function in line number 246 uses if(started) to perform the clean up. So making started \u003d false might be an issue. Also clear() is called when we start image transfer. And object of this class is created in ipmiSetFirmwareUpdateOptions() and since it is a global shared pointer when we call make_shared the old object, if any, is destroyed. So if ipmiGetSetFirmwareUpdateControl()-\u003eimageTransferStart is called before ipmiSetFirmwareUpdateOptions(), clear() is called before we destroy the object and create a fresh one.",
+      "parentUuid": "63a98dd2_94df0b28",
+      "range": {
+        "startLine": 231,
+        "startChar": 0,
+        "endLine": 234,
+        "endChar": 9
+      },
+      "revId": "12574bfd077af0048194bdad2ffeb22a9c26c420",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a06055ba_f216b19a",
         "filename": "src/firmware-update.cpp",
         "patchSetId": 3
