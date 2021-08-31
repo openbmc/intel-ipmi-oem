@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0151b80a_1f15ecc1",
+        "filename": "src/bmccontrolservices.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-08-31T17:03:08Z",
+      "side": 1,
+      "message": "Does reverse statement also true? i.e.) Bit15 should match bit 14 ?\n\nIn that case, you better define in line number 32:\nstatic constexpr uint8_t remoteMediaServiceBitPos \u003d 14;\n\nand maskBit15 as: maskBits15_14 0x3000;\nif (serviceValue \u0026 maskBits15_14) {\n    serviceValue |\u003d maskeBits15_14;\n}\n\ncorrect ?",
+      "range": {
+        "startLine": 199,
+        "startChar": 4,
+        "endLine": 199,
+        "endChar": 52
+      },
+      "revId": "99b14ef59556d39366ba9a5b336705d1c1c8e6c9",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
