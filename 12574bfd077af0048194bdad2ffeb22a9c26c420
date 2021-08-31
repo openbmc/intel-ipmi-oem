@@ -140,6 +140,30 @@
       "revId": "12574bfd077af0048194bdad2ffeb22a9c26c420",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a529bed5_8728e562",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-08-31T06:41:41Z",
+      "side": 1,
+      "message": "HashCheck function does not call EVP_MD_CTX_create(), that is why we are not calling EVP_MD_CTX_destroy(ctx) in HashCheck function. In all the functions where EVP_MD_CTX_create() is called we are calling EVP_MD_CTX_destroy(ctx) on failure. EVP_MD_CTX_destroy(ctx) is also called from destructor, making sure ctx won\u0027t leak memory.",
+      "parentUuid": "a99677d5_c7ef43c6",
+      "range": {
+        "startLine": 279,
+        "startChar": 12,
+        "endLine": 282,
+        "endChar": 13
+      },
+      "revId": "12574bfd077af0048194bdad2ffeb22a9c26c420",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
