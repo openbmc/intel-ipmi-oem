@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "842d9159_1d9f1481",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-08-31T04:10:38Z",
+      "side": 1,
+      "message": "Wouldn\u0027t this to be moved to line number 240 ? i.e.) only after EVP_DigestUpdate() successful.",
+      "range": {
+        "startLine": 231,
+        "startChar": 0,
+        "endLine": 234,
+        "endChar": 9
+      },
+      "revId": "12574bfd077af0048194bdad2ffeb22a9c26c420",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a06055ba_f216b19a",
         "filename": "src/firmware-update.cpp",
         "patchSetId": 3
