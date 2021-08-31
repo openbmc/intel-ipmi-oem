@@ -41,7 +41,7 @@ static const std::unordered_map<uint8_t, std::string> bmcServices = {
     {kvmServiceBitPos, "/xyz/openbmc_project/control/service/start_2dipkvm"},
 };
 
-static constexpr uint16_t maskBit15 = 0xF000;
+static constexpr uint16_t maskBit15 = 0x8000;
 
 static constexpr const char* objectManagerIntf =
     "org.freedesktop.DBus.ObjectManager";
