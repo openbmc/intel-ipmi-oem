@@ -22,6 +22,30 @@
       "revId": "99b14ef59556d39366ba9a5b336705d1c1c8e6c9",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "564b4108_97a590e9",
+        "filename": "src/bmccontrolservices.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-09-01T08:56:47Z",
+      "side": 1,
+      "message": "Yes the reverse statement is also true. But it is explicitly documented in EPS that \"Remote media \u0026 KVM can be enabled together / disabled together only\".\nIn that case it will be better not to modify the logic in Control BMC Services command to check for bit 14 also.",
+      "parentUuid": "0151b80a_1f15ecc1",
+      "range": {
+        "startLine": 199,
+        "startChar": 4,
+        "endLine": 199,
+        "endChar": 52
+      },
+      "revId": "99b14ef59556d39366ba9a5b336705d1c1c8e6c9",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
