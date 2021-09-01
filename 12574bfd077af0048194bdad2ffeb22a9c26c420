@@ -144,6 +144,30 @@
     },
     {
       "key": {
+        "uuid": "baa291e5_0ab0ff15",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-09-01T02:43:41Z",
+      "side": 1,
+      "message": "Really, we should probably move to EVP_MD_CTX_new/EVP_MD_CTX_free, which is part of the 1.1.1 API rather than the now deprecated EVP_MD_CTX_create/EVP_MD_CTX_destroy. I am not sure how this even still works....\n\nAnother thought, which I have used elsewhere is to create a shared_ptr or unique_ptr (depending on the ownership requirements) that uses a custom type destructor as part of the ptr constructor.\n\nSomething like this:\nstd::unique_ptr\u003cEVP_MD_CTX\u003e ctx(EVP_MD_CTX_new(), EVP_MD_CTX_free);\n\nThen, the smart pointer does all the counting and cleanup for you.",
+      "parentUuid": "a38b6fc5_919c237f",
+      "range": {
+        "startLine": 236,
+        "startChar": 6,
+        "endLine": 239,
+        "endChar": 9
+      },
+      "revId": "12574bfd077af0048194bdad2ffeb22a9c26c420",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a99677d5_c7ef43c6",
         "filename": "src/firmware-update.cpp",
         "patchSetId": 3
@@ -184,6 +208,29 @@
         "startChar": 12,
         "endLine": 282,
         "endChar": 13
+      },
+      "revId": "12574bfd077af0048194bdad2ffeb22a9c26c420",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fd241e8b_621754d7",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 739,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-09-01T02:43:41Z",
+      "side": 1,
+      "message": "sysret is unused",
+      "range": {
+        "startLine": 739,
+        "startChar": 0,
+        "endLine": 739,
+        "endChar": 15
       },
       "revId": "12574bfd077af0048194bdad2ffeb22a9c26c420",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
