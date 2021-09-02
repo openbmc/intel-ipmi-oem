@@ -592,7 +592,7 @@ ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags(ipmi::Context::ptr ctx)
             getMsgFlagsRes.set(getMsgFlagWatchdogPreTimeOutBit);
         }
     }
-    catch (sdbusplus::exception::SdBusError& e)
+    catch (sdbusplus::exception::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppGetMessageFlags, dbus call exception");
@@ -664,7 +664,7 @@ ipmi::RspType<> ipmiAppClearMessageFlags(ipmi::Context::ptr ctx,
         ipmi::setDbusProperty(*dbus, wdtService, wdtObjPath, wdtInterface,
                               wdtInterruptFlagProp, false);
     }
-    catch (const sdbusplus::exception::SdBusError& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppClearMessageFlags: can't Clear/Set "
