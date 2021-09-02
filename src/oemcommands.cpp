@@ -1241,7 +1241,7 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
     if (userPassword.size() != 0)
     {
         constexpr uint8_t minPasswordSizeRequired = 6;
-        std::string passwd;
+        SecureString passwd;
         if (userPassword.size() < minPasswordSizeRequired ||
             userPassword.size() > ipmi::maxIpmi20PasswordSize)
         {
