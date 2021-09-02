@@ -227,7 +227,7 @@ int8_t Manufacturing::getProperty(const std::string& service,
         *reply = ipmi::getDbusProperty(*getSdBus(), service, path, interface,
                                        propertyName);
     }
-    catch (const sdbusplus::exception::SdBusError& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "ERROR: getProperty");
@@ -248,7 +248,7 @@ int8_t Manufacturing::setProperty(const std::string& service,
         ipmi::setDbusProperty(*getSdBus(), service, path, interface,
                               propertyName, value);
     }
-    catch (const sdbusplus::exception::SdBusError& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "ERROR: setProperty");
@@ -269,7 +269,7 @@ int8_t Manufacturing::disablePidControlService(const bool disable)
         method.append(pidControlService, "replace");
         auto reply = dbus->call(method);
     }
-    catch (const sdbusplus::exception::SdBusError& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "ERROR: phosphor-pid-control service start or stop failed");

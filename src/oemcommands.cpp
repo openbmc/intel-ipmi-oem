@@ -1316,7 +1316,7 @@ int8_t getLEDState(sdbusplus::bus::bus& bus, const std::string& intf,
             sdbusplus::xyz::openbmc_project::Led::server::Physical::
                 convertActionFromString(strState));
     }
-    catch (sdbusplus::exception::SdBusError& e)
+    catch (sdbusplus::exception::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return -1;
@@ -3011,7 +3011,7 @@ ipmi::RspType<uint8_t> ipmiOEMGetNmiSource(void)
                 return ipmi::responseResponseError();
         }
     }
-    catch (sdbusplus::exception::SdBusError& e)
+    catch (sdbusplus::exception::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return ipmi::responseResponseError();

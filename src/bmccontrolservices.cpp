@@ -64,7 +64,7 @@ std::string getServiceConfigMgrName()
             serviceCfgMgr = ipmi::getService(*sdbusp, objectManagerIntf,
                                              serviceConfigBasePath);
         }
-        catch (const sdbusplus::exception::SdBusError& e)
+        catch (const sdbusplus::exception::exception& e)
         {
             serviceCfgMgr.clear();
             phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -157,7 +157,7 @@ ipmi::RspType<> setBmcControlServices(boost::asio::yield_context yield,
             }
         }
     }
-    catch (sdbusplus::exception::SdBusError& e)
+    catch (sdbusplus::exception::exception& e)
     {
         return ipmi::responseUnspecifiedError();
     }
@@ -190,7 +190,7 @@ ipmi::RspType<uint16_t> getBmcControlServices(boost::asio::yield_context yield)
             }
         }
     }
-    catch (sdbusplus::exception::SdBusError& e)
+    catch (sdbusplus::exception::exception& e)
     {
         return ipmi::responseUnspecifiedError();
     }
