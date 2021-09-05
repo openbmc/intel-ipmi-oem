@@ -5,48 +5,13 @@
 #include <phosphor-logging/elog-errors.hpp>
 #include <phosphor-logging/log.hpp>
 
+#include <iostream>
 #include <map>
 #include <sstream>
 #include <stack>
 #include <string>
 #include <variant>
 #include <vector>
-
-std::string mapAttrTypeToRedfish(const std::string_view typeDbus)
-{
-    std::string ret;
-    if (typeDbus == "xyz.openbmc_project.BIOSConfig.Manager."
-                    "AttributeType.Enumeration")
-    {
-        ret = "Enumeration";
-    }
-    else if (typeDbus == "xyz.openbmc_project.BIOSConfig."
-                         "Manager.AttributeType.String")
-    {
-        ret = "String";
-    }
-    else if (typeDbus == "xyz.openbmc_project.BIOSConfig."
-                         "Manager.AttributeType.Password")
-    {
-        ret = "Password";
-    }
-    else if (typeDbus == "xyz.openbmc_project.BIOSConfig."
-                         "Manager.AttributeType.Integer")
-    {
-        ret = "Integer";
-    }
-    else if (typeDbus == "xyz.openbmc_project.BIOSConfig."
-                         "Manager.AttributeType.Boolean")
-    {
-        ret = "Boolean";
-    }
-    else
-    {
-        ret = "UNKNOWN";
-    }
-
-    return ret;
-}
 
 namespace bios
 {
