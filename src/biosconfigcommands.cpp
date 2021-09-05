@@ -37,6 +37,7 @@
 
 namespace ipmi
 {
+static bool flushNVOOBdata();
 static void registerBIOSConfigFunctions() __attribute__((constructor));
 
 // Define BIOS config related Completion Code
@@ -106,6 +107,282 @@ enum class GetPayloadParameter : uint8_t
     GetPayloadStatus = 2
 };
 
+namespace payload1
+{
+
+enum class AttributesType : uint8_t
+{
+    unknown = 0,
+    string,
+    integer
+};
+
+using PendingAttributesType =
+    std::map<std::string,
+             std::tuple<std::string, std::variant<int64_t, std::string>>>;
+
+AttributesType getAttrType(const std::string_view typeDbus)
+{
+    if (typeDbus == "xyz.openbmc_project.BIOSConfig.Manager."
+                    "AttributeType.String")
+    {
+        return AttributesType::string;
+    }
+    else if (typeDbus == "xyz.openbmc_project.BIOSConfig."
+                         "Manager.AttributeType.Integer")
+    {
+        return AttributesType::integer;
+    }
+
+    return AttributesType::unknown;
+}
+
+bool fillPayloadData(std::string& payloadData,
+                     const std::variant<int64_t, std::string>& attributes,
+                     const std::string_view key, AttributesType& attrType)
+{
+    payloadData += key;
+    payloadData += '=';
+
+    if (attrType == AttributesType::string)
+    {
+        if (!std::holds_alternative<std::string>(attributes))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "fillPayloadData: No string data in attributes");
+            return false;
+        }
+        payloadData += std::get<std::string>(attributes);
+    }
+    else if (attrType == AttributesType::integer)
+    {
+        if (!std::holds_alternative<int64_t>(attributes))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "fillPayloadData: No int64_t data in attributes");
+            return false;
+        }
+        payloadData += std::to_string(std::get<int64_t>(attributes));
+    }
+    else
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "fillPayloadData: Unsupported attribute type");
+        return false;
+    }
+
+    payloadData += '\n';
+
+    return true;
+}
+
+bool getPendingList(ipmi::Context::ptr ctx, std::string& payloadData)
+{
+    std::variant<PendingAttributesType> pendingAttributesData;
+    boost::system::error_code ec;
+
+    payloadData.clear();
+
+    auto dbus = getSdBus();
+    if (!dbus)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getPendingList: getSdBus() failed");
+        return false;
+    }
+
+    std::string service =
+        getService(*dbus, biosConfigIntf, biosConfigBaseMgrPath);
+
+    try
+    {
+        pendingAttributesData =
+            dbus->yield_method_call<std::variant<PendingAttributesType>>(
+                ctx->yield, ec, service,
+                "/xyz/openbmc_project/bios_config/manager",
+                "org.freedesktop.DBus.Properties", "Get",
+                "xyz.openbmc_project.BIOSConfig.Manager", "PendingAttributes");
+    }
+    catch (std::exception& ex)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(ex.what());
+        return false;
+    }
+
+    if (ec)
+    {
+        std::string err = "getPendingList: error while trying to get "
+                          "PendingAttributes, error = ";
+        err += ec.message();
+
+        phosphor::logging::log<phosphor::logging::level::ERR>(err.c_str());
+
+        return false;
+    }
+
+    const PendingAttributesType* pendingAttributes =
+        std::get_if<PendingAttributesType>(&pendingAttributesData);
+    if (!pendingAttributes)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getPendingList: pendingAttributes is null");
+        return false;
+    }
+
+    for (const auto& [key, attributes] : *pendingAttributes)
+    {
+        const std::string& itemType = std::get<0>(attributes);
+        AttributesType attrType = getAttrType(itemType);
+
+        if (!fillPayloadData(payloadData, std::get<1>(attributes), key,
+                             attrType))
+        {
+            return false;
+        }
+    }
+
+    if (payloadData.empty())
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "getPendingList: payloadData is empty");
+        return false;
+    }
+
+    return true;
+}
+bool updatePayloadFile(std::string& payloadFilePath, std::string payloadData)
+{
+    std::ofstream payloadFile(payloadFilePath,
+                              std::ios::out | std::ios::binary);
+
+    payloadFile << payloadData;
+
+    if (!payloadFile.good())
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool computeCheckSum(std::string& payloadFilePath,
+                     boost::crc_32_type& calcChecksum)
+{
+    std::ifstream payloadFile(payloadFilePath.c_str(),
+                              std::ios::in | std::ios::binary | std::ios::ate);
+
+    if (!payloadFile.good())
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "computeCheckSum: Cannot open Payload1 file");
+        return false;
+    }
+
+    payloadFile.seekg(0, payloadFile.end);
+    int length = payloadFile.tellg();
+    payloadFile.seekg(0, payloadFile.beg);
+
+    if (maxGetPayloadDataSize < length)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "computeCheckSum: length > maxGetPayloadDataSize");
+        return false;
+    }
+
+    std::unique_ptr<char[]> payloadBuffer(new char[length]);
+
+    payloadFile.read(payloadBuffer.get(), length);
+    uint32_t readCount = payloadFile.gcount();
+
+    calcChecksum.process_bytes(payloadBuffer.get(), readCount);
+
+    return true;
+}
+
+bool updatePayloadInfo(std::string& payloadFilePath)
+{
+    boost::crc_32_type calcChecksum;
+
+    uint8_t payloadType = static_cast<uint8_t>(ipmi::PType::IntelXMLType1);
+    auto& payloadInfo = gNVOOBdata.payloadInfo[payloadType];
+
+    if (!computeCheckSum(payloadFilePath, calcChecksum))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "updatePayloadInfo: Cannot compute checksum for Payload1 file");
+        return false;
+    }
+
+    payloadInfo.payloadVersion = 0;
+    payloadInfo.payloadflag = 0;
+    payloadInfo.payloadReservationID = rand();
+
+    payloadInfo.payloadType = static_cast<uint8_t>(ipmi::PType::IntelXMLType1);
+
+    payloadInfo.payloadTotalChecksum = calcChecksum.checksum();
+    payloadInfo.payloadCurrentChecksum = payloadInfo.payloadTotalChecksum;
+
+    payloadInfo.payloadStatus = (static_cast<uint8_t>(ipmi::PStatus::Valid));
+
+    struct stat filestat;
+    /* Get entry's information. */
+    if (!stat(payloadFilePath.c_str(), &filestat))
+    {
+        payloadInfo.payloadTimeStamp = filestat.st_mtime;
+        payloadInfo.payloadTotalSize = filestat.st_size;
+        payloadInfo.payloadCurrentSize = filestat.st_size;
+        payloadInfo.actualTotalPayloadWritten = filestat.st_size;
+    }
+    else
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "updatePayloadInfo: Cannot get file status for Payload1 file");
+        return false;
+    }
+
+    if (!flushNVOOBdata())
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "updatePayloadInfo: flushNVOOBdata failed");
+        return false;
+    }
+
+    return true;
+}
+
+bool update(ipmi::Context::ptr ctx)
+{
+    std::string payloadFilePath =
+        "/var/oob/Payload" +
+        std::to_string(static_cast<uint8_t>(ipmi::PType::IntelXMLType1));
+
+    std::string payloadData;
+
+    if (!getPendingList(ctx, payloadData))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "payload1::update : getPendingList() failed");
+        return false;
+    }
+
+    if (!updatePayloadFile(payloadFilePath, payloadData))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "payload1::update : updatePayloadFile() failed");
+        return false;
+    }
+
+    if (!updatePayloadInfo(payloadFilePath))
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "payload1::update : updatePayloadInfo() failed");
+        return false;
+    }
+
+    return true;
+}
+} // namespace payload1
+
 /** @brief implement to set the BaseBIOSTable property
  *  @returns status
  */
@@ -152,17 +429,20 @@ static bool sendAllAttributes(std::string service)
 /** @brief implement to flush the updated data in nv space
  *  @returns status
  */
-static uint8_t flushNVOOBdata()
+static bool flushNVOOBdata()
 {
     std::ofstream outFile(biosConfigNVPath, std::ios::binary);
-    if (outFile.good())
+
+    outFile.seekp(std::ios_base::beg);
+    const char* writedata = reinterpret_cast<const char*>(&gNVOOBdata);
+    outFile.write(writedata, sizeof(struct NVOOBdata));
+
+    if (!outFile.good())
     {
-        outFile.seekp(std::ios_base::beg);
-        const char* writedata = reinterpret_cast<const char*>(&gNVOOBdata);
-        outFile.write(writedata, sizeof(struct NVOOBdata));
-        outFile.close();
+        return false;
     }
-    return 0;
+
+    return true;
 }
 
 /** @brief implement to get the System State
@@ -399,7 +679,6 @@ ipmi::RspType<> ipmiOEMSetBIOSCap(ipmi::Context::ptr ctx,
     }
     else
     {
-
         return ipmi::response(ipmiCCNotSupportedInCurrentState);
     }
 }
@@ -495,6 +774,8 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
             if (pPayloadInProgress->payloadReservationID !=
                 payloadInfo.payloadReservationID)
             {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "BIOS Config Payload reservation ID is not correct");
                 return ipmi::responseInvalidReservationId();
             }
             payloadInfo.payloadCurrentSize =
@@ -550,7 +831,6 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
             if (gNVOOBdata.payloadInfo[payloadType].actualTotalPayloadWritten !=
                 gNVOOBdata.payloadInfo[payloadType].payloadTotalSize)
             {
-
                 return ipmi::response(ipmiCCPayloadPayloadInComplete);
             }
             std::string tempFilePath =
@@ -665,13 +945,23 @@ ipmi::RspType<message::Payload>
         return ipmi::responseInvalidFieldRequest();
     }
 
+    if (payloadType == static_cast<uint8_t>(ipmi::PType::IntelXMLType1))
+    {
+        if (!payload1::update(ctx))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmiOEMGetPayload: unable to update NVOOBdata for payloadType "
+                "= IntelXMLType1");
+            return ipmi::response(ipmi::ccUnspecifiedError);
+        }
+    }
+
     struct PayloadInfo res = gNVOOBdata.payloadInfo[payloadType];
 
     switch (static_cast<GetPayloadParameter>(paramSel))
     {
         case ipmi::GetPayloadParameter::GetPayloadInfo:
         {
-
             std::string payloadFilePath =
                 "/var/oob/Payload" + std::to_string(payloadType);
 
@@ -680,12 +970,12 @@ ipmi::RspType<message::Payload>
 
             if (!ifs.good())
             {
-
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "ipmiOEMGetPayload: Payload File Error");
                 // File does not exist code here
                 return ipmi::response(ipmi::ccUnspecifiedError);
             }
+
             ifs.close();
             retValue.pack(res.payloadVersion);
             retValue.pack(payloadType);
@@ -720,7 +1010,6 @@ ipmi::RspType<message::Payload>
 
                 if (!ifs.good())
                 {
-
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "ipmiOEMGetPayload: Payload File Error");
                     // File does not exist code here
@@ -752,6 +1041,7 @@ ipmi::RspType<message::Payload>
                 {
                     retValue.pack(Buffer.at(i));
                 }
+
                 return ipmi::responseSuccess(std::move(retValue));
             }
             else
