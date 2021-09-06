@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "ccf22236_4326c475",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-06T05:11:07Z",
+      "side": 1,
+      "message": "Will address this.",
+      "parentUuid": "dcb7a74e_68c55cd9",
+      "revId": "d1183427d27ad223b4533f6f76eedf0687d46a30",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4027c60b_672cfbff",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2021-09-06T01:41:15Z",
       "side": 1,
       "message": "why this logic is changed ?",
+      "revId": "d1183427d27ad223b4533f6f76eedf0687d46a30",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0aab74c2_a31c19bd",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 995,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-06T05:11:07Z",
+      "side": 1,
+      "message": "Looked more clean to me.",
+      "parentUuid": "4027c60b_672cfbff",
       "revId": "d1183427d27ad223b4533f6f76eedf0687d46a30",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "2da472e7_2f1674a7",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1008,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-06T05:11:07Z",
+      "side": 1,
+      "message": "EPS has status before flag.\n\nResponse:\nCompletion Code\nByte 2:3- Payload Version\nByte 4 – Payload Type\nByte 5:8 - Total Payload length \nByte 9: 12 – Full Payload data checksum\nByte 13-Payload Current Status\nByte 14 – Payload flag\nByte 15:18-Timestamp",
+      "parentUuid": "4fcf10a9_4358ce84",
+      "revId": "d1183427d27ad223b4533f6f76eedf0687d46a30",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5bced5d0_e64f4d73",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 1
@@ -64,6 +118,24 @@
       "writtenOn": "2021-09-06T01:41:15Z",
       "side": 1,
       "message": "Please refer the command response for GetPayloadInfo",
+      "revId": "d1183427d27ad223b4533f6f76eedf0687d46a30",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f46d0993_ce7756ac",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1009,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-06T05:11:07Z",
+      "side": 1,
+      "message": "EPS has status before flag.\n\nResponse:\nCompletion Code\nByte 2:3- Payload Version\nByte 4 – Payload Type\nByte 5:8 - Total Payload length \nByte 9: 12 – Full Payload data checksum\nByte 13-Payload Current Status\nByte 14 – Payload flag\nByte 15:18-Timestamp",
+      "parentUuid": "5bced5d0_e64f4d73",
       "revId": "d1183427d27ad223b4533f6f76eedf0687d46a30",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
