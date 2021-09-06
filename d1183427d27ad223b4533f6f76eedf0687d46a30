@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dcb7a74e_68c55cd9",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-09-06T01:41:15Z",
+      "side": 1,
+      "message": "instead of payload class. we can use the specific payloadtype1 class name.",
+      "revId": "d1183427d27ad223b4533f6f76eedf0687d46a30",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4027c60b_672cfbff",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 995,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-09-06T01:41:15Z",
+      "side": 1,
+      "message": "why this logic is changed ?",
+      "revId": "d1183427d27ad223b4533f6f76eedf0687d46a30",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4fcf10a9_4358ce84",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1008,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-09-06T01:41:15Z",
+      "side": 1,
+      "message": "Why byte order is changed ?",
+      "revId": "d1183427d27ad223b4533f6f76eedf0687d46a30",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5bced5d0_e64f4d73",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1009,
+      "author": {
+        "id": 1000295
+      },
+      "writtenOn": "2021-09-06T01:41:15Z",
+      "side": 1,
+      "message": "Please refer the command response for GetPayloadInfo",
+      "revId": "d1183427d27ad223b4533f6f76eedf0687d46a30",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
