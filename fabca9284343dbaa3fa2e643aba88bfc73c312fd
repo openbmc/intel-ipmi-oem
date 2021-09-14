@@ -2,6 +2,52 @@
   "comments": [
     {
       "key": {
+        "uuid": "6ac2db9a_b849a623",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "Why redfish in IPMI code? I believe its dbus not redfish.",
+      "range": {
+        "startLine": 111,
+        "startChar": 12,
+        "endLine": 111,
+        "endChar": 32
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c2149ec7_b8949fee",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "Instead of this, You can strip of the \"xyz.openbmc_project.BIOSConfig.Manager.AttributeType.\" and use it right?",
+      "range": {
+        "startLine": 114,
+        "startChar": 4,
+        "endLine": 138,
+        "endChar": 5
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b7254dd1_55e3acf6",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -18,6 +64,52 @@
         "startChar": 33,
         "endLine": 147,
         "endChar": 44
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ed22e2ce_d2c7ff7e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "Make it as first input argument",
+      "range": {
+        "startLine": 147,
+        "startChar": 46,
+        "endLine": 147,
+        "endChar": 68
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ac0854eb_854b9f72",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "declare them at place of use. I.e line no:165",
+      "range": {
+        "startLine": 149,
+        "startChar": 0,
+        "endLine": 151,
+        "endChar": 24
       },
       "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
@@ -140,6 +232,29 @@
     },
     {
       "key": {
+        "uuid": "f4a49c13_3487199c",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "What about other types like Boolean, Password, Enumeration etc..?",
+      "range": {
+        "startLine": 253,
+        "startChar": 8,
+        "endLine": 254,
+        "endChar": 9
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a9f2e931_a676aea8",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -156,6 +271,52 @@
         "startChar": 4,
         "endLine": 275,
         "endChar": 15
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8eb3eb51_bf6aa3f9",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "This should be after open status check.",
+      "range": {
+        "startLine": 275,
+        "startChar": 3,
+        "endLine": 275,
+        "endChar": 31
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "46e0bb23_a26531df",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "Use good()\n\nbad() check only badbit, Where are good() checks eofbit, failbit along with badbit.",
+      "range": {
+        "startLine": 277,
+        "startChar": 20,
+        "endLine": 277,
+        "endChar": 25
       },
       "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
@@ -186,6 +347,29 @@
     },
     {
       "key": {
+        "uuid": "5955d9d4_b7940237",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "same as above, check good() instead of bad()",
+      "range": {
+        "startLine": 293,
+        "startChar": 20,
+        "endLine": 293,
+        "endChar": 23
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "00ac5db1_7576a152",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -209,6 +393,29 @@
     },
     {
       "key": {
+        "uuid": "1a9b0ae2_a9fffc83",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "Why to allocate maximum size here, You already know the length of data what you are going to read, So use length.\n\nAlso add bundary check for length (with maxGetPayloadDataSize)",
+      "range": {
+        "startLine": 304,
+        "startChar": 24,
+        "endLine": 304,
+        "endChar": 45
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0aeea538_8967585a",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -225,6 +432,121 @@
         "startChar": 4,
         "endLine": 305,
         "endChar": 76
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "70b6df38_bf87e734",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "payloadType ??",
+      "range": {
+        "startLine": 332,
+        "startChar": 30,
+        "endLine": 332,
+        "endChar": 78
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "24068e45_7cc9c627",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "Are these belong to old payload, I believe its not. It should be new payload data size. Correct me if i am wrong.",
+      "range": {
+        "startLine": 344,
+        "startChar": 0,
+        "endLine": 346,
+        "endChar": 65
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "52ce6100_eebe9207",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 371,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "payloadData",
+      "range": {
+        "startLine": 371,
+        "startChar": 16,
+        "endLine": 371,
+        "endChar": 27
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8020b2b2_63ce0a88",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 381,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "Unnecessary logs, Remove. We already debug logs for handling failure cases inside function definitions. \n\nSame in other places.",
+      "range": {
+        "startLine": 380,
+        "startChar": 0,
+        "endLine": 381,
+        "endChar": 58
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e794eaba_db936a93",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-14T12:18:48Z",
+      "side": 1,
+      "message": "nit: Better invert the condition for better readability. \n\nif(!outFile.good())\n{\n    return false;\n}\n.... actual operation. .....",
+      "range": {
+        "startLine": 456,
+        "startChar": 3,
+        "endLine": 457,
+        "endChar": 5
       },
       "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
