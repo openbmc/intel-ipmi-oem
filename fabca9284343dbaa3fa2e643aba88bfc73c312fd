@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "fe54ff88_6c4ac704",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will address this.",
+      "parentUuid": "6ac2db9a_b849a623",
+      "range": {
+        "startLine": 111,
+        "startChar": 12,
+        "endLine": 111,
+        "endChar": 32
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c2149ec7_b8949fee",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -36,6 +60,30 @@
       "writtenOn": "2021-09-14T12:18:48Z",
       "side": 1,
       "message": "Instead of this, You can strip of the \"xyz.openbmc_project.BIOSConfig.Manager.AttributeType.\" and use it right?",
+      "range": {
+        "startLine": 114,
+        "startChar": 4,
+        "endLine": 138,
+        "endChar": 5
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ba4667e8_fd3417f9",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Yes we can, but I still will have to check if it is \"Enumeration\", \"String\", \"Password\", \"Integer\" or \"Boolean\"\nTo check if it is none of the above and return \"UNKNOWN\".",
+      "parentUuid": "c2149ec7_b8949fee",
       "range": {
         "startLine": 114,
         "startChar": 4,
@@ -94,6 +142,54 @@
     },
     {
       "key": {
+        "uuid": "4d43dc40_a8ca02b0",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will do.",
+      "parentUuid": "ed22e2ce_d2c7ff7e",
+      "range": {
+        "startLine": 147,
+        "startChar": 46,
+        "endLine": 147,
+        "endChar": 68
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3c29527c_5152e500",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "It should be payloadData. \nWill correct this.",
+      "parentUuid": "b7254dd1_55e3acf6",
+      "range": {
+        "startLine": 147,
+        "startChar": 33,
+        "endLine": 147,
+        "endChar": 44
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ac0854eb_854b9f72",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -105,6 +201,30 @@
       "writtenOn": "2021-09-14T12:18:48Z",
       "side": 1,
       "message": "declare them at place of use. I.e line no:165",
+      "range": {
+        "startLine": 149,
+        "startChar": 0,
+        "endLine": 151,
+        "endChar": 24
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "35e3a85b_0598a5c0",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will do.",
+      "parentUuid": "ac0854eb_854b9f72",
       "range": {
         "startLine": 149,
         "startChar": 0,
@@ -140,6 +260,30 @@
     },
     {
       "key": {
+        "uuid": "a39992a4_6d950d27",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Yes, will correct it.",
+      "parentUuid": "968fd2cd_3f934acb",
+      "range": {
+        "startLine": 159,
+        "startChar": 13,
+        "endLine": 159,
+        "endChar": 23
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "afa9cc63_b6284bb1",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -151,6 +295,30 @@
       "writtenOn": "2021-09-14T11:31:29Z",
       "side": 1,
       "message": "nit: good to include ec.message() also in logs",
+      "range": {
+        "startLine": 183,
+        "startChar": 8,
+        "endLine": 185,
+        "endChar": 33
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b7ecd994_96d22469",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will address this.",
+      "parentUuid": "afa9cc63_b6284bb1",
       "range": {
         "startLine": 183,
         "startChar": 8,
@@ -186,6 +354,30 @@
     },
     {
       "key": {
+        "uuid": "9c642de6_2c834efc",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will address this.",
+      "parentUuid": "a2ae2bcd_b5a1d195",
+      "range": {
+        "startLine": 203,
+        "startChar": 12,
+        "endLine": 203,
+        "endChar": 32
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "17ed43ec_c3cdf51e",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -197,6 +389,30 @@
       "writtenOn": "2021-09-14T11:31:29Z",
       "side": 1,
       "message": "I think enclosing in single quotes has perfomance benefits",
+      "range": {
+        "startLine": 221,
+        "startChar": 31,
+        "endLine": 221,
+        "endChar": 35
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9b39226b_5461c1ca",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will do.",
+      "parentUuid": "17ed43ec_c3cdf51e",
       "range": {
         "startLine": 221,
         "startChar": 31,
@@ -232,6 +448,30 @@
     },
     {
       "key": {
+        "uuid": "f517217b_42d4da65",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 250,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Yes, will do.",
+      "parentUuid": "d3c22ea6_9b044f79",
+      "range": {
+        "startLine": 230,
+        "startChar": 12,
+        "endLine": 250,
+        "endChar": 33
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f4a49c13_3487199c",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -243,6 +483,30 @@
       "writtenOn": "2021-09-14T12:18:48Z",
       "side": 1,
       "message": "What about other types like Boolean, Password, Enumeration etc..?",
+      "range": {
+        "startLine": 253,
+        "startChar": 8,
+        "endLine": 254,
+        "endChar": 9
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f9ad3e97_0495548b",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "We only use string and int for values of BIOS knobs. \nAnd I understand that this means mapAttrTypeToRedfish needs to be modified. \nI will do that too.",
+      "parentUuid": "f4a49c13_3487199c",
       "range": {
         "startLine": 253,
         "startChar": 8,
@@ -301,6 +565,54 @@
     },
     {
       "key": {
+        "uuid": "1cad82c8_85154195",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Check for that is inside the write function of std::ofstream.\nSo open and write den do one check at line 277 to make sure there are no errors.",
+      "parentUuid": "a9f2e931_a676aea8",
+      "range": {
+        "startLine": 275,
+        "startChar": 4,
+        "endLine": 275,
+        "endChar": 15
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3b6bb96d_ec508e4d",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Same as reply given to Nidhin.",
+      "parentUuid": "8eb3eb51_bf6aa3f9",
+      "range": {
+        "startLine": 275,
+        "startChar": 3,
+        "endLine": 275,
+        "endChar": 31
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "46e0bb23_a26531df",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -312,6 +624,30 @@
       "writtenOn": "2021-09-14T12:18:48Z",
       "side": 1,
       "message": "Use good()\n\nbad() check only badbit, Where are good() checks eofbit, failbit along with badbit.",
+      "range": {
+        "startLine": 277,
+        "startChar": 20,
+        "endLine": 277,
+        "endChar": 25
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "253ec446_26f43182",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will do.",
+      "parentUuid": "46e0bb23_a26531df",
       "range": {
         "startLine": 277,
         "startChar": 20,
@@ -347,6 +683,30 @@
     },
     {
       "key": {
+        "uuid": "626293ce_eafb70b6",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will remove.",
+      "parentUuid": "8332403b_7f82ba36",
+      "range": {
+        "startLine": 282,
+        "startChar": 4,
+        "endLine": 282,
+        "endChar": 24
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5955d9d4_b7940237",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -358,6 +718,30 @@
       "writtenOn": "2021-09-14T12:18:48Z",
       "side": 1,
       "message": "same as above, check good() instead of bad()",
+      "range": {
+        "startLine": 293,
+        "startChar": 20,
+        "endLine": 293,
+        "endChar": 23
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "493df034_9857e657",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will do.",
+      "parentUuid": "5955d9d4_b7940237",
       "range": {
         "startLine": 293,
         "startChar": 20,
@@ -393,6 +777,30 @@
     },
     {
       "key": {
+        "uuid": "25db9894_71eb4b66",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "There are two payload files, on a high level, Payload0 is for Set command and Payload1 is for Get command.",
+      "parentUuid": "00ac5db1_7576a152",
+      "range": {
+        "startLine": 296,
+        "startChar": 42,
+        "endLine": 296,
+        "endChar": 51
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1a9b0ae2_a9fffc83",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -404,6 +812,30 @@
       "writtenOn": "2021-09-14T12:18:48Z",
       "side": 1,
       "message": "Why to allocate maximum size here, You already know the length of data what you are going to read, So use length.\n\nAlso add bundary check for length (with maxGetPayloadDataSize)",
+      "range": {
+        "startLine": 304,
+        "startChar": 24,
+        "endLine": 304,
+        "endChar": 45
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f3cf7069_21298696",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will do.",
+      "parentUuid": "1a9b0ae2_a9fffc83",
       "range": {
         "startLine": 304,
         "startChar": 24,
@@ -439,6 +871,30 @@
     },
     {
       "key": {
+        "uuid": "5dbd2a33_c4cae825",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 305,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Like AppaRao said I will use the correct length (in line 304), \nAnd put a check for maxGetPayloadDataSize \u003e length before line 304.",
+      "parentUuid": "0aeea538_8967585a",
+      "range": {
+        "startLine": 305,
+        "startChar": 4,
+        "endLine": 305,
+        "endChar": 76
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "70b6df38_bf87e734",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -450,6 +906,30 @@
       "writtenOn": "2021-09-14T12:18:48Z",
       "side": 1,
       "message": "payloadType ??",
+      "range": {
+        "startLine": 332,
+        "startChar": 30,
+        "endLine": 332,
+        "endChar": 78
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3d407491_e78a63f0",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "There are two payload types, Payload0 and Payload1",
+      "parentUuid": "70b6df38_bf87e734",
       "range": {
         "startLine": 332,
         "startChar": 30,
@@ -485,6 +965,30 @@
     },
     {
       "key": {
+        "uuid": "90bccf58_fddcdacd",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Payload1 will be created. \nThen the file stats of Payload1 file will be used to fill gNVOOBdata.payloadInfo[payloadType]\npayloadType \u003d 1",
+      "parentUuid": "24068e45_7cc9c627",
+      "range": {
+        "startLine": 344,
+        "startChar": 0,
+        "endLine": 346,
+        "endChar": 65
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "52ce6100_eebe9207",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -496,6 +1000,30 @@
       "writtenOn": "2021-09-14T12:18:48Z",
       "side": 1,
       "message": "payloadData",
+      "range": {
+        "startLine": 371,
+        "startChar": 16,
+        "endLine": 371,
+        "endChar": 27
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2b979fa1_6ccdc1a7",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 371,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will address this.",
+      "parentUuid": "52ce6100_eebe9207",
       "range": {
         "startLine": 371,
         "startChar": 16,
@@ -531,6 +1059,30 @@
     },
     {
       "key": {
+        "uuid": "65220cac_e97f0ee4",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 381,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will address this.",
+      "parentUuid": "8020b2b2_63ce0a88",
+      "range": {
+        "startLine": 380,
+        "startChar": 0,
+        "endLine": 381,
+        "endChar": 58
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e794eaba_db936a93",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -542,6 +1094,30 @@
       "writtenOn": "2021-09-14T12:18:48Z",
       "side": 1,
       "message": "nit: Better invert the condition for better readability. \n\nif(!outFile.good())\n{\n    return false;\n}\n.... actual operation. .....",
+      "range": {
+        "startLine": 456,
+        "startChar": 3,
+        "endLine": 457,
+        "endChar": 5
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "35a48ad7_e8a6c9c6",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-14T19:21:32Z",
+      "side": 1,
+      "message": "Will address this.",
+      "parentUuid": "e794eaba_db936a93",
       "range": {
         "startLine": 456,
         "startChar": 3,
