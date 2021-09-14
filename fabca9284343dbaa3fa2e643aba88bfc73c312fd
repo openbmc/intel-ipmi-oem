@@ -1,0 +1,234 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b7254dd1_55e3acf6",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-09-14T11:31:29Z",
+      "side": 1,
+      "message": "payload? or if pat is acronym then patLoadData... or is it correct word?",
+      "range": {
+        "startLine": 147,
+        "startChar": 33,
+        "endLine": 147,
+        "endChar": 44
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "968fd2cd_3f934acb",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-09-14T11:31:29Z",
+      "side": 1,
+      "message": "getPendingList?",
+      "range": {
+        "startLine": 159,
+        "startChar": 13,
+        "endLine": 159,
+        "endChar": 23
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "afa9cc63_b6284bb1",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-09-14T11:31:29Z",
+      "side": 1,
+      "message": "nit: good to include ec.message() also in logs",
+      "range": {
+        "startLine": 183,
+        "startChar": 8,
+        "endLine": 185,
+        "endChar": 33
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a2ae2bcd_b5a1d195",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-09-14T11:31:29Z",
+      "side": 1,
+      "message": "if return value from mapAttrTypeToRedfish() is used only for comparison.. then better to return an int or enum.. string comparison is costly",
+      "range": {
+        "startLine": 203,
+        "startChar": 12,
+        "endLine": 203,
+        "endChar": 32
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "17ed43ec_c3cdf51e",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-09-14T11:31:29Z",
+      "side": 1,
+      "message": "I think enclosing in single quotes has perfomance benefits",
+      "range": {
+        "startLine": 221,
+        "startChar": 31,
+        "endLine": 221,
+        "endChar": 35
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d3c22ea6_9b044f79",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 250,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-09-14T11:31:29Z",
+      "side": 1,
+      "message": "Seems logic is almost same for both if cases. Any chance we can move common logic to a separate function?",
+      "range": {
+        "startLine": 230,
+        "startChar": 12,
+        "endLine": 250,
+        "endChar": 33
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a9f2e931_a676aea8",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-09-14T11:31:29Z",
+      "side": 1,
+      "message": "better to check if file is actually opened?",
+      "range": {
+        "startLine": 275,
+        "startChar": 4,
+        "endLine": 275,
+        "endChar": 15
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8332403b_7f82ba36",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-09-14T11:31:29Z",
+      "side": 1,
+      "message": "nit. file will be autmoatically closed in destructor",
+      "range": {
+        "startLine": 282,
+        "startChar": 4,
+        "endLine": 282,
+        "endChar": 24
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "00ac5db1_7576a152",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-09-14T11:31:29Z",
+      "side": 1,
+      "message": "what is the significance of 1 here?",
+      "range": {
+        "startLine": 296,
+        "startChar": 42,
+        "endLine": 296,
+        "endChar": 51
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0aeea538_8967585a",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 305,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-09-14T11:31:29Z",
+      "side": 1,
+      "message": "do we need to check (maxGetPayloadDataSize \u003e length)",
+      "range": {
+        "startLine": 305,
+        "startChar": 4,
+        "endLine": 305,
+        "endChar": 76
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
