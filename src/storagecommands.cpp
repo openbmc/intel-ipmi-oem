@@ -23,7 +23,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
-#include <boost/process.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/message.hpp>
 #include <phosphor-ipmi-host/selutility.hpp>
@@ -32,10 +31,10 @@
 #include <sdbusplus/timer.hpp>
 
 #include <filesystem>
-#include <functional>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
-#include <string_view>
+#include <unordered_set>
 
 static constexpr bool DEBUG = false;
 
@@ -98,6 +97,8 @@ using ObjectType = boost::container::flat_map<
 using ManagedObjectType =
     boost::container::flat_map<sdbusplus::message::object_path, ObjectType>;
 using ManagedEntry = std::pair<sdbusplus::message::object_path, ObjectType>;
+using GetObjectType =
+    std::vector<std::pair<std::string, std::vector<std::string>>>;
 
 constexpr static const char* fruDeviceServiceName =
     "xyz.openbmc_project.FruDevice";
@@ -125,6 +126,8 @@ ManagedObjectType frus;
 // we unfortunately have to build a map of hashes in case there is a
 // collision to verify our dev-id
 boost::container::flat_map<uint8_t, std::pair<uint8_t, uint8_t>> deviceHashes;
+// Map devId to Object Path
+boost::container::flat_map<uint8_t, std::string> devicePath;
 
 void registerStorageFunctions() __attribute__((constructor));
 
@@ -164,6 +167,7 @@ void recalculateHashes()
 {
 
     deviceHashes.clear();
+    devicePath.clear();
     // hash the object paths to create unique device id's. increment on
     // collision
     std::hash<std::string> hasher;
@@ -211,6 +215,9 @@ void recalculateHashes()
         while (!emplacePassed)
         {
             auto resp = deviceHashes.emplace(fruHash, newDev);
+
+            devicePath.emplace(fruHash, fru.first);
+
             emplacePassed = resp.second;
             if (!emplacePassed)
             {
@@ -227,22 +234,67 @@ void recalculateHashes()
 }
 
 void replaceCacheFru(const std::shared_ptr<sdbusplus::asio::connection>& bus,
-                     boost::asio::yield_context& yield,
-                     const std::optional<std::string>& path = std::nullopt)
+                     boost::asio::yield_context& yield)
 {
     boost::system::error_code ec;
+    // ObjectPaths and Services which implements "xyz.openbmc_project.FruDevice"
+    // interface
+    GetSubTreeType fruServices = bus->yield_method_call<GetSubTreeType>(
+        yield, ec, "xyz.openbmc_project.ObjectMapper",
+        "/xyz/openbmc_project/object_mapper",
+        "xyz.openbmc_project.ObjectMapper", "GetSubTree", "/", 0,
+        std::array<const char*, 1>{"xyz.openbmc_project.FruDevice"});
 
-    frus = bus->yield_method_call<ManagedObjectType>(
-        yield, ec, fruDeviceServiceName, "/",
-        "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
     if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "GetMangagedObjects for getSensorMap failed",
+            "GetSubTree failed for FruDevice Interface ",
             phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
 
         return;
     }
+    // Get List of services which have implemented FruDevice interface
+    std::unordered_set<std::string> services;
+    for (const auto& [path, serviceMap] : fruServices)
+    {
+        for (const auto& [service, interfaces] : serviceMap)
+        {
+            services.insert(service);
+        }
+    }
+
+    // GetAll the objects under services which implement FruDevice interface
+    for (const std::string& service : services)
+    {
+        ec = boost::system::errc::make_error_code(boost::system::errc::success);
+        ManagedObjectType obj = bus->yield_method_call<ManagedObjectType>(
+            yield, ec, service, "/", "org.freedesktop.DBus.ObjectManager",
+            "GetManagedObjects");
+        if (ec)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "GetMangagedObjects failed",
+                phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+            continue;
+        }
+        // Save the object path which has FruDevice interface
+        for (const auto& [path, serviceMap] : fruServices)
+        {
+            for (const auto& serv : serviceMap)
+            {
+                if (serv.first == service)
+                {
+                    auto fru = obj.find(path);
+                    if (fru == obj.end())
+                    {
+                        continue;
+                    }
+                    frus.emplace(fru->first, fru->second);
+                }
+            }
+        }
+    }
+
     recalculateHashes();
 }
 
@@ -254,7 +306,8 @@ ipmi::Cc getFru(ipmi::Context::ptr ctx, uint8_t devId)
     }
 
     auto deviceFind = deviceHashes.find(devId);
-    if (deviceFind == deviceHashes.end())
+    auto devPath = devicePath.find(devId);
+    if (deviceFind == deviceHashes.end() || devPath == devicePath.end())
     {
         return IPMI_CC_SENSOR_INVALID;
     }
@@ -265,17 +318,40 @@ ipmi::Cc getFru(ipmi::Context::ptr ctx, uint8_t devId)
     cacheAddr = deviceFind->second.second;
 
     boost::system::error_code ec;
+    GetObjectType fruService = ctx->bus->yield_method_call<GetObjectType>(
+        ctx->yield, ec, "xyz.openbmc_project.ObjectMapper",
+        "/xyz/openbmc_project/object_mapper",
+        "xyz.openbmc_project.ObjectMapper", "GetObject", devPath->second,
+        std::array<const char*, 1>{"xyz.openbmc_project.FruDevice"});
 
-    fruCache = ctx->bus->yield_method_call<std::vector<uint8_t>>(
-        ctx->yield, ec, fruDeviceServiceName, "/xyz/openbmc_project/FruDevice",
-        "xyz.openbmc_project.FruDeviceManager", "GetRawFru", cacheBus,
-        cacheAddr);
     if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Couldn't get raw fru because of service",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+        return ipmi::ccResponseError;
+    }
+
+    bool foundFru = false;
+    for (auto& service : fruService)
+    {
+        fruCache = ctx->bus->yield_method_call<std::vector<uint8_t>>(
+            ctx->yield, ec, service.first, "/xyz/openbmc_project/FruDevice",
+            "xyz.openbmc_project.FruDeviceManager", "GetRawFru", cacheBus,
+            cacheAddr);
+
+        if (!ec)
+        {
+            foundFru = true;
+            break;
+        }
+    }
+
+    if (!foundFru)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Couldn't get raw fru",
             phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
-
         cacheBus = 0xFF;
         cacheAddr = 0xFF;
         return ipmi::ccResponseError;
