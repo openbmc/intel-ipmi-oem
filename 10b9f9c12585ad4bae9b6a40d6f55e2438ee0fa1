@@ -1,0 +1,165 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5cce4fbd_3c27a8c2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000415
+      },
+      "writtenOn": "2021-09-20T06:41:10Z",
+      "side": 1,
+      "message": "you can define 1st step as\nRemoved hardcoded dependency with service and made it more generic with respect to fru interface\nAnd then move down below steps.",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 16
+      },
+      "revId": "10b9f9c12585ad4bae9b6a40d6f55e2438ee0fa1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b6092f63_0b1a4412",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000415
+      },
+      "writtenOn": "2021-09-20T06:41:10Z",
+      "side": 1,
+      "message": "Also please test with ipmitool raw commands, it should not break in middle.",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 7
+      },
+      "revId": "10b9f9c12585ad4bae9b6a40d6f55e2438ee0fa1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0039f2ba_66b09e04",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000415
+      },
+      "writtenOn": "2021-09-20T06:41:10Z",
+      "side": 1,
+      "message": "Needed? Please help me if I am missing on something here. Thanks!",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 24
+      },
+      "revId": "10b9f9c12585ad4bae9b6a40d6f55e2438ee0fa1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "48bdc83a_1cae67d0",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 252,
+      "author": {
+        "id": 1000415
+      },
+      "writtenOn": "2021-09-20T06:41:10Z",
+      "side": 1,
+      "message": "call failed.",
+      "range": {
+        "startLine": 252,
+        "startChar": 9,
+        "endLine": 252,
+        "endChar": 26
+      },
+      "revId": "10b9f9c12585ad4bae9b6a40d6f55e2438ee0fa1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b0368f7a_d922200e",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 253,
+      "author": {
+        "id": 1000415
+      },
+      "writtenOn": "2021-09-20T06:41:10Z",
+      "side": 1,
+      "message": "level::ERR log without if condition? \nec check?",
+      "range": {
+        "startLine": 251,
+        "startChar": 0,
+        "endLine": 253,
+        "endChar": 65
+      },
+      "revId": "10b9f9c12585ad4bae9b6a40d6f55e2438ee0fa1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8857dc86_199aa43e",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 265,
+      "author": {
+        "id": 1000415
+      },
+      "writtenOn": "2021-09-20T06:41:10Z",
+      "side": 1,
+      "message": "interface (just to maintain consistency in the file)",
+      "range": {
+        "startLine": 265,
+        "startChar": 67,
+        "endLine": 265,
+        "endChar": 72
+      },
+      "revId": "10b9f9c12585ad4bae9b6a40d6f55e2438ee0fa1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cc45dfa6_0538ffc8",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 1000415
+      },
+      "writtenOn": "2021-09-20T06:41:10Z",
+      "side": 1,
+      "message": "typo - because",
+      "range": {
+        "startLine": 333,
+        "startChar": 34,
+        "endLine": 333,
+        "endChar": 40
+      },
+      "revId": "10b9f9c12585ad4bae9b6a40d6f55e2438ee0fa1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
