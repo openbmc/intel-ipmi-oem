@@ -613,6 +613,30 @@
     },
     {
       "key": {
+        "uuid": "4acb7610_c9bb7d16",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-20T19:12:47Z",
+      "side": 1,
+      "message": "Not Clear, After open file, You need to check is that success or clear and then same applies to write.",
+      "parentUuid": "3b6bb96d_ec508e4d",
+      "range": {
+        "startLine": 275,
+        "startChar": 3,
+        "endLine": 275,
+        "endChar": 31
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "46e0bb23_a26531df",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -942,6 +966,30 @@
     },
     {
       "key": {
+        "uuid": "fb22518b_fcfab8f8",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-20T19:12:47Z",
+      "side": 1,
+      "message": "I mean in line 318, You already assigned payloadType. So you ca use that instead of cast it again here.\n\n uint8_t payloadType \u003d static_cast\u003cuint8_t\u003e(ipmi::PType::IntelXMLType1);",
+      "parentUuid": "3d407491_e78a63f0",
+      "range": {
+        "startLine": 332,
+        "startChar": 30,
+        "endLine": 332,
+        "endChar": 78
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "24068e45_7cc9c627",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -977,6 +1025,30 @@
       "side": 1,
       "message": "Payload1 will be created. \nThen the file stats of Payload1 file will be used to fill gNVOOBdata.payloadInfo[payloadType]\npayloadType \u003d 1",
       "parentUuid": "24068e45_7cc9c627",
+      "range": {
+        "startLine": 344,
+        "startChar": 0,
+        "endLine": 346,
+        "endChar": 65
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "755046a9_2b523eab",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-20T19:12:47Z",
+      "side": 1,
+      "message": "Not clear?\n\nMy question: as part of payloadInfo structure ( payloadTotalSize , payloadCurrentSize , actualTotalPayloadWritten ), you need to store new payload data sizes not existing file right?",
+      "parentUuid": "90bccf58_fddcdacd",
       "range": {
         "startLine": 344,
         "startChar": 0,
