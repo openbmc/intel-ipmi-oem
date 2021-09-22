@@ -637,6 +637,30 @@
     },
     {
       "key": {
+        "uuid": "ac4a4d3b_b8d6bb4c",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-22T12:11:25Z",
+      "side": 1,
+      "message": "payloadFile \u003c\u003c patloadData has .bad check inside it, so if file was not open, this statement will just come out without doing anything. \n\nAnd line 277 we will check .good, and at that point we will get .good to be false if file was not open or if write failed. \n\nAdding a check after open feels redundant. But I can add the checks after open if you want.",
+      "parentUuid": "4acb7610_c9bb7d16",
+      "range": {
+        "startLine": 275,
+        "startChar": 3,
+        "endLine": 275,
+        "endChar": 31
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "46e0bb23_a26531df",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -990,6 +1014,30 @@
     },
     {
       "key": {
+        "uuid": "705ea863_a8731cdb",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-22T12:11:25Z",
+      "side": 1,
+      "message": "Ok. Will address this.",
+      "parentUuid": "fb22518b_fcfab8f8",
+      "range": {
+        "startLine": 332,
+        "startChar": 30,
+        "endLine": 332,
+        "endChar": 78
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "24068e45_7cc9c627",
         "filename": "src/biosconfigcommands.cpp",
         "patchSetId": 3
@@ -1049,6 +1097,30 @@
       "side": 1,
       "message": "Not clear?\n\nMy question: as part of payloadInfo structure ( payloadTotalSize , payloadCurrentSize , actualTotalPayloadWritten ), you need to store new payload data sizes not existing file right?",
       "parentUuid": "90bccf58_fddcdacd",
+      "range": {
+        "startLine": 344,
+        "startChar": 0,
+        "endLine": 346,
+        "endChar": 65
+      },
+      "revId": "fabca9284343dbaa3fa2e643aba88bfc73c312fd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aedd737a_a1006428",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-09-22T12:11:25Z",
+      "side": 1,
+      "message": "This is the information of the new file. \nupdatePayloadFile will update the file with new data. \nafter that updatePayloadInfo is called.\nAnd in updatePayloadInfo we take the info of the updated file and store it in gNVOOBdata.payloadInfo\n\nThe flow can be better understood from function \"update\" in line 365.",
+      "parentUuid": "755046a9_2b523eab",
       "range": {
         "startLine": 344,
         "startChar": 0,
