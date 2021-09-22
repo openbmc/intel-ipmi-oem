@@ -1043,9 +1043,29 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
         sensorMap.find("xyz.openbmc_project.Sensor.Threshold.Warning");
     auto criticalInterface =
         sensorMap.find("xyz.openbmc_project.Sensor.Threshold.Critical");
+    auto sensorObject = sensorMap.find("xyz.openbmc_project.Sensor.Value");
+
+    if (sensorObject == sensorMap.end() ||
+        sensorObject->second.find("Value") == sensorObject->second.end())
+    {
+        return ipmi::responseResponseError();
+    }
+    auto& valueVariant = sensorObject->second["Value"];
+    double reading = std::visit(VariantToDoubleVisitor(), valueVariant);
+    bool notReading = std::isnan(reading);
 
     uint8_t sensorEventStatus =
         static_cast<uint8_t>(IPMISensorEventEnableByte2::sensorScanningEnable);
+    // Should not be Warning/Critical interface specific, since event can be
+    // generated from discrete sensors as well.
+    sensorEventStatus |=
+        static_cast<uint8_t>(IPMISensorReadingByte2::eventMessagesEnable);
+
+    if (notReading)
+    {
+        sensorEventStatus |= static_cast<uint8_t>(
+            IPMISensorReadingByte2::readingStateUnavailable);
+    }
 
     std::optional<bool> criticalDeassertHigh =
         thresholdDeassertMap[path]["CriticalAlarmHigh"];
@@ -1082,8 +1102,6 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
     if ((warningInterface != sensorMap.end()) ||
         (criticalInterface != sensorMap.end()))
     {
-        sensorEventStatus = static_cast<size_t>(
-            IPMISensorEventEnableByte2::eventMessagesEnable);
         if (warningInterface != sensorMap.end())
         {
             auto& warningMap = warningInterface->second;
