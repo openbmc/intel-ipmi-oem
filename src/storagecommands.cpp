@@ -432,6 +432,10 @@ ipmi::RspType<uint8_t>
     }
 
     size_t writeLen = dataToWrite.size();
+    if (writeLen == 0x00)
+    {
+        return ipmi::responseReqDataLenInvalid();
+    }
 
     ipmi::Cc status = getFru(ctx, fruDeviceId);
     if (status != ipmi::ccSuccess)
