@@ -98,6 +98,8 @@ enum class DepexOperators
     unknown = 0,
     OR,
     AND,
+    GT,
+    GTE,
     LTE,
     LT,
     EQU,
@@ -469,6 +471,26 @@ class Depex
                     values.emplace(0);
                     break;
 
+                case knob::DepexOperators::GTE:
+                    if (a >= b)
+                    {
+                        values.emplace(1);
+                        break;
+                    }
+
+                    values.emplace(0);
+                    break;
+
+                case knob::DepexOperators::GT:
+                    if (a > b)
+                    {
+                        values.emplace(1);
+                        break;
+                    }
+
+                    values.emplace(0);
+                    break;
+
                 case knob::DepexOperators::MODULO:
                     if (b == 0)
                     {
@@ -574,6 +596,14 @@ class Depex
                 else if (word == "_LT_")
                 {
                     operators.emplace(knob::DepexOperators::LT);
+                }
+                else if (word == "_GTE_")
+                {
+                    operators.emplace(knob::DepexOperators::GTE);
+                }
+                else if (word == "_GT_")
+                {
+                    operators.emplace(knob::DepexOperators::GT);
                 }
                 else if (word == "_NEQ_")
                 {
