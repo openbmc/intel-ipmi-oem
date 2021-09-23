@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e71c3e35_a1a7ccdc",
+        "filename": "include/storagecommands.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-09-23T21:12:13Z",
+      "side": 1,
+      "message": "const\n\nsince sensorname is an input, it is odd behavior to modify it as it is below. It is easy enough to get around this and still have it be const.",
+      "range": {
+        "startLine": 118,
+        "startChar": 16,
+        "endLine": 118,
+        "endChar": 17
+      },
+      "revId": "b9f872358ac3a10681c8d13c671d3bb61049ac9a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9d77fe92_8904fce7",
+        "filename": "include/storagecommands.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-09-23T21:12:13Z",
+      "side": 1,
+      "message": ": slaveAddress(address), channelNumber(chNumber), powerStateNotification(pwrStateNotification), deviceCapabilities(capabilities), reserved{}, entityID(eid), entityInstance(entityInst), oem(mfrDefined)",
+      "range": {
+        "startLine": 119,
+        "startChar": 0,
+        "endLine": 119,
+        "endChar": 18
+      },
+      "revId": "b9f872358ac3a10681c8d13c671d3bb61049ac9a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "51494555_6e572d1f",
+        "filename": "include/storagecommands.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-09-23T21:12:13Z",
+      "side": 1,
+      "message": "size_t nameLen \u003d sensorname.size();\nif (nameLen \u003e sizeof(name)) {\n    nameLen \u003d sizeof(name);\n}",
+      "range": {
+        "startLine": 124,
+        "startChar": 8,
+        "endLine": 127,
+        "endChar": 9
+      },
+      "revId": "b9f872358ac3a10681c8d13c671d3bb61049ac9a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2feb971c_921077f0",
+        "filename": "include/storagecommands.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-09-23T21:12:13Z",
+      "side": 1,
+      "message": "nameLen",
+      "range": {
+        "startLine": 138,
+        "startChar": 32,
+        "endLine": 138,
+        "endChar": 49
+      },
+      "revId": "b9f872358ac3a10681c8d13c671d3bb61049ac9a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0fb964af_2dfdae43",
+        "filename": "include/storagecommands.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2021-09-23T21:12:13Z",
+      "side": 1,
+      "message": "sensorname.begin() + nameLen",
+      "range": {
+        "startLine": 139,
+        "startChar": 38,
+        "endLine": 139,
+        "endChar": 54
+      },
+      "revId": "b9f872358ac3a10681c8d13c671d3bb61049ac9a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
