@@ -128,6 +128,54 @@
       "revId": "784233b5ab4adeaa73d2566de99c3a1c08125eee",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5320d5a6_5363e4ec",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 388,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-29T08:56:45Z",
+      "side": 1,
+      "message": "Yes, Your are right, I got confused (from request, We are trying to fetch Slave Address - But that is not intent).",
+      "parentUuid": "080d0a0f_00acb69a",
+      "range": {
+        "startLine": 388,
+        "startChar": 31,
+        "endLine": 388,
+        "endChar": 34
+      },
+      "revId": "784233b5ab4adeaa73d2566de99c3a1c08125eee",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cef044ba_3232dd4b",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 388,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-09-29T08:56:45Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2a95e88b_6c56cbbb",
+      "range": {
+        "startLine": 388,
+        "startChar": 27,
+        "endLine": 388,
+        "endChar": 32
+      },
+      "revId": "784233b5ab4adeaa73d2566de99c3a1c08125eee",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
