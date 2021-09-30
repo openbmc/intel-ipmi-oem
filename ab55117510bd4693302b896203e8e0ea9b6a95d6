@@ -22,6 +22,30 @@
       "revId": "ab55117510bd4693302b896203e8e0ea9b6a95d6",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "39ef0b4b_907a6e33",
+        "filename": "include/storagecommands.hpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2021-09-30T15:51:38Z",
+      "side": 1,
+      "message": "In my opinion the comment should remain to discourage someone from coming back and changing it to uint24_t. I can see someone thinking \"Why\u0027d they use array of int when uint24_t is so much more concise\", and changing it to uint24_t. This comment stops that from ever happening in the future.",
+      "parentUuid": "9fd5b255_58edf257",
+      "range": {
+        "startLine": 106,
+        "startChar": 1,
+        "endLine": 107,
+        "endChar": 75
+      },
+      "revId": "ab55117510bd4693302b896203e8e0ea9b6a95d6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
