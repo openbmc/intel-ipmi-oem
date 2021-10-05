@@ -22,6 +22,30 @@
       "revId": "56e0f7ae593a9c5c09aabcd86ae0928d03901b42",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "74d4117a_0e115723",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 358,
+      "author": {
+        "id": 1000415
+      },
+      "writtenOn": "2021-10-05T11:53:40Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "4e934c96_24c36548",
+      "range": {
+        "startLine": 358,
+        "startChar": 12,
+        "endLine": 358,
+        "endChar": 41
+      },
+      "revId": "56e0f7ae593a9c5c09aabcd86ae0928d03901b42",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
