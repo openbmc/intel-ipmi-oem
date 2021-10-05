@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4e934c96_24c36548",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 358,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-10-05T08:06:44Z",
+      "side": 1,
+      "message": "This sounds erroneous, suppose if we don\u0027t get the cacheBus and cacheAddr right in the first service\u0027s call, then we should be proceeding to next one, no?",
+      "range": {
+        "startLine": 358,
+        "startChar": 12,
+        "endLine": 358,
+        "endChar": 41
+      },
+      "revId": "56e0f7ae593a9c5c09aabcd86ae0928d03901b42",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
