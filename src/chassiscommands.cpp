@@ -101,7 +101,7 @@ bool getIDState(const char* objName, bool& state)
             getDbusProperty(*bus, service, objName, ledInterface, ledProp);
         state = std::get<bool>(enabled);
     }
-    catch (sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         log<level::ERR>("Fail to get property", entry("PATH=%s", objName),
                         entry("ERROR=%s", e.what()));
@@ -339,7 +339,7 @@ static std::optional<bool> getButtonEnabled(const std::string& buttonPath)
             *busp, service, buttonPath, buttonIntf, "ButtonMasked");
         buttonDisabled = std::get<bool>(disabled);
     }
-    catch (sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         log<level::ERR>("Fail to get button disabled property",
                         entry("PATH=%s", buttonPath.c_str()),
@@ -357,7 +357,7 @@ static bool setButtonEnabled(const std::string& buttonPath, const bool disabled)
         ipmi::setDbusProperty(*getSdBus(), service, buttonPath, buttonIntf,
                               "ButtonMasked", disabled);
     }
-    catch (std::exception& e)
+    catch (const std::exception& e)
     {
         log<level::ERR>("Failed to set button disabled",
                         entry("EXCEPTION=%s, REQUEST=%x", e.what(), disabled));

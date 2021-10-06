@@ -1550,7 +1550,7 @@ ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
                 xferHashCheck =
                     std::make_unique<TransferHashCheck>(*integrityCheckVal);
             }
-            catch (std::exception& ex)
+            catch (const std::exception& ex)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     ex.what());

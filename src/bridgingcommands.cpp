@@ -477,7 +477,7 @@ ipmi::RspType<uint8_t,             // channelNumber
     {
         getChannelInfo(ctx->channel, chInfo);
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppGetMessage: Failed to get Channel Info",
@@ -544,7 +544,7 @@ ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags(ipmi::Context::ptr ctx)
     {
         getChannelInfo(ctx->channel, chInfo);
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppGetMessageFlags: Failed to get Channel Info",
@@ -592,7 +592,7 @@ ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags(ipmi::Context::ptr ctx)
             getMsgFlagsRes.set(getMsgFlagWatchdogPreTimeOutBit);
         }
     }
-    catch (sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppGetMessageFlags, dbus call exception");
@@ -627,7 +627,7 @@ ipmi::RspType<> ipmiAppClearMessageFlags(ipmi::Context::ptr ctx,
     {
         getChannelInfo(ctx->channel, chInfo);
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppClearMessageFlags: Failed to get Channel Info",
@@ -716,7 +716,7 @@ ipmi::RspType<uint16_t, // Record ID
     {
         getChannelInfo(ctx->channel, chInfo);
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppReadEventMessageBuffer: Failed to get Channel Info",

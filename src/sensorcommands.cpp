@@ -341,7 +341,7 @@ static void setMeStatus(uint8_t eventData2, uint8_t eventData3, bool disable)
     {
         dbus->call(setHealth);
     }
-    catch (sdbusplus::exception_t&)
+    catch (const sdbusplus::exception_t&)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Failed to set ME Health");
@@ -854,7 +854,7 @@ ipmi::RspType<uint8_t, // readable
     {
         thresholdData = getIPMIThresholds(sensorMap);
     }
-    catch (std::exception&)
+    catch (const std::exception&)
     {
         return ipmi::responseResponseError();
     }
@@ -1447,7 +1447,7 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     {
         thresholdData = getIPMIThresholds(sensorMap);
     }
-    catch (std::exception&)
+    catch (const std::exception&)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "getSensorDataRecord: getIPMIThresholds error");
