@@ -145,7 +145,7 @@ ipmi_ret_t ledRevert(SmSignalSet signal)
                     *getSdBus(), callbackMgrService, callbackMgrObjPath,
                     callbackMgrIntf, retriggerLedUpdate);
             }
-            catch (sdbusplus::exception_t& e)
+            catch (const sdbusplus::exception_t& e)
             {
                 return IPMI_CC_UNSPECIFIED_ERROR;
             }

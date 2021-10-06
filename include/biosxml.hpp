@@ -614,7 +614,7 @@ class Depex
                         {
                             value = std::stoi(word);
                         }
-                        catch (std::exception& ex)
+                        catch (const std::exception& ex)
                         {
                             phosphor::logging::log<
                                 phosphor::logging::level::ERR>(ex.what());
@@ -790,7 +790,7 @@ class Xml
             {
                 currentVal = std::stoi(currentValStr);
             }
-            catch (std::exception& ex)
+            catch (const std::exception& ex)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     ex.what());

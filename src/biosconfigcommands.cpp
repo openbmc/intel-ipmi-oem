@@ -203,7 +203,7 @@ bool getPendingList(ipmi::Context::ptr ctx, std::string& payloadData)
                 "org.freedesktop.DBus.Properties", "Get",
                 "xyz.openbmc_project.BIOSConfig.Manager", "PendingAttributes");
     }
-    catch (std::exception& ex)
+    catch (const std::exception& ex)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(ex.what());
         return false;
@@ -417,7 +417,7 @@ static bool sendAllAttributes(std::string service)
 
             return true;
         }
-        catch (std::exception& ex)
+        catch (const std::exception& ex)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(ex.what());
         }
@@ -532,7 +532,7 @@ static bool generateAttributesData()
                 "Failed to get bios base table");
         }
     }
-    catch (std::exception& ex)
+    catch (const std::exception& ex)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(ex.what());
         return false;
@@ -645,7 +645,7 @@ static bool IsSystemInterface(ipmi::Context::ptr ctx)
     {
         getChannelInfo(ctx->channel, chInfo);
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         return false;
     }

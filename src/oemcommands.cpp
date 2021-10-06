@@ -156,7 +156,7 @@ int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
             serial = result;
             return 0;
         }
-        catch (std::bad_variant_access& e)
+        catch (const std::bad_variant_access& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
             return -1;
@@ -244,7 +244,7 @@ ipmi::RspType<> ipmiOEMDisableBMCSystemReset(bool disableResetOnSMI,
                               bmcResetDisablesIntf, "ResetOnSMI",
                               !disableResetOnSMI);
     }
-    catch (std::exception& e)
+    catch (const std::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Failed to set BMC reset disables",
@@ -272,7 +272,7 @@ ipmi::RspType<bool,   // disableResetOnSMI
                                   bmcResetDisablesIntf, "ResetOnSMI");
         disableResetOnSMI = !std::get<bool>(variant);
     }
-    catch (std::exception& e)
+    catch (const std::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Failed to get BMC reset disables",
@@ -412,7 +412,7 @@ ipmi::RspType<
                             (readBuf.begin()));
                 return ipmi::responseSuccess(readBuf);
             }
-            catch (std::bad_variant_access& e)
+            catch (const std::bad_variant_access& e)
             {
                 return ipmi::responseUnspecifiedError();
             }
@@ -838,7 +838,7 @@ ipmi::RspType<> ipmiOEMSetProcessorErrConfig(
                                   static_cast<uint8_t>(0));
         }
     }
-    catch (std::exception& e)
+    catch (const std::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Failed to set processor error config",
@@ -903,7 +903,7 @@ ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         // policy is only supported on node 3/4
         resp->policySupport = shutdownPolicySupported;
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.description());
         return IPMI_CC_UNSPECIFIED_ERROR;
@@ -963,7 +963,7 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
             oemShutdownPolicyObjPathProp,
             sdbusplus::com::intel::Control::server::convertForMessage(policy));
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.description());
         return IPMI_CC_UNSPECIFIED_ERROR;
@@ -1001,7 +1001,7 @@ static bool isDHCPEnabled(uint8_t Channel)
             return false;
         }
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.description());
         return true;
@@ -1038,7 +1038,7 @@ static bool isDHCPIPv6Enabled(uint8_t Channel)
             return false;
         }
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.description());
         return true;
@@ -1067,7 +1067,7 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
         {
             getChannelInfo(channel, chInfo);
         }
-        catch (sdbusplus::exception_t& e)
+        catch (const sdbusplus::exception_t& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "ipmiOEMSetUser2Activation: Failed to get Channel Info",
@@ -1216,7 +1216,7 @@ ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
     {
         getChannelInfo(ctx->channel, chInfo);
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMSetSpecialUserPassword: Failed to get Channel Info",
@@ -1315,7 +1315,7 @@ int8_t getLEDState(sdbusplus::bus::bus& bus, const std::string& intf,
             sdbusplus::xyz::openbmc_project::Led::server::Physical::
                 convertActionFromString(strState));
     }
-    catch (sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return -1;
@@ -1490,7 +1490,7 @@ bool getFanProfileInterface(
         auto data = bus.call(call);
         data.read(resp);
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "getFanProfileInterface: can't get thermal mode!",
@@ -1581,7 +1581,7 @@ ipmi::RspType<> ipmiOEMSetFanConfig(uint8_t selectedFanProfile,
             setDbusProperty(*dbus, settingsBusName, thermalModePath,
                             thermalModeInterface, "Current", mode);
         }
-        catch (sdbusplus::exception_t& e)
+        catch (const sdbusplus::exception_t& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "ipmiOEMSetFanConfig: can't set thermal mode!",
@@ -1672,7 +1672,7 @@ static std::string getConfigPath(const std::string& name)
         auto reply = dbus->call(method);
         reply.read(resp);
     }
-    catch (sdbusplus::exception_t&)
+    catch (const sdbusplus::exception_t&)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMGetFscParameter: mapper error");
@@ -1706,7 +1706,7 @@ static boost::container::flat_map<std::string, PropertyMap> getPidConfigs()
         auto reply = dbus->call(method);
         reply.read(resp);
     }
-    catch (sdbusplus::exception_t&)
+    catch (const sdbusplus::exception_t&)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "getFanConfigPaths: mapper error");
@@ -1724,7 +1724,7 @@ static boost::container::flat_map<std::string, PropertyMap> getPidConfigs()
                         getAllDbusProperties(*dbus, objects[0].first, path,
                                              pidConfigurationIface));
         }
-        catch (sdbusplus::exception_t& e)
+        catch (const sdbusplus::exception_t& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "getPidConfigs: can't get DbusProperties!",
@@ -1881,7 +1881,7 @@ ipmi::RspType<> ipmiOEMSetFscParameter(uint8_t command, uint8_t param1,
                                   cfmLimitIface, "Limit",
                                   static_cast<double>(cfm));
         }
-        catch (sdbusplus::exception_t& e)
+        catch (const sdbusplus::exception_t& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "ipmiOEMSetFscParameter: can't set cfm setting!",
@@ -2070,7 +2070,7 @@ ipmi::RspType<
                 *dbus, "xyz.openbmc_project.ExitAirTempSensor",
                 "/xyz/openbmc_project/control/MaxCFM", cfmLimitIface, "Limit");
         }
-        catch (sdbusplus::exception_t& e)
+        catch (const sdbusplus::exception_t& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "ipmiOEMGetFscParameter: can't get cfm setting!",
@@ -2152,7 +2152,7 @@ uint8_t getPSUCount(void)
             "/xyz/openbmc_project/control/power_supply_redundancy",
             "xyz.openbmc_project.Control.PowerSupplyRedundancy", "PSUNumber");
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Failed to get PSUNumber property from dbus interface");
@@ -2693,7 +2693,7 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
                                  : gpiod::line_request::FLAG_ACTIVE_LOW});
                         line.set_value(ledStateBits[i + group * groupSize]);
                     }
-                    catch (std::system_error&)
+                    catch (const std::system_error&)
                     {
                         phosphor::logging::log<phosphor::logging::level::ERR>(
                             "Error write Led Gpio Device!",
@@ -2736,7 +2736,7 @@ ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
             "ProductId");
         prodId = static_cast<uint8_t>(std::get<uint64_t>(propValue));
     }
-    catch (std::exception& e)
+    catch (const std::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMReadBoardProductId: Product ID read failed!",
@@ -3017,7 +3017,7 @@ ipmi::RspType<uint8_t> ipmiOEMGetNmiSource(void)
                 return ipmi::responseResponseError();
         }
     }
-    catch (sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return ipmi::responseResponseError();
@@ -3085,7 +3085,7 @@ ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
                             static_cast<bool>(true));
         }
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return ipmi::responseResponseError();
@@ -3179,7 +3179,7 @@ ipmi::RspType<>
         {
             bus->call(call);
         }
-        catch (sdbusplus::exception_t& e)
+        catch (const sdbusplus::exception_t& e)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "ipmiOEMSetDimmOffset: can't set dimm offsets!",
@@ -3365,7 +3365,7 @@ ipmi::RspType<uint8_t,               // version
         return ipmi::responseSuccess(setParmVersion, parameter, oneTime,
                                      bootOption);
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return ipmi::responseResponseError();
@@ -3462,7 +3462,7 @@ ipmi::RspType<> ipmiOemSetEfiBootOptions(uint8_t bootFlag, uint8_t bootParam,
         setDbusProperty(*dbus, service, bootObjPath, bootSourceIntf,
                         bootSourceProp, bootSource);
     }
-    catch (sdbusplus::exception_t& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return ipmi::responseResponseError();

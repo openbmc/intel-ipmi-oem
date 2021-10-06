@@ -157,7 +157,7 @@ ipmi::RspType<> setBmcControlServices(boost::asio::yield_context yield,
             }
         }
     }
-    catch (sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         return ipmi::responseUnspecifiedError();
     }
@@ -190,7 +190,7 @@ ipmi::RspType<uint16_t> getBmcControlServices(boost::asio::yield_context yield)
             }
         }
     }
-    catch (sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception::exception& e)
     {
         return ipmi::responseUnspecifiedError();
     }
