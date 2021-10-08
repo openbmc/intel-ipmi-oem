@@ -1815,9 +1815,19 @@ ipmi::RspType<> ipmiOEMSetFanSpeedOffset(uint8_t offset)
                     "configurations");
                 return ipmi::responseResponseError();
             }
-            ipmi::setDbusProperty(*dbus, "xyz.openbmc_project.EntityManager",
-                                  path, pidConfigurationIface, "OutLimitMin",
-                                  static_cast<double>(offset));
+            if (offset <= 100)
+            {
+                ipmi::setDbusProperty(*dbus,
+                                      "xyz.openbmc_project.EntityManager", path,
+                                      pidConfigurationIface, "OutLimitMin",
+                                      static_cast<double>(offset));
+            }
+            else
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "ipmiOEMSetFanSpeedOffset: fan offset greater than limit");
+                return ipmi::responseInvalidFieldRequest();
+            }
             found = true;
         }
     }
