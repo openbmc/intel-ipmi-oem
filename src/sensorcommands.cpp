@@ -1641,8 +1641,9 @@ ipmi::RspType<uint8_t,  // sdr version
         return ipmi::response(ret);
     }
 
-    uint16_t recordCount =
-        getNumberOfSensors() + fruCount + ipmi::storage::type12Count;
+    uint16_t recordCount = getNumberOfSensors() + fruCount +
+                           ipmi::storage::type12Count +
+                           ipmi::storage::nmDiscoverySDRCount;
 
     uint8_t operationSupport = static_cast<uint8_t>(
         SdrRepositoryInfoOps::overflow); // write not supported
