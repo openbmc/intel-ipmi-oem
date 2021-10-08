@@ -1781,6 +1781,13 @@ ipmi::RspType<uint8_t> ipmiOEMGetFanSpeedOffset(void)
 
 ipmi::RspType<> ipmiOEMSetFanSpeedOffset(uint8_t offset)
 {
+    constexpr uint8_t maxFanSpeedOffset = 100;
+    if (offset > maxFanSpeedOffset)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmiOEMSetFanSpeedOffset: fan offset greater than limit");
+        return ipmi::responseInvalidFieldRequest();
+    }
     boost::container::flat_map<std::string, PropertyMap> data = getPidConfigs();
     if (data.empty())
     {
