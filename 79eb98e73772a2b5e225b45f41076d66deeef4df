@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e2a78ea3_f514b806",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1830,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-10-11T20:56:05Z",
+      "side": 1,
+      "message": "This should be the first check in the function beginning.\nOnly change to be added is in line number 1784:\n+            if (offset \u003e 100)\n+            {\n+                phosphor::logging::log\u003cphosphor::logging::level::ERR\u003e(\n+                    \"ipmiOEMSetFanSpeedOffset: fan offset greater than limit\");\n+                return ipmi::responseInvalidFieldRequest();\n+            }",
+      "range": {
+        "startLine": 1818,
+        "startChar": 0,
+        "endLine": 1830,
+        "endChar": 13
+      },
+      "revId": "79eb98e73772a2b5e225b45f41076d66deeef4df",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
