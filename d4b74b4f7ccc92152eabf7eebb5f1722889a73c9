@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "62c6926e_2b9fc762",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1646,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-10-11T21:07:04Z",
+      "side": 1,
+      "message": "I see it is considered unconditionally throughout the code,\nI am ok in adding this value similar way here also to match the numbers.\n\nMay be in a separate commit, Is it need to be added only if NM Discovery SDR present?",
+      "range": {
+        "startLine": 1646,
+        "startChar": 42,
+        "endLine": 1646,
+        "endChar": 61
+      },
+      "revId": "d4b74b4f7ccc92152eabf7eebb5f1722889a73c9",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
