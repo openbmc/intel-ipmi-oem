@@ -22,6 +22,30 @@
       "revId": "d4b74b4f7ccc92152eabf7eebb5f1722889a73c9",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9bc3aae9_eec73185",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1646,
+      "author": {
+        "id": 1001006
+      },
+      "writtenOn": "2021-10-12T09:52:12Z",
+      "side": 1,
+      "message": "The NM Discovery SDR Record is added as a static one to the records and the count is maintained as 1, as the SDR record is not dynamically populated, i think that this way of adding to the record count is correct though. This is the same case for Type12 SDR record as well.",
+      "parentUuid": "62c6926e_2b9fc762",
+      "range": {
+        "startLine": 1646,
+        "startChar": 42,
+        "endLine": 1646,
+        "endChar": 61
+      },
+      "revId": "d4b74b4f7ccc92152eabf7eebb5f1722889a73c9",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
