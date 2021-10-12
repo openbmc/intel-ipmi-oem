@@ -46,6 +46,30 @@
       "revId": "d4b74b4f7ccc92152eabf7eebb5f1722889a73c9",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c1677b36_6e97d33b",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1646,
+      "author": {
+        "id": 1001006
+      },
+      "writtenOn": "2021-10-12T09:56:08Z",
+      "side": 1,
+      "message": "getNMDiscoverySDR is the function member which is getting called during the time of get SDR Record command execution, which in turn fills the NM Discovery SDR Record statically.",
+      "parentUuid": "9bc3aae9_eec73185",
+      "range": {
+        "startLine": 1646,
+        "startChar": 42,
+        "endLine": 1646,
+        "endChar": 61
+      },
+      "revId": "d4b74b4f7ccc92152eabf7eebb5f1722889a73c9",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
