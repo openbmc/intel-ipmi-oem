@@ -56,6 +56,115 @@
       "revId": "3349d8fed22f60abe8120f67308ee07c76b5a932",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8e3e41d4_e01acb7f",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T09:39:16Z",
+      "side": 1,
+      "message": "can we use std::vector ..? is there any particular reason we are using std::unordered_set ..?",
+      "range": {
+        "startLine": 260,
+        "startChar": 4,
+        "endLine": 260,
+        "endChar": 22
+      },
+      "revId": "3349d8fed22f60abe8120f67308ee07c76b5a932",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "25b19ac0_0f7238c2",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 270,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T09:39:16Z",
+      "side": 1,
+      "message": "if this not used please remove .",
+      "range": {
+        "startLine": 270,
+        "startChar": 4,
+        "endLine": 270,
+        "endChar": 30
+      },
+      "revId": "3349d8fed22f60abe8120f67308ee07c76b5a932",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e410e309_a71d91a2",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 273,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T09:39:16Z",
+      "side": 1,
+      "message": "move outside the for loop.",
+      "revId": "3349d8fed22f60abe8120f67308ee07c76b5a932",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "40b72124_75483015",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 345,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T09:39:16Z",
+      "side": 1,
+      "message": "Can we re-use boost::system::error_code ec from line number 327 here ..?",
+      "range": {
+        "startLine": 345,
+        "startChar": 7,
+        "endLine": 345,
+        "endChar": 40
+      },
+      "revId": "3349d8fed22f60abe8120f67308ee07c76b5a932",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0d19e7ce_2453c273",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 353,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T09:39:16Z",
+      "side": 1,
+      "message": "Can we break for loop after this line ..?",
+      "range": {
+        "startLine": 353,
+        "startChar": 12,
+        "endLine": 353,
+        "endChar": 28
+      },
+      "revId": "3349d8fed22f60abe8120f67308ee07c76b5a932",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
