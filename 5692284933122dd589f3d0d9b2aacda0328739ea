@@ -1,0 +1,187 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c3987381_52aeac57",
+        "filename": "include/manufacturingcommands.hpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T12:56:09Z",
+      "side": 1,
+      "message": "if C header ,You can include under extern \"C\" {}",
+      "revId": "5692284933122dd589f3d0d9b2aacda0328739ea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "84d624c6_9d28857f",
+        "filename": "include/smbioshandler.hpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T12:56:09Z",
+      "side": 1,
+      "message": "if C header ,You can include under extern \"C\" { ...}.",
+      "range": {
+        "startLine": 20,
+        "startChar": 0,
+        "endLine": 20,
+        "endChar": 22
+      },
+      "revId": "5692284933122dd589f3d0d9b2aacda0328739ea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ec81f80e_35360ca4",
+        "filename": "include/smbiosmdrv2.hpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T12:56:09Z",
+      "side": 1,
+      "message": "same as include/smbioshandler.hpp line number 20.",
+      "revId": "5692284933122dd589f3d0d9b2aacda0328739ea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a2c3f0ff_8823f8ea",
+        "filename": "include/smbiosmdrv2handler.hpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T12:56:09Z",
+      "side": 1,
+      "message": "same as include/smbioshandler.hpp line number 20.",
+      "revId": "5692284933122dd589f3d0d9b2aacda0328739ea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5e124764_d22f6bc3",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T12:56:09Z",
+      "side": 1,
+      "message": "same as include/smbioshandler.hpp line number 20.",
+      "revId": "5692284933122dd589f3d0d9b2aacda0328739ea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a08e4b79_b97d358b",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T12:56:09Z",
+      "side": 1,
+      "message": "same as include/smbioshandler.hpp line number 20.",
+      "range": {
+        "startLine": 4,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 0
+      },
+      "revId": "5692284933122dd589f3d0d9b2aacda0328739ea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d2bedad9_3aa5c454",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T12:56:09Z",
+      "side": 1,
+      "message": "same as include/smbioshandler.hpp line number 20.",
+      "range": {
+        "startLine": 21,
+        "startChar": 0,
+        "endLine": 21,
+        "endChar": 24
+      },
+      "revId": "5692284933122dd589f3d0d9b2aacda0328739ea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9fabfa78_68b5a922",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T12:56:09Z",
+      "side": 1,
+      "message": "same as include/smbioshandler.hpp line number 20.",
+      "range": {
+        "startLine": 23,
+        "startChar": 0,
+        "endLine": 23,
+        "endChar": 31
+      },
+      "revId": "5692284933122dd589f3d0d9b2aacda0328739ea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "123bd4df_2a593095",
+        "filename": "src/smbiosmdrv2handler.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-12T12:56:09Z",
+      "side": 1,
+      "message": "same as include/smbioshandler.hpp line number 20.",
+      "range": {
+        "startLine": 22,
+        "startChar": 0,
+        "endLine": 27,
+        "endChar": 19
+      },
+      "revId": "5692284933122dd589f3d0d9b2aacda0328739ea",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
