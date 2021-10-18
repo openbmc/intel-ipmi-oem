@@ -42,6 +42,52 @@
     },
     {
       "key": {
+        "uuid": "20e84a3f_f8f934a0",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-10-18T17:09:07Z",
+      "side": 1,
+      "message": "any chance of bad_variant_access?",
+      "range": {
+        "startLine": 148,
+        "startChar": 25,
+        "endLine": 148,
+        "endChar": 49
+      },
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4b2da8a1_97641281",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 1000928
+      },
+      "writtenOn": "2021-10-18T17:09:07Z",
+      "side": 1,
+      "message": "why not postCompleted \u003d (value \u003d\u003d \"Standby\") and save 7 lines",
+      "range": {
+        "startLine": 149,
+        "startChar": 12,
+        "endLine": 156,
+        "endChar": 13
+      },
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7dbb28a9_75a52b57",
         "filename": "src/whitelist-filter.cpp",
         "patchSetId": 1
