@@ -22,6 +22,30 @@
       "revId": "dffad77e554bd99e417e5920345db9dc5088c0cd",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e72b6812_a0c7c4c9",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1784,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-18T10:26:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "63679b47_b1380862",
+      "range": {
+        "startLine": 1784,
+        "startChar": 17,
+        "endLine": 1784,
+        "endChar": 20
+      },
+      "revId": "dffad77e554bd99e417e5920345db9dc5088c0cd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     }
   ]
 }
