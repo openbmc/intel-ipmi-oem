@@ -56,7 +56,7 @@ class WhitelistFilter
         RestrictionMode::Modes::ProvisionedHostDisabled;
 
     RestrictionMode::Modes restrictionMode = restrictionModeRestricted;
-    bool postCompleted = true;
+    bool postCompleted = false;
     bool coreBIOSDone = true;
     int channelSMM = -1;
     std::shared_ptr<sdbusplus::asio::connection> bus;
