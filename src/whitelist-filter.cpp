@@ -73,6 +73,10 @@ class WhitelistFilter
         "xyz.openbmc_project.State.OperatingSystem.Status";
     static constexpr const char* hostMiscIntf =
         "xyz.openbmc_project.State.Host.Misc";
+    static constexpr const char* restrictionModePath =
+        "/xyz/openbmc_project/control/security/restriction_mode";
+    static constexpr const char* systemOsStatusPath =
+        "/xyz/openbmc_project/state/os";
 };
 
 static inline uint8_t getSMMChannel()
@@ -117,75 +121,42 @@ WhitelistFilter::WhitelistFilter()
 
 void WhitelistFilter::cacheRestrictedAndPostCompleteMode()
 {
-    std::string restrictionModePath;
-    std::string restrictionModeService;
-    std::string systemOsStatusPath;
-    std::string systemOsStatusService;
     try
     {
-        ipmi::DbusObjectInfo restrictionObj =
-            ipmi::getDbusObject(*bus, restrictionModeIntf);
-
-        restrictionModePath = restrictionObj.first;
-        restrictionModeService = restrictionObj.second;
-
-        ipmi::DbusObjectInfo postCompleteObj =
-            ipmi::getDbusObject(*bus, systemOsStatusIntf);
-
-        systemOsStatusPath = postCompleteObj.first;
-        systemOsStatusService = postCompleteObj.second;
+        auto service =
+            ipmi::getService(*bus, restrictionModeIntf, restrictionModePath);
+        ipmi::Value v =
+            ipmi::getDbusProperty(*bus, service, restrictionModePath,
+                                  restrictionModeIntf, "RestrictionMode");
+        auto& mode = std::get<std::string>(v);
+        restrictionMode = RestrictionMode::convertModesFromString(mode);
+        log<level::INFO>("Read restriction mode",
+                         entry("VALUE=%d", static_cast<int>(restrictionMode)));
     }
-    catch (const std::exception&)
+    catch (const std::exception& e)
     {
-        log<level::ERR>(
-            "Could not initialize provisioning mode, defaulting to restricted",
-            entry("VALUE=%d", static_cast<int>(restrictionMode)));
-        return;
+        log<level::ERR>("Could not initialize provisioning mode, "
+                        "defaulting to restricted",
+                        entry("VALUE=%d", static_cast<int>(restrictionMode)));
     }
 
-    bus->async_method_call(
-        [this](boost::system::error_code ec, ipmi::Value v) {
-            if (ec)
-            {
-                log<level::ERR>(
-                    "Could not initialize provisioning mode, "
-                    "defaulting to restricted",
-                    entry("VALUE=%d", static_cast<int>(restrictionMode)));
-                return;
-            }
-            auto mode = std::get<std::string>(v);
-            restrictionMode = RestrictionMode::convertModesFromString(mode);
-            log<level::INFO>(
-                "Read restriction mode",
-                entry("VALUE=%d", static_cast<int>(restrictionMode)));
-        },
-        restrictionModeService, restrictionModePath,
-        "org.freedesktop.DBus.Properties", "Get", restrictionModeIntf,
-        "RestrictionMode");
-
-    bus->async_method_call(
-        [this](boost::system::error_code ec, const ipmi::Value& v) {
-            if (ec)
-            {
-                log<level::ERR>("Error in OperatingSystemState Get");
-                postCompleted = true;
-                return;
-            }
-            auto value = std::get<std::string>(v);
-            if (value == "Standby")
-            {
-                postCompleted = true;
-            }
-            else
-            {
-                postCompleted = false;
-            }
-            log<level::INFO>("Read POST complete value",
-                             entry("VALUE=%d", postCompleted));
-        },
-        systemOsStatusService, systemOsStatusPath,
-        "org.freedesktop.DBus.Properties", "Get", systemOsStatusIntf,
-        "OperatingSystemState");
+    try
+    {
+        auto service =
+            ipmi::getService(*bus, systemOsStatusIntf, systemOsStatusPath);
+        ipmi::Value v =
+            ipmi::getDbusProperty(*bus, service, systemOsStatusPath,
+                                  systemOsStatusIntf, "OperatingSystemState");
+        auto& value = std::get<std::string>(v);
+        postCompleted = (value == "Standby");
+        log<level::INFO>("Read POST complete value",
+                         entry("VALUE=%d", postCompleted));
+    }
+    catch (const std::exception& e)
+    {
+        log<level::ERR>("Error in OperatingSystemState Get");
+        postCompleted = true;
+    }
 }
 
 void WhitelistFilter::updateRestrictionMode(const std::string& value)
