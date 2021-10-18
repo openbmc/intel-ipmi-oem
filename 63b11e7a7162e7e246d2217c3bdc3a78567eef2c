@@ -16,6 +16,75 @@
       "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0caa63fe_6e2c8788",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-10-18T16:13:06Z",
+      "side": 1,
+      "message": "Unnecessary if yo use getDbusProperty() inside try block itself",
+      "range": {
+        "startLine": 121,
+        "startChar": 0,
+        "endLine": 122,
+        "endChar": 38
+      },
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7dbb28a9_75a52b57",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-10-18T16:13:06Z",
+      "side": 1,
+      "message": "This is direct lifting the code, but since you are making it new, Better use existing API i.e getDbusProperty.",
+      "range": {
+        "startLine": 140,
+        "startChar": 0,
+        "endLine": 162,
+        "endChar": 32
+      },
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bd79b8a3_af911d01",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 442,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-10-18T16:13:06Z",
+      "side": 1,
+      "message": "nit: More than cache, Its initAndMonitorPostComplete()",
+      "range": {
+        "startLine": 442,
+        "startChar": 4,
+        "endLine": 442,
+        "endChar": 26
+      },
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
