@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "61e172c3_46b5c3e7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000414
+      },
+      "writtenOn": "2021-10-18T15:49:11Z",
+      "side": 1,
+      "message": "nit:typo separate. Same in line 16 as well.",
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
