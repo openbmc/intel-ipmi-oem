@@ -42,6 +42,30 @@
     },
     {
       "key": {
+        "uuid": "ee293645_1d15d11e",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-10-18T17:35:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0caa63fe_6e2c8788",
+      "range": {
+        "startLine": 121,
+        "startChar": 0,
+        "endLine": 122,
+        "endChar": 38
+      },
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "20e84a3f_f8f934a0",
         "filename": "src/whitelist-filter.cpp",
         "patchSetId": 1
@@ -89,6 +113,30 @@
     },
     {
       "key": {
+        "uuid": "02860482_c62a59fe",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-10-18T17:35:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f8f11989_db6e0f48",
+      "range": {
+        "startLine": 148,
+        "startChar": 25,
+        "endLine": 148,
+        "endChar": 49
+      },
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4b2da8a1_97641281",
         "filename": "src/whitelist-filter.cpp",
         "patchSetId": 1
@@ -109,6 +157,30 @@
       "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5f7c7aba_3f5a3a7a",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-10-18T17:35:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4b2da8a1_97641281",
+      "range": {
+        "startLine": 149,
+        "startChar": 12,
+        "endLine": 156,
+        "endChar": 13
+      },
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
     },
     {
       "key": {
@@ -135,6 +207,30 @@
     },
     {
       "key": {
+        "uuid": "69b4eb52_95433999",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-10-18T17:35:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7dbb28a9_75a52b57",
+      "range": {
+        "startLine": 140,
+        "startChar": 0,
+        "endLine": 162,
+        "endChar": 32
+      },
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "bd79b8a3_af911d01",
         "filename": "src/whitelist-filter.cpp",
         "patchSetId": 1
@@ -146,6 +242,30 @@
       "writtenOn": "2021-10-18T16:13:06Z",
       "side": 1,
       "message": "nit: More than cache, Its initAndMonitorPostComplete()",
+      "range": {
+        "startLine": 442,
+        "startChar": 4,
+        "endLine": 442,
+        "endChar": 26
+      },
+      "revId": "63b11e7a7162e7e246d2217c3bdc3a78567eef2c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9190a89b_c279518e",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 442,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-10-18T17:35:01Z",
+      "side": 1,
+      "message": "Updated the previous function without adding a new one.",
+      "parentUuid": "bd79b8a3_af911d01",
       "range": {
         "startLine": 442,
         "startChar": 4,
