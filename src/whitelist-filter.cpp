@@ -37,7 +37,8 @@ class WhitelistFilter
 
   private:
     void postInit();
-    void cacheRestrictedAndPostCompleteMode();
+    void cachePostCompleteState();
+    void cacheRestrictionMode();
     void handleRestrictedModeChange(sdbusplus::message::message& m);
     void handlePostCompleteChange(sdbusplus::message::message& m);
     void updatePostComplete(const std::string& value);
@@ -115,12 +116,56 @@ WhitelistFilter::WhitelistFilter()
     post_work([this]() { postInit(); });
 }
 
-void WhitelistFilter::cacheRestrictedAndPostCompleteMode()
+void WhitelistFilter::cachePostCompleteState()
+{
+    std::string systemOsStatusPath;
+    std::string systemOsStatusService;
+
+    try
+    {
+        ipmi::DbusObjectInfo postCompleteObj =
+            ipmi::getDbusObject(*bus, systemOsStatusIntf);
+
+        systemOsStatusPath = postCompleteObj.first;
+        systemOsStatusService = postCompleteObj.second;
+    }
+    catch (const std::exception&)
+    {
+        log<level::ERR>(
+            "Could not initialize POST complete, defaulting to true",
+            entry("VALUE=%d", static_cast<int>(restrictionMode)));
+        return;
+    }
+
+    bus->async_method_call(
+        [this](boost::system::error_code ec, const ipmi::Value& v) {
+            if (ec)
+            {
+                log<level::ERR>("Error in OperatingSystemState Get");
+                postCompleted = true;
+                return;
+            }
+            auto value = std::get<std::string>(v);
+            if (value == "Standby")
+            {
+                postCompleted = true;
+            }
+            else
+            {
+                postCompleted = false;
+            }
+            log<level::INFO>("Read POST complete value",
+                             entry("VALUE=%d", postCompleted));
+        },
+        systemOsStatusService, systemOsStatusPath,
+        "org.freedesktop.DBus.Properties", "Get", systemOsStatusIntf,
+        "OperatingSystemState");
+}
+
+void WhitelistFilter::cacheRestrictionMode()
 {
     std::string restrictionModePath;
     std::string restrictionModeService;
-    std::string systemOsStatusPath;
-    std::string systemOsStatusService;
     try
     {
         ipmi::DbusObjectInfo restrictionObj =
@@ -128,12 +173,6 @@ void WhitelistFilter::cacheRestrictedAndPostCompleteMode()
 
         restrictionModePath = restrictionObj.first;
         restrictionModeService = restrictionObj.second;
-
-        ipmi::DbusObjectInfo postCompleteObj =
-            ipmi::getDbusObject(*bus, systemOsStatusIntf);
-
-        systemOsStatusPath = postCompleteObj.first;
-        systemOsStatusService = postCompleteObj.second;
     }
     catch (const std::exception&)
     {
@@ -162,30 +201,6 @@ void WhitelistFilter::cacheRestrictedAndPostCompleteMode()
         restrictionModeService, restrictionModePath,
         "org.freedesktop.DBus.Properties", "Get", restrictionModeIntf,
         "RestrictionMode");
-
-    bus->async_method_call(
-        [this](boost::system::error_code ec, const ipmi::Value& v) {
-            if (ec)
-            {
-                log<level::ERR>("Error in OperatingSystemState Get");
-                postCompleted = true;
-                return;
-            }
-            auto value = std::get<std::string>(v);
-            if (value == "Standby")
-            {
-                postCompleted = true;
-            }
-            else
-            {
-                postCompleted = false;
-            }
-            log<level::INFO>("Read POST complete value",
-                             entry("VALUE=%d", postCompleted));
-        },
-        systemOsStatusService, systemOsStatusPath,
-        "org.freedesktop.DBus.Properties", "Get", systemOsStatusIntf,
-        "OperatingSystemState");
 }
 
 void WhitelistFilter::updateRestrictionMode(const std::string& value)
@@ -422,7 +437,9 @@ void WhitelistFilter::postInit()
         });
 
     // Initialize restricted mode
-    cacheRestrictedAndPostCompleteMode();
+    cacheRestrictionMode();
+    // Initialize POST complete
+    cachePostCompleteState();
     // Initialize CoreBiosDone
     cacheCoreBiosDone();
 }
