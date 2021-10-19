@@ -1,0 +1,142 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f124d513_05dae394",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-10-19T16:58:18Z",
+      "side": 1,
+      "message": "just realized that this is not used at all.",
+      "range": {
+        "startLine": 238,
+        "startChar": 20,
+        "endLine": 238,
+        "endChar": 74
+      },
+      "revId": "b0644f1300fae43ebe24b63a1d8ad1cd88e0ff7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "496cd7da_badf01c5",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 259,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-10-19T16:58:18Z",
+      "side": 1,
+      "message": "you are variable shadowing with the `path`.",
+      "range": {
+        "startLine": 259,
+        "startChar": 22,
+        "endLine": 259,
+        "endChar": 26
+      },
+      "revId": "b0644f1300fae43ebe24b63a1d8ad1cd88e0ff7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "138e0102_7ca3a1e1",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-10-19T16:58:18Z",
+      "side": 1,
+      "message": "```\nconst auto\u0026\n```\n\nor better yet, just `const std::string\u0026`",
+      "range": {
+        "startLine": 268,
+        "startChar": 9,
+        "endLine": 268,
+        "endChar": 22
+      },
+      "revId": "b0644f1300fae43ebe24b63a1d8ad1cd88e0ff7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fff73802_ebdf5b7b",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 279,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-10-19T16:58:18Z",
+      "side": 1,
+      "message": "Add\n\n```\ncontinue;\n```\n\nhere and remove the else bracket.",
+      "range": {
+        "startLine": 276,
+        "startChar": 10,
+        "endLine": 279,
+        "endChar": 0
+      },
+      "revId": "b0644f1300fae43ebe24b63a1d8ad1cd88e0ff7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "66b9188b_4c526789",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-10-19T16:58:18Z",
+      "side": 1,
+      "message": "const auto\u0026?",
+      "range": {
+        "startLine": 285,
+        "startChar": 21,
+        "endLine": 285,
+        "endChar": 27
+      },
+      "revId": "b0644f1300fae43ebe24b63a1d8ad1cd88e0ff7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "03b490b1_0ca77325",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 328,
+      "author": {
+        "id": 1000885
+      },
+      "writtenOn": "2021-10-19T16:58:18Z",
+      "side": 1,
+      "message": "Can you refactor https://github.com/openbmc/intel-ipmi-oem/blob/3861fea7af194ce5f571a0802f5a4fbe6a71cea2/include/sdrutils.hpp#L450-L451 to take in an interface variable and use that instead?\n\num.. maybe not. It does not have the context/yield there.",
+      "range": {
+        "startLine": 324,
+        "startChar": 4,
+        "endLine": 328,
+        "endChar": 69
+      },
+      "revId": "b0644f1300fae43ebe24b63a1d8ad1cd88e0ff7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
