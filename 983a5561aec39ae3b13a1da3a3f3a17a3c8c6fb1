@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d23a9ea1_ed346295",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 3570,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-19T07:12:42Z",
+      "side": 1,
+      "message": "is there any advantages of using constexpr const together here as both are similar ..?",
+      "range": {
+        "startLine": 3570,
+        "startChar": 7,
+        "endLine": 3570,
+        "endChar": 22
+      },
+      "revId": "983a5561aec39ae3b13a1da3a3f3a17a3c8c6fb1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d719d8e1_fe74b3af",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 3571,
+      "author": {
+        "id": 1001048
+      },
+      "writtenOn": "2021-10-19T07:12:42Z",
+      "side": 1,
+      "message": "if bufferSize is always positive number then, you can use unsinged version of int.",
+      "range": {
+        "startLine": 3571,
+        "startChar": 23,
+        "endLine": 3571,
+        "endChar": 26
+      },
+      "revId": "983a5561aec39ae3b13a1da3a3f3a17a3c8c6fb1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
