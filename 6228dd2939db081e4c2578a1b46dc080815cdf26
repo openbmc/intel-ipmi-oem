@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "93518046_f4da8474",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1000168
+      },
+      "writtenOn": "2021-10-19T03:01:34Z",
+      "side": 1,
+      "message": "nit: \nIn future, we can combine these INFO debug levels to single entry (Post \u0026 Restriction mode), so that it will be easy to search / debug \u0026 maintain.",
+      "range": {
+        "startLine": 133,
+        "startChar": 8,
+        "endLine": 134,
+        "endChar": 79
+      },
+      "revId": "6228dd2939db081e4c2578a1b46dc080815cdf26",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "53676d97_14a12761",
         "filename": "src/whitelist-filter.cpp",
         "patchSetId": 3
