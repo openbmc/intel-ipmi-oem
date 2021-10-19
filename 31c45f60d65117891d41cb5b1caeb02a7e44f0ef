@@ -46,6 +46,30 @@
       "revId": "31c45f60d65117891d41cb5b1caeb02a7e44f0ef",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "35ca6da1_07ac3955",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1000415
+      },
+      "writtenOn": "2021-10-19T04:12:03Z",
+      "side": 1,
+      "message": "Ok, thanks!",
+      "parentUuid": "03beb0f7_7b8aa345",
+      "range": {
+        "startLine": 141,
+        "startChar": 4,
+        "endLine": 141,
+        "endChar": 5
+      },
+      "revId": "31c45f60d65117891d41cb5b1caeb02a7e44f0ef",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
