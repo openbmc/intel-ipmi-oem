@@ -22,6 +22,30 @@
       "revId": "31c45f60d65117891d41cb5b1caeb02a7e44f0ef",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "03beb0f7_7b8aa345",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-10-19T04:10:17Z",
+      "side": 1,
+      "message": "No. removing return statement is the actual fix in this patch. Everything else is just kind of cleanup or better way to write the function.",
+      "parentUuid": "3a19c791_36f4c309",
+      "range": {
+        "startLine": 141,
+        "startChar": 4,
+        "endLine": 141,
+        "endChar": 5
+      },
+      "revId": "31c45f60d65117891d41cb5b1caeb02a7e44f0ef",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
