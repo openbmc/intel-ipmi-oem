@@ -1,0 +1,12 @@
+Ok-To-Test+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Code-Review+1: <arun.lal@intel.com>
+Code-Review+1: Zhikui Ren <zhikui.ren@intel.com>
+Code-Review+1: Saravanan Palanisamy <saravanan.palanisamy@linux.intel.com>
+Code-Review+2: AppaRao Puli <apparao.puli@linux.intel.com>
+Code-Review+1: Mansi Joshi <mansi.joshi@linux.intel.com>
+Submitted-by: Manish Baing <manish.baing@intel.com>
+Submitted-at: Thu, 21 Oct 2021 10:26:35 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/47688
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
