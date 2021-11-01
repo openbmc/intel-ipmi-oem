@@ -833,7 +833,11 @@ static bool biosSMIMessageHook(const SELData& selData,
 
 static bool startRedfishHook(const SELData& selData, const std::string& ipmiRaw)
 {
-    switch (selData.generatorID)
+    uint8_t generatorIDLowByte = static_cast<uint8_t>(selData.generatorID);
+    // Generator ID is 7 bit and LS Bit contains '1' or '0' depending on the
+    // source. Refer IPMI SPEC, Table 32, SEL Event Records.
+    generatorIDLowByte >>= 1;
+    switch (generatorIDLowByte)
     {
         case 0x01: // Check if this message is from the BIOS Generator ID
             // Let the BIOS hook handle this request
@@ -900,14 +904,21 @@ bool checkRedfishHooks(uint16_t recordID, uint8_t recordType,
     return redfish_hooks::startRedfishHook(selData, ipmiRaw);
 }
 
-bool checkRedfishHooks(uint8_t generatorID, uint8_t evmRev, uint8_t sensorType,
+bool checkRedfishHooks(uint16_t generatorID, uint8_t evmRev, uint8_t sensorType,
                        uint8_t sensorNum, uint8_t eventType, uint8_t eventData1,
                        uint8_t eventData2, uint8_t eventData3)
 {
     // Save the raw IPMI string of the selData
     std::string ipmiRaw;
-    std::array selBytes = {generatorID, evmRev,     sensorType, sensorNum,
-                           eventType,   eventData1, eventData2, eventData3};
+    std::array selBytes = {static_cast<uint8_t>(generatorID),
+                           static_cast<uint8_t>(generatorID >> 8),
+                           evmRev,
+                           sensorType,
+                           sensorNum,
+                           eventType,
+                           eventData1,
+                           eventData2,
+                           eventData3};
     redfish_hooks::toHexStr(boost::beast::span<uint8_t>(selBytes), ipmiRaw);
 
     // Extract the SEL data for the hook
