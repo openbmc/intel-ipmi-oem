@@ -26,7 +26,7 @@ bool checkRedfishHooks(uint16_t recordID, uint8_t recordType,
                        uint8_t sensorType, uint8_t sensorNum, uint8_t eventType,
                        uint8_t eventData1, uint8_t eventData2,
                        uint8_t eventData3);
-bool checkRedfishHooks(uint8_t generatorID, uint8_t evmRev, uint8_t sensorType,
+bool checkRedfishHooks(uint16_t generatorID, uint8_t evmRev, uint8_t sensorType,
                        uint8_t sensorNum, uint8_t eventType, uint8_t eventData1,
                        uint8_t eventData2, uint8_t eventData3);
 namespace redfish_hooks
