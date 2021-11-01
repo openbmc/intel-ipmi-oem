@@ -355,7 +355,7 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::Context::ptr ctx,
     constexpr const uint8_t meSensorNum = 0x17;
     constexpr const uint8_t disabled = 0x80;
 
-    uint8_t generatorID = 0;
+    uint8_t  sysgeneratorID = 0;
     uint8_t evmRev = 0;
     uint8_t sensorType = 0;
     uint8_t sensorNum = 0;
@@ -363,6 +363,7 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::Context::ptr ctx,
     uint8_t eventData1 = 0;
     std::optional<uint8_t> eventData2 = 0;
     std::optional<uint8_t> eventData3 = 0;
+    uint16_t  generatorID = 0;
     ipmi::ChannelInfo chInfo;
 
     if (ipmi::getChannelInfo(ctx->channel, chInfo) != ipmi::ccSuccess)
@@ -377,15 +378,25 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::Context::ptr ctx,
         ipmi::EChannelMediumType::systemInterface)
     {
 
-        p.unpack(generatorID, evmRev, sensorType, sensorNum, eventType,
+        p.unpack(sysgeneratorID, evmRev, sensorType, sensorNum, eventType,
                  eventData1, eventData2, eventData3);
+        // Refer to IPMI Spec Table 32: SEL Event Records
+        generatorID = (ctx->channel << 12)              // Channel
+                      | (0x0 << 10)                     // Reserved
+                      | (0x0 << 8)                      // 0x0 for sys-soft ID
+                      | ((sysgeneratorID << 1) | 0x1);
     }
     else
     {
 
         p.unpack(evmRev, sensorType, sensorNum, eventType, eventData1,
                  eventData2, eventData3);
-        generatorID = ctx->rqSA << 1;
+        // Refer to IPMI Spec Table 32: SEL Event Records
+        generatorID = (ctx->channel << 12)              // Channel
+                      | (0x0 << 10)                     // Reserved
+                      | ((ctx->lun & 0x3) << 8)         // Lun
+                      | (ctx->rqSA << 1);
+
     }
 
     if (!p.fullyUnpacked())
@@ -409,8 +420,8 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::Context::ptr ctx,
         generatorID, evmRev, sensorType, sensorNum, eventType, eventData1,
         eventData2.value_or(0xFF), eventData3.value_or(0xFF));
 
-    if (generatorID == meId && sensorNum == meSensorNum && eventData2 &&
-        eventData3)
+    if (((generatorID & 0xFF) >> 1) == meId && sensorNum == meSensorNum 
+        && eventData2 && eventData3)
     {
         setMeStatus(*eventData2, *eventData3, (eventType & disabled));
     }
