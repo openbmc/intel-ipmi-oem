@@ -114,6 +114,9 @@ static constexpr const char* dBusPropertyIntf =
 static constexpr const char* dBusPropertyGetMethod = "Get";
 static constexpr const char* dBusPropertySetMethod = "Set";
 
+static constexpr const char* hsbpService = "xyz.openbmc_project.HsbpManager";
+static constexpr const char* hsbpIntf = "xyz.openbmc_project.Software.Version";
+
 // return code: 0 successful
 int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
 {
@@ -316,6 +319,70 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
+bool getActiveHSCSoftwareVersionInfo(std::string& hscVersion, size_t hscNumber)
+{
+    std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+    try
+    {
+        std::stringstream hscNumberString;
+        hscNumberString << hscNumber;
+        std::string hsbpObjPath =
+            "/xyz/openbmc_project/software/HSBP_" + hscNumberString.str();
+        auto service = getService(*dbus, hsbpIntf, hsbpObjPath);
+        Value hscVersionValue =
+            getDbusProperty(*dbus, service, hsbpObjPath, hsbpIntf, "Version");
+        hscVersion = std::get<std::string>(hscVersionValue);
+    }
+    catch (const sdbusplus::exception::exception& e)
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Failed to find version information.");
+        return false;
+    }
+    return true;
+}
+
+bool getHscVerInfo(ipmi::Context::ptr ctx, uint8_t& hsc0Major,
+                   uint8_t& hsc0Minor, uint8_t& hsc1Major, uint8_t& hsc1Minor,
+                   uint8_t& hsc2Major, uint8_t& hsc2Minor)
+{
+    std::string hscVersion;
+    std::vector<uint8_t> hscVersions;
+
+    for (size_t hscNumber = 1; hscNumber <= 3; hscNumber++)
+    {
+        if (!getActiveHSCSoftwareVersionInfo(hscVersion, hscNumber))
+        {
+            hscVersions.push_back(0);
+            hscVersions.push_back(0);
+            continue;
+        }
+        std::regex pattern1("(\\d+?).(\\d+?).(\\d+?)");
+        constexpr size_t matchedPhosphor = 4;
+        std::smatch results;
+        if (std::regex_match(hscVersion, results, pattern1))
+        {
+            if (results.size() == matchedPhosphor)
+            {
+                hscVersions.push_back(
+                    static_cast<uint8_t>(std::stoi(results[2])));
+                hscVersions.push_back(
+                    static_cast<uint8_t>(std::stoi(results[3])));
+            }
+        }
+    }
+    if (hscVersions.size() > 0 && hscVersions.size() <= 6)
+    {
+        hsc0Major = hscVersions[0];
+        hsc0Minor = hscVersions[1];
+        hsc1Major = hscVersions[2];
+        hsc1Minor = hscVersions[3];
+        hsc2Major = hscVersions[4];
+        hsc2Minor = hscVersions[5];
+    }
+    return true;
+}
+
 bool getSwVerInfo(ipmi::Context::ptr ctx, uint8_t& bmcMajor, uint8_t& bmcMinor,
                   uint8_t& meMajor, uint8_t& meMinor)
 {
@@ -435,8 +502,12 @@ ipmi::RspType<
             std::array<uint8_t, verLen> meBuf = {0xff, 0xff};
             std::array<uint8_t, verLen> hsc2Buf = {0xff, 0xff};
             // data0/1: BMC version number; data6/7: ME version number
-            // the others: HSC0/1/2 version number, not avaible.
             if (!getSwVerInfo(ctx, bmcBuf[0], bmcBuf[1], meBuf[0], meBuf[1]))
+            {
+                return ipmi::responseUnspecifiedError();
+            }
+            if (!getHscVerInfo(ctx, hsc0Buf[0], hsc0Buf[1], hsc1Buf[0],
+                               hsc1Buf[1], hsc2Buf[0], hsc2Buf[1]))
             {
                 return ipmi::responseUnspecifiedError();
             }
