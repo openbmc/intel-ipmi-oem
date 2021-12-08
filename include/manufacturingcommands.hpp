@@ -153,6 +153,7 @@ enum SupportedFeatureControls : uint8_t
 {
     mctp = 0,
     pcieScan,
+    ssh,
 };
 
 enum SupportedFeatureActions : uint8_t
