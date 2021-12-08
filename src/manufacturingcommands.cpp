@@ -18,6 +18,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
+#include <boost/process.hpp>
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
 #include <oemcommands.hpp>
@@ -1135,6 +1136,56 @@ static ipmi::RspType<> handleMCTPFeature(ipmi::Context::ptr& ctx,
     return ipmi::responseSuccess();
 }
 
+static bool executeCmd(const char* cmd)
+{
+    boost::process::child execProg(cmd);
+    execProg.wait();
+    int status = execProg.exit_code();
+    if (status != 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Subprocess failed");
+        return false;
+    }
+    return true;
+}
+
+static ipmi::RspType<> handleSshFeature(const uint8_t enable)
+{
+    const char *cmd;.
+
+    switch (enable)
+    {
+        case ipmi::SupportedFeatureActions::disable:
+            cmd = "sh /usr/bin/enable-ssh.sh -d";
+            if (!executeCmd(sshCmd))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to disable ssh from script");
+                return ipmi::responseUnspecifiedError();
+            }
+            break;
+        case ipmi::SupportedFeatureActions::enable:
+            cmd = "sh /usr/bin/enable-ssh.sh";
+            if (!executeCmd(sshCmd))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Failed to enable ssh from script");
+                return ipmi::responseUnspecifiedError();
+            }
+            break;
+        case ipmi::SupportedFeatureActions::stop:
+        case ipmi::SupportedFeatureActions::start:
+        default:
+            phosphor::logging::log<phosphor::logging::level::WARNING>(
+                "ERROR: Invalid feature action selected",
+                phosphor::logging::entry("ACTION=%d", enable));
+            return ipmi::responseInvalidFieldRequest();
+    }
+
+    return ipmi::responseSuccess();
+}
+
 /** @brief implements MTM BMC Feature Control IPMI command which can be
  * used to enable or disable the supported BMC features.
  * @param yield - context object that represents the currently executing
@@ -1179,6 +1230,13 @@ ipmi::RspType<> mtmBMCFeatureControl(ipmi::Context::ptr ctx,
                 return ipmi::responseInvalidFieldRequest();
             }
             startOrStopService(ctx, enable, "xyz.openbmc_project.PCIe.service");
+            break;
+        case ipmi::SupportedFeatureControls::ssh:
+            if (featureArg != 0)
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            handleSshFeature(enable);
             break;
         default:
             return ipmi::responseInvalidFieldRequest();
