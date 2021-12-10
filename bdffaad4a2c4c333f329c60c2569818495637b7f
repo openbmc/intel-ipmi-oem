@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b7fc075e_0bffb2cf",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-12-10T04:05:38Z",
+      "side": 1,
+      "message": "Tested with which user? root? how about other IPMI/Redfish users configured in the BMC- can they ssh as well?",
+      "range": {
+        "startLine": 17,
+        "startChar": 3,
+        "endLine": 19,
+        "endChar": 49
+      },
+      "revId": "bdffaad4a2c4c333f329c60c2569818495637b7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
