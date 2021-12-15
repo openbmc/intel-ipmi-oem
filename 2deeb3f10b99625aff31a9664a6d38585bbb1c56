@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b0c3e719_e8da4e11",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 367,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-12-15T17:57:28Z",
+      "side": 1,
+      "message": "Please add a comment above this line that:\n// results[1] \u003d BOOT_VER, results[2] \u003d FPGA_VER, results[3] \u003d SECURITY_REVISION\n// FPGA_VER and SECURITY_REV is used to denote HSC version as per our documented convention.",
+      "range": {
+        "startLine": 367,
+        "startChar": 16,
+        "endLine": 367,
+        "endChar": 38
+      },
+      "revId": "2deeb3f10b99625aff31a9664a6d38585bbb1c56",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
