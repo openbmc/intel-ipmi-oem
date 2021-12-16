@@ -1,0 +1,165 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "070c614c_69a91277",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-16T03:37:30Z",
+      "side": 1,
+      "message": "nit: Use inline instead of defines here for better readability.\n\nAlso \" hsbpIntf \u003d \"xyz.openbmc_project.Software.Version\";\" Is nothing specific to hsbp, Its generic interface for software Version and would have defined already. Please use that if not defined, define as generic.",
+      "range": {
+        "startLine": 116,
+        "startChar": 0,
+        "endLine": 118,
+        "endChar": 79
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5ec93c3e_834d9ead",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 328,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-16T03:37:30Z",
+      "side": 1,
+      "message": "This is an extra step, stringstream is unnecessary here for just appending two string.",
+      "range": {
+        "startLine": 327,
+        "startChar": 0,
+        "endLine": 328,
+        "endChar": 37
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "66e32193_28848c43",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 339,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-16T03:37:30Z",
+      "side": 1,
+      "message": "More generic logs, confuses while debugging. Make it more specific along with enatry as HSBP number (INDEX\u003d1/2/3).\n\"Failed to retrieve HSBP version version information\"",
+      "range": {
+        "startLine": 339,
+        "startChar": 13,
+        "endLine": 339,
+        "endChar": 48
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6ed56e7d_2f47c8fe",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 350,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-16T03:37:30Z",
+      "side": 1,
+      "message": "You can make it as fixed size array std::array\u003cuint8_t, 6\u003e instead of vector.",
+      "range": {
+        "startLine": 350,
+        "startChar": 3,
+        "endLine": 350,
+        "endChar": 36
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a70736db_cb196d38",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 357,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-16T03:37:30Z",
+      "side": 1,
+      "message": "Unnecessary, Do the initialization while declaration itself.",
+      "range": {
+        "startLine": 356,
+        "startChar": 0,
+        "endLine": 357,
+        "endChar": 37
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da052804_907ea982",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 368,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-16T03:37:30Z",
+      "side": 1,
+      "message": "nit: Good comment. results[0] is missing..",
+      "range": {
+        "startLine": 365,
+        "startChar": 0,
+        "endLine": 368,
+        "endChar": 41
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0c9387fe_ed4bc99d",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 374,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-16T03:37:30Z",
+      "side": 1,
+      "message": "This can through exception, What if version is of string type which can\u0027t be converted to integer.",
+      "range": {
+        "startLine": 374,
+        "startChar": 41,
+        "endLine": 374,
+        "endChar": 50
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
