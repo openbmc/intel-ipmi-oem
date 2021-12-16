@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "dc76d701_a85c31a4",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-12-16T23:50:12Z",
+      "side": 1,
+      "message": "Fixed. Thanks",
+      "parentUuid": "070c614c_69a91277",
+      "range": {
+        "startLine": 116,
+        "startChar": 0,
+        "endLine": 118,
+        "endChar": 79
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5ec93c3e_834d9ead",
         "filename": "src/oemcommands.cpp",
         "patchSetId": 3
@@ -36,6 +60,30 @@
       "writtenOn": "2021-12-16T03:37:30Z",
       "side": 1,
       "message": "This is an extra step, stringstream is unnecessary here for just appending two string.",
+      "range": {
+        "startLine": 327,
+        "startChar": 0,
+        "endLine": 328,
+        "endChar": 37
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f4fcdc8a_22c0c1e9",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 328,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-12-16T23:50:12Z",
+      "side": 1,
+      "message": "Removed.",
+      "parentUuid": "5ec93c3e_834d9ead",
       "range": {
         "startLine": 327,
         "startChar": 0,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "9617836c_e545ac74",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 339,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-12-16T23:50:12Z",
+      "side": 1,
+      "message": "Done.",
+      "parentUuid": "66e32193_28848c43",
+      "range": {
+        "startLine": 339,
+        "startChar": 13,
+        "endLine": 339,
+        "endChar": 48
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6ed56e7d_2f47c8fe",
         "filename": "src/oemcommands.cpp",
         "patchSetId": 3
@@ -82,6 +154,30 @@
       "writtenOn": "2021-12-16T03:37:30Z",
       "side": 1,
       "message": "You can make it as fixed size array std::array\u003cuint8_t, 6\u003e instead of vector.",
+      "range": {
+        "startLine": 350,
+        "startChar": 3,
+        "endLine": 350,
+        "endChar": 36
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9534ab69_358b89a1",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 350,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-12-16T23:50:12Z",
+      "side": 1,
+      "message": "Fixed.",
+      "parentUuid": "6ed56e7d_2f47c8fe",
       "range": {
         "startLine": 350,
         "startChar": 3,
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "6d22da63_b552c922",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 357,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-12-16T23:50:12Z",
+      "side": 1,
+      "message": "Removed.",
+      "parentUuid": "a70736db_cb196d38",
+      "range": {
+        "startLine": 356,
+        "startChar": 0,
+        "endLine": 357,
+        "endChar": 37
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "da052804_907ea982",
         "filename": "src/oemcommands.cpp",
         "patchSetId": 3
@@ -140,6 +260,30 @@
     },
     {
       "key": {
+        "uuid": "266ecd84_f7f10fa7",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 368,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-12-16T23:50:12Z",
+      "side": 1,
+      "message": "results[0] contains total HSC version i.e. 00.02.01. Reformatted the comment. Thanks",
+      "parentUuid": "da052804_907ea982",
+      "range": {
+        "startLine": 365,
+        "startChar": 0,
+        "endLine": 368,
+        "endChar": 41
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0c9387fe_ed4bc99d",
         "filename": "src/oemcommands.cpp",
         "patchSetId": 3
@@ -151,6 +295,30 @@
       "writtenOn": "2021-12-16T03:37:30Z",
       "side": 1,
       "message": "This can through exception, What if version is of string type which can\u0027t be converted to integer.",
+      "range": {
+        "startLine": 374,
+        "startChar": 41,
+        "endLine": 374,
+        "endChar": 50
+      },
+      "revId": "bcd7cb97e04c2fa8e568f417c9c1beaccb960940",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a5482f65_a6b5ad04",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 374,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-12-16T23:50:12Z",
+      "side": 1,
+      "message": "This will work normally.",
+      "parentUuid": "0c9387fe_ed4bc99d",
       "range": {
         "startLine": 374,
         "startChar": 41,
