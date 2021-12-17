@@ -1033,7 +1033,8 @@ static std::vector<std::string>
 
 static ipmi::RspType<> startOrStopService(ipmi::Context::ptr& ctx,
                                           const uint8_t enable,
-                                          const std::string& serviceName)
+                                          const std::string& serviceName,
+                                          bool disableUnitFiles = true)
 {
     constexpr bool runtimeOnly = false;
     constexpr bool force = false;
@@ -1057,22 +1058,29 @@ static ipmi::RspType<> startOrStopService(ipmi::Context::ptr& ctx,
                 "MaskUnitFiles",
                 std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly,
                 force);
-            ctx->bus->yield_method_call(
-                ctx->yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
-                "DisableUnitFiles",
-                std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly);
-            break;
+            if (disableUnitFiles == true)
+            {
+                ctx->bus->yield_method_call(
+                    ctx->yield, ec, systemDService, systemDObjPath,
+                    systemDMgrIntf, "DisableUnitFiles",
+                    std::array<const char*, 1>{serviceName.c_str()},
+                    runtimeOnly);
+                break;
+            }
         case ipmi::SupportedFeatureActions::enable:
             ctx->bus->yield_method_call(
                 ctx->yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
                 "UnmaskUnitFiles",
                 std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly);
-            ctx->bus->yield_method_call(
-                ctx->yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
-                "EnableUnitFiles",
-                std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly,
-                force);
-            break;
+            if (disableUnitFiles == true)
+            {
+                ctx->bus->yield_method_call(
+                    ctx->yield, ec, systemDService, systemDObjPath,
+                    systemDMgrIntf, "EnableUnitFiles",
+                    std::array<const char*, 1>{serviceName.c_str()},
+                    runtimeOnly, force);
+                break;
+            }
         default:
             phosphor::logging::log<phosphor::logging::level::WARNING>(
                 "ERROR: Invalid feature action selected",
@@ -1121,7 +1129,7 @@ static ipmi::RspType<> handleMCTPFeature(ipmi::Context::ptr& ctx,
         if (binding == objectPath.substr(pos + 1))
         {
             return startOrStopService(ctx, enable,
-                                      getMCTPServiceName(objectPath));
+                                      getMCTPServiceName(objectPath), false);
         }
     }
     return ipmi::responseSuccess();
