@@ -1057,21 +1057,12 @@ static ipmi::RspType<> startOrStopService(ipmi::Context::ptr& ctx,
                 "MaskUnitFiles",
                 std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly,
                 force);
-            ctx->bus->yield_method_call(
-                ctx->yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
-                "DisableUnitFiles",
-                std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly);
             break;
         case ipmi::SupportedFeatureActions::enable:
             ctx->bus->yield_method_call(
                 ctx->yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
                 "UnmaskUnitFiles",
                 std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly);
-            ctx->bus->yield_method_call(
-                ctx->yield, ec, systemDService, systemDObjPath, systemDMgrIntf,
-                "EnableUnitFiles",
-                std::array<const char*, 1>{serviceName.c_str()}, runtimeOnly,
-                force);
             break;
         default:
             phosphor::logging::log<phosphor::logging::level::WARNING>(
