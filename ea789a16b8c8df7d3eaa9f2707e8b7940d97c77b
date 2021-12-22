@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "5d3a3f20_bae2c6a4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2021-12-22T14:59:26Z",
+      "side": 1,
+      "message": "Based on the analysis disableUnit files are not required. As after masking, disable will not work. And After unmasking if we are enabling it, services will go to /etc/systemd/system which will be executed by systemd, but mctpd services are launched by PMCI launcher which in turn start entity manager to get all the configuration. So if systemd is running the mctpd services it will fail as entity manager has not yet started. So enableUnit files are also not required.\nPlease add if I missed something. I will update it in the next patch.",
+      "parentUuid": "288f796c_c1a827c4",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 58
+      },
+      "revId": "ea789a16b8c8df7d3eaa9f2707e8b7940d97c77b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9529b315_bdc2feef",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
