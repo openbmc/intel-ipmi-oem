@@ -128,6 +128,30 @@
       "revId": "ea789a16b8c8df7d3eaa9f2707e8b7940d97c77b",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6264172b_8a130fbf",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1061,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2021-12-22T15:08:29Z",
+      "side": 1,
+      "message": "disableUnit files will not work after masking. So I\u0027m planning to remove this part completely in the next patch.",
+      "parentUuid": "fea51b51_1afc024f",
+      "range": {
+        "startLine": 1061,
+        "startChar": 12,
+        "endLine": 1061,
+        "endChar": 41
+      },
+      "revId": "ea789a16b8c8df7d3eaa9f2707e8b7940d97c77b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
