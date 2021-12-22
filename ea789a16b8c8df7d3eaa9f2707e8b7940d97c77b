@@ -81,6 +81,29 @@
       "revId": "ea789a16b8c8df7d3eaa9f2707e8b7940d97c77b",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fea51b51_1afc024f",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1061,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2021-12-22T13:56:55Z",
+      "side": 1,
+      "message": "Below is fine.\n`if (startOrStopService)\n\nSame comment for line#1075.",
+      "range": {
+        "startLine": 1061,
+        "startChar": 12,
+        "endLine": 1061,
+        "endChar": 41
+      },
+      "revId": "ea789a16b8c8df7d3eaa9f2707e8b7940d97c77b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
     }
   ]
 }
