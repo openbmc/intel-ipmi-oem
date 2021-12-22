@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e438697c_6b57db21",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-12-22T10:16:09Z",
+      "side": 1,
+      "message": "The commit title should describe the fix, and not the issue. May be something along the lines of \"Make disableUnit files optional\"..",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 58
+      },
+      "revId": "ea789a16b8c8df7d3eaa9f2707e8b7940d97c77b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9529b315_bdc2feef",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-12-22T10:16:09Z",
+      "side": 1,
+      "message": "Describe the rootcause here - for example: Some services like mctpd are designed to be started by a different service than systemd. Enabling the unit files bypasses this and makes systemd start the service. Thus, this fix is making the enableUnitFiles as optional parameter.",
+      "revId": "ea789a16b8c8df7d3eaa9f2707e8b7940d97c77b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
