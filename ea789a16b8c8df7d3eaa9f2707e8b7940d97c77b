@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "288f796c_c1a827c4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2021-12-22T11:50:35Z",
+      "side": 1,
+      "message": "ok I will edit it",
+      "parentUuid": "e438697c_6b57db21",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 58
+      },
+      "revId": "ea789a16b8c8df7d3eaa9f2707e8b7940d97c77b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9529b315_bdc2feef",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -36,6 +60,24 @@
       "writtenOn": "2021-12-22T10:16:09Z",
       "side": 1,
       "message": "Describe the rootcause here - for example: Some services like mctpd are designed to be started by a different service than systemd. Enabling the unit files bypasses this and makes systemd start the service. Thus, this fix is making the enableUnitFiles as optional parameter.",
+      "revId": "ea789a16b8c8df7d3eaa9f2707e8b7940d97c77b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4b2e10fe_4d29b8bc",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2021-12-22T11:50:35Z",
+      "side": 1,
+      "message": "sure",
+      "parentUuid": "9529b315_bdc2feef",
       "revId": "ea789a16b8c8df7d3eaa9f2707e8b7940d97c77b",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
       "unresolved": true
