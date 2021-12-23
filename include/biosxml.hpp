@@ -786,16 +786,9 @@ class Xml
             nameStr = pKnob->Attribute("name");
             currentValStr = pKnob->Attribute("CurrentVal");
 
-            try
-            {
-                currentVal = std::stoi(currentValStr);
-            }
-            catch (const std::exception& ex)
-            {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    ex.what());
-                return;
-            }
+            std::stringstream ss;
+            ss << std::hex << currentValStr;
+            ss >> currentVal;
 
             if (pKnob->Attribute("description"))
                 descriptionStr = pKnob->Attribute("description");
