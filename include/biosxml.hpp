@@ -788,7 +788,9 @@ class Xml
 
             try
             {
-                currentVal = std::stoi(currentValStr);
+                std::stringstream ss;
+                ss << std::hex << currentValStr;
+                ss >> currentVal;
             }
             catch (const std::exception& ex)
             {
