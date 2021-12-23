@@ -785,18 +785,19 @@ class Xml
 
             nameStr = pKnob->Attribute("name");
             currentValStr = pKnob->Attribute("CurrentVal");
-
-            try
+            std::stringstream ss;
+            ss << std::hex << currentValStr;
+            if (ss.good())
             {
-                currentVal = std::stoi(currentValStr);
+                ss >> currentVal;
             }
-            catch (const std::exception& ex)
+            else
             {
+                std::string error = "Invalid hex value input " + currentValStr +
+                                    " for " + nameStr + "\n";
                 phosphor::logging::log<phosphor::logging::level::ERR>(
-                    ex.what());
-                return;
+                    error.c_str());
             }
-
             if (pKnob->Attribute("description"))
                 descriptionStr = pKnob->Attribute("description");
 
