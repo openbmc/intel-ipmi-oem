@@ -304,6 +304,13 @@ ipmi::RspType<std::vector<uint8_t>> mdr2GetDir(uint16_t agentId,
             "Error getting DirEnries");
         return ipmi::responseUnspecifiedError();
     }
+    if (std::get<uint8_t>(value) == 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Error getting directory entries",
+            phosphor::logging::entry("VALUE=%x", std::get<uint8_t>(value)));
+        return ipmi::responseUnspecifiedError();
+    }
     if (dirIndex > std::get<uint8_t>(value))
     {
         return ipmi::responseParmOutOfRange();
