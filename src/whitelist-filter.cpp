@@ -148,7 +148,9 @@ void WhitelistFilter::cacheRestrictedAndPostCompleteMode()
             ipmi::getDbusProperty(*bus, service, systemOsStatusPath,
                                   systemOsStatusIntf, "OperatingSystemState");
         auto& value = std::get<std::string>(v);
-        postCompleted = (value == "Standby");
+        postCompleted = (value == "Standby") &&
+                        (value == "xyz.openbmc_project.State.OperatingSystem."
+                                  "Status.OSStatus.Standby");
         log<level::INFO>("Read POST complete value",
                          entry("VALUE=%d", postCompleted));
     }
@@ -204,14 +206,9 @@ void WhitelistFilter::handleRestrictedModeChange(sdbusplus::message::message& m)
 
 void WhitelistFilter::updatePostComplete(const std::string& value)
 {
-    if (value == "Standby")
-    {
-        postCompleted = true;
-    }
-    else
-    {
-        postCompleted = false;
-    }
+    postCompleted = (value == "Standby") &&
+                    (value == "xyz.openbmc_project.State.OperatingSystem."
+                              "Status.OSStatus.Standby");
     log<level::INFO>(postCompleted ? "Updated to POST Complete"
                                    : "Updated to !POST Complete");
 }
