@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5b36eab9_b20e173b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-28T06:39:07Z",
+      "side": 1,
+      "message": "Title is misleading, patch support is already exist for BIOS attributes. Here you are fix a big. So you can reflect same instead .\nHow about \"Fix issue with hex string to integer conversion\"",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 39
+      },
+      "revId": "d299076ba60a18d4918e5a93e91717e5c52d14b1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "39458b2c_2eaee6f2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-28T06:39:07Z",
+      "side": 1,
+      "message": "nit: IMO, document responses as is(Most of it is not relevant to change\" creates confusion and also future serach become hard. You can restrict to the change what is made.",
+      "range": {
+        "startLine": 22,
+        "startChar": 0,
+        "endLine": 53,
+        "endChar": 1
+      },
+      "revId": "d299076ba60a18d4918e5a93e91717e5c52d14b1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "377439d3_19278e0e",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 800,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-28T06:39:07Z",
+      "side": 1,
+      "message": "The stoi(...) throws the expectation but not current code. So you can remove try-catch block.",
+      "range": {
+        "startLine": 794,
+        "startChar": 12,
+        "endLine": 800,
+        "endChar": 13
+      },
+      "revId": "d299076ba60a18d4918e5a93e91717e5c52d14b1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
+      "unresolved": true
+    }
+  ]
+}
