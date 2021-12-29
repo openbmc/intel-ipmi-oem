@@ -1,6 +1,7 @@
 {
   "comments": [
     {
+      "unresolved": true,
       "key": {
         "uuid": "5b36eab9_b20e173b",
         "filename": "/COMMIT_MSG",
@@ -20,10 +21,34 @@
         "endChar": 39
       },
       "revId": "d299076ba60a18d4918e5a93e91717e5c52d14b1",
-      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
-      "unresolved": true
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2275e15b_930d0be6",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000652
+      },
+      "writtenOn": "2021-12-29T05:22:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5b36eab9_b20e173b",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 39
+      },
+      "revId": "d299076ba60a18d4918e5a93e91717e5c52d14b1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
       "key": {
         "uuid": "39458b2c_2eaee6f2",
         "filename": "/COMMIT_MSG",
@@ -43,10 +68,34 @@
         "endChar": 1
       },
       "revId": "d299076ba60a18d4918e5a93e91717e5c52d14b1",
-      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
-      "unresolved": true
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d16fb545_dda170f6",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1000652
+      },
+      "writtenOn": "2021-12-29T05:22:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "39458b2c_2eaee6f2",
+      "range": {
+        "startLine": 22,
+        "startChar": 0,
+        "endLine": 53,
+        "endChar": 1
+      },
+      "revId": "d299076ba60a18d4918e5a93e91717e5c52d14b1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
       "key": {
         "uuid": "377439d3_19278e0e",
         "filename": "include/biosxml.hpp",
@@ -66,8 +115,31 @@
         "endChar": 13
       },
       "revId": "d299076ba60a18d4918e5a93e91717e5c52d14b1",
-      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
-      "unresolved": true
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5091862d_d257ee24",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 800,
+      "author": {
+        "id": 1000652
+      },
+      "writtenOn": "2021-12-29T05:22:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "377439d3_19278e0e",
+      "range": {
+        "startLine": 794,
+        "startChar": 12,
+        "endLine": 800,
+        "endChar": 13
+      },
+      "revId": "d299076ba60a18d4918e5a93e91717e5c52d14b1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
