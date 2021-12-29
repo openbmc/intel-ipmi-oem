@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0149b177_6684d597",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-12-29T05:04:07Z",
+      "side": 1,
+      "message": "Code LGTM",
+      "revId": "bac74f3a8152f348c8c03d531fda89ca5663a7e6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d9be38f8_a2b3cda4",
+        "filename": "src/smbiosmdrv2handler.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 310,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-12-29T05:04:07Z",
+      "side": 1,
+      "message": "nit:Might be better to have this as:\n\nphosphor::logging::log\u003cphosphor::logging::level::ERR\u003e(\"Error getting directory entries\",phosphor::logging::entry(\"VALUE\u003d%s\", std::to_string(std::get\u003cuint8_t\u003e(value)))",
+      "range": {
+        "startLine": 310,
+        "startChar": 12,
+        "endLine": 310,
+        "endChar": 45
+      },
+      "revId": "bac74f3a8152f348c8c03d531fda89ca5663a7e6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
