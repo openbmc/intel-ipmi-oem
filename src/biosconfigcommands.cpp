@@ -114,7 +114,8 @@ enum class AttributesType : uint8_t
 {
     unknown = 0,
     string,
-    integer
+    integer,
+    enumeration
 };
 
 using PendingAttributesType =
@@ -133,6 +134,11 @@ AttributesType getAttrType(const std::string_view typeDbus)
     {
         return AttributesType::integer;
     }
+    else if (typeDbus == "xyz.openbmc_project.BIOSConfig."
+                         "Manager.AttributeType.Enumeration")
+    {
+        return AttributesType::enumeration;
+    }
 
     return AttributesType::unknown;
 }
@@ -144,7 +150,8 @@ bool fillPayloadData(std::string& payloadData,
     payloadData += key;
     payloadData += '=';
 
-    if (attrType == AttributesType::string)
+    if (attrType == AttributesType::string ||
+        attrType == AttributesType::enumeration)
     {
         if (!std::holds_alternative<std::string>(attributes))
         {
