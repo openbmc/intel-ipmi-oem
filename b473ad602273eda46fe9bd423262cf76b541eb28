@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7c1f8175_2bde51f4",
+        "filename": "include/biosxml.hpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 791,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2021-12-29T10:29:58Z",
+      "side": 1,
+      "message": "Please catch the error condition and log an error as well something like:\n    if (ss \u003c\u003c std::hex \u003c\u003c currentValStr) \n    { \n        std::string error \u003d\n            \"Invalid hex value input \" + currentValStr + \" for \" + nameStr + \"\\n\";\n        phosphor::logging::log\u003cphosphor::logging::level::ERR\u003e(error.c_str());\n    }\n    else\n    {\n        ss \u003e\u003e currentVal;\n    }",
+      "range": {
+        "startLine": 790,
+        "startChar": 0,
+        "endLine": 791,
+        "endChar": 29
+      },
+      "revId": "b473ad602273eda46fe9bd423262cf76b541eb28",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
