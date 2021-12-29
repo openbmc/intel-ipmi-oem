@@ -39,6 +39,30 @@
       },
       "revId": "bac74f3a8152f348c8c03d531fda89ca5663a7e6",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ca04ab01_c4038c38",
+        "filename": "src/smbiosmdrv2handler.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 310,
+      "author": {
+        "id": 1001317
+      },
+      "writtenOn": "2021-12-29T05:14:01Z",
+      "side": 1,
+      "message": "sure will raise a new patch with this change",
+      "parentUuid": "d9be38f8_a2b3cda4",
+      "range": {
+        "startLine": 310,
+        "startChar": 12,
+        "endLine": 310,
+        "endChar": 45
+      },
+      "revId": "bac74f3a8152f348c8c03d531fda89ca5663a7e6",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
