@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "22d9794b_c0dbbf2f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-12-30T08:05:02Z",
+      "side": 1,
+      "message": "Tested portion is confusing, add the following as test cases.\n1) when offset is valid value.\n2) When offset is invalid value.\n3) repeat 1 and 2 for length.",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 7
+      },
+      "revId": "a6f47310b34774c98ff5b8950b7bc65b27caa54e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c3e9dcf6_e01ef3c9",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1037,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-12-30T08:05:02Z",
+      "side": 1,
+      "message": "since we are not giving separate error code or log, either combine these to one if condition. Or log the error in each if condition. \n\nI would suggest to do the 2nd option, so that just by reading journal log we can understand the error.",
+      "range": {
+        "startLine": 1020,
+        "startChar": 16,
+        "endLine": 1037,
+        "endChar": 17
+      },
+      "revId": "a6f47310b34774c98ff5b8950b7bc65b27caa54e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
