@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "894ae029_5a1d3c44",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1028,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2021-12-30T15:32:35Z",
+      "side": 1,
+      "message": "fileSize is not of type uint64_t, that is why build is failing. \n\n/data0/jenkins/workspace/ci-repository-3/openbmc/intel-ipmi-oem/src/biosconfigcommands.cpp:1028:61: note: candidate 2: ‘operator-(std::streamoff {aka long int}, uint64_t {aka long unsigned int})’ (built-in)\n 1028 |                 if ((fileSize - static_cast\u003cuint64_t\u003e(offset)) \u003c",
+      "range": {
+        "startLine": 1028,
+        "startChar": 21,
+        "endLine": 1028,
+        "endChar": 30
+      },
+      "revId": "6a06a4fd4fb0d67f90e4ff60a27aab4b3de157c4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
