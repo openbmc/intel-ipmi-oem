@@ -1023,6 +1023,19 @@ ipmi::RspType<message::Payload>
                     return ipmi::responseInvalidFieldRequest();
                 }
 
+                if ((fileSize - static_cast<uint64_t>(offset)) <
+                    static_cast<uint64_t>(length))
+                {
+                    ifs.close();
+                    return ipmi::responseInvalidFieldRequest();
+                }
+
+                if (length > static_cast<uint32_t>(maxGetPayloadDataSize))
+                {
+                    ifs.close();
+                    return ipmi::responseInvalidFieldRequest();
+                }
+
                 ifs.seekg(offset, std::ios::beg);
                 std::array<uint8_t, maxGetPayloadDataSize> Buffer;
                 ifs.read(reinterpret_cast<char*>(Buffer.data()), length);
