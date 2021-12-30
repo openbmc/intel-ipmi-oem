@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "90bf16f7_f0587586",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-30T04:36:51Z",
+      "side": 1,
+      "message": "nit: Seeing this differently? Which commit hook file you downloaded?",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 5,
+        "endChar": 37
+      },
+      "revId": "e101ba25bde18baa7fe6c002d4090d252821cb3a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1d51aed3_b5bdb43a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-30T04:36:51Z",
+      "side": 1,
+      "message": "This is just a title, need description of change( why \u0026 what)?",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 41
+      },
+      "revId": "e101ba25bde18baa7fe6c002d4090d252821cb3a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a9920a5a_1c037b6d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-30T04:36:51Z",
+      "side": 1,
+      "message": "Can you run redfish validator and provide results in tested section?",
+      "range": {
+        "startLine": 10,
+        "startChar": 0,
+        "endLine": 20,
+        "endChar": 28
+      },
+      "revId": "e101ba25bde18baa7fe6c002d4090d252821cb3a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
