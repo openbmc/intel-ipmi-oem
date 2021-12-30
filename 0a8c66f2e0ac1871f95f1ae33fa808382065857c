@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "af842216_0899b63c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-30T06:09:05Z",
+      "side": 1,
+      "message": "Changes are made in generic API( Not specific to mctpd), So you need to make sure it works for all services ( Those which started by systemd services as well). \n\nCurrently its used for enable/disable of  PCIe service along with mctp services. So make sure other one is not broken.",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 26
+      },
+      "revId": "0a8c66f2e0ac1871f95f1ae33fa808382065857c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1902d09c_e65fc94c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-30T06:09:05Z",
+      "side": 1,
+      "message": "More teste results needed.\n1) mctd service enable \u0026 disable functionality.\n2) PCIe service enable \u0026disable functionality.\n3) Disable the service, restart the BMC and check is it still disabled or not. Same with AC cycle.\n4) Re-enable service, restart BMC  and check is is enabled.",
+      "range": {
+        "startLine": 27,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 13
+      },
+      "revId": "0a8c66f2e0ac1871f95f1ae33fa808382065857c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
