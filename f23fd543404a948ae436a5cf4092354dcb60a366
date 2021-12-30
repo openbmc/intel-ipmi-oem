@@ -46,6 +46,30 @@
       },
       "revId": "f23fd543404a948ae436a5cf4092354dcb60a366",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "015e9ca5_d7782e9f",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1063,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-12-30T11:37:18Z",
+      "side": 0,
+      "message": "@Sumanth Good find. \nIn that case does \u0027DisableUnitFiles\u0027 followed by \u0027MaskUnitFiles\u0027 will solve the issue?",
+      "parentUuid": "057590c5_2a1b7735",
+      "range": {
+        "startLine": 1060,
+        "startChar": 0,
+        "endLine": 1063,
+        "endChar": 78
+      },
+      "revId": "f23fd543404a948ae436a5cf4092354dcb60a366",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }

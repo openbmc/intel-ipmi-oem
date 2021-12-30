@@ -26,6 +26,53 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "69b96ba1_a829cebb",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-12-30T11:37:18Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "af842216_0899b63c",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 26
+      },
+      "revId": "0a8c66f2e0ac1871f95f1ae33fa808382065857c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0fe05594_2f269064",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-12-30T11:37:18Z",
+      "side": 1,
+      "message": "nit: Remove trailing whitespaces.",
+      "range": {
+        "startLine": 15,
+        "startChar": 64,
+        "endLine": 15,
+        "endChar": 65
+      },
+      "revId": "0a8c66f2e0ac1871f95f1ae33fa808382065857c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "1902d09c_e65fc94c",
         "filename": "/COMMIT_MSG",
         "patchSetId": 4
