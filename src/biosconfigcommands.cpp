@@ -1019,6 +1019,27 @@ ipmi::RspType<message::Payload>
                 // Total file data within given offset
                 if (fileSize < static_cast<uint64_t>(offset))
                 {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ipmiOEMGetPayload: filesize < offset");
+                    ifs.close();
+                    return ipmi::responseInvalidFieldRequest();
+                }
+
+                if ((static_cast<uint64_t>(fileSize) - offset) < length)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ipmiOEMGetPayload: (filesize - offset) < length ");
+                    ifs.close();
+                    return ipmi::responseInvalidFieldRequest();
+                }
+
+                if (length > static_cast<uint32_t>(maxGetPayloadDataSize))
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ipmiOEMGetPayload: length > maxGetPayloadDataSize",
+                        phosphor::logging::entry("LENGTH=%d", length),
+                        phosphor::logging::entry("maxGetPayloadDataSize=%d",
+                                                 maxGetPayloadDataSize));
                     ifs.close();
                     return ipmi::responseInvalidFieldRequest();
                 }
