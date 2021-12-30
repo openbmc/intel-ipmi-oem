@@ -22,6 +22,30 @@
       },
       "revId": "f23fd543404a948ae436a5cf4092354dcb60a366",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "057590c5_2a1b7735",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1063,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-12-30T11:21:42Z",
+      "side": 0,
+      "message": "Disable Unit Files has no effect if the service is already masked. Here are the logs:\nroot:~# systemctl mask xyz.openbmc_project.PCIe\nCreated symlink /etc/systemd/system/xyz.openbmc_project.PCIe.service -\u003e /dev/null.\nroot:~#\nroot:~# systemctl disable xyz.openbmc_project.PCIe\nUnit /etc/systemd/system/xyz.openbmc_project.PCIe.service is masked, ignoring.\nThus disabling after masking is not really required.\n\nThe difference between masking and enabling is as follows:\nMasking creates a symlink of the unit file in /etc/systemd/system to /dev/null and unmasking removes it. Due to symlink being directed to /dev/null, it would not be possible to start a masked service at all.\n\nDisabling removes an existing (proper) symlink in /etc/systemd/system/\u003cmulti-user.target.wants\u003eor\u003cinsert-other-relevant-directory\u003e/* to the unit file, and enabling it inserts back the symlink in /etc/systemd/system/\u003cmulti-user.target.wants\u003eor\u003cinsert-other-relevant-directory\u003e/*.\n\nIn case of mctpd, the \"enable unit\" created an unnecessary symlink in /etc/systemd/system, thus it caused systemd to start mctp service.\n\n@Anajli - please capture the details in commit message.\n\nHowever, I see one potential issue here. If a service has its unit file\u0027s symlink defined in /etc/systemd/system directory, then, unmasking will remove the symlink altogether. Although no service today has its symlink in /etc/systemd/system, it would be good to not to potentially affect such possibility.\n\nWe could roll back to patchset 1\u0027s option of making disable/enable as an optional parameter - i.e. take it as an argument for the startOrStopService. Also, the correct order needs to be disable the service first and mask it. In the other way around - it needs to be unmask first and enable it.",
+      "parentUuid": "a1f68a6f_37086ff4",
+      "range": {
+        "startLine": 1060,
+        "startChar": 0,
+        "endLine": 1063,
+        "endChar": 78
+      },
+      "revId": "f23fd543404a948ae436a5cf4092354dcb60a366",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
