@@ -1011,6 +1011,16 @@ ipmi::RspType<message::Payload>
                 std::string payloadFilePath =
                     "/var/oob/Payload" + std::to_string(payloadType);
 
+                if (length < static_cast<uint32_t>(maxGetPayloadDataSize))
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ipmiOEMGetPayload: length > maxGetPayloadDataSize",
+                        phosphor::logging::entry("LENGTH=%d", length),
+                        phosphor::logging::entry("maxGetPayloadDataSize=%d",
+                                                 maxGetPayloadDataSize));
+                    return ipmi::responseInvalidFieldRequest();
+                }
+
                 std::ifstream ifs(payloadFilePath, std::ios::in |
                                                        std::ios::binary |
                                                        std::ios::ate);
@@ -1026,7 +1036,15 @@ ipmi::RspType<message::Payload>
                 // Total file data within given offset
                 if (fileSize < static_cast<uint64_t>(offset))
                 {
-                    ifs.close();
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ipmiOEMGetPayload: filesize < offset");
+                    return ipmi::responseInvalidFieldRequest();
+                }
+
+                if ((static_cast<uint64_t>(fileSize) - offset) < length)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ipmiOEMGetPayload: (filesize - offset) < length ");
                     return ipmi::responseInvalidFieldRequest();
                 }
 
