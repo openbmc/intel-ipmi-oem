@@ -70,6 +70,30 @@
       },
       "revId": "f23fd543404a948ae436a5cf4092354dcb60a366",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "75ba7966_6fc68fc5",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1063,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2021-12-30T11:40:18Z",
+      "side": 0,
+      "message": "Yes it does. Also, disableUnitFiles should be an optional parameter, i.e. should be carried out on passing a disableRequired flag to the function. (and same argument with enable).",
+      "parentUuid": "015e9ca5_d7782e9f",
+      "range": {
+        "startLine": 1060,
+        "startChar": 0,
+        "endLine": 1063,
+        "endChar": 78
+      },
+      "revId": "f23fd543404a948ae436a5cf4092354dcb60a366",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
