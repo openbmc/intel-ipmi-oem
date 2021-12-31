@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8875219b_fe9dcdc2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-31T06:05:54Z",
+      "side": 1,
+      "message": "clarification: What is hardcoded value here? If smbios file doesn\u0027t exist, dbus call for getting DirectoryEntries will returns zero index and from code change i can see the same. I think, There is nothing we are hardcoding there.",
+      "range": {
+        "startLine": 9,
+        "startChar": 56,
+        "endLine": 9,
+        "endChar": 72
+      },
+      "revId": "9c274deca9cb4d9d3afc5392bc8902bf9fe59c8a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "51158758_84a427fb",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2021-12-31T06:05:54Z",
+      "side": 1,
+      "message": "code lgtm, commit message needs clarification hardcoded value",
+      "revId": "9c274deca9cb4d9d3afc5392bc8902bf9fe59c8a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
