@@ -94,6 +94,30 @@
       },
       "revId": "f23fd543404a948ae436a5cf4092354dcb60a366",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "edefc5ca_6fe00a88",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1063,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2021-12-31T06:00:42Z",
+      "side": 0,
+      "message": "I am not sure why we need optional parameter. What is the use case?",
+      "parentUuid": "75ba7966_6fc68fc5",
+      "range": {
+        "startLine": 1060,
+        "startChar": 0,
+        "endLine": 1063,
+        "endChar": 78
+      },
+      "revId": "f23fd543404a948ae436a5cf4092354dcb60a366",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
