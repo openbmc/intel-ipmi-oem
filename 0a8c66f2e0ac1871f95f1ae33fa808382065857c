@@ -50,6 +50,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "db8dd365_652eb049",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2022-01-01T10:29:01Z",
+      "side": 1,
+      "message": "According to testing results services are running as expected. In the next patch I will keep disableUnit files as an optional parameter to meet future use cases.",
+      "parentUuid": "69b96ba1_a829cebb",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 26
+      },
+      "revId": "0a8c66f2e0ac1871f95f1ae33fa808382065857c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "0fe05594_2f269064",
         "filename": "/COMMIT_MSG",
         "patchSetId": 4
@@ -73,6 +97,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "cab9f26e_5bd446e8",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2022-01-01T10:29:01Z",
+      "side": 1,
+      "message": "sure",
+      "parentUuid": "0fe05594_2f269064",
+      "range": {
+        "startLine": 15,
+        "startChar": 64,
+        "endLine": 15,
+        "endChar": 65
+      },
+      "revId": "0a8c66f2e0ac1871f95f1ae33fa808382065857c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "1902d09c_e65fc94c",
         "filename": "/COMMIT_MSG",
         "patchSetId": 4
@@ -84,6 +132,30 @@
       "writtenOn": "2021-12-30T06:09:05Z",
       "side": 1,
       "message": "More teste results needed.\n1) mctd service enable \u0026 disable functionality.\n2) PCIe service enable \u0026disable functionality.\n3) Disable the service, restart the BMC and check is it still disabled or not. Same with AC cycle.\n4) Re-enable service, restart BMC  and check is is enabled.",
+      "range": {
+        "startLine": 27,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 13
+      },
+      "revId": "0a8c66f2e0ac1871f95f1ae33fa808382065857c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ec966495_36e9109d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2022-01-01T10:29:01Z",
+      "side": 1,
+      "message": "yes I did testing for all the mctp services i.e. MCTP over PCIe,MCTP over SMBus HSBP,MCTP over SMBus PCIe slot and PCIe service for all the operations i.e. start, stop, disable and enable. I executed the ipmi command for disable then did AC cycle and found that services were stopped. Similarly, I executed the command for enabling the services then Did AC cycle and checked the services. The services were enabled.",
+      "parentUuid": "1902d09c_e65fc94c",
       "range": {
         "startLine": 27,
         "startChar": 0,
