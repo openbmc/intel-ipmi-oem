@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5010a474_f461946b",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 1028,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2022-01-03T07:14:28Z",
+      "side": 1,
+      "message": "if ((static_cast\u003cuint64_t\u003e(fileSize) - offset) \u003c length)\n\nUse this to resolve build error.",
+      "range": {
+        "startLine": 1028,
+        "startChar": 16,
+        "endLine": 1028,
+        "endChar": 49
+      },
+      "revId": "74a179a31b3a40c74a4338e8fa169db55d32ca10",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
