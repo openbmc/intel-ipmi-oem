@@ -48,6 +48,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "38b3f574_0156b195",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-01-03T12:39:35Z",
+      "side": 1,
+      "message": "Looks like all latest changes are using this commit hooks.",
+      "parentUuid": "3d824704_fec5ac4d",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 5,
+        "endChar": 37
+      },
+      "revId": "e101ba25bde18baa7fe6c002d4090d252821cb3a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1d51aed3_b5bdb43a",
