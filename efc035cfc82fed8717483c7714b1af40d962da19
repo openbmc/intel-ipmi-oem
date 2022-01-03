@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "04f8dc28_986ded1c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-01-03T19:24:41Z",
+      "side": 1,
+      "message": "Minor picks",
+      "revId": "efc035cfc82fed8717483c7714b1af40d962da19",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "12cdac59_573633db",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 1031,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-01-03T19:24:41Z",
+      "side": 1,
+      "message": "Add the fileSize and offset, Length also in error message ( ENTRY) for better debugging.",
+      "range": {
+        "startLine": 1031,
+        "startChar": 25,
+        "endLine": 1031,
+        "endChar": 68
+      },
+      "revId": "efc035cfc82fed8717483c7714b1af40d962da19",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6c586e09_a379a7f0",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 1039,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-01-03T19:24:41Z",
+      "side": 1,
+      "message": "For better debugging, print length  and maxGetPayloadDataSize",
+      "range": {
+        "startLine": 1039,
+        "startChar": 26,
+        "endLine": 1039,
+        "endChar": 71
+      },
+      "revId": "efc035cfc82fed8717483c7714b1af40d962da19",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
