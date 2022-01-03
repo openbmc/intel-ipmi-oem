@@ -134,6 +134,23 @@
       "message": "code lgtm, commit message needs clarification hardcoded value",
       "revId": "9c274deca9cb4d9d3afc5392bc8902bf9fe59c8a",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "924ae6c6_3e915ad2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2022-01-03T06:25:12Z",
+      "side": 1,
+      "message": "Code looks good to me, update the commit message. \nAlso make sure to wrap the commit message, that is less than 80 characters per line. ",
+      "revId": "9c274deca9cb4d9d3afc5392bc8902bf9fe59c8a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
