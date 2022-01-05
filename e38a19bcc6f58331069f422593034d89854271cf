@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "10f10b61_4f857e9e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001252
+      },
+      "writtenOn": "2022-01-05T05:20:11Z",
+      "side": 1,
+      "message": "Sorry I forgot to format it when submitting the first patch. I\u0027ve got another question, do we still need the KVM service control now? In OpenBMC, though KVM service listens port 5900, it can only be accessed from localhost (BMC itself) and only used by bmcweb. There seems to be no remote KVM service in OpenBMC.",
+      "revId": "e38a19bcc6f58331069f422593034d89854271cf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
