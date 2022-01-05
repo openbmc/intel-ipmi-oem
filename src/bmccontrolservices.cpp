@@ -37,7 +37,7 @@ static const std::unordered_map<uint8_t, std::string> bmcServices = {
     {rmcpServiceBitPos,
      "/xyz/openbmc_project/control/service/phosphor_2dipmi_2dnet"},
     {webServiceBitPos, "/xyz/openbmc_project/control/service/bmcweb"},
-    {solServiceBitPos, "/xyz/openbmc_project/control/service/obmc_2dconsole"},
+    {solServiceBitPos, "/xyz/openbmc_project/control/service/obmc_2dconsole_2dssh"},
     {kvmServiceBitPos, "/xyz/openbmc_project/control/service/start_2dipkvm"},
 };
 
