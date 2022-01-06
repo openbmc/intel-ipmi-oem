@@ -3,6 +3,23 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "7ee9f4f3_bcf37f23",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2022-01-06T12:22:17Z",
+      "side": 1,
+      "message": "nit: Please add byte definitions for the command.",
+      "revId": "bdffaad4a2c4c333f329c60c2569818495637b7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "b7fc075e_0bffb2cf",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -43,6 +60,29 @@
         "startChar": 3,
         "endLine": 19,
         "endChar": 49
+      },
+      "revId": "bdffaad4a2c4c333f329c60c2569818495637b7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1e889a60_1a6c70f5",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1152,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2022-01-06T12:22:17Z",
+      "side": 1,
+      "message": "I don\u0027t think directly using system call in the code for all these operations is a good idea. Can we leverage special mode manager implementation by exposing its existing functionality over the D-bus. https://github.com/intel-innersource/firmware.bmc.openbmc.applications.special-mode-manager/blob/7dc05af0adc32e0f16cd2e4f47956a6b2a470790/src/specialmodemgr.cpp#L150\nLet special mode manager handle all the intelligent part. From here we can just make the D-Bus call and perform the action.",
+      "range": {
+        "startLine": 1152,
+        "startChar": 22,
+        "endLine": 1152,
+        "endChar": 32
       },
       "revId": "bdffaad4a2c4c333f329c60c2569818495637b7f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
