@@ -1,0 +1,10 @@
+Code-Review+2: AppaRao Puli <apparao.puli@linux.intel.com>
+Code-Review+1: Gokul Sanker V G <gokul.sanker.v.g@intel.com>
+Code-Review+1: Name of user not set #1001286
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Ok-To-Test+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Submitted-by: Arun Lal K M <arun.lal@intel.com>
+Submitted-at: Thu, 06 Jan 2022 11:07:15 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/50031
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
