@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1a76a780_98d70f94",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-01-06T03:33:15Z",
+      "side": 1,
+      "message": "Make the commit subject line in the following format:\n\nIf applied, this commit will \u003cyour subject line here\u003e\n\n(suggestion from here https://cbea.ms/git-commit/) \n\nHere, you can make it as \"Make enableUnit and disableUnit files as optional\"",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 51
+      },
+      "revId": "505da57d19b921b0a710f61fd4cd55385c7916f0",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "118cc524_b9ccf3ea",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-01-06T03:33:15Z",
+      "side": 1,
+      "message": "Code LGTM",
+      "revId": "505da57d19b921b0a710f61fd4cd55385c7916f0",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
