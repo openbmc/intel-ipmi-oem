@@ -1,6 +1,29 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "6e72bc87_560d42b1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-01-07T07:23:32Z",
+      "side": 1,
+      "message": "The commands were introduced to increase the security of BMC by disabling network accessible services. I believe the original implementation was fair enough (i.e. to disable all of SOL) and the documentation needs to be fixed instead.\n\nHowever maintainers can take a call here 😊",
+      "range": {
+        "startLine": 9,
+        "startChar": 44,
+        "endLine": 9,
+        "endChar": 71
+      },
+      "revId": "e38a19bcc6f58331069f422593034d89854271cf",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "10f10b61_4f857e9e",
