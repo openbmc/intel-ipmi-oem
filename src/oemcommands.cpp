@@ -165,6 +165,37 @@ int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
     return -1;
 }
 
+namespace fifo
+{
+static const constexpr uint8_t bus = 4;
+std::string i2cBus = "/dev/i2c-" + std::to_string(bus);
+static const constexpr uint8_t slaveAddr = 56;
+// Command register for UFM provisioning/access commands; read/write allowed
+// from CPU/BMC.
+static const constexpr uint8_t provisioningCommand = 0x0b;
+// Trigger register for the command set in the previous offset.
+static const constexpr uint8_t triggerCommand = 0x0c;
+// Set 0x0c to 0x05 to execute command specified at “UFM/Provisioning Command”
+// register
+static const constexpr uint8_t flushRead = 0x05;
+// FIFO read registers
+std::set<uint8_t> readFifoReg = {0x08, 0x0C, 0x0D, 0x13};
+
+// UFM Read FIFO
+static const constexpr uint8_t readFifo = 0x0e;
+
+void writefifo(const uint8_t cmdReg, const uint8_t val)
+{
+    // There is an i2c device on bus 4, the slave address is 56. Based on the
+    // spec, writing cmdReg to address val on this device, will trigger the
+    // write FIFO operation.
+    std::vector<uint8_t> writeData = {cmdReg, val};
+    std::vector<uint8_t> readBuf(0);
+    ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
+}
+
+} // namespace fifo
+
 // Returns the Chassis Identifier (serial #)
 ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                        ipmi_request_t request,
@@ -3764,6 +3795,54 @@ ipmi::RspType<uint8_t, uint8_t> ipmiOEMGetBufferSize()
     return ipmi::responseSuccess(kcsMaxBufferSize, ipmbMaxBufferSize);
 }
 
+ipmi::RspType<std::vector<uint8_t>> ipmiOEMReadFIFO(const uint8_t readRegister,
+                                                    const uint8_t noofBytes)
+{
+    if (!noofBytes && !readRegister)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Master write read command: Read & write count are 0");
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    // Check if readRegister is an FIFO read register
+    if (ipmi::fifo::readFifoReg.find(readRegister) ==
+        ipmi::fifo::readFifoReg.end())
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Master write read command: Register is not in allowed set ");
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    ipmi::fifo::writefifo(ipmi::fifo::provisioningCommand, readRegister);
+    ipmi::fifo::writefifo(ipmi::fifo::triggerCommand, ipmi::fifo::flushRead);
+
+    std::vector<uint8_t> writeData = {ipmi::fifo::readFifo};
+    std::vector<uint8_t> readBuf(1);
+    std::vector<uint8_t> result;
+
+    for (int i = 0; i < noofBytes; i++)
+    {
+
+        ipmi::Cc ret = ipmi::i2cWriteRead(
+            ipmi::fifo::i2cBus, ipmi::fifo::slaveAddr, writeData, readBuf);
+        if (ret != ipmi::ccSuccess)
+        {
+            return ipmi::response(ret);
+        }
+
+        else
+        {
+            for (const uint8_t& data : readBuf)
+            {
+                result.emplace_back(data);
+            }
+        }
+    }
+
+    return ipmi::responseSuccess(result);
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -3934,6 +4013,9 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdOEMGetReading, Privilege::User,
                     ipmiOEMGetReading);
+
+    registerHandler(prioOemBase, intel::netFnApp, intel::app::cmdFIFO,
+                    Privilege::Admin, ipmiOEMReadFIFO);
 }
 
 } // namespace ipmi
