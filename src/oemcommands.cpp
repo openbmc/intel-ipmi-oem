@@ -46,6 +46,7 @@
 #include <filesystem>
 #include <iostream>
 #include <regex>
+#include <set>
 #include <string>
 #include <variant>
 #include <vector>
@@ -164,6 +165,114 @@ int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
     }
     return -1;
 }
+
+namespace mailbox
+{
+static uint8_t bus = 4;
+static std::string i2cBus = "/dev/i2c-" + std::to_string(bus);
+static uint8_t slaveAddr = 56;
+static constexpr auto systemRoot = "/xyz/openbmc_project/inventory/system";
+static constexpr auto sessionIntf = "xyz.openbmc_project.Configuration.PFR";
+const std::string match = "Baseboard/PFR";
+static bool i2cConfigLoaded = false;
+// Command register for UFM provisioning/access commands; read/write allowed
+// from CPU/BMC.
+static const constexpr uint8_t provisioningCommand = 0x0b;
+// Trigger register for the command set in the previous offset.
+static const constexpr uint8_t triggerCommand = 0x0c;
+// Set 0x0c to 0x05 to execute command specified at “UFM/Provisioning Command”
+// register
+static const constexpr uint8_t flushRead = 0x05;
+// FIFO read registers
+std::set<uint8_t> readFifoReg = {0x08, 0x0C, 0x0D, 0x13};
+
+// UFM Read FIFO
+static const constexpr uint8_t readFifo = 0x0e;
+
+enum registerType : uint8_t
+{
+    singleByteRegister = 0,
+    fifoReadRegister,
+
+};
+
+void loadPfrConfig(ipmi::Context::ptr& ctx, bool& i2cConfigLoaded)
+{
+    ipmi::ObjectTree objectTree;
+
+    boost::system::error_code ec = ipmi::getAllDbusObjects(
+        ctx, systemRoot, sessionIntf, match, objectTree);
+
+    if (ec)
+    {
+
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Failed to fetch PFR object from dbus",
+            phosphor::logging::entry("INTERFACE=%s", sessionIntf),
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+
+        return;
+    }
+
+    for (auto& softObject : objectTree)
+    {
+        const std::string& objPath = softObject.first;
+        const std::string& serviceName = softObject.second.begin()->first;
+        // PFR object found.. check for PFR support
+        ipmi::PropertyMap result;
+
+        ec = ipmi::getAllDbusProperties(ctx, serviceName, objPath, sessionIntf,
+                                        result);
+
+        if (ec)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Failed to fetch pfr properties",
+                phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+            return;
+        }
+
+        const uint64_t* i2cBusNum = nullptr;
+        const uint64_t* address = nullptr;
+
+        for (const auto& [propName, propVariant] : result)
+        {
+
+            if (propName == "Address")
+            {
+                address = std::get_if<uint64_t>(&propVariant);
+            }
+            else if (propName == "Bus")
+            {
+                i2cBusNum = std::get_if<uint64_t>(&propVariant);
+            }
+        }
+
+        if ((address == nullptr) || (i2cBusNum == nullptr))
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Unable to read the pfr properties");
+            return;
+        }
+
+        bus = static_cast<int>(*i2cBusNum);
+        i2cBus = "/dev/i2c-" + std::to_string(bus);
+        slaveAddr = static_cast<int>(*address);
+
+        i2cConfigLoaded = true;
+    }
+}
+
+void writefifo(const uint8_t cmdReg, const uint8_t val)
+{
+    // Based on the spec, writing cmdReg to address val on this device, will
+    // trigger the write FIFO operation.
+    std::vector<uint8_t> writeData = {cmdReg, val};
+    std::vector<uint8_t> readBuf(0);
+    ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
+}
+
+} // namespace mailbox
 
 // Returns the Chassis Identifier (serial #)
 ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
@@ -3764,6 +3873,109 @@ ipmi::RspType<uint8_t, uint8_t> ipmiOEMGetBufferSize()
     return ipmi::responseSuccess(kcsMaxBufferSize, ipmbMaxBufferSize);
 }
 
+ipmi::RspType<std::vector<uint8_t>>
+    ipmiOEMReadPFRMailbox(ipmi::Context::ptr& ctx, const uint8_t readRegister,
+                          const uint8_t numOfBytes, uint8_t registerIdentifier)
+{
+    if (!ipmi::mailbox::i2cConfigLoaded)
+    {
+
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Calling PFR Load Configuration Function to Get I2C Bus and Slave "
+            "Address ");
+
+        ipmi::mailbox::loadPfrConfig(ctx, ipmi::mailbox::i2cConfigLoaded);
+    }
+
+    if (!numOfBytes && !readRegister)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "OEM IPMI command: Read & write count are 0 which is invalid ");
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    switch (registerIdentifier)
+    {
+        case ipmi::mailbox::registerType::fifoReadRegister:
+        {
+            // Check if readRegister is an FIFO read register
+            if (registerIdentifier == 1)
+            {
+                if (ipmi::mailbox::readFifoReg.find(readRegister) ==
+                    ipmi::mailbox::readFifoReg.end())
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "OEM IPMI command: Register is not a Read FIFO  ");
+                    return ipmi::responseInvalidFieldRequest();
+                }
+
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "OEM IPMI command: Register is a Read FIFO  ");
+
+                ipmi::mailbox::writefifo(ipmi::mailbox::provisioningCommand,
+                                         readRegister);
+                ipmi::mailbox::writefifo(ipmi::mailbox::triggerCommand,
+                                         ipmi::mailbox::flushRead);
+
+                std::vector<uint8_t> writeData = {ipmi::mailbox::readFifo};
+                std::vector<uint8_t> readBuf(1);
+                std::vector<uint8_t> result;
+
+                for (int i = 0; i < numOfBytes; i++)
+                {
+
+                    ipmi::Cc ret = ipmi::i2cWriteRead(ipmi::mailbox::i2cBus,
+                                                      ipmi::mailbox::slaveAddr,
+                                                      writeData, readBuf);
+                    if (ret != ipmi::ccSuccess)
+                    {
+                        return ipmi::response(ret);
+                    }
+
+                    else
+                    {
+                        for (const uint8_t& data : readBuf)
+                        {
+                            result.emplace_back(data);
+                        }
+                    }
+                }
+
+                return ipmi::responseSuccess(result);
+            }
+        }
+
+        case ipmi::mailbox::registerType::singleByteRegister:
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "OEM IPMI command: Register is a Single Byte Register ");
+
+            std::vector<uint8_t> writeData = {readRegister};
+            std::vector<uint8_t> readBuf(numOfBytes);
+
+            ipmi::Cc ret = ipmi::i2cWriteRead(ipmi::mailbox::i2cBus,
+                                              ipmi::mailbox::slaveAddr,
+                                              writeData, readBuf);
+            if (ret != ipmi::ccSuccess)
+            {
+                return ipmi::response(ret);
+            }
+            return ipmi::responseSuccess(readBuf);
+        }
+
+        default:
+        {
+
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "OEM IPMI command: Register identifier is not valid.It should "
+                "be 0 "
+                "for Single Byte Register and 1 for FIFO Read Register");
+
+            return ipmi::responseInvalidFieldRequest();
+        }
+    }
+}
+
 static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
@@ -3934,6 +4146,9 @@ static void registerOEMFunctions(void)
     registerHandler(prioOemBase, intel::netFnGeneral,
                     intel::general::cmdOEMGetReading, Privilege::User,
                     ipmiOEMGetReading);
+
+    registerHandler(prioOemBase, intel::netFnApp, intel::app::cmdPFRMailboxRead,
+                    Privilege::Admin, ipmiOEMReadPFRMailbox);
 }
 
 } // namespace ipmi
