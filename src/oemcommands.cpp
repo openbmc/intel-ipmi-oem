@@ -686,7 +686,9 @@ ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
         getDbusProperty(*dbus, service, powerRestoreDelayObjPath,
                         powerRestoreDelayIntf, powerRestoreDelayProp);
 
-    uint16_t delay = std::get<uint16_t>(variant);
+    uint64_t val = std::get<uint64_t>(variant);
+    val /= 1000000UL;
+    uint16_t delay = val;
     resp->byteLSB = delay;
     resp->byteMSB = delay >> 8;
 
@@ -863,11 +865,12 @@ ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     }
     delay = data->byteMSB;
     delay = (delay << 8) | data->byteLSB;
+    uint64_t val = delay * 1000000;
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     std::string service =
         getService(*dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
     setDbusProperty(*dbus, service, powerRestoreDelayObjPath,
-                    powerRestoreDelayIntf, powerRestoreDelayProp, delay);
+                    powerRestoreDelayIntf, powerRestoreDelayProp, val);
     *dataLen = 0;
 
     return IPMI_CC_OK;
