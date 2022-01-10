@@ -1200,7 +1200,7 @@ ipmi::RspType<uint16_t> ipmiStorageAddSELEntry(
     // Send this request to the Redfish hooks to log it as a Redfish message
     // instead.  There is no need to add it to the SEL, so just return success.
     intel_oem::ipmi::sel::checkRedfishHooks(
-        recordID, recordType, timestamp, generatorID, evmRev, sensorType,
+        recordID, recordType, timestamp, (generatorID << 1), evmRev, sensorType,
         sensorNum, eventType, eventData1, eventData2, eventData3);
 
     uint16_t responseID = 0xFFFF;
