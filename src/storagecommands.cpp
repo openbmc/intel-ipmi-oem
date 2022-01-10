@@ -1197,6 +1197,9 @@ ipmi::RspType<uint16_t> ipmiStorageAddSELEntry(
     // added
     cancelSELReservation();
 
+    // Generator ID is 7 bit and LS Bit contains '1' or '0' depending on the
+    // source. Refer IPMI SPEC, Table 32, SEL Event Records.
+    generatorID = (generatorID & 0xff00) | ((generatorID & 0xff) << 1);
     // Send this request to the Redfish hooks to log it as a Redfish message
     // instead.  There is no need to add it to the SEL, so just return success.
     intel_oem::ipmi::sel::checkRedfishHooks(
