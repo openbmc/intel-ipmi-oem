@@ -171,9 +171,9 @@ static constexpr const char* biosVersionIntf =
 static constexpr const char* biosVersionProp = "Version";
 
 static constexpr const char* powerRestoreDelayObjPath =
-    "/xyz/openbmc_project/control/power_restore_delay";
+    "/xyz/openbmc_project/control/host0/power_restore_policy";
 static constexpr const char* powerRestoreDelayIntf =
-    "xyz.openbmc_project.Control.Power.RestoreDelay";
+    "xyz.openbmc_project.Control.Power.RestorePolicy";
 static constexpr const char* powerRestoreDelayProp = "PowerRestoreDelay";
 static constexpr const char* processorErrConfigObjPath =
     "/xyz/openbmc_project/control/processor_error_config";
