@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dce3e6bb_e2b60a88",
+        "filename": "src/ipmi_to_redfish_hooks.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 839,
+      "author": {
+        "id": 1001239
+      },
+      "writtenOn": "2022-01-11T18:36:54Z",
+      "side": 0,
+      "message": "Based on above comment, at line number 835, this line should not change",
+      "revId": "0fac9bf4a060ab2b25133f329fa7602838b3dd3e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
