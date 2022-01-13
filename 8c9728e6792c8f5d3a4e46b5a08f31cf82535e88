@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "00c47712_e558c5a8",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-01-13T00:33:31Z",
+      "side": 1,
+      "message": "no Tested: line.\n\nPlease tell how this change was tested",
+      "revId": "8c9728e6792c8f5d3a4e46b5a08f31cf82535e88",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "5cf7a44c_79b41a7f",
@@ -14,6 +31,46 @@
       "writtenOn": "2022-01-10T08:03:46Z",
       "side": 1,
       "message": "Note: See also https://gerrit.openbmc-project.xyz/c/openbmc/x86-power-control/+/49953",
+      "revId": "8c9728e6792c8f5d3a4e46b5a08f31cf82535e88",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e6a69ad8_c0053541",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-01-13T00:33:31Z",
+      "side": 1,
+      "message": "both of these cannot be true at the same time, so postCompleted will always be false. Did you mean || instead of \u0026\u0026 ?",
+      "range": {
+        "startLine": 151,
+        "startChar": 24,
+        "endLine": 153,
+        "endChar": 61
+      },
+      "revId": "8c9728e6792c8f5d3a4e46b5a08f31cf82535e88",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "05829324_3ab98311",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 209,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-01-13T00:33:31Z",
+      "side": 1,
+      "message": "same note here.",
       "revId": "8c9728e6792c8f5d3a4e46b5a08f31cf82535e88",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
