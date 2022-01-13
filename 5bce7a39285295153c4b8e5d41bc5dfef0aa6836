@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "c7f5f155_1be1d45a",
+        "filename": "src/ipmi_to_redfish_hooks.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 836,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2022-01-13T17:25:25Z",
+      "side": 1,
+      "message": "Reverted now. Thanks",
+      "parentUuid": "4b79efbc_bff3b27c",
+      "revId": "5bce7a39285295153c4b8e5d41bc5dfef0aa6836",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "2fbd8403_e63ef9c0",
         "filename": "src/storagecommands.cpp",
         "patchSetId": 1
@@ -31,6 +49,24 @@
       "writtenOn": "2022-01-11T18:36:54Z",
       "side": 1,
       "message": "generator ID is 16 bit. Bit 7:4 of Byte 2 contains channel number. Please refer to Table 32, page 431 of IPMI spec. How are we conforming to the spec, if generator ID is left shifted by 1 bit and passed into the function?",
+      "revId": "5bce7a39285295153c4b8e5d41bc5dfef0aa6836",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0477d4f0_ab79ffac",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1203,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2022-01-13T17:25:25Z",
+      "side": 1,
+      "message": "Fixed now. Thanks",
+      "parentUuid": "2fbd8403_e63ef9c0",
       "revId": "5bce7a39285295153c4b8e5d41bc5dfef0aa6836",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
