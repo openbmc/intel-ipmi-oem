@@ -18,6 +18,24 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "a1e1eb73_2e58f491",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000879
+      },
+      "writtenOn": "2022-01-13T07:27:01Z",
+      "side": 1,
+      "message": "To be honest, I didn\u0027t test this. I don\u0027t have intel-ipmi-oem on the system and I need to change configuration each time I want to test any changes here.",
+      "parentUuid": "00c47712_e558c5a8",
+      "revId": "8c9728e6792c8f5d3a4e46b5a08f31cf82535e88",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "5cf7a44c_79b41a7f",
@@ -48,6 +66,30 @@
       "writtenOn": "2022-01-13T00:33:31Z",
       "side": 1,
       "message": "both of these cannot be true at the same time, so postCompleted will always be false. Did you mean || instead of \u0026\u0026 ?",
+      "range": {
+        "startLine": 151,
+        "startChar": 24,
+        "endLine": 153,
+        "endChar": 61
+      },
+      "revId": "8c9728e6792c8f5d3a4e46b5a08f31cf82535e88",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1db220d7_dd9b28a8",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 1000879
+      },
+      "writtenOn": "2022-01-13T07:27:01Z",
+      "side": 1,
+      "message": "Oh, my bad, how could I make so stupid mistake?.. (",
+      "parentUuid": "e6a69ad8_c0053541",
       "range": {
         "startLine": 151,
         "startChar": 24,
