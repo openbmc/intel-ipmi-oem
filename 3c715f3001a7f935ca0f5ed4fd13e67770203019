@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5fa9d4b2_b818b0f8",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-01-14T22:11:24Z",
+      "side": 1,
+      "message": "ipmi::getAllDbusObject(ctx, ...)?",
+      "range": {
+        "startLine": 199,
+        "startChar": 4,
+        "endLine": 205,
+        "endChar": 13
+      },
+      "revId": "3c715f3001a7f935ca0f5ed4fd13e67770203019",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6e975f01_302b1ff2",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-01-14T22:11:24Z",
+      "side": 1,
+      "message": "ipmi::getAllDbusProperties(ctx,...)?",
+      "range": {
+        "startLine": 215,
+        "startChar": 16,
+        "endLine": 220,
+        "endChar": 45
+      },
+      "revId": "3c715f3001a7f935ca0f5ed4fd13e67770203019",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "87eb760c_6087f5fd",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 3883,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-01-14T22:11:24Z",
+      "side": 1,
+      "message": "first item should be \u0027ipmi::Context::ptr\u0026 ctx\u0027 so you can use it later for async requests.",
+      "range": {
+        "startLine": 3883,
+        "startChar": 25,
+        "endLine": 3883,
+        "endChar": 26
+      },
+      "revId": "3c715f3001a7f935ca0f5ed4fd13e67770203019",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b39b6048_d9d1c799",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 3892,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-01-14T22:11:24Z",
+      "side": 1,
+      "message": "not needed, use ctx as shown above.",
+      "range": {
+        "startLine": 3892,
+        "startChar": 0,
+        "endLine": 3892,
+        "endChar": 71
+      },
+      "revId": "3c715f3001a7f935ca0f5ed4fd13e67770203019",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2dc805bc_51d1401d",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 3894,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-01-14T22:11:24Z",
+      "side": 1,
+      "message": "pass ctx instead of conn.",
+      "range": {
+        "startLine": 3894,
+        "startChar": 37,
+        "endLine": 3894,
+        "endChar": 41
+      },
+      "revId": "3c715f3001a7f935ca0f5ed4fd13e67770203019",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
