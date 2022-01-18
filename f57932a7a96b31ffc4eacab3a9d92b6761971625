@@ -34,6 +34,24 @@
       "parentUuid": "d372fee9_3d3ef75f",
       "revId": "f57932a7a96b31ffc4eacab3a9d92b6761971625",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d636478a_46c29a0d",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1200,
+      "author": {
+        "id": 1001239
+      },
+      "writtenOn": "2022-01-18T18:49:17Z",
+      "side": 1,
+      "message": "As discussed in the call, this function assumes that user will populate the generatorID field. So, no checks/ reconstruction of particular field done. If this is the intent, I am okay with this. Other reviewers including the maintainer should review and approve.",
+      "parentUuid": "693a57e2_5bcf3d9f",
+      "revId": "f57932a7a96b31ffc4eacab3a9d92b6761971625",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
