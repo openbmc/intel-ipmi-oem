@@ -52,6 +52,29 @@
       "parentUuid": "693a57e2_5bcf3d9f",
       "revId": "f57932a7a96b31ffc4eacab3a9d92b6761971625",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a320e97d_14d59259",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1202,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-01-18T23:01:51Z",
+      "side": 1,
+      "message": "I don\u0027t think this is the logic you want. The shifted LSB high bit will bleed into the low bit of the MSB. If mkgen(x) is the logic above, here are some sample input/output pairs:\nmkgen(ff7f) \u003d fffe\nmkgen(f7ff) \u003d f7fe\nmkgen(5aa5) \u003d 5b4a\nmkgen(5555) \u003d 55aa\nmkgen(aaaa) \u003d ab54\nmkgen(abcd) \u003d ab9a\nmkgen(789a) \u003d 7934\n\nThe reason here is that for \u0026 | \u003c\u003c operators with immediate values, the resulting intermediate value is an integer, not necessarily the size of the original operands. To force the correct value, you would need to do a mask or cast after the shift or do the shift first:\n\ngeneratorID \u003d (generatorID \u0026 0xff00) | ((generatorID \u003c\u003c 1) \u0026 0xff);",
+      "range": {
+        "startLine": 1202,
+        "startChar": 20,
+        "endLine": 1202,
+        "endChar": 66
+      },
+      "revId": "f57932a7a96b31ffc4eacab3a9d92b6761971625",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
