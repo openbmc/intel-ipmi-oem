@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "abc09454_8378f1cf",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-01-19T00:55:23Z",
+      "side": 1,
+      "message": "The add SEL entry function should be sending all the proper bytes of the SEL as described in the SEL Records Format table in the IPMI spec. This means that the 2-byte Generator ID should already be fully formed (LSB[0] \u003d 0 for system software ID, 1 for I2C addr; LSB[7:1] \u003d ID (already shifted into place))\n\nSo the correct command to send the ECC correctable error entry would use 0x66 as the LSB instead of 0x33 as shown in the commit message.\n\nAs such, this command is implemented correctly. There are some possible values of GeneratorID that are invalid and could possibly be filtered out, but the bytes should simply be passed on to the checkRedfishHooks function as is.\n\nPlease abandon this patch.",
+      "revId": "f57932a7a96b31ffc4eacab3a9d92b6761971625",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d372fee9_3d3ef75f",
