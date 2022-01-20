@@ -151,6 +151,30 @@
       },
       "revId": "bdffaad4a2c4c333f329c60c2569818495637b7f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9dfd8c7a_57e3d7eb",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1152,
+      "author": {
+        "id": 1000276
+      },
+      "writtenOn": "2022-01-20T16:17:06Z",
+      "side": 1,
+      "message": "+1.  We might consider not supporting the start/stop functionality for SSH and only use enable/disable with the existing script.  Then we don\u0027t need as much special handling.\n\nOn that thought, does the existing startOrStopService() function not work for the socket?",
+      "parentUuid": "cda389bb_d88fadea",
+      "range": {
+        "startLine": 1152,
+        "startChar": 22,
+        "endLine": 1152,
+        "endChar": 32
+      },
+      "revId": "bdffaad4a2c4c333f329c60c2569818495637b7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
