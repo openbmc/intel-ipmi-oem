@@ -907,6 +907,8 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
                     filestat.st_mtime;
                 gNVOOBdata.payloadInfo[payloadType].payloadTotalSize =
                     filestat.st_size;
+                gNVOOBdata.payloadInfo[payloadType].payloadStatus =
+                    static_cast<uint8_t>(ipmi::PStatus::Valid);
             }
             else
             {
@@ -1020,7 +1022,7 @@ ipmi::RspType<message::Payload>
                 std::string payloadFilePath =
                     "/var/oob/Payload" + std::to_string(payloadType);
 
-                if (length < static_cast<uint32_t>(maxGetPayloadDataSize))
+                if (length > static_cast<uint32_t>(maxGetPayloadDataSize))
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "ipmiOEMGetPayload: length > maxGetPayloadDataSize",
