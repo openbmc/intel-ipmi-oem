@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "70e4c59a_cf194303",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000276
+      },
+      "writtenOn": "2022-01-20T17:24:27Z",
+      "side": 1,
+      "message": "LGTM with a suggestion to add a comment so we can remove the short string in the future.",
+      "revId": "8630c8ab7266006996fdb35ebad483f6ae1fb9b7",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0a46eada_4f189c90",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 476,
+      "author": {
+        "id": 1000276
+      },
+      "writtenOn": "2022-01-20T17:24:27Z",
+      "side": 1,
+      "message": "It would be good to add a comment here noting that the short string is deprecated and will be removed in the future.\n\nYou can see my comment as an example, here: https://gerrit.openbmc-project.xyz/c/openbmc/pfr-manager/+/50515/2/service/src/mainapp.cpp#527.",
+      "revId": "8630c8ab7266006996fdb35ebad483f6ae1fb9b7",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
