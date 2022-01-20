@@ -455,9 +455,13 @@ static bool flushNVOOBdata()
 /** @brief implement to get the System State
  *  @returns status
  */
-
-static int getSystemOSState(std::string& OsStatus)
+static bool getPostCompleted()
 {
+    /*
+     * In case of failure we treat postCompleted as true.
+     * So that BIOS config commands is not accepted by BMC by mistake.
+     */
+    bool postCompleted = true;
 
     try
     {
@@ -467,13 +471,24 @@ static int getSystemOSState(std::string& OsStatus)
                             "/xyz/openbmc_project/state/os",
                             "xyz.openbmc_project.State.OperatingSystem.Status",
                             "OperatingSystemState");
-        OsStatus = std::get<std::string>(variant);
-        return ipmi::ccSuccess;
+        auto& value = std::get<std::string>(variant);
+
+        // The short strings "BootComplete" and "Standby" are
+        // deprecated in favor of the full enum strings
+        // Support for the short strings will be removed in the
+        // future.
+        postCompleted = (value == "Standby") ||
+                        (value == "xyz.openbmc_project.State.OperatingSystem."
+                                  "Status.OSStatus.Standby");
     }
     catch (const std::exception& e)
     {
-        return ipmi::ccUnspecifiedError;
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "'getDbusProperty' failed to read "
+            "xyz.openbmc_project.State.OperatingSystem");
     }
+
+    return postCompleted;
 }
 
 /** @brief implement to get the Rest BIOS property
@@ -668,10 +683,7 @@ ipmi::RspType<> ipmiOEMSetBIOSCap(ipmi::Context::ptr ctx,
                                   uint8_t BIOSCapabilties, uint8_t reserved1,
                                   uint8_t reserved2, uint8_t reserved3)
 {
-    std::string OSState;
-    getSystemOSState(OSState);
-
-    if (OSState != "OperatingState" && IsSystemInterface(ctx))
+    if (!getPostCompleted() && IsSystemInterface(ctx))
     {
         if (reserved1 != 0 || reserved2 != 0 || reserved3 != 0)
         {
@@ -715,6 +727,7 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
     {
         return ipmi::response(ipmiCCBIOSCapabilityInitNotDone);
     }
+
     // Validate the Payload Type
     if (payloadType > maxPayloadSupported)
     {
@@ -724,10 +737,7 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
     // We should support this Payload type 0 command only in KCS Interface
     if (payloadType == static_cast<uint8_t>(ipmi::PType::IntelXMLType0))
     {
-        std::string OSState;
-
-        getSystemOSState(OSState);
-        if (!IsSystemInterface(ctx) || OSState == "OperatingState")
+        if (!IsSystemInterface(ctx) || getPostCompleted())
         {
             return ipmi::responseCommandNotAvailable();
         }
@@ -1091,19 +1101,15 @@ ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
     ipmi::Context::ptr ctx, std::array<uint8_t, maxSeedSize>& pwdSeed,
     uint8_t algoInfo, std::array<uint8_t, maxHashSize>& adminPwdHash)
 {
-
-    std::string OSState;
-
     // We should support this command only in KCS Interface
     if (!IsSystemInterface(ctx))
     {
         return ipmi::responseCommandNotAvailable();
     }
-    getSystemOSState(OSState);
+
     // We should not support this command after System Booted - After Exit Boot
     // service called
-
-    if (OSState == "OperatingState")
+    if (getPostCompleted())
     {
         return ipmi::response(ipmiCCNotSupportedInCurrentState);
     }
@@ -1146,8 +1152,6 @@ ipmi::RspType<std::array<uint8_t, maxSeedSize>, uint8_t,
               std::array<uint8_t, maxHashSize>>
     ipmiOEMGetBIOSHash(ipmi::Context::ptr ctx)
 {
-
-    std::string OSState;
     nlohmann::json data = nullptr;
 
     // We should support this command only in KCS Interface
@@ -1156,11 +1160,9 @@ ipmi::RspType<std::array<uint8_t, maxSeedSize>, uint8_t,
         return ipmi::responseCommandNotAvailable();
     }
 
-    getSystemOSState(OSState);
     // We should not support this command after System Booted - After Exit Boot
     // service called
-
-    if (OSState != "OperatingState")
+    if (!getPostCompleted())
     {
         std::string HashFilePath = "/var/lib/bios-settings-manager/seedData";
 
@@ -1217,7 +1219,6 @@ ipmi::RspType<std::array<uint8_t, maxSeedSize>, uint8_t,
     }
     else
     {
-
         return ipmi::response(ipmiCCNotSupportedInCurrentState);
     }
 }
