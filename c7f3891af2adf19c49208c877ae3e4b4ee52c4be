@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "46fb8df7_f49b92c1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001286
+      },
+      "writtenOn": "2022-01-21T09:49:23Z",
+      "side": 1,
+      "message": "Please check the exception part",
+      "revId": "c7f3891af2adf19c49208c877ae3e4b4ee52c4be",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1fb39e1c_8dcc0b21",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 491,
+      "author": {
+        "id": 1001286
+      },
+      "writtenOn": "2022-01-21T09:49:23Z",
+      "side": 1,
+      "message": "Even if exception is thrown by code in try block we return true. This doesn\u0027t look good. Shouldn\u0027t we return false or flag it to caller that there is problem.\n\nWe are catching std::exception and logging error as failed to read. This will be misleading if exception is thrown because of some other reason. I think we should catch specific exception that belongs to case when read has failed and let rest pop up to the caller.",
+      "range": {
+        "startLine": 484,
+        "startChar": 0,
+        "endLine": 491,
+        "endChar": 25
+      },
+      "revId": "c7f3891af2adf19c49208c877ae3e4b4ee52c4be",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
