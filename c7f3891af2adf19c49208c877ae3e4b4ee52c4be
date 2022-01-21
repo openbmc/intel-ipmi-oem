@@ -39,6 +39,30 @@
       },
       "revId": "c7f3891af2adf19c49208c877ae3e4b4ee52c4be",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "97a071dc_ad444fbb",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 491,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2022-01-21T09:55:28Z",
+      "side": 1,
+      "message": "We want to block those OOB IPMI commands after post complete. And if we are not able to read the post complete status we choose to block the commands.\n\nThis is by design. Return here is not success or failure. \n\nReturn here is \u0027is post complete done\u0027",
+      "parentUuid": "1fb39e1c_8dcc0b21",
+      "range": {
+        "startLine": 484,
+        "startChar": 0,
+        "endLine": 491,
+        "endChar": 25
+      },
+      "revId": "c7f3891af2adf19c49208c877ae3e4b4ee52c4be",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
