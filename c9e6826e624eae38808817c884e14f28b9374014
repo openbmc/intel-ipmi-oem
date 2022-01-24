@@ -34,6 +34,24 @@
       "parentUuid": "33b9841c_73a287ec",
       "revId": "c9e6826e624eae38808817c884e14f28b9374014",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ebd0855f_b2bf4a8d",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1043,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2022-01-24T09:24:12Z",
+      "side": 1,
+      "message": "This code is in failure case rt? so how is adding a fclose here affecting a positive test case?",
+      "parentUuid": "04f237c7_d38bcfc2",
+      "revId": "c9e6826e624eae38808817c884e14f28b9374014",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
