@@ -34,6 +34,23 @@
       "parentUuid": "f5964bfc_b2343136",
       "revId": "836f8f1a6ce0854ec751c4e03238eb2d929431e4",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5e46d47d_38fca958",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-01-25T10:28:58Z",
+      "side": 1,
+      "message": "code lgtm, Wait for Vernon to provide his vote as he has some comments in past. ",
+      "revId": "836f8f1a6ce0854ec751c4e03238eb2d929431e4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
