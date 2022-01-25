@@ -48,6 +48,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "96b190a5_b15f76a5",
+        "filename": "include/oemcommands.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1001213
+      },
+      "writtenOn": "2022-01-25T05:16:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f932acd9_ca3a900b",
+      "range": {
+        "startLine": 119,
+        "startChar": 21,
+        "endLine": 119,
+        "endChar": 28
+      },
+      "revId": "f0f14ce6de611451e757ac8a7bc1966fae25d2e5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "342435ad_09980edc",
@@ -85,6 +109,30 @@
       "side": 1,
       "message": "Updated",
       "parentUuid": "342435ad_09980edc",
+      "range": {
+        "startLine": 352,
+        "startChar": 50,
+        "endLine": 352,
+        "endChar": 59
+      },
+      "revId": "f0f14ce6de611451e757ac8a7bc1966fae25d2e5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "175b092d_945f407c",
+        "filename": "ipmi-whitelist.conf",
+        "patchSetId": 1
+      },
+      "lineNbr": 352,
+      "author": {
+        "id": 1001213
+      },
+      "writtenOn": "2022-01-25T05:16:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bfc5c4c6_24f6fa9f",
       "range": {
         "startLine": 352,
         "startChar": 50,
@@ -142,6 +190,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "747257b7_3f22d574",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 172,
+      "author": {
+        "id": 1001213
+      },
+      "writtenOn": "2022-01-25T05:16:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c15c934d_39576eab",
+      "range": {
+        "startLine": 170,
+        "startChar": 0,
+        "endLine": 172,
+        "endChar": 46
+      },
+      "revId": "f0f14ce6de611451e757ac8a7bc1966fae25d2e5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2b0927cb_a474027b",
@@ -179,6 +251,30 @@
       "side": 1,
       "message": "Updated.",
       "parentUuid": "2b0927cb_a474027b",
+      "range": {
+        "startLine": 181,
+        "startChar": 0,
+        "endLine": 182,
+        "endChar": 57
+      },
+      "revId": "f0f14ce6de611451e757ac8a7bc1966fae25d2e5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ac3441d9_cc3adda0",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 1001213
+      },
+      "writtenOn": "2022-01-25T05:16:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f629e2e5_e35a6ef6",
       "range": {
         "startLine": 181,
         "startChar": 0,
@@ -236,6 +332,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "df1ab1b1_cb4f78a7",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 3811,
+      "author": {
+        "id": 1001213
+      },
+      "writtenOn": "2022-01-25T05:16:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c3bcfcdd_26411d2c",
+      "range": {
+        "startLine": 3808,
+        "startChar": 4,
+        "endLine": 3811,
+        "endChar": 5
+      },
+      "revId": "f0f14ce6de611451e757ac8a7bc1966fae25d2e5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7a659743_dce8a52a",
@@ -283,6 +403,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "86bfa68f_a84d2c86",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 3813,
+      "author": {
+        "id": 1001213
+      },
+      "writtenOn": "2022-01-25T05:16:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2f7bf684_8807451c",
+      "range": {
+        "startLine": 3813,
+        "startChar": 13,
+        "endLine": 3813,
+        "endChar": 38
+      },
+      "revId": "f0f14ce6de611451e757ac8a7bc1966fae25d2e5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b9d9cb67_3cdca9ee",
@@ -320,6 +464,30 @@
       "side": 1,
       "message": "Updated",
       "parentUuid": "b9d9cb67_3cdca9ee",
+      "range": {
+        "startLine": 4018,
+        "startChar": 45,
+        "endLine": 4018,
+        "endChar": 53
+      },
+      "revId": "f0f14ce6de611451e757ac8a7bc1966fae25d2e5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b8f1f72b_31eb09f2",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 4018,
+      "author": {
+        "id": 1001213
+      },
+      "writtenOn": "2022-01-25T05:16:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4dc9cfe8_4601cd47",
       "range": {
         "startLine": 4018,
         "startChar": 45,
