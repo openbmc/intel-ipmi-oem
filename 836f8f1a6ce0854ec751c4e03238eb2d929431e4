@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f5964bfc_b2343136",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000879
+      },
+      "writtenOn": "2022-01-25T08:15:47Z",
+      "side": 1,
+      "message": "Ping.\nThis blocking mrge of the change",
+      "revId": "836f8f1a6ce0854ec751c4e03238eb2d929431e4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
