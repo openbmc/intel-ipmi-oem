@@ -804,7 +804,7 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
             // Check for Special mode
             if (mtm.getMfgMode() == SpecialMode::none)
             {
-                return ipmi::ccInvalidCommand;
+                return ipmi::ccCommandNotAvailable;
             }
             return ipmi::ccSuccess;
         case makeCmdKey(ipmi::netFnStorage, ipmi::storage::cmdDeleteSelEntry):
