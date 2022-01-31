@@ -168,6 +168,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "c8360e95_9c046669",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000411
+      },
+      "writtenOn": "2022-01-31T12:14:18Z",
+      "side": 1,
+      "message": "Please modify the commit message description for more clarity.. something like below?\n\nRestricted commands must be executed only in Manufacturing mode. In non-MTM mode these commands should not be allowed. Changing the error comp code from \"Invalid Command\" C1 to more appropriate one.",
+      "parentUuid": "00406fd5_25e55ac2",
+      "range": {
+        "startLine": 10,
+        "startChar": 43,
+        "endLine": 11,
+        "endChar": 27
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "edd2bdb8_9ccfe873",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -244,6 +268,24 @@
       "side": 1,
       "message": "I checked with Smriti ,So it\u0027s fine .As all the above commands works only in manufacturing mode. So this will be implemented to all.",
       "parentUuid": "e6f18cee_1f3c1dd0",
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "79ca2244_bfd08ee3",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 807,
+      "author": {
+        "id": 1000411
+      },
+      "writtenOn": "2022-01-31T12:14:18Z",
+      "side": 1,
+      "message": "As discussed, D5 comp code seems more appropriate than D4 (Insufficient Privilege). Please change accordingly.",
+      "parentUuid": "1fbcdc4f_ad5384f4",
       "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
