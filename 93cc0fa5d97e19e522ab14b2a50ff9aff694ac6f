@@ -49,6 +49,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "041ae341_3a418bfe",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-01-31T10:28:11Z",
+      "side": 1,
+      "message": "+1, Code change is not limiting to MFG mode. So lets update description accordingly.",
+      "parentUuid": "b74fac10_9d591518",
+      "range": {
+        "startLine": 10,
+        "startChar": 16,
+        "endLine": 10,
+        "endChar": 25
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "b8486560_8980135d",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
