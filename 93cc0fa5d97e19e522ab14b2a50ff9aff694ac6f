@@ -26,6 +26,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "5df10750_ec9818e2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2022-01-31T10:38:28Z",
+      "side": 1,
+      "message": "ok",
+      "parentUuid": "90bdd8fa_1db69a85",
+      "range": {
+        "startLine": 9,
+        "startChar": 49,
+        "endLine": 9,
+        "endChar": 64
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "b74fac10_9d591518",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -73,6 +97,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "6c3385a9_3c34f0d8",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2022-01-31T10:38:28Z",
+      "side": 1,
+      "message": "Sure",
+      "parentUuid": "041ae341_3a418bfe",
+      "range": {
+        "startLine": 10,
+        "startChar": 16,
+        "endLine": 10,
+        "endChar": 25
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "b8486560_8980135d",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -84,6 +132,30 @@
       "writtenOn": "2022-01-31T04:29:25Z",
       "side": 1,
       "message": "What do you mean by command was working, but it is not expected?\nFrom what I see the change is about updating the completion code and not any functionality change.",
+      "range": {
+        "startLine": 10,
+        "startChar": 43,
+        "endLine": 11,
+        "endChar": 27
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "00406fd5_25e55ac2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2022-01-31T10:38:28Z",
+      "side": 1,
+      "message": "As the same write fru command is working in manufacturing but not in non-manufacturing mode. So it\u0027s not the issue related to the command. It\u0027s just returning wrong error code",
+      "parentUuid": "b8486560_8980135d",
       "range": {
         "startLine": 10,
         "startChar": 43,
@@ -119,6 +191,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "fd2e668f_ad6a3985",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2022-01-31T10:38:28Z",
+      "side": 1,
+      "message": "ok",
+      "parentUuid": "edd2bdb8_9ccfe873",
+      "range": {
+        "startLine": 12,
+        "startChar": 13,
+        "endLine": 12,
+        "endChar": 23
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "e6f18cee_1f3c1dd0",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 1
@@ -130,6 +226,24 @@
       "writtenOn": "2022-01-31T05:42:51Z",
       "side": 1,
       "message": "This change was made by \n24743: Add mfg filter to allow MTM cmds only in mfg mode | https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/24743\n\nPlease check the reasoning there still holds good ?",
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1fbcdc4f_ad5384f4",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 807,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2022-01-31T10:38:28Z",
+      "side": 1,
+      "message": "I checked with Smriti ,So it\u0027s fine .As all the above commands works only in manufacturing mode. So this will be implemented to all.",
+      "parentUuid": "e6f18cee_1f3c1dd0",
       "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
