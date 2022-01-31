@@ -1,6 +1,29 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "40adf917_9842b808",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2022-01-31T15:09:41Z",
+      "side": 1,
+      "message": "nit: May be rewrite as \"Update CC for MFG mode commands\"",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 72
+      },
+      "revId": "3633484223db3ce4f45fbb22861edf33958a0f6e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "15e2097a_38abd4f6",
@@ -14,6 +37,23 @@
       "writtenOn": "2022-01-31T14:40:45Z",
       "side": 1,
       "message": "LGTM.",
+      "revId": "3633484223db3ce4f45fbb22861edf33958a0f6e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7a03794b_1c39ade6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2022-01-31T15:09:41Z",
+      "side": 1,
+      "message": "LGTM. One minor comment on commit message.",
       "revId": "3633484223db3ce4f45fbb22861edf33958a0f6e",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
