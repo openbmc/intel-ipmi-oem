@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "90bdd8fa_1db69a85",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2022-01-31T04:29:25Z",
+      "side": 1,
+      "message": "\"invalid command completion code\"",
+      "range": {
+        "startLine": 9,
+        "startChar": 49,
+        "endLine": 9,
+        "endChar": 64
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b74fac10_9d591518",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2022-01-31T04:29:25Z",
+      "side": 1,
+      "message": "If i look at the code change you are updating the completion code for all manufacturing commands. Not write fru alone. Please update the commit message accordingly.",
+      "range": {
+        "startLine": 10,
+        "startChar": 16,
+        "endLine": 10,
+        "endChar": 25
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b8486560_8980135d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2022-01-31T04:29:25Z",
+      "side": 1,
+      "message": "What do you mean by command was working, but it is not expected?\nFrom what I see the change is about updating the completion code and not any functionality change.",
+      "range": {
+        "startLine": 10,
+        "startChar": 43,
+        "endLine": 11,
+        "endChar": 27
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
