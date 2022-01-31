@@ -68,6 +68,46 @@
       },
       "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "edd2bdb8_9ccfe873",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2022-01-31T05:42:51Z",
+      "side": 1,
+      "message": "nit: typo: privilege",
+      "range": {
+        "startLine": 12,
+        "startChar": 13,
+        "endLine": 12,
+        "endChar": 23
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e6f18cee_1f3c1dd0",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 807,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2022-01-31T05:42:51Z",
+      "side": 1,
+      "message": "This change was made by \n24743: Add mfg filter to allow MTM cmds only in mfg mode | https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/24743\n\nPlease check the reasoning there still holds good ?",
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
