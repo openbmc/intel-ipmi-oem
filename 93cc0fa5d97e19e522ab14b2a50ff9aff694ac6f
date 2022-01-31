@@ -192,6 +192,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "258ba3b1_34469049",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2022-01-31T12:50:15Z",
+      "side": 1,
+      "message": "Similar description I gave in the second patch. please review once else I will update it.",
+      "parentUuid": "c8360e95_9c046669",
+      "range": {
+        "startLine": 10,
+        "startChar": 43,
+        "endLine": 11,
+        "endChar": 27
+      },
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "edd2bdb8_9ccfe873",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -286,6 +310,24 @@
       "side": 1,
       "message": "As discussed, D5 comp code seems more appropriate than D4 (Insufficient Privilege). Please change accordingly.",
       "parentUuid": "1fbcdc4f_ad5384f4",
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6ca69f4f_da6f9338",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 807,
+      "author": {
+        "id": 1001195
+      },
+      "writtenOn": "2022-01-31T12:50:15Z",
+      "side": 1,
+      "message": "Done in the second patch",
+      "parentUuid": "79ca2244_bfd08ee3",
       "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
