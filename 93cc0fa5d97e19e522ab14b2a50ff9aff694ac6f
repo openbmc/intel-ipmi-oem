@@ -330,6 +330,24 @@
       "parentUuid": "79ca2244_bfd08ee3",
       "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4338efc1_c564f80a",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 807,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2022-02-01T20:19:24Z",
+      "side": 1,
+      "message": "Hi Anjali,Smriti,\n\nAs per IPMI spec, \n1.) D4h \u003d\u003e Can not execute command due to insufficient privilege level or other security based restriction.\n2.) C1h \u003d\u003e Invalid command. Used to indicate an unrecognized or unsupported command.\n3.) D5h \u003d\u003e Can not execute command. Command, or requested parameter(s) not supported in present state.\n\nMy preferred completion code for this issue also in the same order. In fact, all can be valid error code for this scenario.\nIn line 781, already this check returns D4h.\n\n                // Allow write data count \u003e 1 only in Special mode\n                if (mtm.getMfgMode() \u003d\u003d SpecialMode::none)\n                {\n                    return ipmi::ccInsufficientPrivilege;\n                }\n\nI recommend to use the same completion code here also and update commit message accordingly.",
+      "parentUuid": "6ca69f4f_da6f9338",
+      "revId": "93cc0fa5d97e19e522ab14b2a50ff9aff694ac6f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
