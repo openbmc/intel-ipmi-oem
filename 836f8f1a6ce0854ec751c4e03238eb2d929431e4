@@ -51,6 +51,23 @@
       "message": "code lgtm, Wait for Vernon to provide his vote as he has some comments in past. ",
       "revId": "836f8f1a6ce0854ec751c4e03238eb2d929431e4",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a3179753_c37339b8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-02-03T05:08:54Z",
+      "side": 1,
+      "message": "Moving ahead with +2, As its got enough +1 and been there from sometime.",
+      "revId": "836f8f1a6ce0854ec751c4e03238eb2d929431e4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
