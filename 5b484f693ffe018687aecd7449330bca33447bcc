@@ -1,6 +1,29 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "b71bd60b_aa2baa22",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-02-03T05:00:53Z",
+      "side": 1,
+      "message": "I see the dependent patch is still in \"WIP\" (https://gerrit.openbmc-project.xyz/c/openbmc/x86-power-control/+/50022).\n\nSo giving -1 on this for now to avoid accidental +2 and merge. Please notify once dependent path comes to review cycle.",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 10
+      },
+      "revId": "5b484f693ffe018687aecd7449330bca33447bcc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "02655df3_8e23a9bc",
@@ -14,6 +37,75 @@
       "writtenOn": "2021-12-29T08:51:25Z",
       "side": 1,
       "message": "This change require https://gerrit.openbmc-project.xyz/c/openbmc/phosphor-dbus-interfaces/+/50021 to be merged first",
+      "revId": "5b484f693ffe018687aecd7449330bca33447bcc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1dc424b2_6f32c833",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3100,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-02-03T05:00:53Z",
+      "side": 1,
+      "message": "coding standard( lowerCamelCase)",
+      "range": {
+        "startLine": 3100,
+        "startChar": 24,
+        "endLine": 3100,
+        "endChar": 34
+      },
+      "revId": "5b484f693ffe018687aecd7449330bca33447bcc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dfbd7c6c_0872aa3c",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3136,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-02-03T05:00:53Z",
+      "side": 1,
+      "message": "Not relevant anymore. Update it accordingly.",
+      "range": {
+        "startLine": 3136,
+        "startChar": 20,
+        "endLine": 3136,
+        "endChar": 27
+      },
+      "revId": "5b484f693ffe018687aecd7449330bca33447bcc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "02472486_932a7d75",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3154,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-02-03T05:00:53Z",
+      "side": 1,
+      "message": "I didn\u0027t checked source code of x86( wish i would review it if time permits), Can you clarify why there are 2 ways to updates the LAstNMISource - One by D-Bus method call and other by set-property call? I am not clear why directly setting property in else case( to None)?",
+      "range": {
+        "startLine": 3141,
+        "startChar": 8,
+        "endLine": 3154,
+        "endChar": 9
+      },
       "revId": "5b484f693ffe018687aecd7449330bca33447bcc",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
