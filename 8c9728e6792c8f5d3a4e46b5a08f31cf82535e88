@@ -136,6 +136,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2d545acc_826e7fc8",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 1000879
+      },
+      "writtenOn": "2022-02-03T06:47:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1db220d7_dd9b28a8",
+      "range": {
+        "startLine": 151,
+        "startChar": 24,
+        "endLine": 153,
+        "endChar": 61
+      },
+      "revId": "8c9728e6792c8f5d3a4e46b5a08f31cf82535e88",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "05829324_3ab98311",
@@ -149,6 +173,24 @@
       "writtenOn": "2022-01-13T00:33:31Z",
       "side": 1,
       "message": "same note here.",
+      "revId": "8c9728e6792c8f5d3a4e46b5a08f31cf82535e88",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4cc51c74_70b18b7e",
+        "filename": "src/whitelist-filter.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 209,
+      "author": {
+        "id": 1000879
+      },
+      "writtenOn": "2022-02-03T06:47:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "05829324_3ab98311",
       "revId": "8c9728e6792c8f5d3a4e46b5a08f31cf82535e88",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
