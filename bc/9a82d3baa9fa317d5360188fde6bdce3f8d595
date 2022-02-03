@@ -1,0 +1,9 @@
+Code-Review+2: AppaRao Puli <apparao.puli@linux.intel.com>
+Code-Review+1: Jason Bills <jason.m.bills@linux.intel.com>
+Code-Review+1: Andrei Kartashev <a.kartashev@yadro.com>
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Submitted-by: Andrei Kartashev <a.kartashev@yadro.com>
+Submitted-at: Thu, 03 Feb 2022 06:47:25 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/c/openbmc/intel-ipmi-oem/+/49978
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
