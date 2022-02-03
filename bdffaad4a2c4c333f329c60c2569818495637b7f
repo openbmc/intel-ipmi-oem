@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "33b10296_4be83e6f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1001287
+      },
+      "writtenOn": "2022-02-03T10:25:07Z",
+      "side": 1,
+      "message": "Will add the following commands and steps for verification in the commit message as well:\nEnter MTM mode : cmdtool.efi 20 C0 B4 3 2 -\u003e ipmitool raw 0x30 0xB4 3 2\nExit MTM mode : cmdtool.efi 20 C0 B4 3 0 -\u003e ipmitool raw 0x30 0xB4 3 0\n\nStop service    : ipmitool raw 0x30 0xA4 2 0 0 0 0\nStart service   : ipmitool raw 0x30 0xA4 2 1 0 0 0\nDisable service : ipmitool raw 0x30 0xA4 2 2 0 0 0\nEnable service  : ipmitool raw 0x30 0xA4 2 3 0 0 0",
+      "parentUuid": "7ee9f4f3_bcf37f23",
+      "revId": "bdffaad4a2c4c333f329c60c2569818495637b7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "5ae7f52b_bd47f257",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -31,6 +49,24 @@
       "writtenOn": "2022-01-07T07:49:28Z",
       "side": 1,
       "message": "Also, need a test invoking the command when the BMC is not in manufacturing mode.\n\nThis command should not work in normal BMC operation.",
+      "revId": "bdffaad4a2c4c333f329c60c2569818495637b7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6b1b45df_35d494c4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1001287
+      },
+      "writtenOn": "2022-02-03T10:25:07Z",
+      "side": 1,
+      "message": "Yes, verified this step.",
+      "parentUuid": "5ae7f52b_bd47f257",
       "revId": "bdffaad4a2c4c333f329c60c2569818495637b7f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
@@ -191,6 +227,30 @@
       "side": 1,
       "message": "+1.  We might consider not supporting the start/stop functionality for SSH and only use enable/disable with the existing script.  Then we don\u0027t need as much special handling.\n\nOn that thought, does the existing startOrStopService() function not work for the socket?",
       "parentUuid": "cda389bb_d88fadea",
+      "range": {
+        "startLine": 1152,
+        "startChar": 22,
+        "endLine": 1152,
+        "endChar": 32
+      },
+      "revId": "bdffaad4a2c4c333f329c60c2569818495637b7f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0458a35c_7b11ed7f",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1152,
+      "author": {
+        "id": 1001287
+      },
+      "writtenOn": "2022-02-03T10:25:07Z",
+      "side": 1,
+      "message": "So with startOrStopService we can start/stop the dropbear.socket, but we can\u0027t use wildcard entries here to start/stop all the active dropbear services, without which the already active and connected ssh sessions will not be disconnected. Hence the usage of systemctl.\n\nIf we are not supporting start/stop of ssh in this manufacturing mode we can go with using enable-ssh script only.",
+      "parentUuid": "9dfd8c7a_57e3d7eb",
       "range": {
         "startLine": 1152,
         "startChar": 22,
