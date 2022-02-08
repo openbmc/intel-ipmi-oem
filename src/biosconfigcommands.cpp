@@ -682,23 +682,26 @@ ipmi::RspType<> ipmiOEMSetBIOSCap(ipmi::Context::ptr ctx,
                                   uint8_t BIOSCapabilties, uint8_t reserved1,
                                   uint8_t reserved2, uint8_t reserved3)
 {
-    if (!getPostCompleted() && IsSystemInterface(ctx))
+    if (!IsSystemInterface(ctx))
     {
-        if (reserved1 != 0 || reserved2 != 0 || reserved3 != 0)
-        {
-            return ipmi::responseInvalidFieldRequest();
-        }
-
-        gNVOOBdata.mBIOSCapabilities.OOBCapability = BIOSCapabilties;
-        gNVOOBdata.mIsBIOSCapInitDone = true;
-
-        flushNVOOBdata();
-        return ipmi::responseSuccess();
+        return ipmi::responseCommandNotAvailable();
     }
-    else
+
+    if (getPostCompleted())
     {
         return ipmi::response(ipmiCCNotSupportedInCurrentState);
     }
+
+    if (reserved1 != 0 || reserved2 != 0 || reserved3 != 0)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    gNVOOBdata.mBIOSCapabilities.OOBCapability = BIOSCapabilties;
+    gNVOOBdata.mIsBIOSCapInitDone = true;
+
+    flushNVOOBdata();
+    return ipmi::responseSuccess();
 }
 
 ipmi::RspType<uint8_t, uint8_t, uint8_t, uint8_t>
@@ -736,9 +739,14 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
     // We should support this Payload type 0 command only in KCS Interface
     if (payloadType == static_cast<uint8_t>(ipmi::PType::IntelXMLType0))
     {
-        if (!IsSystemInterface(ctx) || getPostCompleted())
+        if (!IsSystemInterface(ctx))
         {
             return ipmi::responseCommandNotAvailable();
+        }
+
+        if (getPostCompleted())
+        {
+            return ipmi::response(ipmiCCNotSupportedInCurrentState);
         }
     }
 
@@ -1156,72 +1164,60 @@ ipmi::RspType<std::array<uint8_t, maxSeedSize>, uint8_t,
     nlohmann::json data = nullptr;
 
     // We should support this command only in KCS Interface
-    if (!IsSystemInterface(ctx))
-    {
-        return ipmi::responseCommandNotAvailable();
-    }
-
-    // We should not support this command after System Booted - After Exit Boot
-    // service called
-    if (!getPostCompleted())
-    {
-        std::string HashFilePath = "/var/lib/bios-settings-manager/seedData";
-
-        std::ifstream devIdFile(HashFilePath);
-        if (devIdFile.is_open())
-        {
-
-            try
-            {
-                data = nlohmann::json::parse(devIdFile, nullptr, false);
-            }
-            catch (const nlohmann::json::parse_error& e)
-            {
-                return ipmi::responseResponseError();
-            }
-
-            if (data.is_discarded())
-            {
-                return ipmi::responseResponseError();
-            }
-
-            std::array<uint8_t, maxHashSize> newAdminHash;
-            std::array<uint8_t, maxSeedSize> seed;
-
-            uint8_t flag = 0;
-            uint8_t adminPwdChangedFlag = 0;
-            if (!data.is_discarded())
-            {
-
-                adminPwdChangedFlag = data["IsAdminPwdChanged"];
-                newAdminHash = data["AdminPwdHash"];
-                seed = data["Seed"];
-            }
-
-            auto status = getResetBIOSSettings(flag);
-            if (status)
-            {
-                return ipmi::responseResponseError();
-            }
-            if (adminPwdChangedFlag)
-            {
-                flag |= adminPasswordChanged;
-            }
-
-            std::copy(std::begin(newAdminHash), std::end(newAdminHash),
-                      std::begin(newAdminHash));
-
-            return ipmi::responseSuccess(seed, flag, newAdminHash);
-        }
-        else
-        {
-            return ipmi::responseResponseError();
-        }
-    }
-    else
+    if (getPostCompleted())
     {
         return ipmi::response(ipmiCCNotSupportedInCurrentState);
     }
+
+    std::string HashFilePath = "/var/lib/bios-settings-manager/seedData";
+
+    std::ifstream devIdFile(HashFilePath);
+    if (!devIdFile.is_open())
+    {
+        return ipmi::responseResponseError();
+    }
+
+    try
+    {
+        data = nlohmann::json::parse(devIdFile, nullptr, false);
+    }
+    catch (const nlohmann::json::parse_error& e)
+    {
+        return ipmi::responseResponseError();
+    }
+
+    if (data.is_discarded())
+    {
+        return ipmi::responseResponseError();
+    }
+
+    std::array<uint8_t, maxHashSize> newAdminHash;
+    std::array<uint8_t, maxSeedSize> seed;
+
+    uint8_t flag = 0;
+    uint8_t adminPwdChangedFlag = 0;
+    if (!data.is_discarded())
+    {
+
+        adminPwdChangedFlag = data["IsAdminPwdChanged"];
+        newAdminHash = data["AdminPwdHash"];
+        seed = data["Seed"];
+    }
+
+    auto status = getResetBIOSSettings(flag);
+    if (status)
+    {
+        return ipmi::responseResponseError();
+    }
+    if (adminPwdChangedFlag)
+    {
+        flag |= adminPasswordChanged;
+    }
+
+    std::copy(std::begin(newAdminHash), std::end(newAdminHash),
+              std::begin(newAdminHash));
+
+    return ipmi::responseSuccess(seed, flag, newAdminHash);
 }
 
 static void registerBIOSConfigFunctions(void)
