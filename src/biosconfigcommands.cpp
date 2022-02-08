@@ -682,23 +682,26 @@ ipmi::RspType<> ipmiOEMSetBIOSCap(ipmi::Context::ptr ctx,
                                   uint8_t BIOSCapabilties, uint8_t reserved1,
                                   uint8_t reserved2, uint8_t reserved3)
 {
-    if (!getPostCompleted() && IsSystemInterface(ctx))
+    if (!IsSystemInterface(ctx))
     {
-        if (reserved1 != 0 || reserved2 != 0 || reserved3 != 0)
-        {
-            return ipmi::responseInvalidFieldRequest();
-        }
-
-        gNVOOBdata.mBIOSCapabilities.OOBCapability = BIOSCapabilties;
-        gNVOOBdata.mIsBIOSCapInitDone = true;
-
-        flushNVOOBdata();
-        return ipmi::responseSuccess();
+        return ipmi::responseCommandNotAvailable();
     }
-    else
+
+    if (getPostCompleted())
     {
         return ipmi::response(ipmiCCNotSupportedInCurrentState);
     }
+
+    if (reserved1 != 0 || reserved2 != 0 || reserved3 != 0)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+
+    gNVOOBdata.mBIOSCapabilities.OOBCapability = BIOSCapabilties;
+    gNVOOBdata.mIsBIOSCapInitDone = true;
+
+    flushNVOOBdata();
+    return ipmi::responseSuccess();
 }
 
 ipmi::RspType<uint8_t, uint8_t, uint8_t, uint8_t>
@@ -736,9 +739,14 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
     // We should support this Payload type 0 command only in KCS Interface
     if (payloadType == static_cast<uint8_t>(ipmi::PType::IntelXMLType0))
     {
-        if (!IsSystemInterface(ctx) || getPostCompleted())
+        if (!IsSystemInterface(ctx))
         {
             return ipmi::responseCommandNotAvailable();
+        }
+
+        if (getPostCompleted())
+        {
+            return ipmi::response(ipmiCCNotSupportedInCurrentState);
         }
     }
 
