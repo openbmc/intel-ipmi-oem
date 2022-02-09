@@ -16,6 +16,24 @@
       "message": "NIT: As commented before, Inverse the condition for better tab space alignment and readability. \nif (!devIdFile.is_open())\n{\n     return ipmi::responseResponseError();\n}",
       "revId": "c3b1d1d507aad13a48918d308617ce9006d065ce",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "82bd1972_3cff3824",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 1175,
+      "author": {
+        "id": 1001049
+      },
+      "writtenOn": "2022-02-09T09:34:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "70f24856_9b87679e",
+      "revId": "c3b1d1d507aad13a48918d308617ce9006d065ce",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
