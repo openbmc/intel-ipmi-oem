@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "41f32ee7_58553b25",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-02-11T03:11:48Z",
+      "side": 1,
+      "message": "GetBiosHash command should fail from RMCPP channel  and should works from KCS. So tested these two scenarios and document the same.",
+      "range": {
+        "startLine": 13,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 30
+      },
+      "revId": "77bd1febfefbd80d2d922005e0815502e08484d1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
