@@ -653,40 +653,10 @@ static Cc InitNVOOBdata()
     return ipmi::ccResponseError;
 }
 
-/** @brief implements check the command interface is
- ** system interface or not
- **  true mean System interface and false mean LAN or IPMB
- **/
-static bool IsSystemInterface(ipmi::Context::ptr ctx)
-{
-    ChannelInfo chInfo;
-    Cc status = false;
-
-    try
-    {
-        getChannelInfo(ctx->channel, chInfo);
-    }
-    catch (const sdbusplus::exception_t& e)
-    {
-        return false;
-    }
-    if (chInfo.mediumType !=
-        static_cast<uint8_t>(EChannelMediumType::systemInterface))
-    {
-        return false;
-    }
-    return true;
-}
-
 ipmi::RspType<> ipmiOEMSetBIOSCap(ipmi::Context::ptr ctx,
                                   uint8_t BIOSCapabilties, uint8_t reserved1,
                                   uint8_t reserved2, uint8_t reserved3)
 {
-    if (!IsSystemInterface(ctx))
-    {
-        return ipmi::responseCommandNotAvailable();
-    }
-
     if (getPostCompleted())
     {
         return ipmi::response(ipmiCCNotSupportedInCurrentState);
@@ -739,11 +709,6 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
     // We should support this Payload type 0 command only in KCS Interface
     if (payloadType == static_cast<uint8_t>(ipmi::PType::IntelXMLType0))
     {
-        if (!IsSystemInterface(ctx))
-        {
-            return ipmi::responseCommandNotAvailable();
-        }
-
         if (getPostCompleted())
         {
             return ipmi::response(ipmiCCNotSupportedInCurrentState);
@@ -1110,12 +1075,6 @@ ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
     ipmi::Context::ptr ctx, std::array<uint8_t, maxSeedSize>& pwdSeed,
     uint8_t algoInfo, std::array<uint8_t, maxHashSize>& adminPwdHash)
 {
-    // We should support this command only in KCS Interface
-    if (!IsSystemInterface(ctx))
-    {
-        return ipmi::responseCommandNotAvailable();
-    }
-
     // We should not support this command after System Booted - After Exit Boot
     // service called
     if (getPostCompleted())
@@ -1163,7 +1122,8 @@ ipmi::RspType<std::array<uint8_t, maxSeedSize>, uint8_t,
 {
     nlohmann::json data = nullptr;
 
-    // We should support this command only in KCS Interface
+    // We should not support this command after System Booted - After Exit Boot
+    // service called
     if (getPostCompleted())
     {
         return ipmi::response(ipmiCCNotSupportedInCurrentState);
