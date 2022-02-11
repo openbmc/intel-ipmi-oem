@@ -1164,6 +1164,13 @@ ipmi::RspType<std::array<uint8_t, maxSeedSize>, uint8_t,
     nlohmann::json data = nullptr;
 
     // We should support this command only in KCS Interface
+    if (!IsSystemInterface(ctx))
+    {
+        return ipmi::responseCommandNotAvailable();
+    }
+
+    // We should not support this command after System Booted - After Exit Boot
+    // service called
     if (getPostCompleted())
     {
         return ipmi::response(ipmiCCNotSupportedInCurrentState);
