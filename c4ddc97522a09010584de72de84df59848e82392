@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "064f09ea_5e18ed30",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1140,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-02-18T07:51:27Z",
+      "side": 1,
+      "message": "Please do a null check on *cmd",
+      "revId": "c4ddc97522a09010584de72de84df59848e82392",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1893e60b_f9edc99e",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1147,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-02-18T07:51:27Z",
+      "side": 1,
+      "message": "nit: It might be more informative to log the cmd that failed!",
+      "range": {
+        "startLine": 1147,
+        "startChar": 12,
+        "endLine": 1147,
+        "endChar": 30
+      },
+      "revId": "c4ddc97522a09010584de72de84df59848e82392",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
