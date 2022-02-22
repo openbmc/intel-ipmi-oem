@@ -22,6 +22,30 @@
       },
       "revId": "77bd1febfefbd80d2d922005e0815502e08484d1",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "203cd566_e1d90608",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000652
+      },
+      "writtenOn": "2022-02-22T14:17:27Z",
+      "side": 1,
+      "message": "Tested the scenarios and RMCPP channel is failing and working from KCS interface.",
+      "parentUuid": "41f32ee7_58553b25",
+      "range": {
+        "startLine": 13,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 30
+      },
+      "revId": "77bd1febfefbd80d2d922005e0815502e08484d1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
