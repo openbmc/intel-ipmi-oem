@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2c9ce5e0_c2cc1a38",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-03-04T05:30:16Z",
+      "side": 1,
+      "message": "Wait for 1 more +1 before proceeding with +2",
+      "revId": "c8ee47528f2d1970e4cd4763d68734404c5c2d52",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
