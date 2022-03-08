@@ -70,6 +70,24 @@
       "parentUuid": "ca5c9151_e22986ad",
       "revId": "8d785ab69800825c7aea131ad3f005b3304fa5b2",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3911ca27_80508427",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1167,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2022-03-08T15:33:12Z",
+      "side": 1,
+      "message": "As we discussed offline (with Arun, P M), Just with below changeset:\nPlease push the new patchset accordingly.\n\nA. For KCS Policy !\u003d Allow_all\n\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\nIt blocks this command execution in all channels, and allows this command ONLY in KCS channels ONLY before \"Core BIOS Done\" or \"End of Post\". \nIt is inline with the requirement.\nRef: https://github.com/openbmc/intel-ipmi-oem/blob/c9290e755fdfa7e6efb0be0da52532a826777a0f/src/whitelist-filter.cpp#L436\n\nB. For KCS Policy \u003d\u003d Allow_all\n\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\nSimilar to above (A.)\nExcept that this command is allowed in KCS even after \"Core BIOS Done\" or \"End of Post\". \nUsually, Allow_all is not recommended setting and user is warned about it, and hence this behavior may be ok.\n@Vernon: Please confirm.\n\n--- a/ipmi-whitelist.conf\n+++ b/ipmi-whitelist.conf\n@@ -290,7 +290,7 @@\n 0x30:0xd5:0x7f7f   //\u003cIntel General Application\u003e:\u003cSet Payload\u003e\n 0x30:0xd6:0xff7f   //\u003cIntel General Application\u003e:\u003cGet Payload\u003e\n 0x30:0xd7:0x7f7f   //\u003cIntel General Application\u003e:\u003cSet BIOS Password Hash Info\u003e\n-0x30:0xd8:0xff7f   //\u003cIntel General Application\u003e:\u003cGet Stored BIOS Password\u003e\n+0x30:0xd8:0x0000   //\u003cIntel General Application\u003e:\u003cGet Stored BIOS Password\u003e\n 0x30:0xd9:0x7f7f   //\u003cIntel General Application\u003e:\u003cOOB Update Status\u003e\n 0x30:0xdb:0x7f7f   //\u003cIntel General Application\u003e:\u003cGet/Set BMC Remote Debug Parameters\u003e\n 0x30:0xe2:0xff7f   //\u003cIntel General Application\u003e:\u003cOEM Get Reading\u003e",
+      "parentUuid": "4fc4a4b9_e4a4e077",
+      "revId": "8d785ab69800825c7aea131ad3f005b3304fa5b2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
