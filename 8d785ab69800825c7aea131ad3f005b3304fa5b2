@@ -52,6 +52,24 @@
       "parentUuid": "45c47f83_cf874dcb",
       "revId": "8d785ab69800825c7aea131ad3f005b3304fa5b2",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4fc4a4b9_e4a4e077",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1167,
+      "author": {
+        "id": 1000652
+      },
+      "writtenOn": "2022-03-08T10:00:25Z",
+      "side": 1,
+      "message": "If we remove IsSystemInterface() and use the code in the filter config file, before post complete/coreBios done, other channel commands are giving success response.\nAfter post complete/coreBios done, all the channels are blocked.\nBefore post:\nroot@intel-obmc:~# ipmitool -I lanplus -H xx.xx.xx.xx -U debuguser -P 0penBmc1 -C 17 raw 0x30 0xd8\n61 d1 7b 22 c1 18 03 33 1a 98 34 3e d5 6e b8 b3\n89 98 6e 7d a1 c2 45 b4 c7 49 1e 78 7d b2 3c 71\n00 94 b2 73 14 ed e2 fd bc eb 32 6a 59 a3 8d b3\n1d 93 95 d1 a4 4c 54 16 88 9f 4b 94 24 5d a7 c1\n4a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n00\nAfter post: \nroot@intel-obmc:~# ipmitool -I lanplus -H xx.xx.xx.xx -U debuguser -P 0penBmc1 -C 17 raw 0x30 0xd8\nUnable to send RAW command (channel\u003d0x0 netfn\u003d0x30 lun\u003d0x0 cmd\u003d0xd8 rsp\u003d0x82): Unknown (0x82)",
+      "parentUuid": "ca5c9151_e22986ad",
+      "revId": "8d785ab69800825c7aea131ad3f005b3304fa5b2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
