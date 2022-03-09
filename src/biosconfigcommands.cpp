@@ -52,6 +52,7 @@ static constexpr Cc ipmiCCPayloadLengthIllegal = 0x85;
 
 static constexpr uint8_t userPasswordChanged = (1 << 5);
 static constexpr uint8_t adminPasswordChanged = (1 << 4);
+static constexpr uint8_t restoreDefaultValues = (1 << 7);
 
 static constexpr const char* biosConfigFolder = "/var/oob";
 static constexpr const char* biosConfigNVPath = "/var/oob/nvoobdata.dat";
@@ -1168,6 +1169,10 @@ ipmi::RspType<std::array<uint8_t, maxSeedSize>, uint8_t,
     if (status)
     {
         return ipmi::responseResponseError();
+    }
+    if (flag)
+    {
+        flag |= restoreDefaultValues;
     }
     if (adminPwdChangedFlag)
     {
