@@ -88,6 +88,24 @@
       "parentUuid": "4fc4a4b9_e4a4e077",
       "revId": "8d785ab69800825c7aea131ad3f005b3304fa5b2",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "46516929_cdac7c40",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1167,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2022-03-09T06:00:16Z",
+      "side": 1,
+      "message": "1.) \nPlease read this as:\nAs we discussed offline (with Arun, P M), Just with below changeset:\n\u003d\u003e\nAs we discussed offline (with Arun, P M), Just with below changeset BMC rejects this command after End Of Post or Core BIOS Done.\n\n2.) \nOne minor difference in negative completion code is:\nWith current patchset 6, it returns 0xD5 \u003d ipmi::responseCommandNotAvailable();\nVersus\nWith ipmi-whitelist.conf fix, it returns 0xD4 \u003d  ipmi::ccInsufficientPrivilege;\nhttps://github.com/openbmc/intel-ipmi-oem/blob/c9290e755fdfa7e6efb0be0da52532a826777a0f/src/whitelist-filter.cpp#L460",
+      "parentUuid": "3911ca27_80508427",
+      "revId": "8d785ab69800825c7aea131ad3f005b3304fa5b2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
