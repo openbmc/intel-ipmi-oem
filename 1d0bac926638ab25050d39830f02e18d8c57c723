@@ -16,6 +16,29 @@
       "message": "LGTM",
       "revId": "1d0bac926638ab25050d39830f02e18d8c57c723",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "02263a1e_46631377",
+        "filename": "ipmi-whitelist.conf",
+        "patchSetId": 7
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-03-14T18:23:36Z",
+      "side": 1,
+      "message": "I don\u0027t see this change scope in commit message? Why this mapping is changed? Can you add context in commit message?",
+      "range": {
+        "startLine": 288,
+        "startChar": 0,
+        "endLine": 293,
+        "endChar": 75
+      },
+      "revId": "1d0bac926638ab25050d39830f02e18d8c57c723",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
