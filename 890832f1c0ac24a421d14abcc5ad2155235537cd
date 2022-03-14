@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a618c081_ec90f2df",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2022-03-14T10:45:45Z",
+      "side": 1,
+      "message": "LGTM",
+      "revId": "890832f1c0ac24a421d14abcc5ad2155235537cd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "13e1057e_596680de",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1200,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2022-03-14T10:45:45Z",
+      "side": 1,
+      "message": "nit:\nThis check is not needed, as it is already checked in line number 1190.\nIt can be addressed in next patch when some cleanup is done though.",
+      "range": {
+        "startLine": 1200,
+        "startChar": 0,
+        "endLine": 1200,
+        "endChar": 29
+      },
+      "revId": "890832f1c0ac24a421d14abcc5ad2155235537cd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
