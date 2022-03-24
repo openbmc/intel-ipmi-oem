@@ -266,6 +266,10 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
                         case 0x01:
                             messageID += ".BIOSBoot";
                             break;
+                        case 0x09:
+                            messageID += ".BIOSAttributesChanged";
+                            messageArgs.push_back("OOB");
+                            break;
                         default:
                             return defaultMessageHook(ipmiRaw);
                             break;
