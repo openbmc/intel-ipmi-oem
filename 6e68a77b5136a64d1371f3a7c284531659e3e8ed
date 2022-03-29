@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cdda17b6_835da48c",
+        "filename": "src/ipmi_to_redfish_hooks.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2022-03-29T17:48:01Z",
+      "side": 1,
+      "message": "I think, this chunk is not required. \nYou can insert messageArgs.push_back(\"OOB\")\u0027 after line number 270 unconditionally, as this event indicates it is a BIOS event for OOB BIOS attributes change.\nCorrect?",
+      "range": {
+        "startLine": 276,
+        "startChar": 3,
+        "endLine": 285,
+        "endChar": 21
+      },
+      "revId": "6e68a77b5136a64d1371f3a7c284531659e3e8ed",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
