@@ -820,10 +820,171 @@ static constexpr uint8_t maxSupportedEth = 3;
 static constexpr const char* factoryEthAddrBaseFileName =
     "/var/sofs/factory-settings/network/mac/eth";
 
+using ObjectType = boost::container::flat_map<
+    std::string, boost::container::flat_map<std::string, DbusVariant>>;
+using ManagedObjectType =
+    boost::container::flat_map<sdbusplus::message::object_path, ObjectType>;
+
+bool findFruDevice(const std::shared_ptr<sdbusplus::asio::connection>& bus,
+                   boost::asio::yield_context& yield, uint64_t& macOffset,
+                   uint64_t& busNum, uint64_t& address)
+{
+    boost::system::error_code ec;
+
+    // GetAll the objects under service FruDevice
+    ec = boost::system::errc::make_error_code(boost::system::errc::success);
+    auto obj = bus->yield_method_call<ManagedObjectType>(
+        yield, ec, "xyz.openbmc_project.EntityManager", "/",
+        "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "GetMangagedObjects failed",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+        return false;
+    }
+
+    for (const auto& [path, fru] : obj)
+    {
+        for (const auto& [intf, propMap] : fru)
+        {
+            if (intf == "xyz.openbmc_project.Inventory.Item.Board.Motherboard")
+            {
+                auto findBus = propMap.find("FruBus");
+                auto findAddress = propMap.find("FruAddress");
+                auto findMacOffset = propMap.find("MacOffset");
+                if (findBus == propMap.end() || findAddress == propMap.end() ||
+                    findMacOffset == propMap.end())
+                {
+                    continue;
+                }
+
+                auto fruBus = std::get_if<uint64_t>(&findBus->second);
+                auto fruAddress = std::get_if<uint64_t>(&findAddress->second);
+                auto macFruOffset =
+                    std::get_if<uint64_t>(&findMacOffset->second);
+                if (!fruBus || !fruAddress || !macFruOffset)
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "ERROR: MotherBoard FRU config data type invalid, not "
+                        "used");
+                    return false;
+                }
+                busNum = *fruBus;
+                address = *fruAddress;
+                macOffset = *macFruOffset;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool readMacFromFru(ipmi::Context::ptr ctx, uint8_t macIndex,
+                    std::array<uint8_t, maxEthSize>& ethData)
+{
+    constexpr uint64_t fruEnd = 0xff;
+    uint64_t macOffset = fruEnd;
+    uint64_t fruBus = 0;
+    uint64_t fruAddress = 0;
+
+    if (findFruDevice(ctx->bus, ctx->yield, macOffset, fruBus, fruAddress))
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Found mac fru",
+            phosphor::logging::entry("BUS=%d", static_cast<uint8_t>(fruBus)),
+            phosphor::logging::entry("ADDRESS=%d",
+                                     static_cast<uint8_t>(fruAddress)));
+
+        macOffset += macIndex * maxEthSize;
+        if ((macOffset + maxEthSize) > fruEnd)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ERROR: read fru mac failed, offset invalid");
+            return false;
+        }
+        std::vector<uint8_t> writeData;
+        writeData.push_back(static_cast<uint8_t>(macOffset & 0xff));
+        std::vector<uint8_t> readBuf(maxEthSize);
+        std::string i2cBus = "/dev/i2c-" + std::to_string(fruBus);
+        ipmi::Cc retI2C =
+            ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf);
+        if (retI2C == ipmi::ccSuccess)
+        {
+            std::copy(readBuf.begin(), readBuf.end(), ethData.data());
+            return true;
+        }
+    }
+    return false;
+}
+
+ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
+                       std::array<uint8_t, maxEthSize>& ethData)
+{
+    constexpr uint64_t fruEnd = 0xff;
+    uint64_t macOffset = fruEnd;
+    uint64_t fruBus = 0;
+    uint64_t fruAddress = 0;
+
+    if (findFruDevice(ctx->bus, ctx->yield, macOffset, fruBus, fruAddress))
+    {
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Found mac fru",
+            phosphor::logging::entry("BUS=%d", static_cast<uint8_t>(fruBus)),
+            phosphor::logging::entry("ADDRESS=%d",
+                                     static_cast<uint8_t>(fruAddress)));
+
+        macOffset += macIndex * maxEthSize;
+        if ((macOffset + maxEthSize) > fruEnd)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ERROR: write mac fru failed, offset invalid.");
+            return ipmi::ccParmOutOfRange;
+        }
+        std::vector<uint8_t> writeData;
+        writeData.push_back(static_cast<uint8_t>(macOffset & 0xff));
+        std::for_each(ethData.cbegin(), ethData.cend(),
+                      [&](uint8_t i) { writeData.push_back(i); });
+
+        std::string i2cBus = "/dev/i2c-" + std::to_string(fruBus);
+        std::vector<uint8_t> readBuf;
+        ipmi::Cc ret =
+            ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf);
+        switch (ret)
+        {
+            case ipmi::ccSuccess:
+                // chip is write protected, if write is success but fails verify
+                writeData.resize(1);
+                readBuf.resize(maxEthSize);
+                if (ipmi::ccSuccess ==
+                    ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf))
+                {
+                    if (std::equal(ethData.begin(), ethData.end(),
+                                   readBuf.begin()))
+                    {
+                        return ipmi::ccSuccess;
+                    }
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "INFO: write mac fru verify failed, fru may be write "
+                        "protected.");
+                }
+                return ipmi::ccCommandNotAvailable;
+            default: // assumes no actual eeprom for other failure
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "ERROR: write mac fru failed, assume no eeprom is "
+                    "available.");
+                break;
+        }
+    }
+    // no FRU eeprom found
+    return ipmi::ccDestinationUnavailable;
+}
+
 ipmi::RspType<> setManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType,
                                      std::array<uint8_t, maxEthSize> ethData)
 {
-    // mfg filter logic will restrict this command executing only in mfg mode.
+    // mfg filter logic will restrict this command executing only in mfg
+    // mode.
     if (dataType >= maxSupportedEth)
     {
         return ipmi::responseParmOutOfRange();
@@ -831,6 +992,14 @@ ipmi::RspType<> setManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType,
 
     constexpr uint8_t invalidData = 0;
     constexpr uint8_t validData = 1;
+
+    ipmi::Cc ret = writeMacToFru(ctx, dataType, ethData);
+    if (ret != ipmi::ccDestinationUnavailable)
+    {
+        resetMtmTimer(ctx);
+        return response(ret);
+    }
+
     constexpr uint8_t ethAddrStrSize =
         19; // XX:XX:XX:XX:XX:XX + \n + null termination;
     std::vector<uint8_t> buff(ethAddrStrSize);
@@ -857,7 +1026,8 @@ ipmi::RspType<> setManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType,
 ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
     getManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType)
 {
-    // mfg filter logic will restrict this command executing only in mfg mode.
+    // mfg filter logic will restrict this command executing only in mfg
+    // mode.
     if (dataType >= maxSupportedEth)
     {
         return ipmi::responseParmOutOfRange();
@@ -871,6 +1041,11 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
                            std::ifstream::in);
     if (!iEthFile.good())
     {
+        if (readMacFromFru(ctx, dataType, ethData))
+        {
+            resetMtmTimer(ctx);
+            return ipmi::responseSuccess(validData, ethData);
+        }
         return ipmi::responseSuccess(invalidData, ethData);
     }
     std::string ethStr;
@@ -884,8 +1059,8 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
     return ipmi::responseSuccess(validData, ethData);
 }
 
-/** @brief implements slot master write read IPMI command which can be used for
- * low-level I2C/SMBus write, read or write-read access for PCIE slots
+/** @brief implements slot master write read IPMI command which can be used
+ * for low-level I2C/SMBus write, read or write-read access for PCIE slots
  * @param reserved - skip 6 bit
  * @param addressType - address type
  * @param bbSlotNum - baseboard slot number
@@ -936,8 +1111,8 @@ ipmi::RspType<std::vector<uint8_t>>
         return ipmi::responseInvalidFieldRequest();
     }
 
-    // Allow single byte write as it is offset byte to read the data, rest allow
-    // only in Special mode.
+    // Allow single byte write as it is offset byte to read the data, rest
+    // allow only in Special mode.
     if (writeCount > 1)
     {
         if (mtm.getMfgMode() == SpecialMode::none)
@@ -973,9 +1148,9 @@ ipmi::RspType<std::vector<uint8_t>>
 
 ipmi::RspType<> clearCMOS()
 {
-    // There is an i2c device on bus 4, the slave address is 0x38. Based on the
-    // spec, writing 0x1 to address 0x61 on this device, will trigger the clear
-    // CMOS action.
+    // There is an i2c device on bus 4, the slave address is 0x38. Based on
+    // the spec, writing 0x1 to address 0x61 on this device, will trigger
+    // the clear CMOS action.
     constexpr uint8_t slaveAddr = 0x38;
     std::string i2cBus = "/dev/i2c-4";
     std::vector<uint8_t> writeData = {0x61, 0x1};
