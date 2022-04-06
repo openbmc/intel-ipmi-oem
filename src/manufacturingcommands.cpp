@@ -820,10 +820,142 @@ static constexpr uint8_t maxSupportedEth = 3;
 static constexpr const char* factoryEthAddrBaseFileName =
     "/var/sofs/factory-settings/network/mac/eth";
 
+static constexpr uint8_t fruMacAddressOffset = 0xFA;
+using ObjectType = boost::container::flat_map<
+    std::string, boost::container::flat_map<std::string, DbusVariant>>;
+using ManagedObjectType =
+    boost::container::flat_map<sdbusplus::message::object_path, ObjectType>;
+
+bool findFruDevice(const std::shared_ptr<sdbusplus::asio::connection>& bus,
+                   boost::asio::yield_context& yield,
+                   uint64_t& macOffset, uint64_t& busNum,
+                   uint64_t& address)
+{
+    boost::system::error_code ec;
+
+    // GetAll the objects under service FruDevice
+    ec = boost::system::errc::make_error_code(boost::system::errc::success);
+    auto obj = bus->yield_method_call<ManagedObjectType>(
+        yield, ec, "xyz.openbmc_project.EntityManager", "/",
+        "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "GetMangagedObjects failed",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+        return false;
+    }
+
+    for (const auto& [path, fru] : obj)
+    {
+        for (const auto& [intf, propMap] : fru)
+        {
+            if (intf == "xyz.openbmc_project.Inventory.Item.Board.Motherboard")
+            {
+                auto findBus = propMap.find("FruBus");
+                auto findAddress = propMap.find("FruAddress");
+                auto findMacOffset = propMap.find("MacOffset");
+                if (findBus == propMap.end() || findAddress == propMap.end() || findMacOffset == propMap.end())
+                {
+                    std::cerr << "Did not find BUS or ADDRESS or MacOffset\n";
+                    continue;
+                }
+
+                auto fruBus = std::get_if<uint64_t>(&findBus->second);
+                auto fruAddress = std::get_if<uint64_t>(&findAddress->second);
+                auto macFruOffset = std::get_if<uint64_t>(&findMacOffset->second);
+                if (!fruBus || !fruAddress || !macFruOffset)
+                {
+                    continue;
+                }
+                busNum = *fruBus;
+                address = *fruAddress;
+                macOffset = *macFruOffset;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool readMacFromFru(ipmi::Context::ptr ctx,
+                    std::array<uint8_t, maxEthSize>& ethData)
+{
+    //const std::string macFruName = "FFPANEL";
+    uint64_t macOffset = 0xffff;
+    uint64_t fruBus = 0;
+    uint64_t fruAddress = 0;
+
+    if (findFruDevice(ctx->bus, ctx->yield, macOffset, fruBus, fruAddress))
+    {
+        std::cerr << "found mac fru bus " << fruBus
+                  << " address " << fruAddress << "\n";
+
+        std::vector<uint8_t> writeData = {macOffset & 0xff};
+        if (macOffset > 0xff)
+        {
+            writeData.push_back((macOffset >> 8) & 0xff);
+        }
+        std::vector<uint8_t> readBuf(maxEthSize);
+        std::string i2cBus = "/dev/i2c-" + std::to_string(fruBus);
+        ipmi::Cc retI2C =
+            ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf);
+        if (retI2C == ipmi::ccSuccess)
+        {
+            std::copy(readBuf.begin(), readBuf.end(), ethData.data());
+            return true;
+        }
+    }
+    else
+    {
+        std::cerr << "Fail to find mac fru\n";
+    }
+    return false;
+}
+
+bool writeMacToFru(ipmi::Context::ptr ctx,
+                   std::array<uint8_t, maxEthSize>& ethData)
+{
+    //const std::string macFruName = "FFPANEL";
+    uint64_t macOffset = 0xffff;
+    uint64_t fruBus = 0;
+    uint64_t fruAddress = 0;
+
+    if (findFruDevice(ctx->bus, ctx->yield, macOffset, fruBus, fruAddress))
+    {
+        std::cerr << "found mac fru bus " << fruBus
+                  << " address " << fruAddress << "\n";
+
+        std::vector<uint8_t> writeData;
+        std::vector<uint8_t> readBuf;
+        writeData.push_back(macOffset&0xff);
+        if (macOffset > 0xff)
+        {
+            writeData.push_back((macOffset >> 8) & 0xff);
+        }
+        std::for_each(ethData.cbegin(), ethData.cend(),
+                      [&](uint8_t i) { writeData.push_back(i); });
+
+        std::string i2cBus = "/dev/i2c-" + std::to_string(fruBus);
+        ipmi::Cc retI2C =
+            ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf);
+        if (retI2C == ipmi::ccSuccess)
+        {
+            return true;
+        }
+    }
+    else
+    {
+        std::cerr << "Fail to find mac fru\n";
+    }
+    return false;
+}
+
 ipmi::RspType<> setManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType,
                                      std::array<uint8_t, maxEthSize> ethData)
 {
-    // mfg filter logic will restrict this command executing only in mfg mode.
+    // mfg filter logic will restrict this command executing only in mfg
+    // mode.
     if (dataType >= maxSupportedEth)
     {
         return ipmi::responseParmOutOfRange();
@@ -831,6 +963,13 @@ ipmi::RspType<> setManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType,
 
     constexpr uint8_t invalidData = 0;
     constexpr uint8_t validData = 1;
+
+    if (writeMacToFru(ctx, ethData))
+    {
+        resetMtmTimer(ctx);
+        return ipmi::responseSuccess();
+    }
+
     constexpr uint8_t ethAddrStrSize =
         19; // XX:XX:XX:XX:XX:XX + \n + null termination;
     std::vector<uint8_t> buff(ethAddrStrSize);
@@ -857,7 +996,8 @@ ipmi::RspType<> setManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType,
 ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
     getManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType)
 {
-    // mfg filter logic will restrict this command executing only in mfg mode.
+    // mfg filter logic will restrict this command executing only in mfg
+    // mode.
     if (dataType >= maxSupportedEth)
     {
         return ipmi::responseParmOutOfRange();
@@ -871,7 +1011,11 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
                            std::ifstream::in);
     if (!iEthFile.good())
     {
-        return ipmi::responseSuccess(invalidData, ethData);
+        if (readMacFromFru(ctx, ethData))
+        {
+            resetMtmTimer(ctx);
+            return ipmi::responseSuccess(validData, ethData);
+        }
     }
     std::string ethStr;
     iEthFile >> ethStr;
@@ -884,8 +1028,8 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
     return ipmi::responseSuccess(validData, ethData);
 }
 
-/** @brief implements slot master write read IPMI command which can be used for
- * low-level I2C/SMBus write, read or write-read access for PCIE slots
+/** @brief implements slot master write read IPMI command which can be used
+ * for low-level I2C/SMBus write, read or write-read access for PCIE slots
  * @param reserved - skip 6 bit
  * @param addressType - address type
  * @param bbSlotNum - baseboard slot number
@@ -936,8 +1080,8 @@ ipmi::RspType<std::vector<uint8_t>>
         return ipmi::responseInvalidFieldRequest();
     }
 
-    // Allow single byte write as it is offset byte to read the data, rest allow
-    // only in Special mode.
+    // Allow single byte write as it is offset byte to read the data, rest
+    // allow only in Special mode.
     if (writeCount > 1)
     {
         if (mtm.getMfgMode() == SpecialMode::none)
@@ -973,9 +1117,9 @@ ipmi::RspType<std::vector<uint8_t>>
 
 ipmi::RspType<> clearCMOS()
 {
-    // There is an i2c device on bus 4, the slave address is 0x38. Based on the
-    // spec, writing 0x1 to address 0x61 on this device, will trigger the clear
-    // CMOS action.
+    // There is an i2c device on bus 4, the slave address is 0x38. Based on
+    // the spec, writing 0x1 to address 0x61 on this device, will trigger
+    // the clear CMOS action.
     constexpr uint8_t slaveAddr = 0x38;
     std::string i2cBus = "/dev/i2c-4";
     std::vector<uint8_t> writeData = {0x61, 0x1};
