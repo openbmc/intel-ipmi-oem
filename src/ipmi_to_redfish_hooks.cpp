@@ -833,11 +833,10 @@ static bool biosSMIMessageHook(const SELData& selData,
 
 static bool startRedfishHook(const SELData& selData, const std::string& ipmiRaw)
 {
-    uint8_t generatorIDLowByte = static_cast<uint8_t>(selData.generatorID);
     // Generator ID is 7 bit and LS Bit contains '1' or '0' depending on the
-    // source. Refer IPMI SPEC, Table 32, SEL Event Records.
-    generatorIDLowByte >>= 1;
-    switch (generatorIDLowByte)
+    // source. Refer IPMI SPEC, Table 32, SEL Event Records. Here matches the
+    // whole byte 1.
+    switch (selData.generatorID & 0xFF)
     {
         case 0x01: // Check if this message is from the BIOS Generator ID
             // Let the BIOS hook handle this request
