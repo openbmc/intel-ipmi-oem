@@ -419,7 +419,7 @@ ipmi::RspType<> ipmiSenPlatformEvent(ipmi::Context::ptr ctx,
         generatorID, evmRev, sensorType, sensorNum, eventType, eventData1,
         eventData2.value_or(0xFF), eventData3.value_or(0xFF));
 
-    if (((generatorID & 0xFF) >> 1) == meId && sensorNum == meSensorNum &&
+    if (static_cast<uint8_t>(generatorID) == meId && sensorNum == meSensorNum &&
         eventData2 && eventData3)
     {
         setMeStatus(*eventData2, *eventData3, (eventType & disabled));
