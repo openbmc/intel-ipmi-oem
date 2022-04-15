@@ -24,6 +24,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7dc142e1_72836d13",
+        "filename": "src/ipmi_to_redfish_hooks.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 842,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-04-15T21:01:11Z",
+      "side": 1,
+      "message": "The cast ensures that there are no unseen issues around implicit integer promotions. The \u0026 will implicitly turn the value into an integer and then we are comparing an integer with a uint8_t.",
+      "parentUuid": "4b344fd2_89325e99",
+      "range": {
+        "startLine": 839,
+        "startChar": 4,
+        "endLine": 842,
+        "endChar": 31
+      },
+      "revId": "e8c21d5bc0afd9156ff8680708a840c0c7147ef1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b08f8a0a_11191e45",
@@ -37,6 +61,30 @@
       "writtenOn": "2022-04-15T02:40:57Z",
       "side": 1,
       "message": "\u0026 0xFF might be better over this static cast.",
+      "range": {
+        "startLine": 422,
+        "startChar": 8,
+        "endLine": 422,
+        "endChar": 42
+      },
+      "revId": "e8c21d5bc0afd9156ff8680708a840c0c7147ef1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "88f8227a_d68727c9",
+        "filename": "src/sensorcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 422,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-04-15T21:01:11Z",
+      "side": 1,
+      "message": "same as other comment.",
+      "parentUuid": "b08f8a0a_11191e45",
       "range": {
         "startLine": 422,
         "startChar": 8,
