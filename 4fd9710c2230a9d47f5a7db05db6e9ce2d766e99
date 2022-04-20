@@ -1,0 +1,220 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "cbd40a5f_e9448d6f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "I have a few recommendations I\u0027d like to see applied.",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "07be4ee1_52746f5c",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 849,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "Is it possible to perform a find() on the \u0027fru\u0027?\nIs there ever going to be more than one \u0027intf\u0027 that matches?",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b87f9e08_70dab8b1",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 868,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "Change to phosphor::logging style.\n\nIf this condition is met is there any merit in trying to \u0027continue\u0027?",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5f70caad_0d2d1e38",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 891,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "This isn\u0027t exactly \u0027error\u0027 level logging. Perhaps this should be a phosphor::log::INFO message? I\u0027d say this is ::DEBUG level, but recent experience shows ::DEBUG logging vanishes.",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "731ff7f6_1be96267",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 894,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "What is \u0027dataType\u0027? Is there some more descriptive variable name that can be applied to clarify what this is doing? After reading the rest of this code it appears to be a nicIndex. Change the name to indicate it indexes which NIC is being used?\n\nConfirm macOffset is never greater than 64Ki-maxEthSize-1?",
+      "range": {
+        "startLine": 894,
+        "startChar": 21,
+        "endLine": 894,
+        "endChar": 29
+      },
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "396472dd_b335a674",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 923,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "Same logging comment as before.",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fb30f667_b43102d4",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 926,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "verify macOffset bounds.\nEnsure macOffset leaves space for maxEthSize data bytes to be written. I2C devices have a habit of allowing wrap around accesses. We don\u0027t want to overwrite data we\u0027re not supposed to touch.",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f0754ae4_dd5191dd",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 939,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "return (ipmi::i2CWriteRead() \u003d\u003d ipmi::ccSuccess)?",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fd3f82ff_2d5e7535",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 949,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "should this be a reference type?",
+      "range": {
+        "startLine": 949,
+        "startChar": 37,
+        "endLine": 949,
+        "endChar": 76
+      },
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "02604cde_97af4644",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 953,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "See my comment below, I recommend:\n\nuint8_t nicIndex \u003d dataType \u0026 0x3;\nbool writeFRU \u003d dataType \u0026 0x80;\nif (nicIndex \u003e\u003d maxSupportedEth)",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d877d866_8f208da6",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 961,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "I\u0027m not in favor of blindly writing the FRU. The target of the MAC address should not rely on odd side-effects to determine where the MAC address is written. I would like to suggest embedding the desired location into the \u0027dataType\u0027 variable.\n\nI recommend reserving bit 7 of \u0027dataType\u0027 to be a flag indicating the FRU is to be written, else the SOFS is to be written. Does it make sense to reserve bits 6-2? BMC\u0027s have only had access to fewer than 4 NICs.\n\nThus this would become:\nif (writeFRU) {\n  return   writeMacToFRU() ? IPMISuccess : IPMIFail;\n}\n\n// Write SOFS",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a3d72a5f_616f7234",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1012,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-20T21:28:14Z",
+      "side": 1,
+      "message": "else return ipmi::responseSuccess(invalidData, ethData); ?\n\nIf reading from the file and the FRU doesn\u0027t work shouldn\u0027t this error out?",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
