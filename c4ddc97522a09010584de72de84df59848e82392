@@ -3,6 +3,29 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "be89d1fc_27ec0ed8",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-04-21T10:43:45Z",
+      "side": 1,
+      "message": "This is going to be a security concern. If SSH is enabled and if someone forgets to disable it, then we keep the SSH door open for attackers.",
+      "range": {
+        "startLine": 21,
+        "startChar": 0,
+        "endLine": 22,
+        "endChar": 41
+      },
+      "revId": "c4ddc97522a09010584de72de84df59848e82392",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "064f09ea_5e18ed30",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 4
