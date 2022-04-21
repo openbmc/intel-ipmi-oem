@@ -1180,6 +1180,16 @@ ipmi::RspType<> mtmBMCFeatureControl(ipmi::Context::ptr ctx,
             }
             startOrStopService(ctx, enable, "xyz.openbmc_project.PCIe.service");
             break;
+
+        case ipmi::SupportedFeatureControls::i2cTempScan:
+            if (featureArg != 0)
+            {
+                return ipmi::responseInvalidFieldRequest();
+            }
+            startOrStopService(ctx, enable,
+                               "xyz.openbmc_project.hwmontempsensor.service");
+            break;
+
         default:
             return ipmi::responseInvalidFieldRequest();
     }
