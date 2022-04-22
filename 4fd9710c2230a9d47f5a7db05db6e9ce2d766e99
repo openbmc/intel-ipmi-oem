@@ -37,6 +37,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "10cabca1_073f10c9",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 849,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "Currently there is no good field within FRU field to match against. Motherboard interface properties are used to keep it loosely coupled with FRU content. This can later be improved to also support using MAC address field within FRU structure.",
+      "parentUuid": "07be4ee1_52746f5c",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "b87f9e08_70dab8b1",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 4
@@ -48,6 +66,24 @@
       "writtenOn": "2022-04-20T21:28:14Z",
       "side": 1,
       "message": "Change to phosphor::logging style.\n\nIf this condition is met is there any merit in trying to \u0027continue\u0027?",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4680c5bc_da91e640",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 868,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "Good point, return false here.\nDone",
+      "parentUuid": "b87f9e08_70dab8b1",
       "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
@@ -65,6 +101,24 @@
       "writtenOn": "2022-04-20T21:28:14Z",
       "side": 1,
       "message": "This isn\u0027t exactly \u0027error\u0027 level logging. Perhaps this should be a phosphor::log::INFO message? I\u0027d say this is ::DEBUG level, but recent experience shows ::DEBUG logging vanishes.",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "20764ce3_d85b65ed",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 891,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5f70caad_0d2d1e38",
       "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
@@ -92,6 +146,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0541122e_1c815120",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 894,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "dataType is what used by existing code. Changed to macIndex for the new function",
+      "parentUuid": "731ff7f6_1be96267",
+      "range": {
+        "startLine": 894,
+        "startChar": 21,
+        "endLine": 894,
+        "endChar": 29
+      },
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "396472dd_b335a674",
@@ -105,6 +183,24 @@
       "writtenOn": "2022-04-20T21:28:14Z",
       "side": 1,
       "message": "Same logging comment as before.",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f373225c_28846e5d",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 923,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "396472dd_b335a674",
       "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
@@ -126,6 +222,24 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c499c3d0_06ba8f37",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 926,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "fb30f667_b43102d4",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f0754ae4_dd5191dd",
@@ -139,6 +253,24 @@
       "writtenOn": "2022-04-20T21:28:14Z",
       "side": 1,
       "message": "return (ipmi::i2CWriteRead() \u003d\u003d ipmi::ccSuccess)?",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e91b9571_f33b1f9e",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 939,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f0754ae4_dd5191dd",
       "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
@@ -168,6 +300,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "1f8faba6_f01d4a8c",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 949,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "This is existing code. Improvement can be done in a separate patch",
+      "parentUuid": "fd3f82ff_2d5e7535",
+      "range": {
+        "startLine": 949,
+        "startChar": 37,
+        "endLine": 949,
+        "endChar": 76
+      },
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "02604cde_97af4644",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 4
@@ -179,6 +335,24 @@
       "writtenOn": "2022-04-20T21:28:14Z",
       "side": 1,
       "message": "See my comment below, I recommend:\n\nuint8_t nicIndex \u003d dataType \u0026 0x3;\nbool writeFRU \u003d dataType \u0026 0x80;\nif (nicIndex \u003e\u003d maxSupportedEth)",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "01fda6e0_d35da230",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 953,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "existing code, improvement will be done in a separate patch",
+      "parentUuid": "02604cde_97af4644",
       "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
@@ -202,6 +376,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "8c2bf351_44cc4868",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 961,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "The command structure is part of IPMI spec. Make the write location transparent to the IPMI command allows different platform to control the behavior through configuration based on actual hardware config.",
+      "parentUuid": "d877d866_8f208da6",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "a3d72a5f_616f7234",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 4
@@ -213,6 +405,24 @@
       "writtenOn": "2022-04-20T21:28:14Z",
       "side": 1,
       "message": "else return ipmi::responseSuccess(invalidData, ethData); ?\n\nIf reading from the file and the FRU doesn\u0027t work shouldn\u0027t this error out?",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1e70325e_9407e3ba",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1012,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-04-22T23:11:32Z",
+      "side": 1,
+      "message": "Good catch!",
+      "parentUuid": "a3d72a5f_616f7234",
       "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
