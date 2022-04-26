@@ -53,6 +53,24 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b2aa1271_d51de582",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 849,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-26T18:13:17Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "10cabca1_073f10c9",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b87f9e08_70dab8b1",
@@ -322,6 +340,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5dd379e2_895b6335",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 949,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-26T18:13:17Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1f8faba6_f01d4a8c",
+      "range": {
+        "startLine": 949,
+        "startChar": 37,
+        "endLine": 949,
+        "endChar": 76
+      },
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "02604cde_97af4644",
@@ -357,6 +399,24 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "84d823eb_274cd2aa",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 953,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-26T18:13:17Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "01fda6e0_d35da230",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d877d866_8f208da6",
@@ -388,6 +448,24 @@
       "side": 1,
       "message": "The command structure is part of IPMI spec. Make the write location transparent to the IPMI command allows different platform to control the behavior through configuration based on actual hardware config.",
       "parentUuid": "d877d866_8f208da6",
+      "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "61f617be_738268d0",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 961,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-26T18:13:17Z",
+      "side": 1,
+      "message": "I don\u0027t understand your response. Isn\u0027t this an OEM command? As such it\u0027s ours to define.\nThe dataType variable has been defined, by Intel, to be an index (0-255) within the EEPROM to write the ethData (i.e. MAC addr) payload.\nWe currently limit it to a range of 0-1.\nThe BMC is never going to control upwards of 256 NICs.\nWe can use dataType to be smarter about how we interact with the EEPROM/SOFS. I want explicit control of where the ethData is being written.\n\nI\u0027m recommending:\nstruct fruCommand {\nuint1_t writeFRU;\nuint5_t reserved;\nuint2_t nicIndex;\n};\n\nstruct fruCommand fruData \u003d static_cast\u003cstrct fruCommand\u003e(dataType);\nif (frudate.writeFRU) {\n   return writeMacToFru(ctx, fruData.nicIndex, ethData) ? success : fail;\n}",
+      "parentUuid": "8c2bf351_44cc4868",
       "revId": "4fd9710c2230a9d47f5a7db05db6e9ce2d766e99",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
