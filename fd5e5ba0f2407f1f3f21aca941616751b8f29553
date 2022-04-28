@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a8d13fc9_211c2e20",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-28T19:59:35Z",
+      "side": 1,
+      "message": "I recommend changing the CC\u0027s slightly.",
+      "revId": "fd5e5ba0f2407f1f3f21aca941616751b8f29553",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "71a7fc4b_f00f3ac4",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 971,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-28T19:59:35Z",
+      "side": 1,
+      "message": "I recommend changing this to ccCommandNotAvailable.\nThere is something to talk to, it just isn\u0027t possible to modify the FRU in its current state.",
+      "revId": "fd5e5ba0f2407f1f3f21aca941616751b8f29553",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7b6fbfee_dd491d30",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 980,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-28T19:59:35Z",
+      "side": 1,
+      "message": "I suggest making this ccDestinationUnavailable.\nThere\u0027s nothing to communicate with/to.",
+      "revId": "fd5e5ba0f2407f1f3f21aca941616751b8f29553",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "29048944_030b528c",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 997,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2022-04-28T19:59:35Z",
+      "side": 1,
+      "message": "ret !\u003d ipmi::ccDestinationUnavailable",
+      "revId": "fd5e5ba0f2407f1f3f21aca941616751b8f29553",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
