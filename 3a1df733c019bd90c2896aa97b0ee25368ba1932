@@ -125,6 +125,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "9fb650df_1306af4b",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 915,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-05-04T21:59:48Z",
+      "side": 1,
+      "message": "Yes. You are right. We should check that macOffset is page aligned prior to adding in the macIndex offset",
+      "parentUuid": "46d8612a_78185c95",
+      "revId": "3a1df733c019bd90c2896aa97b0ee25368ba1932",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c4dcb479_6758e778",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 3
