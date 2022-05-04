@@ -17,6 +17,7 @@
 #include <linux/input.h>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/container/flat_map.hpp>
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
@@ -880,10 +881,24 @@ bool findFruDevice(const std::shared_ptr<sdbusplus::asio::connection>& bus,
     return false;
 }
 
+static constexpr uint64_t fruEnd = 0xff;
+static constexpr uint64_t fruPageSize = 0x8;
+// write rolls over within current page
+// MAC record struct: HEADER, MAC DATA, CheckSum
+static_assert(fruPageSize == (maxEthSize + 2), "maxEthSize greater than eeprom size");
+static constexpr uint8_t macHeader = 0x40;
+// Calculate new checksum for fru info area
+static uint8_t calculateChecksum(std::vector<uint8_t>::const_iterator iter,
+                                 std::vector<uint8_t>::const_iterator end)
+{
+    constexpr int checksumMod = 256;
+    uint8_t sum = std::accumulate(iter, end, static_cast<uint8_t>(0));
+    return (checksumMod - sum) % checksumMod;
+}
+
 bool readMacFromFru(ipmi::Context::ptr ctx, uint8_t macIndex,
                     std::array<uint8_t, maxEthSize>& ethData)
 {
-    constexpr uint64_t fruEnd = 0xff;
     uint64_t macOffset = fruEnd;
     uint64_t fruBus = 0;
     uint64_t fruAddress = 0;
@@ -896,8 +911,8 @@ bool readMacFromFru(ipmi::Context::ptr ctx, uint8_t macIndex,
             phosphor::logging::entry("ADDRESS=%d",
                                      static_cast<uint8_t>(fruAddress)));
 
-        macOffset += macIndex * maxEthSize;
-        if ((macOffset + maxEthSize) > fruEnd)
+        macOffset += macIndex * fruPageSize;
+        if ((macOffset + maxEthSize + 2) > fruEnd)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "ERROR: read fru mac failed, offset invalid");
@@ -905,14 +920,18 @@ bool readMacFromFru(ipmi::Context::ptr ctx, uint8_t macIndex,
         }
         std::vector<uint8_t> writeData;
         writeData.push_back(static_cast<uint8_t>(macOffset & 0xff));
-        std::vector<uint8_t> readBuf(maxEthSize);
+        std::vector<uint8_t> readBuf(maxEthSize + 2);
         std::string i2cBus = "/dev/i2c-" + std::to_string(fruBus);
         ipmi::Cc retI2C =
             ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf);
         if (retI2C == ipmi::ccSuccess)
         {
-            std::copy(readBuf.begin(), readBuf.end(), ethData.data());
-            return true;
+            uint8_t cs = calculateChecksum(readBuf.cbegin(), readBuf.cend());
+            if (cs == 0)
+            {
+                std::copy(++readBuf.begin(), --readBuf.end(), ethData.data());
+                return true;
+            }
         }
     }
     return false;
@@ -921,7 +940,6 @@ bool readMacFromFru(ipmi::Context::ptr ctx, uint8_t macIndex,
 ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
                        std::array<uint8_t, maxEthSize>& ethData)
 {
-    constexpr uint64_t fruEnd = 0xff;
     uint64_t macOffset = fruEnd;
     uint64_t fruBus = 0;
     uint64_t fruAddress = 0;
@@ -934,8 +952,8 @@ ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
             phosphor::logging::entry("ADDRESS=%d",
                                      static_cast<uint8_t>(fruAddress)));
 
-        macOffset += macIndex * maxEthSize;
-        if ((macOffset + maxEthSize) > fruEnd)
+        macOffset += macIndex * fruPageSize;
+        if ((macOffset + maxEthSize + 2) > fruEnd)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "ERROR: write mac fru failed, offset invalid.");
@@ -943,24 +961,40 @@ ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
         }
         std::vector<uint8_t> writeData;
         writeData.push_back(static_cast<uint8_t>(macOffset & 0xff));
+        writeData.push_back(macHeader);
         std::for_each(ethData.cbegin(), ethData.cend(),
                       [&](uint8_t i) { writeData.push_back(i); });
+        uint8_t macCheckSum =
+            calculateChecksum(++writeData.cbegin(), writeData.cend());
+        writeData.push_back(macCheckSum);
 
         std::string i2cBus = "/dev/i2c-" + std::to_string(fruBus);
         std::vector<uint8_t> readBuf;
         ipmi::Cc ret =
             ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf);
+
         switch (ret)
         {
             case ipmi::ccSuccess:
                 // chip is write protected, if write is success but fails verify
                 writeData.resize(1);
-                readBuf.resize(maxEthSize);
-                if (ipmi::ccSuccess ==
-                    ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf))
+                readBuf.resize(maxEthSize + 1); // include macHeader
+                // Wait for internal write cycle to complete
+                // example: ATMEL 24c0x chip has Twr spec as 5ms
+
+                // Ideally we want yield wait, but currently following code
+                // crash with "thread not supported"
+                // boost::asio::deadline_timer timer(
+                //    boost::asio::get_associated_executor(ctx->yield),
+                //    boost::posix_time::seconds(1));
+                // timer.async_wait(ctx->yield);
+                // use usleep as temp WA
+                usleep(5000);
+                if (ipmi::i2cWriteRead(i2cBus, fruAddress, writeData,
+                                       readBuf) == ipmi::ccSuccess)
                 {
                     if (std::equal(ethData.begin(), ethData.end(),
-                                   readBuf.begin()))
+                                   ++readBuf.begin())) // skip macHeader
                     {
                         return ipmi::ccSuccess;
                     }
