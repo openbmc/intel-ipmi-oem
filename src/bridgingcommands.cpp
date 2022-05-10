@@ -662,7 +662,7 @@ ipmi::RspType<> ipmiAppClearMessageFlags(ipmi::Context::ptr ctx,
     {
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         ipmi::setDbusProperty(*dbus, wdtService, wdtObjPath, wdtInterface,
-                              wdtInterruptFlagProp, false);
+                              wdtInterruptFlagProp, watchdogTimeout);
     }
     catch (const sdbusplus::exception::exception& e)
     {
