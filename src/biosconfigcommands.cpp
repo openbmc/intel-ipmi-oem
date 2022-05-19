@@ -105,7 +105,8 @@ enum class GetPayloadParameter : uint8_t
 {
     GetPayloadInfo = 0, // 0
     GetPayloadData = 1, // 1
-    GetPayloadStatus = 2
+    GetPayloadStatus = 2,
+    MaxPayloadParameters
 };
 
 namespace payload1
@@ -926,6 +927,12 @@ ipmi::RspType<message::Payload>
 {
     //      1-OOB BIOS config is supported
     message::Payload retValue;
+
+    if (static_cast<GetPayloadParameter>(paramSel) >=
+        ipmi::GetPayloadParameter::MaxPayloadParameters)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
 
     if (!(gNVOOBdata.mBIOSCapabilities.OOBCapability & (biosCapOffsetBit)))
     {
