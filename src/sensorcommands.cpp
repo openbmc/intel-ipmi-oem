@@ -200,12 +200,12 @@ static void getSensorMaxMin(const SensorMap& sensorMap, double& max,
         if (lower != critical->second.end())
         {
             double value = std::visit(VariantToDoubleVisitor(), lower->second);
-            min = std::min(value, min);
+            min = std::fmin(value, min);
         }
         if (upper != critical->second.end())
         {
             double value = std::visit(VariantToDoubleVisitor(), upper->second);
-            max = std::max(value, max);
+            max = std::fmax(value, max);
         }
     }
     if (warning != sensorMap.end())
@@ -216,12 +216,12 @@ static void getSensorMaxMin(const SensorMap& sensorMap, double& max,
         if (lower != warning->second.end())
         {
             double value = std::visit(VariantToDoubleVisitor(), lower->second);
-            min = std::min(value, min);
+            min = std::fmin(value, min);
         }
         if (upper != warning->second.end())
         {
             double value = std::visit(VariantToDoubleVisitor(), upper->second);
-            max = std::max(value, max);
+            max = std::fmax(value, max);
         }
     }
 }
