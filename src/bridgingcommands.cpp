@@ -660,9 +660,12 @@ ipmi::RspType<> ipmiAppClearMessageFlags(ipmi::Context::ptr ctx,
 
     try
     {
-        std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        ipmi::setDbusProperty(*dbus, wdtService, wdtObjPath, wdtInterface,
-                              wdtInterruptFlagProp, watchdogTimeout);
+        if (watchdogTimeout)
+        {
+            std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
+            ipmi::setDbusProperty(*dbus, wdtService, wdtObjPath, wdtInterface,
+                                  wdtInterruptFlagProp, false);
+        }
     }
     catch (const sdbusplus::exception::exception& e)
     {
