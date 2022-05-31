@@ -1,6 +1,52 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "9e2d2617_642777c8",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-05-31T05:39:14Z",
+      "side": 1,
+      "message": "Commit message is not clear. You may need to modify commit message to give proper information to reviewer and others in future. How about below?\n\nTitle: Conditionally clear watchdog pre-timeout interrupt\n\nDescription:\n\"Clear Message Flags\" IPMI command is used to clear the Event Message buffer, Receive Message queue and Watchdog pre-timeout interrupt flag if that specific BIT is set.\n\nExisting code is setting the \"Watchdog Pre-timeout interrupt\" to True when user (host/end user) tries to clear other bits like Msg Buffer or Recv Msg queue which is not correct. So correct the condition to to clear \"watchdog Pre-timeout interrupt\" only if BIT 3 is set.",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 26
+      },
+      "revId": "ebf66fc8d3a93b6790a40204a43803f4627ba672",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "58903609_5ada6d8a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-05-31T05:39:14Z",
+      "side": 1,
+      "message": "NIT: I see it covers the positive case, can you cover one negative test as well (Ex: Clearing other flags and not watchdog, should skip clearing the watchdog).",
+      "range": {
+        "startLine": 19,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 55
+      },
+      "revId": "ebf66fc8d3a93b6790a40204a43803f4627ba672",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "446d61f8_bf9badc3",
