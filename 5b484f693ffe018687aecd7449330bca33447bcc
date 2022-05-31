@@ -41,6 +41,23 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f5e7ad98_97392f41",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-05-31T16:50:34Z",
+      "side": 1,
+      "message": "Waiting for phosphor-dbus-interface change merge. ",
+      "revId": "5b484f693ffe018687aecd7449330bca33447bcc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1dc424b2_6f32c833",
@@ -124,6 +141,30 @@
       "side": 1,
       "message": "Method will trigger NMI and set source, while setting property will not - just update property.\nI don\u0027t know you business logic here so it is up to you to decide how we should act. I just assumed that we don\u0027t want to trigger NMI on source reset.\nNote: we still have no consensus on the interface https://gerrit.openbmc-project.xyz/c/openbmc/phosphor-dbus-interfaces/+/50021",
       "parentUuid": "02472486_932a7d75",
+      "range": {
+        "startLine": 3141,
+        "startChar": 8,
+        "endLine": 3154,
+        "endChar": 9
+      },
+      "revId": "5b484f693ffe018687aecd7449330bca33447bcc",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2f847416_89802f86",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 3154,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-05-31T16:50:34Z",
+      "side": 1,
+      "message": "Sorry for late response, Its burred and couldn\u0027t notices its \"ready for review\".\n\nThanks for clarification.\nI see phosphor-dbus-interface change is still not merge. In that case can it be moved back to WIP?",
+      "parentUuid": "32e224cb_1f65581a",
       "range": {
         "startLine": 3141,
         "startChar": 8,
