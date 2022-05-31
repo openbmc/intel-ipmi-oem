@@ -3,6 +3,29 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "c73ca07d_3236d5bf",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-05-31T16:46:05Z",
+      "side": 1,
+      "message": "Is this updated in IPMI spec (EPS)? If not, Please do update this feature support in EPS.",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 59
+      },
+      "revId": "38d98dab9988c445a6fde1c3a659cf57f1337f65",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "047cf736_3ffb8b5a",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -20,6 +43,47 @@
         "endLine": 10,
         "endChar": 22
       },
+      "revId": "38d98dab9988c445a6fde1c3a659cf57f1337f65",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "13f8c968_ee20bca7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-05-31T16:46:05Z",
+      "side": 1,
+      "message": "Good point: Stopping the some of I2C based sensor monitor may lead to unexpected behavior in in MFG mode.  Did you cross verified the negative side of it? If so, Can you document them along with covering unit tests?",
+      "parentUuid": "047cf736_3ffb8b5a",
+      "range": {
+        "startLine": 10,
+        "startChar": 4,
+        "endLine": 10,
+        "endChar": 22
+      },
+      "revId": "38d98dab9988c445a6fde1c3a659cf57f1337f65",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "606dfdbc_2612c283",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-05-31T16:46:05Z",
+      "side": 1,
+      "message": "Code change lgtm, But need to understand the negative side of stopping i2c sensor monitor and document them in commit message. Also it needs to be updated in EPS which requires confirmation. ",
       "revId": "38d98dab9988c445a6fde1c3a659cf57f1337f65",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
