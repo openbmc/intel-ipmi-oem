@@ -1359,6 +1359,12 @@ ipmi::RspType<bool, bool, bool, bool, uint4_t>
         break;
         case FwUpdateCtrlReq::imageTransferComplete:
         {
+            if (!imageTransferStarted)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "transferFirmwareUpdate not started.");
+                return ipmi::responseNotSupportedInPresentState();
+            }
             phosphor::logging::log<phosphor::logging::level::INFO>(
                 "ipmiGetSetFirmwareUpdateControl: Set transfer complete.");
             if (usbAttached)
