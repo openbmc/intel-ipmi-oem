@@ -1119,9 +1119,13 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
 ipmi::RspType<std::vector<uint8_t>>
     appSlotI2CMasterWriteRead(uint6_t reserved, uint2_t addressType,
                               uint3_t bbSlotNum, uint3_t riserSlotNum,
-                              uint2_t resvered2, uint8_t slaveAddr,
+                              uint2_t reserved2, uint8_t slaveAddr,
                               uint8_t readCount, std::vector<uint8_t> writeData)
 {
+    if (reserved || reserved2)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
     const size_t writeCount = writeData.size();
     std::string i2cBus;
     if (addressType == slotAddressTypeBus)
