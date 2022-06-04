@@ -32,15 +32,13 @@ static constexpr uint8_t webServiceBitPos = 5;
 static constexpr uint8_t solServiceBitPos = 6;
 static constexpr uint8_t kvmServiceBitPos = 15;
 
-static const std::unordered_map<uint8_t, std::string> bmcServices = {
-    // {bit position for service, service object path}
-    {rmcpServiceBitPos,
-     "/xyz/openbmc_project/control/service/phosphor_2dipmi_2dnet"},
-    {webServiceBitPos, "/xyz/openbmc_project/control/service/bmcweb"},
-    {solServiceBitPos,
-     "/xyz/openbmc_project/control/service/obmc_2dconsole_2dssh"},
-    {kvmServiceBitPos, "/xyz/openbmc_project/control/service/start_2dipkvm"},
-};
+static constexpr std::array<std::pair<uint8_t, const char*>, 4> bmcServices = {{
+    // {bit position for service, service name}
+    {rmcpServiceBitPos, "phosphor-ipmi-net"},
+    {webServiceBitPos, "bmcweb"},
+    {solServiceBitPos, "obmc-console-ssh"},
+    {kvmServiceBitPos, "start-ipkvm"},
+}};
 
 static constexpr uint16_t maskBit15 = 0x8000;
 
@@ -140,7 +138,7 @@ ipmi::RspType<> setBmcControlServices(boost::asio::yield_context yield,
             }
             for (const auto& obj : objectMap)
             {
-                if (boost::algorithm::starts_with(obj.first.str,
+                if (boost::algorithm::starts_with(obj.first.filename(),
                                                   services.second))
                 {
                     if (state != getEnabledValue(obj.second))
@@ -181,7 +179,7 @@ ipmi::RspType<uint16_t> getBmcControlServices(boost::asio::yield_context yield)
         {
             for (const auto& obj : objectMap)
             {
-                if (boost::algorithm::starts_with(obj.first.str,
+                if (boost::algorithm::starts_with(obj.first.filename(),
                                                   services.second))
                 {
                     serviceValue |= getEnabledValue(obj.second)
