@@ -1013,10 +1013,22 @@ ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
                         "protected.");
                 }
                 return ipmi::ccCommandNotAvailable;
-            default: // assumes no actual eeprom for other failure
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "ERROR: write mac fru failed, assume no eeprom is "
-                    "available.");
+            default:
+                if (ipmi::i2cWriteRead(i2cBus, fruAddress, writeData,
+                                       readBuf) == ipmi::ccSuccess)
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "INFO: write mac fru failed, but successfully read "
+                        "from fru, "
+                        "fru may be write protected.");
+                    return ipmi::ccCommandNotAvailable;
+                }
+                else // assume failure is due to no eeprom on board
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ERROR: write mac fru failed, assume no eeprom is "
+                        "available.");
+                }
                 break;
         }
     }
