@@ -983,12 +983,13 @@ ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
         ipmi::Cc ret =
             ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf);
 
+        // prepare for read to detect chip is write protected
+        writeData.resize(1);
+        readBuf.resize(maxEthSize + 1); // include macHeader
+
         switch (ret)
         {
             case ipmi::ccSuccess:
-                // chip is write protected, if write is success but fails verify
-                writeData.resize(1);
-                readBuf.resize(maxEthSize + 1); // include macHeader
                 // Wait for internal write cycle to complete
                 // example: ATMEL 24c0x chip has Twr spec as 5ms
 
@@ -1013,10 +1014,21 @@ ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
                         "protected.");
                 }
                 return ipmi::ccCommandNotAvailable;
-            default: // assumes no actual eeprom for other failure
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "ERROR: write mac fru failed, assume no eeprom is "
-                    "available.");
+            default:
+                if (ipmi::i2cWriteRead(i2cBus, fruAddress, writeData,
+                                       readBuf) == ipmi::ccSuccess)
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "INFO: write mac fru failed, but successfully read "
+                        "from fru, fru may be write protected.");
+                    return ipmi::ccCommandNotAvailable;
+                }
+                else // assume failure is due to no eeprom on board
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "ERROR: write mac fru failed, assume no eeprom is "
+                        "available.");
+                }
                 break;
         }
     }
