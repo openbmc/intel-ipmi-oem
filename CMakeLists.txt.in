@@ -29,7 +29,8 @@ externalproject_add (
 
 externalproject_add (
     host-ipmid PREFIX ${CMAKE_BINARY_DIR}/phosphor-host-ipmid GIT_REPOSITORY
-    https://github.com/openbmc/phosphor-host-ipmid SOURCE_DIR
+    https://github.com/openbmc/phosphor-host-ipmid GIT_TAG
+    33457108dbd8ed337b4d4c92d94362acc9a6b437 SOURCE_DIR
     ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src BINARY_DIR
     ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-build CONFIGURE_COMMAND /usr/bin/bash -c
     "cd ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src && export \
