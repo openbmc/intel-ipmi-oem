@@ -29,25 +29,21 @@ externalproject_add (
 
 externalproject_add (
     host-ipmid PREFIX ${CMAKE_BINARY_DIR}/phosphor-host-ipmid GIT_REPOSITORY
-    https://github.com/openbmc/phosphor-host-ipmid GIT_TAG
-    33457108dbd8ed337b4d4c92d94362acc9a6b437 SOURCE_DIR
+    https://github.com/openbmc/phosphor-host-ipmid SOURCE_DIR
     ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src BINARY_DIR
     ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-build CONFIGURE_COMMAND /usr/bin/bash -c
     "cd ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src && export \
     PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH} \
-    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && export \
-    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && ./bootstrap.sh \
-    && ./configure --prefix=${CMAKE_BINARY_DIR}/prefix \
-    CPPFLAGS=\'-I${CMAKE_BINARY_DIR}/prefix/include/ \' \
-    CXXFLAGS=\'-Wno-error=unused-result \' \
-    LDFLAGS=\'-L${CMAKE_BINARY_DIR}/prefix/lib/ \'"
+    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && \
+    export CPPFLAGS=\'-I${CMAKE_BINARY_DIR}/prefix/include/ \' && \
+    export LDFLAGS=\'-L${CMAKE_BINARY_DIR}/prefix/lib/ \' && \
+    meson --prefix=${CMAKE_BINARY_DIR}/prefix build-ext"
     BUILD_COMMAND /usr/bin/bash -c "cd ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src && export \
     PYTHONPATH=${CMAKE_BINARY_DIR}/prefix/lib/python2.7/site-packages:$ENV{PYTHONPATH} \
-    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && export \
-    PKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/prefix/lib/pkgconfig && make -j \
-    verbose=1"
+    && export PATH=${CMAKE_BINARY_DIR}/prefix/bin:$ENV{PATH} && \
+    ninja --verbose -C build-ext"
     INSTALL_COMMAND cd ${CMAKE_BINARY_DIR}/phosphor-ipmi-host-src &&
-    make install && mkdir -p
+    ninja --verbose -C build-ext install && mkdir -p
     "${CMAKE_BINARY_DIR}/prefix/include/phosphor-ipmi-host" && cp
     sensorhandler.hpp selutility.hpp
     "${CMAKE_BINARY_DIR}/prefix/include/phosphor-ipmi-host/" && echo "ipmid config finish"
