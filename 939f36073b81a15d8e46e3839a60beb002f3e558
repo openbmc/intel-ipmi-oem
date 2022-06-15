@@ -16,6 +16,23 @@
       "message": "This is a hack, but until we can figure out the CI build scripts (which behave differently than Yocto), this is our only recourse for getting any new changes into this repo.",
       "revId": "939f36073b81a15d8e46e3839a60beb002f3e558",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "24aec1f4_cf001a11",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001239
+      },
+      "writtenOn": "2022-06-15T22:10:26Z",
+      "side": 1,
+      "message": "Thank you. This will surely unblock us!\nBest regards,\nSujoy",
+      "revId": "939f36073b81a15d8e46e3839a60beb002f3e558",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
