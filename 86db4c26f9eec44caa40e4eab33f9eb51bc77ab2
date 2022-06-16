@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5d8d503c_f3de3833",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001488
+      },
+      "writtenOn": "2022-06-16T19:54:47Z",
+      "side": 1,
+      "message": "It is a good day to review code. Even from noobs :-)",
+      "revId": "86db4c26f9eec44caa40e4eab33f9eb51bc77ab2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
