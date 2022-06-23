@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "420a74c7_2aec2cbb",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1001239
+      },
+      "writtenOn": "2022-06-23T15:55:45Z",
+      "side": 1,
+      "message": "Use of \"both\" - pleas reconsider as it has been used twice.",
+      "revId": "86db4c26f9eec44caa40e4eab33f9eb51bc77ab2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "5d8d503c_f3de3833",
@@ -14,6 +31,23 @@
       "writtenOn": "2022-06-16T19:54:47Z",
       "side": 1,
       "message": "It is a good day to review code. Even from noobs :-)",
+      "revId": "86db4c26f9eec44caa40e4eab33f9eb51bc77ab2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7cd8bdd4_59db6f0d",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 3562,
+      "author": {
+        "id": 1001239
+      },
+      "writtenOn": "2022-06-23T15:55:45Z",
+      "side": 1,
+      "message": "According to EPS, we should return 80h ( parameter not supported). I would leave up to Vernon to decide.",
       "revId": "86db4c26f9eec44caa40e4eab33f9eb51bc77ab2",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
