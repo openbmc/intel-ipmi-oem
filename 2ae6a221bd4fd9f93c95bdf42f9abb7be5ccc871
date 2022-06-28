@@ -16,6 +16,24 @@
       "message": "Can you resolve build issue?",
       "revId": "2ae6a221bd4fd9f93c95bdf42f9abb7be5ccc871",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4c435ae4_9a8b9fd6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000879
+      },
+      "writtenOn": "2022-06-28T05:24:12Z",
+      "side": 1,
+      "message": "No, unless they accept change to PDI (https://gerrit.openbmc.org/c/openbmc/phosphor-dbus-interfaces/+/50021).",
+      "parentUuid": "5c5c96cf_5662d4d3",
+      "revId": "2ae6a221bd4fd9f93c95bdf42f9abb7be5ccc871",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
