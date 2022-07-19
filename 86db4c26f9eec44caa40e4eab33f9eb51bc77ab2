@@ -86,6 +86,24 @@
       "parentUuid": "7cd8bdd4_59db6f0d",
       "revId": "86db4c26f9eec44caa40e4eab33f9eb51bc77ab2",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3eea3845_e37f26d0",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 3562,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-07-19T20:16:27Z",
+      "side": 1,
+      "message": "yes, make it parameter not supported.",
+      "parentUuid": "fb98b8e2_20afa4aa",
+      "revId": "86db4c26f9eec44caa40e4eab33f9eb51bc77ab2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
