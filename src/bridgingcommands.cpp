@@ -192,7 +192,7 @@ void IpmbResponse::ipmbToi2cConstruct(uint8_t* buffer, size_t* bufferLength)
                             (ipmbResponseDataHeaderLength + data.size()));
 }
 
-void IpmbRequest::prepareRequest(sdbusplus::message::message& mesg)
+void IpmbRequest::prepareRequest(sdbusplus::message_t& mesg)
 {
     mesg.append(ipmbMeChannelNum, netFn, rqLun, cmd, data);
 }
@@ -592,7 +592,7 @@ ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags(ipmi::Context::ptr ctx)
             getMsgFlagsRes.set(getMsgFlagWatchdogPreTimeOutBit);
         }
     }
-    catch (const sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppGetMessageFlags, dbus call exception");
@@ -667,7 +667,7 @@ ipmi::RspType<> ipmiAppClearMessageFlags(ipmi::Context::ptr ctx,
                                   wdtInterruptFlagProp, false);
         }
     }
-    catch (const sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiAppClearMessageFlags: can't Clear/Set "

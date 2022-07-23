@@ -95,22 +95,22 @@ const static boost::container::flat_map<const char*, SensorUnits, CmpStr>
 
 void registerSensorFunctions() __attribute__((constructor));
 
-static sdbusplus::bus::match::match sensorAdded(
+static sdbusplus::bus::match_t sensorAdded(
     *getSdBus(),
     "type='signal',member='InterfacesAdded',arg0path='/xyz/openbmc_project/"
     "sensors/'",
-    [](sdbusplus::message::message& m) {
+    [](sdbusplus::message_t& m) {
         sensorTree.clear();
         sdrLastAdd = std::chrono::duration_cast<std::chrono::seconds>(
                          std::chrono::system_clock::now().time_since_epoch())
                          .count();
     });
 
-static sdbusplus::bus::match::match sensorRemoved(
+static sdbusplus::bus::match_t sensorRemoved(
     *getSdBus(),
     "type='signal',member='InterfacesRemoved',arg0path='/xyz/openbmc_project/"
     "sensors/'",
-    [](sdbusplus::message::message& m) {
+    [](sdbusplus::message_t& m) {
         sensorTree.clear();
         sdrLastRemove = std::chrono::duration_cast<std::chrono::seconds>(
                             std::chrono::system_clock::now().time_since_epoch())
@@ -123,11 +123,11 @@ static boost::container::flat_map<
     std::string, boost::container::flat_map<std::string, std::optional<bool>>>
     thresholdDeassertMap;
 
-static sdbusplus::bus::match::match thresholdChanged(
+static sdbusplus::bus::match_t thresholdChanged(
     *getSdBus(),
     "type='signal',member='PropertiesChanged',interface='org.freedesktop.DBus."
     "Properties',arg0namespace='xyz.openbmc_project.Sensor.Threshold'",
-    [](sdbusplus::message::message& m) {
+    [](sdbusplus::message_t& m) {
         boost::container::flat_map<std::string, std::variant<bool, double>>
             values;
         m.read(std::string(), values);

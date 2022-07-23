@@ -153,7 +153,7 @@ struct IpmbRequest
 
     IpmbRequest(const ipmbHeader* ipmbBuffer, size_t bufferLength);
 
-    void prepareRequest(sdbusplus::message::message& mesg);
+    void prepareRequest(sdbusplus::message_t& mesg);
 };
 
 struct IpmbResponse
