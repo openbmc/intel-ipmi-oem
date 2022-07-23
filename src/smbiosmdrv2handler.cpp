@@ -64,15 +64,15 @@ int MDRV2::sdplusMdrv2GetProperty(const std::string& name,
                                   const std::string& service)
 {
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-    sdbusplus::message::message method =
+    sdbusplus::message_t method =
         bus->new_method_call(service.c_str(), mdrv2Path, dbusProperties, "Get");
     method.append(mdrv2Interface, name);
 
-    sdbusplus::message::message reply = bus->call(method);
+    sdbusplus::message_t reply = bus->call(method);
 
     try
     {
-        sdbusplus::message::message reply = bus->call(method);
+        sdbusplus::message_t reply = bus->call(method);
         reply.read(value);
     }
     catch (const sdbusplus::exception_t& e)
@@ -91,14 +91,14 @@ int MDRV2::syncDirCommonData(uint8_t idIndex, uint32_t size,
 {
     std::vector<uint32_t> commonData;
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-    sdbusplus::message::message method =
+    sdbusplus::message_t method =
         bus->new_method_call(service.c_str(), mdrv2Path, mdrv2Interface,
                              "SynchronizeDirectoryCommonData");
     method.append(idIndex, size);
 
     try
     {
-        sdbusplus::message::message reply = bus->call(method);
+        sdbusplus::message_t reply = bus->call(method);
         reply.read(commonData);
     }
     catch (const sdbusplus::exception_t& e)
@@ -135,7 +135,7 @@ int MDRV2::findDataId(const uint8_t* dataInfo, const size_t& len,
     }
 
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
-    sdbusplus::message::message method = bus->new_method_call(
+    sdbusplus::message_t method = bus->new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "FindIdIndex");
     std::vector<uint8_t> info;
     info.resize(len);
@@ -144,7 +144,7 @@ int MDRV2::findDataId(const uint8_t* dataInfo, const size_t& len,
 
     try
     {
-        sdbusplus::message::message reply = bus->call(method);
+        sdbusplus::message_t reply = bus->call(method);
         reply.read(idIndex);
     }
     catch (const sdbusplus::exception_t& e)
@@ -316,7 +316,7 @@ ipmi::RspType<std::vector<uint8_t>> mdr2GetDir(uint16_t agentId,
         return ipmi::responseParmOutOfRange();
     }
 
-    sdbusplus::message::message method = bus->new_method_call(
+    sdbusplus::message_t method = bus->new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "GetDirectoryInformation");
 
     method.append(dirIndex);
@@ -324,7 +324,7 @@ ipmi::RspType<std::vector<uint8_t>> mdr2GetDir(uint16_t agentId,
     std::vector<uint8_t> dataOut;
     try
     {
-        sdbusplus::message::message reply = bus->call(method);
+        sdbusplus::message_t reply = bus->call(method);
         reply.read(dataOut);
     }
     catch (const sdbusplus::exception_t& e)
@@ -403,7 +403,7 @@ ipmi::RspType<bool> mdr2SendDir(uint16_t agentId, uint8_t dirVersion,
         return ipmi::response(ccStorageLeak);
     }
 
-    sdbusplus::message::message method = bus->new_method_call(
+    sdbusplus::message_t method = bus->new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "SendDirectoryInformation");
     method.append(dirVersion, dirIndex, returnedEntries, remainingEntries,
                   dataInfo);
@@ -411,7 +411,7 @@ ipmi::RspType<bool> mdr2SendDir(uint16_t agentId, uint8_t dirVersion,
     bool terminate = false;
     try
     {
-        sdbusplus::message::message reply = bus->call(method);
+        sdbusplus::message_t reply = bus->call(method);
         reply.read(terminate);
     }
     catch (const sdbusplus::exception_t& e)
@@ -469,7 +469,7 @@ ipmi::RspType<std::vector<uint8_t>>
         return ipmi::responseParmOutOfRange();
     }
 
-    sdbusplus::message::message method = bus->new_method_call(
+    sdbusplus::message_t method = bus->new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "GetDataInformation");
 
     method.append(static_cast<uint8_t>(idIndex));
@@ -477,7 +477,7 @@ ipmi::RspType<std::vector<uint8_t>>
     std::vector<uint8_t> res;
     try
     {
-        sdbusplus::message::message reply = bus->call(method);
+        sdbusplus::message_t reply = bus->call(method);
         reply.read(res);
     }
     catch (const sdbusplus::exception_t& e)
@@ -524,13 +524,13 @@ ipmi::RspType<std::vector<uint8_t>> mdr2DataInfoOffer(uint16_t agentId)
         return ipmi::responseParmOutOfRange();
     }
 
-    sdbusplus::message::message method = bus->new_method_call(
+    sdbusplus::message_t method = bus->new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "GetDataOffer");
 
     std::vector<uint8_t> dataOut;
     try
     {
-        sdbusplus::message::message reply = bus->call(method);
+        sdbusplus::message_t reply = bus->call(method);
         reply.read(dataOut);
     }
     catch (const sdbusplus::exception_t& e)
@@ -602,7 +602,7 @@ ipmi::RspType<bool> mdr2SendDataInfo(uint16_t agentId,
         return ipmi::responseParmOutOfRange();
     }
 
-    sdbusplus::message::message method = bus->new_method_call(
+    sdbusplus::message_t method = bus->new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "SendDataInformation");
 
     method.append((uint8_t)idIndex, validFlag, dataLength, dataVersion,
@@ -611,7 +611,7 @@ ipmi::RspType<bool> mdr2SendDataInfo(uint16_t agentId,
     bool entryChanged = true;
     try
     {
-        sdbusplus::message::message reply = bus->call(method);
+        sdbusplus::message_t reply = bus->call(method);
         reply.read(entryChanged);
     }
     catch (const sdbusplus::exception_t& e)
@@ -1243,12 +1243,12 @@ ipmi::RspType<> cmd_mdr2_data_done(uint16_t agentId, uint16_t lockHandle)
     bool status = false;
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     std::string service = ipmi::getService(*bus, mdrv2Interface, mdrv2Path);
-    sdbusplus::message::message method = bus->new_method_call(
+    sdbusplus::message_t method = bus->new_method_call(
         service.c_str(), mdrv2Path, mdrv2Interface, "AgentSynchronizeData");
 
     try
     {
-        sdbusplus::message::message reply = bus->call(method);
+        sdbusplus::message_t reply = bus->call(method);
         reply.read(status);
     }
     catch (const sdbusplus::exception_t& e)

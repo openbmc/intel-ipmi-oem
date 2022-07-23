@@ -43,7 +43,7 @@ static constexpr const char* currentBmcStateProp = "CurrentBMCState";
 static constexpr const char* bmcStateReadyStr =
     "xyz.openbmc_project.State.BMC.BMCState.Ready";
 
-static std::unique_ptr<sdbusplus::bus::match::match> bmcStateChangedSignal;
+static std::unique_ptr<sdbusplus::bus::match_t> bmcStateChangedSignal;
 static uint8_t bmcDeviceBusy = true;
 
 int initBMCDeviceState(ipmi::Context::ptr ctx)
@@ -78,11 +78,11 @@ int initBMCDeviceState(ipmi::Context::ptr ctx)
 
     // BMC state may change runtime while doing firmware udpate.
     // Register for property change signal to update state.
-    bmcStateChangedSignal = std::make_unique<sdbusplus::bus::match::match>(
+    bmcStateChangedSignal = std::make_unique<sdbusplus::bus::match_t>(
         *(ctx->bus),
         sdbusplus::bus::match::rules::propertiesChanged(objInfo.first,
                                                         bmcStateIntf),
-        [](sdbusplus::message::message& msg) {
+        [](sdbusplus::message_t& msg) {
             std::map<std::string, std::variant<std::string>> props;
             std::vector<std::string> inVal;
             std::string iface;

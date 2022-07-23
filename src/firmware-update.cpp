@@ -376,11 +376,11 @@ class FwUpdateStatusCache
         std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
         fwUpdateState = fwStateProgram;
         progressPercent = 0;
-        match = std::make_shared<sdbusplus::bus::match::match>(
+        match = std::make_shared<sdbusplus::bus::match_t>(
             *busp,
             sdbusplus::bus::match::rules::propertiesChanged(
                 objPath, "xyz.openbmc_project.Software.ActivationProgress"),
-            [&](sdbusplus::message::message& msg) {
+            [&](sdbusplus::message_t& msg) {
                 std::map<std::string, ipmi::DbusVariant> props;
                 std::vector<std::string> inVal;
                 std::string iface;
@@ -445,7 +445,7 @@ class FwUpdateStatusCache
 
   protected:
     std::shared_ptr<sdbusplus::asio::connection> busp;
-    std::shared_ptr<sdbusplus::bus::match::match> match;
+    std::shared_ptr<sdbusplus::bus::match_t> match;
     uint8_t fwUpdateState = 0;
     uint8_t progressPercent = 0;
     bool deferRestartState = false;
@@ -561,7 +561,7 @@ ipmi::Cc checkIPMBChannel(const ipmi::Context::ptr& ctx, bool& isIPMBChannel)
 }
 
 static void postTransferCompleteHandler(
-    std::unique_ptr<sdbusplus::bus::match::match>& fwUpdateMatchSignal)
+    std::unique_ptr<sdbusplus::bus::match_t>& fwUpdateMatchSignal)
 {
     // Setup timer for watching signal
     static phosphor::Timer timer(
@@ -579,7 +579,7 @@ static void postTransferCompleteHandler(
     timer.start(std::chrono::microseconds(5000000), false);
 
     // callback function for capturing signal
-    auto callback = [&](sdbusplus::message::message& m) {
+    auto callback = [&](sdbusplus::message_t& m) {
         bool flag = false;
 
         std::vector<std::pair<
@@ -638,7 +638,7 @@ static void postTransferCompleteHandler(
     };
 
     // Adding matcher
-    fwUpdateMatchSignal = std::make_unique<sdbusplus::bus::match::match>(
+    fwUpdateMatchSignal = std::make_unique<sdbusplus::bus::match_t>(
         *getSdBus(),
         "interface='org.freedesktop.DBus.ObjectManager',type='signal',"
         "member='InterfacesAdded',path='/xyz/openbmc_project/software'",
@@ -650,7 +650,7 @@ static bool startFirmwareUpdate(const std::string& uri)
     // the code gets to this point, the file should be transferred start the
     // request (creating a new file in /tmp/images causes the update manager to
     // check if it is ready for activation)
-    static std::unique_ptr<sdbusplus::bus::match::match> fwUpdateMatchSignal;
+    static std::unique_ptr<sdbusplus::bus::match_t> fwUpdateMatchSignal;
     postTransferCompleteHandler(fwUpdateMatchSignal);
     std::filesystem::rename(
         uri, "/tmp/images/" +

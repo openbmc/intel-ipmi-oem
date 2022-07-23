@@ -117,7 +117,7 @@ static constexpr const char* dBusPropertyGetMethod = "Get";
 static constexpr const char* dBusPropertySetMethod = "Set";
 
 // return code: 0 successful
-int8_t getChassisSerialNumber(sdbusplus::bus::bus& bus, std::string& serial)
+int8_t getChassisSerialNumber(sdbusplus::bus_t& bus, std::string& serial)
 {
     std::string objpath = "/xyz/openbmc_project/FruDevice";
     std::string intf = "xyz.openbmc_project.FruDeviceManager";
@@ -439,7 +439,7 @@ bool getActiveHSCSoftwareVersionInfo(std::string& hscVersion, size_t hscNumber)
                             hsbpObjPath, biosVersionIntf, "Version");
         hscVersion = std::get<std::string>(hscVersionValue);
     }
-    catch (const sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "Failed to retrieve HSBP version information",
@@ -1481,7 +1481,7 @@ std::map<uint8_t, std::string> offsetObjPath = {
 
 } // namespace ledAction
 
-int8_t getLEDState(sdbusplus::bus::bus& bus, const std::string& intf,
+int8_t getLEDState(sdbusplus::bus_t& bus, const std::string& intf,
                    const std::string& objPath, uint8_t& state)
 {
     try
@@ -1494,7 +1494,7 @@ int8_t getLEDState(sdbusplus::bus::bus& bus, const std::string& intf,
             sdbusplus::xyz::openbmc_project::Led::server::Physical::
                 convertActionFromString(strState));
     }
-    catch (const sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return -1;
@@ -1657,7 +1657,7 @@ constexpr const char* thermalModePath =
     "/xyz/openbmc_project/control/thermal_mode";
 
 bool getFanProfileInterface(
-    sdbusplus::bus::bus& bus,
+    sdbusplus::bus_t& bus,
     boost::container::flat_map<
         std::string, std::variant<std::vector<std::string>, std::string>>& resp)
 {
@@ -3196,7 +3196,7 @@ ipmi::RspType<uint8_t> ipmiOEMGetNmiSource(void)
                 return ipmi::responseResponseError();
         }
     }
-    catch (const sdbusplus::exception::exception& e)
+    catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
         return ipmi::responseResponseError();
