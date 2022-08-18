@@ -1488,7 +1488,8 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
 
         name.resize(FULL_RECORD_ID_STR_MAX_LENGTH);
     }
-    record.body.id_string_info = name.size();
+    get_sdr::body::set_id_strlen(name.size(), &record.body);
+    get_sdr::body::set_id_type(3, &record.body); // "8-bit ASCII + Latin 1"
     std::strncpy(record.body.id_string, name.c_str(),
                  sizeof(record.body.id_string));
 
