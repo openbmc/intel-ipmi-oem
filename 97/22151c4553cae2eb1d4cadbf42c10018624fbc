@@ -1,0 +1,8 @@
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Code-Review+1: Jiaqing Zhao <jiaqing.zhao@intel.com>
+Code-Review+2: AppaRao Puli <apparao.puli@intel.com>
+Submitted-by: Paul Fertser <fercerpav@gmail.com>
+Submitted-at: Mon, 29 Aug 2022 13:32:33 +0000
+Reviewed-on: https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/56626
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
