@@ -24,6 +24,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <regex>
 
 namespace ipmi
 {
@@ -278,6 +279,77 @@ int8_t Manufacturing::disablePidControlService(const bool disable)
     return 0;
 }
 
+using ObjectType = boost::container::flat_map<
+    std::string, boost::container::flat_map<std::string, DbusVariant>>;
+using ManagedObjectType =
+    boost::container::flat_map<sdbusplus::message::object_path, ObjectType>;
+
+bool findFanPwm(const std::shared_ptr<sdbusplus::asio::connection>& bus,
+                boost::asio::yield_context& yield, uint8_t instance,
+                std::string& pwmName)
+{
+    boost::system::error_code ec;
+
+    // GetAll the objects under service FruDevice
+    ec = boost::system::errc::make_error_code(boost::system::errc::success);
+    auto obj = bus->yield_method_call<ManagedObjectType>(
+        yield, ec, "xyz.openbmc_project.EntityManager", "/",
+        "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "GetMangagedObjects failed",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+        return false;
+    }
+    for (const auto& [path, objData] : obj)
+    {
+        for (const auto& [intf, propMap] : objData)
+        {
+            // Currently, these are the three different fan types supported.
+            if (intf == "xyz.openbmc_project.Configuration.AspeedFan" ||
+                intf == "xyz.openbmc_project.Configuration.I2CFan" ||
+                intf == "xyz.openbmc_project.Configuration.NuvotonFan")
+            {
+                auto findIndex = propMap.find("Index");
+                if (findIndex == propMap.end())
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "ERROR: Fan interface does not contain Index. "
+                        "Using default Pwm_1 name.");
+                    return false;
+                }
+
+                auto fanIndex = std::get_if<uint64_t>(&findIndex->second);
+                if (!fanIndex || *fanIndex != instance)
+                {
+                    continue;
+                }
+                auto connector = objData.find(intf + std::string(".Connector"));
+                if (connector != objData.end())
+                {
+                    auto findPwmName = connector->second.find("PwmName");
+                    if (findPwmName == propMap.end())
+                    {
+                        phosphor::logging::log<phosphor::logging::level::INFO>(
+                            "ERROR: Fan interface does not contain PwmName. "
+                            "Using default name.");
+                        return false;
+                    }
+                    auto fanPwmName =
+                        std::get_if<std::string>(&findPwmName->second);
+                    if (!fanPwmName)
+                    {
+                        return false;
+                    }
+                    pwmName = *fanPwmName;
+                }
+                return true;
+            }
+        }
+    }
+    return false;
+}
 ipmi::RspType<uint8_t,                // Signal value
               std::optional<uint16_t> // Fan tach value
               >
@@ -330,7 +402,14 @@ ipmi::RspType<uint8_t,                // Signal value
         case SmSignalGet::smFanPwmGet:
         {
             ipmi::Value reply;
-            std::string fullPath = fanPwmPath + std::to_string(instance + 1);
+            std::string pwmName, fullPath;
+            // On newer platforms, the PWM name can be found in EntityManager.
+            if (!findFanPwm(ctx->bus, ctx->yield, instance + 1, pwmName))
+            {
+                // On older platforms, the PWM name is Pwm_#
+                pwmName = "Pwm_" + std::to_string(instance + 1);
+            }
+            fullPath = fanPwmPath + pwmName;
             if (mtm.getProperty(fanService, fullPath, fanIntf, "Value",
                                 &reply) < 0)
             {
@@ -819,11 +898,6 @@ static constexpr uint8_t maxEthSize = 6;
 static constexpr uint8_t maxSupportedEth = 3;
 static constexpr const char* factoryEthAddrBaseFileName =
     "/var/sofs/factory-settings/network/mac/eth";
-
-using ObjectType = boost::container::flat_map<
-    std::string, boost::container::flat_map<std::string, DbusVariant>>;
-using ManagedObjectType =
-    boost::container::flat_map<sdbusplus::message::object_path, ObjectType>;
 
 bool findFruDevice(const std::shared_ptr<sdbusplus::asio::connection>& bus,
                    boost::asio::yield_context& yield, uint64_t& macOffset,
