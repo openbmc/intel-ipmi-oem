@@ -331,6 +331,17 @@ ipmi::RspType<uint8_t,                // Signal value
         {
             ipmi::Value reply;
             std::string fullPath = fanPwmPath + std::to_string(instance + 1);
+
+            if (mtm.getProperty(fanService, fullPath, fanIntf, "Value",
+                                &reply) < 0)
+            {
+                // On newer platforms, PWM headers are paired. E.g. Pwm_1_2
+                // rather than just Pwm_1.
+                uint8_t base_instance =
+                    instance % 2 == 0 ? instance + 1 : instance;
+                fullPath = fanPwmPath + std::to_string(base_instance) + "_" +
+                           std::to_string(base_instance + 1);
+            }
             if (mtm.getProperty(fanService, fullPath, fanIntf, "Value",
                                 &reply) < 0)
             {
