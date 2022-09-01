@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ed4b1aa2_ea7b48a4",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 342,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-09-01T20:20:53Z",
+      "side": 1,
+      "message": "This has a dependency on specific sensor name defined in a configuration file. Is it possible to look up the correct path to use?",
+      "range": {
+        "startLine": 340,
+        "startChar": 0,
+        "endLine": 342,
+        "endChar": 77
+      },
+      "revId": "f3bcd501dd825ec10b2c559ead3b82791e4d766b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
