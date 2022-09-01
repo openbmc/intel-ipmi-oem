@@ -44,7 +44,7 @@ static constexpr const char* ledServicePrefix =
 static constexpr const char* ledPathPrefix =
     "/xyz/openbmc_project/led/physical/";
 static constexpr const char* fanPwmPath =
-    "/xyz/openbmc_project/sensors/fan_pwm/Pwm_";
+    "/xyz/openbmc_project/sensors/fan_pwm/";
 static constexpr const char* fanTachBasePath =
     "/xyz/openbmc_project/sensors/fan_tach/";
 
