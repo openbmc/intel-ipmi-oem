@@ -279,6 +279,78 @@ int8_t Manufacturing::disablePidControlService(const bool disable)
     return 0;
 }
 
+static bool findPwmName(ipmi::Context::ptr& ctx, uint8_t instance,
+                        std::string& pwmName)
+{
+    boost::system::error_code ec{};
+    ObjectValueTree obj;
+
+    // GetAll the objects under service FruDevice
+    ec = getManagedObjects(ctx, "xyz.openbmc_project.EntityManager",
+                           "/xyz/openbmc_project/inventory", obj);
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "GetMangagedObjects failed",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+        return false;
+    }
+    for (const auto& [path, objData] : obj)
+    {
+        for (const auto& [intf, propMap] : objData)
+        {
+            // Currently, these are the three different fan types supported.
+            if (intf == "xyz.openbmc_project.Configuration.AspeedFan" ||
+                intf == "xyz.openbmc_project.Configuration.I2CFan" ||
+                intf == "xyz.openbmc_project.Configuration.NuvotonFan")
+            {
+                auto findIndex = propMap.find("Index");
+                if (findIndex == propMap.end())
+                {
+                    continue;
+                }
+
+                auto fanIndex = std::get_if<uint64_t>(&findIndex->second);
+                if (!fanIndex || *fanIndex != instance)
+                {
+                    continue;
+                }
+                auto connector = objData.find(intf + std::string(".Connector"));
+                if (connector == objData.end())
+                {
+                    return false;
+                }
+                auto findPwmName = connector->second.find("PwmName");
+                if (findPwmName != connector->second.end())
+                {
+                    auto fanPwmName =
+                        std::get_if<std::string>(&findPwmName->second);
+                    if (!fanPwmName)
+                    {
+                        phosphor::logging::log<phosphor::logging::level::INFO>(
+                            "PwmName parse ERROR.");
+                        return false;
+                    }
+                    pwmName = *fanPwmName;
+                    return true;
+                }
+                auto findPwm = connector->second.find("Pwm");
+                if (findPwm == connector->second.end())
+                {
+                    return false;
+                }
+                auto fanPwm = std::get_if<uint64_t>(&findPwm->second);
+                if (!fanPwm)
+                {
+                    return false;
+                }
+                pwmName = "Pwm_" + std::to_string(*fanPwm + 1);
+                return true;
+            }
+        }
+    }
+    return false;
+}
 ipmi::RspType<uint8_t,                // Signal value
               std::optional<uint16_t> // Fan tach value
               >
@@ -331,7 +403,13 @@ ipmi::RspType<uint8_t,                // Signal value
         case SmSignalGet::smFanPwmGet:
         {
             ipmi::Value reply;
-            std::string fullPath = fanPwmPath + std::to_string(instance + 1);
+            std::string pwmName, fullPath;
+            if (!findPwmName(ctx, instance, pwmName))
+            {
+                // The default PWM name is Pwm_#
+                pwmName = "Pwm_" + std::to_string(instance + 1);
+            }
+            fullPath = fanPwmPath + pwmName;
             if (mtm.getProperty(fanService, fullPath, fanIntf, "Value",
                                 &reply) < 0)
             {
@@ -597,9 +675,12 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                         mtm.revertFanPWM = true;
                     }
                     mtm.revertTimer.start(revertTimeOut);
-                    std::string fanPwmInstancePath =
-                        fanPwmPath + std::to_string(instance + 1);
-
+                    std::string pwmName, fanPwmInstancePath;
+                    if (!findPwmName(ctx, instance, pwmName))
+                    {
+                        pwmName = "Pwm_" + std::to_string(instance + 1);
+                    }
+                    fanPwmInstancePath = fanPwmPath + pwmName;
                     ret =
                         mtm.setProperty(fanService, fanPwmInstancePath, fanIntf,
                                         "Value", static_cast<double>(pwmValue));
