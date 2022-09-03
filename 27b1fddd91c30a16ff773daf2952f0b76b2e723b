@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d4de83dd_6fb358ea",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-03T01:29:53Z",
+      "side": 1,
+      "message": "Used regex to match any current/future baseboard Dbus object and read the PwmName property if it exists.",
+      "revId": "27b1fddd91c30a16ff773daf2952f0b76b2e723b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
