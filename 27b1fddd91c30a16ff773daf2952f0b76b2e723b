@@ -43,6 +43,23 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "62440471_33f77213",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 306,
+      "author": {
+        "id": 1001322
+      },
+      "writtenOn": "2022-09-06T06:56:16Z",
+      "side": 1,
+      "message": "+1",
+      "revId": "27b1fddd91c30a16ff773daf2952f0b76b2e723b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "22cbc286_8d0be909",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 2
@@ -60,6 +77,23 @@
         "endLine": 315,
         "endChar": 72
       },
+      "revId": "27b1fddd91c30a16ff773daf2952f0b76b2e723b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f09e38f7_fd84c59e",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 1001322
+      },
+      "writtenOn": "2022-09-06T06:56:16Z",
+      "side": 1,
+      "message": "how about using strcmp() here?",
       "revId": "27b1fddd91c30a16ff773daf2952f0b76b2e723b",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
