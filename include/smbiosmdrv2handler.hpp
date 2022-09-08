@@ -20,6 +20,7 @@
 
 #include <oemcommands.hpp>
 #include <sdbusplus/timer.hpp>
+#include <types.hpp>
 
 static constexpr const char* mdrType2File = "/var/lib/smbios/smbios2";
 static constexpr const char* smbiosPath = "/var/lib/smbios";
@@ -273,7 +274,7 @@ class MDRV2
     bool smbiosTryLock(uint8_t flag, uint8_t index, uint16_t* session,
                        uint16_t timeout);
     int sdplusMdrv2GetProperty(const std::string& name,
-                               std::variant<uint8_t>& value,
+                               ipmi::DbusVariant& value,
                                const std::string& service);
 
     Mdr2DirStruct smbiosDir{smbiosAgentVersion,

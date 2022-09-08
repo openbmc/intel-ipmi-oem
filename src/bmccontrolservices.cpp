@@ -20,6 +20,7 @@
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/log.hpp>
+#include <types.hpp>
 
 #include <variant>
 
@@ -148,7 +149,7 @@ ipmi::RspType<> setBmcControlServices(boost::asio::yield_context yield,
                             yield, ec, getServiceConfigMgrName().c_str(),
                             obj.first.str, dBusPropIntf, "Set",
                             serviceConfigAttrIntf, propMasked,
-                            std::variant<bool>(!state));
+                            ipmi::DbusVariant(!state));
                         checkAndThrowError(ec, "Set Masked property failed");
                         // Multiple instances may be present, so continue
                     }

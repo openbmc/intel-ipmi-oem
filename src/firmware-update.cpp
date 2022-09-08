@@ -476,8 +476,8 @@ static void activateImage(const std::string& objPath)
             "xyz.openbmc_project.Software.BMC.Updater", objPath,
             "org.freedesktop.DBus.Properties", "Set",
             "xyz.openbmc_project.Software.Activation", "RequestedActivation",
-            std::variant<std::string>("xyz.openbmc_project.Software.Activation."
-                                      "RequestedActivations.Active"));
+            ipmi::DbusVariant("xyz.openbmc_project.Software.Activation."
+                              "RequestedActivations.Active"));
     }
     else
     {
@@ -582,9 +582,9 @@ static void postTransferCompleteHandler(
     auto callback = [&](sdbusplus::message_t& m) {
         bool flag = false;
 
-        std::vector<std::pair<
-            std::string,
-            std::vector<std::pair<std::string, std::variant<std::string>>>>>
+        std::vector<
+            std::pair<std::string,
+                      std::vector<std::pair<std::string, ipmi::DbusVariant>>>>
             intfPropsPair;
         sdbusplus::message::object_path objPath;
 

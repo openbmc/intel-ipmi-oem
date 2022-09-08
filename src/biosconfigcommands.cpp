@@ -121,8 +121,7 @@ enum class AttributesType : uint8_t
 };
 
 using PendingAttributesType =
-    std::map<std::string,
-             std::tuple<std::string, std::variant<int64_t, std::string>>>;
+    std::map<std::string, std::tuple<std::string, ipmi::DbusVariant>>;
 
 AttributesType getAttrType(const std::string_view typeDbus)
 {
@@ -146,7 +145,7 @@ AttributesType getAttrType(const std::string_view typeDbus)
 }
 
 bool fillPayloadData(std::string& payloadData,
-                     const std::variant<int64_t, std::string>& attributes,
+                     const ipmi::DbusVariant& attributes,
                      const std::string_view key, AttributesType& attrType)
 {
     payloadData += key;

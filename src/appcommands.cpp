@@ -20,6 +20,7 @@
 #include <ipmid/utils.hpp>
 #include <nlohmann/json.hpp>
 #include <phosphor-logging/log.hpp>
+#include <types.hpp>
 
 #include <fstream>
 #include <regex>
@@ -83,7 +84,7 @@ int initBMCDeviceState(ipmi::Context::ptr ctx)
         sdbusplus::bus::match::rules::propertiesChanged(objInfo.first,
                                                         bmcStateIntf),
         [](sdbusplus::message_t& msg) {
-            std::map<std::string, std::variant<std::string>> props;
+            std::map<std::string, ipmi::DbusVariant> props;
             std::vector<std::string> inVal;
             std::string iface;
             try
