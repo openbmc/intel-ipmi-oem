@@ -21,6 +21,7 @@
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
 #include <oemcommands.hpp>
+#include <types.hpp>
 
 #include <filesystem>
 #include <fstream>
