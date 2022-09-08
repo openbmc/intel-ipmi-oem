@@ -128,8 +128,7 @@ static sdbusplus::bus::match_t thresholdChanged(
     "type='signal',member='PropertiesChanged',interface='org.freedesktop.DBus."
     "Properties',arg0namespace='xyz.openbmc_project.Sensor.Threshold'",
     [](sdbusplus::message_t& m) {
-        boost::container::flat_map<std::string, std::variant<bool, double>>
-            values;
+        boost::container::flat_map<std::string, ipmi::DbusVariant> values;
         m.read(std::string(), values);
 
         auto findAssert =

@@ -60,7 +60,7 @@ int MDRV2::agentLookup(const uint16_t& agentId)
 }
 
 int MDRV2::sdplusMdrv2GetProperty(const std::string& name,
-                                  std::variant<uint8_t>& value,
+                                  ipmi::DbusVariant& value,
                                   const std::string& service)
 {
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
@@ -297,7 +297,7 @@ ipmi::RspType<std::vector<uint8_t>> mdr2GetDir(uint16_t agentId,
         return ipmi::responseParmOutOfRange();
     }
 
-    std::variant<uint8_t> value = static_cast<uint8_t>(0);
+    ipmi::DbusVariant value = static_cast<uint8_t>(0);
     if (0 != mdrv2->sdplusMdrv2GetProperty("DirectoryEntries", value, service))
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(

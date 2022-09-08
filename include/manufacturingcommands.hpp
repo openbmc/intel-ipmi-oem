@@ -22,7 +22,6 @@
 #include <sdbusplus/bus.hpp>
 #include <sdbusplus/message.hpp>
 #include <sdbusplus/timer.hpp>
-#include <variantvisitors.hpp>
 
 #include <vector>
 

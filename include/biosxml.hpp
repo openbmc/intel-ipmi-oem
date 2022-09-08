@@ -4,6 +4,7 @@
 
 #include <phosphor-logging/elog-errors.hpp>
 #include <phosphor-logging/log.hpp>
+#include <types.hpp>
 
 #include <map>
 #include <sstream>
@@ -18,7 +19,7 @@ namespace bios
  * For example
  *  <option text="TIS" value="0x0"/>
  */
-using OptionType = std::tuple<std::string, std::variant<int64_t, std::string>>;
+using OptionType = std::tuple<std::string, ipmi::DbusVariant>;
 
 /* Can hold one 'options'
  * For example
@@ -45,8 +46,7 @@ using OptionTypeVector = std::vector<OptionType>;
  */
 using BiosBaseTableTypeEntry =
     std::tuple<std::string, bool, std::string, std::string, std::string,
-               std::variant<int64_t, std::string>,
-               std::variant<int64_t, std::string>, OptionTypeVector>;
+               ipmi::DbusVariant, ipmi::DbusVariant, OptionTypeVector>;
 
 /* Can hold one 'biosknobs'
  * biosknobs has array of 'knob' */

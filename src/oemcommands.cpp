@@ -1658,8 +1658,7 @@ constexpr const char* thermalModePath =
 
 bool getFanProfileInterface(
     sdbusplus::bus_t& bus,
-    boost::container::flat_map<
-        std::string, std::variant<std::vector<std::string>, std::string>>& resp)
+    boost::container::flat_map<std::string, ipmi::DbusVariant>& resp)
 {
     auto call = bus.new_method_call(settingsBusName, thermalModePath, PROP_INTF,
                                     "GetAll");
@@ -1715,9 +1714,7 @@ ipmi::RspType<> ipmiOEMSetFanConfig(uint8_t selectedFanProfile,
     }
 
     // todo: tell bios to only send first 2 bytes
-    boost::container::flat_map<
-        std::string, std::variant<std::vector<std::string>, std::string>>
-        profileData;
+    boost::container::flat_map<std::string, ipmi::DbusVariant> profileData;
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     if (!getFanProfileInterface(*dbus, profileData))
     {
@@ -1791,9 +1788,7 @@ ipmi::RspType<uint8_t, // profile support map
         return ipmi::responseInvalidFieldRequest();
     }
 
-    boost::container::flat_map<
-        std::string, std::variant<std::vector<std::string>, std::string>>
-        profileData;
+    boost::container::flat_map<std::string, ipmi::DbusVariant> profileData;
 
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     if (!getFanProfileInterface(*dbus, profileData))
@@ -2277,8 +2272,7 @@ ipmi::RspType<
     }
 }
 
-using crConfigVariant =
-    std::variant<bool, uint8_t, uint32_t, std::vector<uint8_t>, std::string>;
+using crConfigVariant = ipmi::DbusVariant;
 
 int setCRConfig(ipmi::Context::ptr ctx, const std::string& property,
                 const crConfigVariant& value,
@@ -2941,7 +2935,7 @@ ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr ctx)
     uint8_t specialModeValue = 0;
 
     boost::system::error_code ec;
-    auto varRestrMode = ctx->bus->yield_method_call<std::variant<std::string>>(
+    auto varRestrMode = ctx->bus->yield_method_call<ipmi::DbusVariant>(
         ctx->yield, ec, restricionModeService, restricionModeBasePath,
         dBusPropertyIntf, dBusPropertyGetMethod, restricionModeIntf,
         restricionModeProperty);
@@ -2955,11 +2949,10 @@ ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr ctx)
     restrictionModeValue = static_cast<uint8_t>(
         securityNameSpace::RestrictionMode::convertModesFromString(
             std::get<std::string>(varRestrMode)));
-    auto varSpecialMode =
-        ctx->bus->yield_method_call<std::variant<std::string>>(
-            ctx->yield, ec, specialModeService, specialModeBasePath,
-            dBusPropertyIntf, dBusPropertyGetMethod, specialModeIntf,
-            specialModeProperty);
+    auto varSpecialMode = ctx->bus->yield_method_call<ipmi::DbusVariant>(
+        ctx->yield, ec, specialModeService, specialModeBasePath,
+        dBusPropertyIntf, dBusPropertyGetMethod, specialModeIntf,
+        specialModeProperty);
     if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -3017,7 +3010,7 @@ ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
     }
 
     boost::system::error_code ec;
-    auto varRestrMode = ctx->bus->yield_method_call<std::variant<std::string>>(
+    auto varRestrMode = ctx->bus->yield_method_call<ipmi::DbusVariant>(
         ctx->yield, ec, restricionModeService, restricionModeBasePath,
         dBusPropertyIntf, dBusPropertyGetMethod, restricionModeIntf,
         restricionModeProperty);
@@ -3050,7 +3043,7 @@ ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
         ctx->yield, ec, restricionModeService, restricionModeBasePath,
         dBusPropertyIntf, dBusPropertySetMethod, restricionModeIntf,
         restricionModeProperty,
-        static_cast<std::variant<std::string>>(
+        static_cast<ipmi::DbusVariant>(
             securityNameSpace::convertForMessage(reqMode)));
 
     if (ec)
@@ -3078,10 +3071,9 @@ ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
             ctx->yield, ec, specialModeService, specialModeBasePath,
             dBusPropertyIntf, dBusPropertySetMethod, specialModeIntf,
             specialModeProperty,
-            static_cast<std::variant<std::string>>(
-                securityNameSpace::convertForMessage(
-                    static_cast<securityNameSpace::SpecialMode::Modes>(
-                        specialMode.value()))));
+            static_cast<ipmi::DbusVariant>(securityNameSpace::convertForMessage(
+                static_cast<securityNameSpace::SpecialMode::Modes>(
+                    specialMode.value()))));
 
         if (ec)
         {
@@ -3349,8 +3341,7 @@ ipmi::RspType<>
     {
         std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
 
-        std::variant<std::vector<uint8_t>> offsets =
-            field.get<std::vector<uint8_t>>();
+        ipmi::DbusVariant offsets = field.get<std::vector<uint8_t>>();
         auto call = bus->new_method_call(
             settingsBusName, dimmOffset::offsetPath, PROP_INTF, "Set");
         call.append(dimmOffset::offsetInterface, dimmOffset::property, offsets);
@@ -3656,10 +3647,7 @@ ipmi::RspType<> ipmiOemSetEfiBootOptions(uint8_t bootFlag, uint8_t bootParam,
     return ipmi::responseSuccess();
 }
 
-using BasicVariantType =
-    std::variant<std::vector<std::string>, std::vector<uint64_t>, std::string,
-                 int64_t, uint64_t, double, int32_t, uint32_t, int16_t,
-                 uint16_t, uint8_t, bool>;
+using BasicVariantType = ipmi::DbusVariant;
 using PropertyMapType =
     boost::container::flat_map<std::string, BasicVariantType>;
 static constexpr const std::array<const char*, 1> psuPresenceTypes = {
