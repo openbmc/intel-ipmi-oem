@@ -78,20 +78,12 @@ SensorSubTree sensorTree;
 
 static boost::container::flat_map<std::string, ManagedObjectType> SensorCache;
 
-// Specify the comparison required to sort and find char* map objects
-struct CmpStr
-{
-    bool operator()(const char* a, const char* b) const
-    {
-        return std::strcmp(a, b) < 0;
-    }
-};
-const static boost::container::flat_map<const char*, SensorUnits, CmpStr>
-    sensorUnits{{{"temperature", SensorUnits::degreesC},
-                 {"voltage", SensorUnits::volts},
-                 {"current", SensorUnits::amps},
-                 {"fan_tach", SensorUnits::rpm},
-                 {"power", SensorUnits::watts}}};
+constexpr static std::array<std::pair<const char*, SensorUnits>, 5> sensorUnits{
+    {{"temperature", SensorUnits::degreesC},
+     {"voltage", SensorUnits::volts},
+     {"current", SensorUnits::amps},
+     {"fan_tach", SensorUnits::rpm},
+     {"power", SensorUnits::watts}}};
 
 void registerSensorFunctions() __attribute__((constructor));
 
@@ -1357,13 +1349,13 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     record.body.sensor_capabilities = 0x68; // auto rearm - todo hysteresis
     record.body.sensor_type = getSensorTypeFromPath(path);
     std::string type = getSensorTypeStringFromPath(path);
-    auto typeCstr = type.c_str();
-    auto findUnits = sensorUnits.find(typeCstr);
-    if (findUnits != sensorUnits.end())
+    for (const auto& [unitsType, units] : sensorUnits)
     {
-        record.body.sensor_units_2_base =
-            static_cast<uint8_t>(findUnits->second);
-    } // else default 0x0 unspecified
+        if (type == unitsType)
+        {
+            record.body.sensor_units_2_base = static_cast<uint8_t>(units);
+        }
+    }
 
     record.body.event_reading_type = getSensorEventTypeFromPath(path);
 
