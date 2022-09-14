@@ -1,0 +1,165 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e34b1dea_3292f484",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-09-14T17:29:06Z",
+      "side": 1,
+      "message": "Remove old system/new system, just say there are systems use customized pwm name with PwmName field in configuration file.",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 4
+      },
+      "revId": "e02e971bcfb910c9ea4f1d84d1f3ce867900094a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e56726c3_c79b20f1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-09-14T17:29:06Z",
+      "side": 1,
+      "message": "please be more specific show that how the system with a customized pwm name works.",
+      "range": {
+        "startLine": 19,
+        "startChar": 0,
+        "endLine": 21,
+        "endChar": 67
+      },
+      "revId": "e02e971bcfb910c9ea4f1d84d1f3ce867900094a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a8a2dc52_eec89024",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 319,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-09-14T17:29:06Z",
+      "side": 1,
+      "message": "no need to log",
+      "range": {
+        "startLine": 317,
+        "startChar": 20,
+        "endLine": 319,
+        "endChar": 53
+      },
+      "revId": "e02e971bcfb910c9ea4f1d84d1f3ce867900094a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "13eaeb73_4a497818",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 320,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-09-14T17:29:06Z",
+      "side": 1,
+      "message": "continue?",
+      "range": {
+        "startLine": 320,
+        "startChar": 20,
+        "endLine": 320,
+        "endChar": 33
+      },
+      "revId": "e02e971bcfb910c9ea4f1d84d1f3ce867900094a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "873f834e_1c21d257",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 336,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-09-14T17:29:06Z",
+      "side": 1,
+      "message": "no need to log",
+      "range": {
+        "startLine": 334,
+        "startChar": 0,
+        "endLine": 336,
+        "endChar": 51
+      },
+      "revId": "e02e971bcfb910c9ea4f1d84d1f3ce867900094a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "77f421ab_c78d2b3e",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 347,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-09-14T17:29:06Z",
+      "side": 1,
+      "message": "this does not seem right - when line 315 fails",
+      "range": {
+        "startLine": 347,
+        "startChar": 16,
+        "endLine": 347,
+        "endChar": 28
+      },
+      "revId": "e02e971bcfb910c9ea4f1d84d1f3ce867900094a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "48c76df9_7c83dba3",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 407,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-09-14T17:29:06Z",
+      "side": 1,
+      "message": "instance since Index is also 0 based",
+      "range": {
+        "startLine": 407,
+        "startChar": 50,
+        "endLine": 407,
+        "endChar": 62
+      },
+      "revId": "e02e971bcfb910c9ea4f1d84d1f3ce867900094a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
