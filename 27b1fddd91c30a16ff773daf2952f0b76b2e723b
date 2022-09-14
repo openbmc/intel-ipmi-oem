@@ -166,6 +166,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "6bacd86d_e6ab9ff1",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-14T00:43:04Z",
+      "side": 1,
+      "message": "Is there a particular reason to prefer strcmp over an equality check? This is the format used in a similar function (findFruDevice) and thus I used it for consistency.",
+      "parentUuid": "f09e38f7_fd84c59e",
+      "revId": "27b1fddd91c30a16ff773daf2952f0b76b2e723b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "d13a934f_37b20ccf",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 2
@@ -177,6 +195,30 @@
       "writtenOn": "2022-09-03T15:57:00Z",
       "side": 1,
       "message": "No need to log.",
+      "range": {
+        "startLine": 330,
+        "startChar": 24,
+        "endLine": 332,
+        "endChar": 51
+      },
+      "revId": "27b1fddd91c30a16ff773daf2952f0b76b2e723b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d60d977d_3774c1e7",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-14T00:43:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d13a934f_37b20ccf",
       "range": {
         "startLine": 330,
         "startChar": 24,
