@@ -24,6 +24,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "587c9a42_46ccfbe6",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-16T22:04:34Z",
+      "side": 1,
+      "message": "Thank you for that catch, I hadn\u0027t even thought of that for some reason.",
+      "parentUuid": "b90e0195_af95a510",
+      "range": {
+        "startLine": 7,
+        "startChar": 4,
+        "endLine": 7,
+        "endChar": 7
+      },
+      "revId": "cb762ff23b154e97a790a1370795725fbab0c440",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4f5f54b4_112d1998",
@@ -37,6 +61,30 @@
       "writtenOn": "2022-09-15T16:57:07Z",
       "side": 1,
       "message": "This should continue to look for \"Pwm\" to handle fan and pwm don\u0027t use the same channel/index",
+      "range": {
+        "startLine": 329,
+        "startChar": 1,
+        "endLine": 332,
+        "endChar": 21
+      },
+      "revId": "cb762ff23b154e97a790a1370795725fbab0c440",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "db3867b6_3b821342",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-16T22:04:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4f5f54b4_112d1998",
       "range": {
         "startLine": 329,
         "startChar": 1,
