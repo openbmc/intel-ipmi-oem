@@ -117,6 +117,30 @@
       },
       "revId": "cb762ff23b154e97a790a1370795725fbab0c440",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b80e4bf6_38bd2b02",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-18T18:57:19Z",
+      "side": 1,
+      "message": "I see. I misunderstood your original intent. I will add this change. It is not how the command originally behaved, but it does sound like a better solution. However, should it prefer to check for Pwm over index then?",
+      "parentUuid": "7c679daa_c60eebed",
+      "range": {
+        "startLine": 329,
+        "startChar": 1,
+        "endLine": 332,
+        "endChar": 21
+      },
+      "revId": "cb762ff23b154e97a790a1370795725fbab0c440",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
