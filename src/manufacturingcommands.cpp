@@ -834,8 +834,9 @@ bool findFruDevice(const std::shared_ptr<sdbusplus::asio::connection>& bus,
     // GetAll the objects under service FruDevice
     ec = boost::system::errc::make_error_code(boost::system::errc::success);
     auto obj = bus->yield_method_call<ManagedObjectType>(
-        yield, ec, "xyz.openbmc_project.EntityManager", "/",
-        "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
+        yield, ec, "xyz.openbmc_project.EntityManager",
+        "/xyz/openbmc_project/inventory", "org.freedesktop.DBus.ObjectManager",
+        "GetManagedObjects");
     if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
