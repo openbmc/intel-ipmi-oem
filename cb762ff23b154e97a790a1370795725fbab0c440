@@ -141,6 +141,30 @@
       },
       "revId": "cb762ff23b154e97a790a1370795725fbab0c440",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "32fa240d_6c83bfa8",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-09-20T03:08:10Z",
+      "side": 1,
+      "message": "Yes, should look for \"Pwm\" which is the number for Pwm, Index if for fan tach.",
+      "parentUuid": "b80e4bf6_38bd2b02",
+      "range": {
+        "startLine": 329,
+        "startChar": 1,
+        "endLine": 332,
+        "endChar": 21
+      },
+      "revId": "cb762ff23b154e97a790a1370795725fbab0c440",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
