@@ -102,8 +102,6 @@ using GetObjectType =
 
 constexpr static const char* fruDeviceServiceName =
     "xyz.openbmc_project.FruDevice";
-constexpr static const char* entityManagerServiceName =
-    "xyz.openbmc_project.EntityManager";
 constexpr static const size_t writeTimeoutSeconds = 10;
 constexpr static const char* chassisTypeRackMount = "23";
 
@@ -684,8 +682,9 @@ ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
     // todo: this should really use caching, this is a very inefficient lookup
     boost::system::error_code ec;
     ManagedObjectType entities = ctx->bus->yield_method_call<ManagedObjectType>(
-        ctx->yield, ec, entityManagerServiceName, "/",
-        "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
+        ctx->yield, ec, "xyz.openbmc_project.EntityManager",
+        "/xyz/openbmc_project/inventory", "org.freedesktop.DBus.ObjectManager",
+        "GetManagedObjects");
 
     if (ec)
     {
