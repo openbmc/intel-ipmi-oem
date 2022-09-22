@@ -15,6 +15,7 @@
 */
 
 #pragma once
+#include <boost/container/flat_map.hpp>
 #include <ipmi_to_redfish_hooks.hpp>
 
 namespace intel_oem::ipmi::sel::redfish_hooks::me
