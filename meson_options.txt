@@ -1,0 +1,5 @@
+option('tests', type: 'feature', description: 'Build tests')
+option('INTEL_PFR_ENABLED', type: 'feature', description: '')
+option('BMC_VALIDATION_UNSECURE_FEATURE', type: 'feature', description: '')
+option('MDR_V1_SUPPORT', type: 'feature', description: '')
+option('USING_ENTITY_MANAGER_DECORATORS', type: 'feature', description: '')
