@@ -21,3 +21,4 @@ prefix/
 runSensorTests
 ipmi-allowlist.hpp
 check-code-coverage*
+subprojects/
