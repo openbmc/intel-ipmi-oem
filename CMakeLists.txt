@@ -104,7 +104,7 @@ add_custom_command(OUTPUT include/ipmi-whitelist.hpp
 add_library (zinteloemcmds
              SHARED src/oemcommands.cpp src/sensorcommands.cpp src/biosconfigcommands.cpp
              src/storagecommands.cpp src/multinodecommands.cpp
-             src/firmware-update.cpp src/appcommands.cpp src/smbioshandler.cpp
+             src/firmware-update.cpp src/appcommands.cpp
              src/smbiosmdrv2handler.cpp src/manufacturingcommands.cpp
              src/bmccontrolservices.cpp src/bridgingcommands.cpp
              src/ipmi_to_redfish_hooks.cpp src/me_to_redfish_hooks.cpp
@@ -130,14 +130,12 @@ option (BMC_VALIDATION_UNSECURE_FEATURE
         "Enables unsecure features required by validation. Note: must
         be turned off for production images."
         OFF)
-option (MDR_V1_SUPPORT "Support these MDR Verseion 1 IPMI OEM commands" OFF)
 
 target_compile_definitions (
     zinteloemcmds PRIVATE
     $<$<BOOL:${INTEL_PFR_ENABLED}>: -DINTEL_PFR_ENABLED>
     $<$<BOOL:${BMC_VALIDATION_UNSECURE_FEATURE}>:
     -DBMC_VALIDATION_UNSECURE_FEATURE>
-    $<$<BOOL:${MDR_V1_SUPPORT}>: -DMDR_V1_SUPPORT>
     $<$<BOOL:${USING_ENTITY_MANAGER_DECORATORS}>:
     -DUSING_ENTITY_MANAGER_DECORATORS>
 )
