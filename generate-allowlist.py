@@ -3,8 +3,8 @@
 import re, sys, os.path
 
 def usage():
-    sys.stderr.write("Usage: $0 whitelist-config-in whitelist-header-out\n")
-    sys.stderr.write("    Reads in whitelist config, sorting the contents\n")
+    sys.stderr.write("Usage: $0 allowlist-config-in allowlist-header-out\n")
+    sys.stderr.write("    Reads in allowlist config, sorting the contents\n")
     sys.stderr.write("    and outputs a header file\n")
     sys.exit(-1)
 
@@ -87,7 +87,7 @@ def output(entries, hppfile):
             "",
             "using netfncmd_tuple = std::tuple<unsigned char, unsigned char, unsigned short>;",
             "",
-            "constexpr const std::array<netfncmd_tuple, {}> whitelist = ".format(
+            "constexpr const std::array<netfncmd_tuple, {}> allowlist = ".format(
                     len(entries)),
             "{{"
             ]

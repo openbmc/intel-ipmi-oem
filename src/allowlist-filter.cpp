@@ -1,4 +1,4 @@
-#include <ipmi-whitelist.hpp>
+#include <ipmi-allowlist.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <phosphor-logging/elog-errors.hpp>
@@ -19,21 +19,21 @@ namespace ipmi
 namespace
 {
 
-/** @class WhitelistFilter
+/** @class AllowlistFilter
  *
  * Class that implements an IPMI message filter based
  * on incoming interface and a restriction mode setting
  */
-class WhitelistFilter
+class AllowlistFilter
 {
 
   public:
-    WhitelistFilter();
-    ~WhitelistFilter() = default;
-    WhitelistFilter(WhitelistFilter const&) = delete;
-    WhitelistFilter(WhitelistFilter&&) = delete;
-    WhitelistFilter& operator=(WhitelistFilter const&) = delete;
-    WhitelistFilter& operator=(WhitelistFilter&&) = delete;
+    AllowlistFilter();
+    ~AllowlistFilter() = default;
+    AllowlistFilter(AllowlistFilter const&) = delete;
+    AllowlistFilter(AllowlistFilter&&) = delete;
+    AllowlistFilter& operator=(AllowlistFilter const&) = delete;
+    AllowlistFilter& operator=(AllowlistFilter&&) = delete;
 
   private:
     void postInit();
@@ -51,7 +51,7 @@ class WhitelistFilter
     static constexpr RestrictionMode::Modes restrictionModeAllowAll =
         RestrictionMode::Modes::Provisioning;
     static constexpr RestrictionMode::Modes restrictionModeRestricted =
-        RestrictionMode::Modes::ProvisionedHostWhitelist;
+        RestrictionMode::Modes::ProvisionedHostAllowlist;
     static constexpr RestrictionMode::Modes restrictionModeDenyAll =
         RestrictionMode::Modes::ProvisionedHostDisabled;
 
@@ -103,11 +103,11 @@ static inline uint8_t getSMMChannel()
     return -1;
 }
 
-WhitelistFilter::WhitelistFilter()
+AllowlistFilter::AllowlistFilter()
 {
     bus = getSdBus();
 
-    log<level::INFO>("Loading whitelist filter");
+    log<level::INFO>("Loading Allowlist filter");
 
     ipmi::registerFilter(ipmi::prioOpenBmcBase,
                          [this](ipmi::message::Request::ptr request) {
@@ -119,7 +119,7 @@ WhitelistFilter::WhitelistFilter()
     post_work([this]() { postInit(); });
 }
 
-void WhitelistFilter::cacheRestrictedAndPostCompleteMode()
+void AllowlistFilter::cacheRestrictedAndPostCompleteMode()
 {
     try
     {
@@ -159,14 +159,14 @@ void WhitelistFilter::cacheRestrictedAndPostCompleteMode()
     }
 }
 
-void WhitelistFilter::updateRestrictionMode(const std::string& value)
+void AllowlistFilter::updateRestrictionMode(const std::string& value)
 {
     restrictionMode = RestrictionMode::convertModesFromString(value);
     log<level::INFO>("Updated restriction mode",
                      entry("VALUE=%d", static_cast<int>(restrictionMode)));
 }
 
-void WhitelistFilter::handleRestrictedModeChange(sdbusplus::message_t& m)
+void AllowlistFilter::handleRestrictedModeChange(sdbusplus::message_t& m)
 {
     std::string signal = m.get_member();
     if (signal == "PropertiesChanged")
@@ -202,7 +202,7 @@ void WhitelistFilter::handleRestrictedModeChange(sdbusplus::message_t& m)
     }
 }
 
-void WhitelistFilter::updatePostComplete(const std::string& value)
+void AllowlistFilter::updatePostComplete(const std::string& value)
 {
     // The short string "Standby" is deprecated in favor of the full enum string
     // Support for the short string will be removed in the future.
@@ -213,7 +213,7 @@ void WhitelistFilter::updatePostComplete(const std::string& value)
                                    : "Updated to !POST Complete");
 }
 
-void WhitelistFilter::handlePostCompleteChange(sdbusplus::message_t& m)
+void AllowlistFilter::handlePostCompleteChange(sdbusplus::message_t& m)
 {
     std::string signal = m.get_member();
     if (signal == "PropertiesChanged")
@@ -249,7 +249,7 @@ void WhitelistFilter::handlePostCompleteChange(sdbusplus::message_t& m)
     }
 }
 
-void WhitelistFilter::cacheCoreBiosDone()
+void AllowlistFilter::cacheCoreBiosDone()
 {
     std::string coreBiosDonePath;
     std::string coreBiosDoneService;
@@ -284,7 +284,7 @@ void WhitelistFilter::cacheCoreBiosDone()
         "org.freedesktop.DBus.Properties", "Get", hostMiscIntf, "CoreBiosDone");
 }
 
-void WhitelistFilter::handleCoreBiosDoneChange(sdbusplus::message_t& msg)
+void AllowlistFilter::handleCoreBiosDoneChange(sdbusplus::message_t& msg)
 {
     std::string signal = msg.get_member();
     if (signal == "PropertiesChanged")
@@ -327,7 +327,7 @@ void WhitelistFilter::handleCoreBiosDoneChange(sdbusplus::message_t& msg)
     }
 }
 
-void WhitelistFilter::postInit()
+void AllowlistFilter::postInit()
 {
     // Wait for changes on Restricted mode
     namespace rules = sdbusplus::bus::match::rules;
@@ -388,11 +388,11 @@ void WhitelistFilter::postInit()
     cacheCoreBiosDone();
 }
 
-ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
+ipmi::Cc AllowlistFilter::filterMessage(ipmi::message::Request::ptr request)
 {
     auto channelMask = static_cast<unsigned short>(1 << request->ctx->channel);
-    bool whitelisted = std::binary_search(
-        whitelist.cbegin(), whitelist.cend(),
+    bool Allowlisted = std::binary_search(
+        Allowlist.cbegin(), Allowlist.cend(),
         std::make_tuple(request->ctx->netFn, request->ctx->cmd, channelMask),
         [](const netfncmd_tuple& first, const netfncmd_tuple& value) {
             return (std::get<2>(first) & std::get<2>(value))
@@ -406,9 +406,9 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
     if (!(request->ctx->channel == ipmi::channelSystemIface ||
           request->ctx->channel == channelSMM))
     {
-        if (!whitelisted)
+        if (!Allowlisted)
         {
-            log<level::INFO>("Channel/NetFn/Cmd not whitelisted",
+            log<level::INFO>("Channel/NetFn/Cmd not Allowlisted",
                              entry("CHANNEL=0x%X", request->ctx->channel),
                              entry("NETFN=0x%X", int(request->ctx->netFn)),
                              entry("CMD=0x%X", int(request->ctx->cmd)));
@@ -420,7 +420,7 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
     // for system interface, filtering is done as follows:
     // Allow All:  preboot ? ccSuccess : ccSuccess
     // Restricted: preboot ? ccSuccess :
-    //                  ( whitelist ? ccSuccess : ccInsufficientPrivilege )
+    //                  ( Allowlist ? ccSuccess : ccInsufficientPrivilege )
     // Deny All:   preboot ? ccSuccess : ccInsufficientPrivilege
 
     if (!(postCompleted || coreBIOSDone))
@@ -440,22 +440,22 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
         }
         case restrictionModeRestricted:
         {
-            // Restricted - follow whitelist
+            // Restricted - follow Allowlist
             break;
         }
         case restrictionModeDenyAll:
         {
             // Deny All
-            whitelisted = false;
+            Allowlisted = false;
             break;
         }
-        default: // for whitelist and blacklist
+        default: // for Allowlist and blacklist
             return ipmi::ccInsufficientPrivilege;
     }
 
-    if (!whitelisted)
+    if (!Allowlisted)
     {
-        log<level::INFO>("Channel/NetFn/Cmd not whitelisted",
+        log<level::INFO>("Channel/NetFn/Cmd not allowlisted",
                          entry("CHANNEL=0x%X", request->ctx->channel),
                          entry("NETFN=0x%X", int(request->ctx->netFn)),
                          entry("CMD=0x%X", int(request->ctx->cmd)));
@@ -464,8 +464,8 @@ ipmi::Cc WhitelistFilter::filterMessage(ipmi::message::Request::ptr request)
     return ipmi::ccSuccess;
 } // namespace
 
-// instantiate the WhitelistFilter when this shared object is loaded
-WhitelistFilter whitelistFilter;
+// instantiate the AllowlistFilter when this shared object is loaded
+AllowlistFilter allowlistFilter;
 
 } // namespace
 
