@@ -19,5 +19,5 @@ phosphor-host-ipmid/
 phosphor-ipmi-host-src/
 prefix/
 runSensorTests
-ipmi-whitelist.hpp
+ipmi-allowlist.hpp
 check-code-coverage*
