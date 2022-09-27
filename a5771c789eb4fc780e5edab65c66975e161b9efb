@@ -95,6 +95,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "b605ecf3_c2bb4ec3",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-09-27T19:18:06Z",
+      "side": 1,
+      "message": "Also, the path is changing for this, so replace \"/\" with \"/xyz/openbmc_project/inventory\"",
+      "parentUuid": "d34d9dad_626cdddc",
+      "range": {
+        "startLine": 294,
+        "startChar": 4,
+        "endLine": 296,
+        "endChar": 67
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "86b62715_2e04a033",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 13
