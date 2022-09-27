@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dd856690_3b04148e",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-09-27T19:16:10Z",
+      "side": 1,
+      "message": "ipmi::Context::ptr\u0026",
+      "range": {
+        "startLine": 286,
+        "startChar": 23,
+        "endLine": 286,
+        "endChar": 67
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1cd5212c_d3940126",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 290,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-09-27T19:16:10Z",
+      "side": 1,
+      "message": "ec{};\n\nThis is sufficient to initialize.",
+      "range": {
+        "startLine": 290,
+        "startChar": 30,
+        "endLine": 290,
+        "endChar": 33
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "09907e97_c906b40c",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-09-27T19:16:10Z",
+      "side": 1,
+      "message": "this line not needed",
+      "range": {
+        "startLine": 293,
+        "startChar": 0,
+        "endLine": 293,
+        "endChar": 76
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d34d9dad_626cdddc",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-09-27T19:16:10Z",
+      "side": 1,
+      "message": "use getManagagedObjects from libipmi instead:\nboost::system::error_code getManagedObjects(Context::ptr ctx,                        \n       const std::string\u0026 service, const std::string\u0026 objPath,\n       ObjectValueTree\u0026 objects);",
+      "range": {
+        "startLine": 294,
+        "startChar": 4,
+        "endLine": 296,
+        "endChar": 67
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "86b62715_2e04a033",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 413,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-09-27T19:16:10Z",
+      "side": 1,
+      "message": "just pass ctx",
+      "range": {
+        "startLine": 413,
+        "startChar": 29,
+        "endLine": 413,
+        "endChar": 49
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
