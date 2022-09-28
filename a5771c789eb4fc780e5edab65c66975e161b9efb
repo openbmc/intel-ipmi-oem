@@ -24,6 +24,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a60ae86f_00692a7b",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-28T03:40:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dd856690_3b04148e",
+      "range": {
+        "startLine": 286,
+        "startChar": 23,
+        "endLine": 286,
+        "endChar": 67
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1cd5212c_d3940126",
@@ -47,6 +71,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7348493e_696630f8",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 290,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-28T03:40:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1cd5212c_d3940126",
+      "range": {
+        "startLine": 290,
+        "startChar": 30,
+        "endLine": 290,
+        "endChar": 33
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "09907e97_c906b40c",
@@ -60,6 +108,30 @@
       "writtenOn": "2022-09-27T19:16:10Z",
       "side": 1,
       "message": "this line not needed",
+      "range": {
+        "startLine": 293,
+        "startChar": 0,
+        "endLine": 293,
+        "endChar": 76
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "12258068_d9fdc60b",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-28T03:40:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "09907e97_c906b40c",
       "range": {
         "startLine": 293,
         "startChar": 0,
@@ -117,6 +189,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a2f45386_a47869d3",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-28T03:40:23Z",
+      "side": 1,
+      "message": "Done - Already aware of the ObjectManager changing, but this has not been merged yet and will break the object search if I implement this change before it has merged. I will make the change as soon as it is merged upstream.",
+      "parentUuid": "b605ecf3_c2bb4ec3",
+      "range": {
+        "startLine": 294,
+        "startChar": 4,
+        "endLine": 296,
+        "endChar": 67
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "86b62715_2e04a033",
@@ -130,6 +226,30 @@
       "writtenOn": "2022-09-27T19:16:10Z",
       "side": 1,
       "message": "just pass ctx",
+      "range": {
+        "startLine": 413,
+        "startChar": 29,
+        "endLine": 413,
+        "endChar": 49
+      },
+      "revId": "a5771c789eb4fc780e5edab65c66975e161b9efb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e762f779_65df0cb6",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 413,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-28T03:40:23Z",
+      "side": 1,
+      "message": "Done - Also changed the one in the set command.",
+      "parentUuid": "86b62715_2e04a033",
       "range": {
         "startLine": 413,
         "startChar": 29,
