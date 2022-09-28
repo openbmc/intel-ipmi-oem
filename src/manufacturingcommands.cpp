@@ -473,7 +473,7 @@ ipmi::RspType<uint8_t,                // Signal value
                 // it to sample action to make tools happy.
                 action = SmActionGet::sample;
             }
-            // fall-through
+            [[fallthrough]];
         }
         case SmSignalGet::smResetButton:
         case SmSignalGet::smPowerButton:
@@ -1093,9 +1093,6 @@ ipmi::RspType<> setManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType,
     {
         return ipmi::responseParmOutOfRange();
     }
-
-    constexpr uint8_t invalidData = 0;
-    constexpr uint8_t validData = 1;
 
     ipmi::Cc ret = writeMacToFru(ctx, dataType, ethData);
     if (ret != ipmi::ccDestinationUnavailable)
