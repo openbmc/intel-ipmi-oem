@@ -249,6 +249,8 @@ std::optional<uint2_t> getPowerRestorePolicy()
             case RestorePolicy::Policy::AlwaysOn:
                 restorePolicy = 0x02;
                 break;
+            default:
+                break;
         }
     }
     catch (const std::exception& e)
@@ -499,24 +501,21 @@ ipmi::RspType<bool,    // Power is on
     }
 
     bool chassisIntrusionActive = false;
-    try
-    {
-        constexpr const char* chassisIntrusionObj =
-            "/xyz/openbmc_project/Intrusion/Chassis_Intrusion";
-        constexpr const char* chassisIntrusionInf =
-            "xyz.openbmc_project.Chassis.Intrusion";
+    constexpr const char* chassisIntrusionObj =
+        "/xyz/openbmc_project/Intrusion/Chassis_Intrusion";
+    constexpr const char* chassisIntrusionInf =
+        "xyz.openbmc_project.Chassis.Intrusion";
 
-        std::string intrusionService;
-        boost::system::error_code ec = ipmi::getService(
-            ctx, chassisIntrusionInf, chassisIntrusionObj, intrusionService);
-
-        chassisIntrusionActive = !intrusionService.empty();
-    }
-    catch (const std::exception& e)
+    std::string intrusionService;
+    boost::system::error_code ec = ipmi::getService(
+        ctx, chassisIntrusionInf, chassisIntrusionObj, intrusionService);
+    if (ec)
     {
         log<level::ERR>("Failed to get Chassis Intrusion service",
-                        entry("ERROR=%s", e.what()));
+                        entry("ERROR=%s", ec.message().c_str()));
     }
+
+    chassisIntrusionActive = !intrusionService.empty();
 
     // This response has a lot of hard-coded, unsupported fields
     // They are set to false or 0
@@ -629,11 +628,10 @@ ipmi::RspType<uint4_t, // Restart Cause
                                  reserved, channel);
 }
 
-ipmi::RspType<> ipmiSetFrontPanelButtonEnables(bool disablePowerButton,
-                                               bool disableResetButton,
-                                               bool disableInterruptButton,
-                                               bool disableSleepButton,
-                                               uint4_t reserved)
+ipmi::RspType<> ipmiSetFrontPanelButtonEnables(
+    bool disablePowerButton, bool disableResetButton,
+    bool disableInterruptButton, [[maybe_unused]] bool disableSleepButton,
+    uint4_t reserved)
 {
     if (reserved)
     {

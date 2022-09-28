@@ -240,7 +240,7 @@ static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
     }
 }
 
-ipmi::Cc Bridging::handleIpmbChannel(ipmi::Context::ptr ctx,
+ipmi::Cc Bridging::handleIpmbChannel(ipmi::Context::ptr& ctx,
                                      const uint8_t tracking,
                                      const std::vector<uint8_t>& msgData,
                                      std::vector<uint8_t>& rspData)
@@ -393,7 +393,7 @@ IpmbResponse Bridging::getMessageFromQueue()
  **/
 ipmi::RspType<std::vector<uint8_t> // responseData
               >
-    ipmiAppSendMessage(ipmi::Context::ptr ctx, const uint4_t channelNumber,
+    ipmiAppSendMessage(ipmi::Context::ptr& ctx, const uint4_t channelNumber,
                        const bool authenticationEnabled,
                        const bool encryptionEnabled, const uint2_t tracking,
                        ipmi::message::Payload& msg)
@@ -417,10 +417,9 @@ ipmi::RspType<std::vector<uint8_t> // responseData
 
     ipmi::Cc returnVal;
     std::vector<uint8_t> rspData(ipmbMaxFrameLength);
-    size_t dataLength = 0;
     std::vector<uint8_t> unpackMsg;
 
-    auto channelNo = static_cast<const uint8_t>(channelNumber);
+    auto channelNo = static_cast<uint8_t>(channelNumber);
     // Get the channel number
     switch (channelNo)
     {
@@ -433,7 +432,7 @@ ipmi::RspType<std::vector<uint8_t> // responseData
             }
 
             returnVal = bridging.handleIpmbChannel(
-                ctx, static_cast<const uint8_t>(tracking), unpackMsg, rspData);
+                ctx, static_cast<uint8_t>(tracking), unpackMsg, rspData);
             break;
         // fall through to default
         case targetChannelIcmb10:
@@ -469,7 +468,7 @@ ipmi::RspType<std::vector<uint8_t> // responseData
 ipmi::RspType<uint8_t,             // channelNumber
               std::vector<uint8_t> // messageData
               >
-    ipmiAppGetMessage(ipmi::Context::ptr ctx)
+    ipmiAppGetMessage(ipmi::Context::ptr& ctx)
 {
     ipmi::ChannelInfo chInfo;
 
@@ -536,7 +535,7 @@ std::size_t Bridging::getResponseQueueSize()
 
 @return IPMI completion code plus Flags as response data on success.
 **/
-ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags(ipmi::Context::ptr ctx)
+ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags(ipmi::Context::ptr& ctx)
 {
     ipmi::ChannelInfo chInfo;
 
@@ -615,11 +614,12 @@ ipmi::RspType<std::bitset<8>> ipmiAppGetMessageFlags(ipmi::Context::ptr ctx)
 
  *  @return IPMI completion code on success
  */
-ipmi::RspType<> ipmiAppClearMessageFlags(ipmi::Context::ptr ctx,
+ipmi::RspType<> ipmiAppClearMessageFlags(ipmi::Context::ptr& ctx,
                                          bool receiveMessage,
                                          bool eventMsgBufFull, bool reserved2,
                                          bool watchdogTimeout, bool reserved1,
-                                         bool oem0, bool oem1, bool oem2)
+                                         bool /* oem0 */, bool /* oem1 */,
+                                         bool /* oem2 */)
 {
     ipmi::ChannelInfo chInfo;
 
@@ -711,7 +711,7 @@ ipmi::RspType<uint16_t, // Record ID
               uint8_t,  // Record Type
               std::variant<systemEventType, oemTsEventType,
                            oemEventType>> // Record Content
-    ipmiAppReadEventMessageBuffer(ipmi::Context::ptr ctx)
+    ipmiAppReadEventMessageBuffer(ipmi::Context::ptr& ctx)
 {
     ipmi::ChannelInfo chInfo;
 

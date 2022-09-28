@@ -184,7 +184,7 @@ bool fillPayloadData(std::string& payloadData,
     return true;
 }
 
-bool getPendingList(ipmi::Context::ptr ctx, std::string& payloadData)
+bool getPendingList(ipmi::Context::ptr& ctx, std::string& payloadData)
 {
     std::variant<PendingAttributesType> pendingAttributesData;
     boost::system::error_code ec;
@@ -358,7 +358,7 @@ bool updatePayloadInfo(std::string& payloadFilePath)
     return true;
 }
 
-bool update(ipmi::Context::ptr ctx)
+bool update(ipmi::Context::ptr& ctx)
 {
     std::string payloadFilePath =
         "/var/oob/Payload" +
@@ -632,9 +632,6 @@ static void cleanUpPayloadFile(uint8_t& payloadType)
  **/
 static Cc InitNVOOBdata()
 {
-    FILE* fptr;
-    uint16_t size;
-
     if (!(std::filesystem::exists(biosConfigFolder)))
     {
         std::filesystem::create_directory(biosConfigFolder);
@@ -654,9 +651,9 @@ static Cc InitNVOOBdata()
     return ipmi::ccResponseError;
 }
 
-ipmi::RspType<> ipmiOEMSetBIOSCap(ipmi::Context::ptr ctx,
-                                  uint8_t BIOSCapabilties, uint8_t reserved1,
-                                  uint8_t reserved2, uint8_t reserved3)
+ipmi::RspType<> ipmiOEMSetBIOSCap(ipmi::Context::ptr&, uint8_t BIOSCapabilties,
+                                  uint8_t reserved1, uint8_t reserved2,
+                                  uint8_t reserved3)
 {
     if (getPostCompleted())
     {
@@ -676,7 +673,7 @@ ipmi::RspType<> ipmiOEMSetBIOSCap(ipmi::Context::ptr ctx,
 }
 
 ipmi::RspType<uint8_t, uint8_t, uint8_t, uint8_t>
-    ipmiOEMGetBIOSCap(ipmi::Context::ptr ctx)
+    ipmiOEMGetBIOSCap(ipmi::Context::ptr&)
 {
     if (gNVOOBdata.mIsBIOSCapInitDone)
     {
@@ -689,8 +686,8 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, uint8_t>
     }
 }
 
-ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
-                                          uint8_t paramSel, uint8_t payloadType,
+ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr&, uint8_t paramSel,
+                                          uint8_t payloadType,
                                           std::vector<uint8_t> payload)
 {
     uint8_t biosCapOffsetBit = 2; // BIT:1 0-OOB BIOS config not supported
@@ -921,7 +918,7 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
 }
 
 ipmi::RspType<message::Payload>
-    ipmiOEMGetPayload(ipmi::Context::ptr ctx, uint8_t paramSel,
+    ipmiOEMGetPayload(ipmi::Context::ptr& ctx, uint8_t paramSel,
                       uint8_t payloadType, ipmi::message::Payload& payload)
 {
     //      1-OOB BIOS config is supported
@@ -1025,7 +1022,7 @@ ipmi::RspType<message::Payload>
                 }
                 std::ifstream::pos_type fileSize = ifs.tellg();
                 // Total file data within given offset
-                if (fileSize < static_cast<uint64_t>(offset))
+                if (fileSize < static_cast<int64_t>(offset))
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "ipmiOEMGetPayload: filesize < offset");
@@ -1053,7 +1050,7 @@ ipmi::RspType<message::Payload>
                 retValue.pack(readCount);
                 retValue.pack(chkSum);
 
-                for (int i = 0; i < readCount; i++)
+                for (uint32_t i = 0; i < readCount; i++)
                 {
                     retValue.pack(Buffer.at(i));
                 }
@@ -1079,7 +1076,7 @@ ipmi::RspType<message::Payload>
 }
 
 ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
-    ipmi::Context::ptr ctx, std::array<uint8_t, maxSeedSize>& pwdSeed,
+    ipmi::Context::ptr&, std::array<uint8_t, maxSeedSize>& pwdSeed,
     uint8_t algoInfo, std::array<uint8_t, maxHashSize>& adminPwdHash)
 {
     // We should not support this command after System Booted - After Exit Boot
@@ -1125,7 +1122,7 @@ ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
 
 ipmi::RspType<std::array<uint8_t, maxSeedSize>, uint8_t,
               std::array<uint8_t, maxHashSize>>
-    ipmiOEMGetBIOSHash(ipmi::Context::ptr ctx)
+    ipmiOEMGetBIOSHash(ipmi::Context::ptr&)
 {
     nlohmann::json data = nullptr;
 

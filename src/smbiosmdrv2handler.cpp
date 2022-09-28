@@ -912,7 +912,6 @@ bool MDRV2::smbiosTryLock(uint8_t flag, uint8_t index, uint16_t* session,
                           uint16_t timeout)
 {
     bool ret = false;
-    uint32_t u32Status = 0;
 
     if (timeout == 0)
     {

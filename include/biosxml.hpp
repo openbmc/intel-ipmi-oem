@@ -92,12 +92,13 @@ struct knob
          std::string descriptionStr, std::string defaultStr,
          std::string promptStr, std::string depexStr,
          std::string& setupTypeStr) :
-        nameStr(std::move(nameStr)),
-        currentValStr(std::move(currentValStr)), currentVal(currentVal),
+        depex(false),
+        readOnly(("ReadOnly" == setupTypeStr) ? true : false),
+        currentVal(currentVal), nameStr(std::move(nameStr)),
+        currentValStr(std::move(currentValStr)),
         descriptionStr(std::move(descriptionStr)),
         defaultStr(std::move(defaultStr)), promptStr(std::move(promptStr)),
-        depexStr(std::move(depexStr)), depex(false),
-        readOnly(("ReadOnly" == setupTypeStr) ? true : false)
+        depexStr(std::move(depexStr))
     {}
 
     bool depex;

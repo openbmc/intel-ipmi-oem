@@ -91,7 +91,7 @@ static sdbusplus::bus::match_t sensorAdded(
     *getSdBus(),
     "type='signal',member='InterfacesAdded',arg0path='/xyz/openbmc_project/"
     "sensors/'",
-    [](sdbusplus::message_t& m) {
+    [](sdbusplus::message_t&) {
         sensorTree.clear();
         sdrLastAdd = std::chrono::duration_cast<std::chrono::seconds>(
                          std::chrono::system_clock::now().time_since_epoch())
@@ -102,7 +102,7 @@ static sdbusplus::bus::match_t sensorRemoved(
     *getSdBus(),
     "type='signal',member='InterfacesRemoved',arg0path='/xyz/openbmc_project/"
     "sensors/'",
-    [](sdbusplus::message_t& m) {
+    [](sdbusplus::message_t&) {
         sensorTree.clear();
         sdrLastRemove = std::chrono::duration_cast<std::chrono::seconds>(
                             std::chrono::system_clock::now().time_since_epoch())
@@ -605,12 +605,10 @@ ipmi::RspType<> ipmiSenSetSensorThresholds(
     bool lowerCriticalThreshMask, bool lowerNonRecovThreshMask,
     bool upperNonCriticalThreshMask, bool upperCriticalThreshMask,
     bool upperNonRecovThreshMask, uint2_t reserved, uint8_t lowerNonCritical,
-    uint8_t lowerCritical, uint8_t lowerNonRecoverable,
+    uint8_t lowerCritical, [[maybe_unused]] uint8_t lowerNonRecoverable,
     uint8_t upperNonCritical, uint8_t upperCritical,
-    uint8_t upperNonRecoverable)
+    [[maybe_unused]] uint8_t upperNonRecoverable)
 {
-    constexpr uint8_t thresholdMask = 0xFF;
-
     if (sensorNum == reservedSensorNumber)
     {
         return ipmi::responseInvalidFieldRequest();
@@ -1333,7 +1331,7 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
             "getSensorDataRecord: sensor record mismatch");
         return GENERAL_ERROR;
     }
-    get_sdr::SensorDataFullRecord record = {0};
+    get_sdr::SensorDataFullRecord record = {{}, {}, {}};
 
     get_sdr::header::set_record_id(
         recordID, reinterpret_cast<get_sdr::SensorDataRecordHeader*>(&record));
