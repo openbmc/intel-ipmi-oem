@@ -48,8 +48,7 @@ class SPIDev
         }
     }
 
-    void spiReadData(const uint32_t startAddr, const size_t dataLen,
-                     void* dataRes)
+    void spiReadData(uint32_t startAddr, size_t dataLen, void* dataRes)
     {
         if (lseek(fd, startAddr, SEEK_SET) < 0)
         {
@@ -58,7 +57,7 @@ class SPIDev
             throw std::runtime_error(msg);
         }
 
-        if (read(fd, dataRes, dataLen) != dataLen)
+        if (read(fd, dataRes, dataLen) != static_cast<ssize_t>(dataLen))
         {
             std::string msg = "Failed to read on mtd device. errno=" +
                               std::string(std::strerror(errno));
