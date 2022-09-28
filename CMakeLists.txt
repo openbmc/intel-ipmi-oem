@@ -144,7 +144,7 @@ target_compile_definitions (
 )
 
 # Code Coverage
-if (NOT YOCTO)
+if (FALSE)
     # non-Debug build may generate misleading code coverage results.
     set(CMAKE_BUILD_TYPE Debug)
     message(WARNING "Using Debug build type!")
