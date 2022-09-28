@@ -74,8 +74,8 @@ static inline auto responseNotSupportedInPresentState()
 } // namespace ipmi
 
 static constexpr size_t imageCount = 2;
-std::array<std::array<uint8_t, imageCount>, imageCount> imgFwSecurityVersion = {
-    (0, 0), (0, 0)};
+std::array<std::array<uint8_t, imageCount>, imageCount> imgFwSecurityVersion =
+    {};
 static constexpr size_t svnActiveVerOffsetInPfm = 0x404;
 static constexpr size_t bkcActiveVerOffsetInPfm = 0x405;
 static constexpr size_t svnRecoveryVerOffsetInPfm = 0x804;
@@ -314,8 +314,8 @@ class MappedFile
     }
 
   private:
-    size_t fsize;
     void* addr;
+    size_t fsize;
 };
 
 class FwUpdateStatusCache
@@ -578,8 +578,6 @@ static void postTransferCompleteHandler(
 
     // callback function for capturing signal
     auto callback = [&](sdbusplus::message_t& m) {
-        bool flag = false;
-
         std::vector<
             std::pair<std::string,
                       std::vector<std::pair<std::string, ipmi::DbusVariant>>>>
@@ -721,7 +719,6 @@ static int executeCmd(const char* path, ArgTypes&&... tArgs)
 static bool transferImageFromUsb(const std::string& uri)
 {
     bool ret = false;
-    char fwpath[fwPathMaxLength];
 
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Transfer Image From USB.",
@@ -1144,7 +1141,7 @@ ipmi::RspType<std::array<uint8_t, fwRandomNumLength>>
 
     fwRandomNumGenTs = std::chrono::steady_clock::now();
 
-    for (int i = 0; i < fwRandomNumLength; i++)
+    for (size_t i = 0; i < fwRandomNumLength; i++)
     {
         fwRandomNum[i] = dist(gen);
     }
@@ -1194,7 +1191,7 @@ ipmi::RspType<>
     }
 
     /* Validate random number */
-    for (int i = 0; i < fwRandomNumLength; i++)
+    for (size_t i = 0; i < fwRandomNumLength; i++)
     {
         if (fwRandomNum[i] != randNum[i])
         {
@@ -1530,6 +1527,10 @@ ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
         "Set firmware update options.");
     bool isIPMBChannel = false;
 
+    if (reserved1 || reserved2)
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
     if (checkIPMBChannel(ctx, isIPMBChannel) != ipmi::ccSuccess)
     {
         return ipmi::responseUnspecifiedError();
@@ -1558,7 +1559,7 @@ ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
     {
         if (sha2Check)
         {
-            auto hashSize = EVP_MD_size(EVP_sha256());
+            size_t hashSize = EVP_MD_size(EVP_sha256());
             if ((*integrityCheckVal).size() != hashSize)
             {
                 phosphor::logging::log<phosphor::logging::level::DEBUG>(
@@ -1586,7 +1587,7 @@ ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
         sha2CheckState = sha2CheckMask;
     }
     return ipmi::responseSuccess(noDowngradeState, deferRestartState,
-                                 sha2CheckState, reserved1);
+                                 sha2CheckState, uint5_t{});
 }
 
 ipmi::RspType<uint32_t>

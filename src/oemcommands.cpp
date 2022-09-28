@@ -270,16 +270,19 @@ void writefifo(const uint8_t cmdReg, const uint8_t val)
     std::vector<uint8_t> readBuf(0);
     ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, targetAddr, writeData,
                                          readBuf);
+    if (retI2C)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "i2cWriteRead returns non-zero");
+    }
 }
 
 } // namespace mailbox
 
 // Returns the Chassis Identifier (serial #)
-ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                       ipmi_request_t request,
+ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
                                        ipmi_response_t response,
-                                       ipmi_data_len_t dataLen,
-                                       ipmi_context_t context)
+                                       ipmi_data_len_t dataLen, ipmi_context_t)
 {
     std::string serial;
     if (*dataLen != 0) // invalid request if there are extra parameters
@@ -300,10 +303,9 @@ ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_RESPONSE_ERROR;
 }
 
-ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                ipmi_request_t request,
-                                ipmi_response_t response,
-                                ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t, ipmi_cmd_t,
+                                ipmi_request_t request, ipmi_response_t,
+                                ipmi_data_len_t dataLen, ipmi_context_t)
 {
     static constexpr size_t safeBufferLength = 50;
     char buf[safeBufferLength] = {0};
@@ -392,13 +394,13 @@ ipmi::RspType<bool,   // disableResetOnSMI
     return ipmi::responseSuccess(disableResetOnSMI, 0);
 }
 
-ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                            ipmi_request_t request, ipmi_response_t response,
-                            ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t request,
+                            ipmi_response_t response, ipmi_data_len_t dataLen,
+                            ipmi_context_t)
 {
     DeviceInfo* data = reinterpret_cast<DeviceInfo*>(request);
 
-    if ((*dataLen < 2) || (*dataLen != (1 + data->biosIDLength)))
+    if ((*dataLen < 2ul) || (*dataLen != (1ul + data->biosIDLength)))
     {
         *dataLen = 0;
         return IPMI_CC_REQ_DATA_LEN_INVALID;
@@ -448,9 +450,9 @@ bool getActiveHSCSoftwareVersionInfo(std::string& hscVersion, size_t hscNumber)
     return true;
 }
 
-bool getHscVerInfo(ipmi::Context::ptr ctx, uint8_t& hsc0Major,
-                   uint8_t& hsc0Minor, uint8_t& hsc1Major, uint8_t& hsc1Minor,
-                   uint8_t& hsc2Major, uint8_t& hsc2Minor)
+bool getHscVerInfo(ipmi::Context::ptr&, uint8_t& hsc0Major, uint8_t& hsc0Minor,
+                   uint8_t& hsc1Major, uint8_t& hsc1Minor, uint8_t& hsc2Major,
+                   uint8_t& hsc2Minor)
 {
     std::string hscVersion;
     std::array<uint8_t, 6> hscVersions{0};
@@ -487,7 +489,7 @@ bool getHscVerInfo(ipmi::Context::ptr ctx, uint8_t& hsc0Major,
     return true;
 }
 
-bool getSwVerInfo(ipmi::Context::ptr ctx, uint8_t& bmcMajor, uint8_t& bmcMinor,
+bool getSwVerInfo(ipmi::Context::ptr& ctx, uint8_t& bmcMajor, uint8_t& bmcMinor,
                   uint8_t& meMajor, uint8_t& meMinor)
 {
     // step 1 : get BMC Major and Minor numbers from its DBUS property
@@ -534,7 +536,7 @@ ipmi::RspType<
                             std::array<uint8_t, 2>, std::array<uint8_t, 2>,
                             std::array<uint8_t, 2>, std::array<uint8_t, 2>>,
                  std::tuple<uint8_t, std::array<uint8_t, 2>>>>
-    ipmiOEMGetDeviceInfo(ipmi::Context::ptr ctx, uint8_t entityType,
+    ipmiOEMGetDeviceInfo(ipmi::Context::ptr& ctx, uint8_t entityType,
                          std::optional<uint8_t> countToRead,
                          std::optional<uint8_t> offset)
 {
@@ -645,9 +647,9 @@ ipmi::RspType<
     }
 }
 
-ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                            ipmi_request_t request, ipmi_response_t response,
-                            ipmi_data_len_t dataLen, ipmi_context_t context)
+ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
+                            ipmi_response_t response, ipmi_data_len_t dataLen,
+                            ipmi_context_t)
 {
     if (*dataLen != 0)
     {
@@ -664,11 +666,9 @@ ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                       ipmi_request_t request,
+ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
                                        ipmi_response_t response,
-                                       ipmi_data_len_t dataLen,
-                                       ipmi_context_t context)
+                                       ipmi_data_len_t dataLen, ipmi_context_t)
 {
     GetPowerRestoreDelayRes* resp =
         reinterpret_cast<GetPowerRestoreDelayRes*>(response);
@@ -806,10 +806,10 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
 }
 
 ipmi::RspType<uint8_t, std::vector<uint8_t>>
-    ipmiOEMSlotIpmb(ipmi::Context::ptr ctx, uint6_t reserved1,
+    ipmiOEMSlotIpmb(ipmi::Context::ptr& ctx, uint6_t reserved1,
                     uint2_t slotNumber, uint3_t baseBoardSlotNum,
-                    uint3_t riserSlotNum, uint2_t reserved2, uint8_t targetAddr,
-                    uint8_t netFn, uint8_t cmd,
+                    [[maybe_unused]] uint3_t riserSlotNum, uint2_t reserved2,
+                    uint8_t targetAddr, uint8_t netFn, uint8_t cmd,
                     std::optional<std::vector<uint8_t>> writeData)
 {
     if (reserved1 || reserved2)
@@ -848,11 +848,9 @@ ipmi::RspType<uint8_t, std::vector<uint8_t>>
     return ipmi::responseSuccess(cc, dataReceived);
 }
 
-ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                       ipmi_request_t request,
-                                       ipmi_response_t response,
-                                       ipmi_data_len_t dataLen,
-                                       ipmi_context_t context)
+ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t, ipmi_cmd_t,
+                                       ipmi_request_t request, ipmi_response_t,
+                                       ipmi_data_len_t dataLen, ipmi_context_t)
 {
     SetPowerRestoreDelayReq* data =
         reinterpret_cast<SetPowerRestoreDelayReq*>(request);
@@ -1027,11 +1025,9 @@ ipmi::RspType<> ipmiOEMSetProcessorErrConfig(
     return ipmi::responseSuccess();
 }
 
-ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                    ipmi_request_t request,
+ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
                                     ipmi_response_t response,
-                                    ipmi_data_len_t dataLen,
-                                    ipmi_context_t context)
+                                    ipmi_data_len_t dataLen, ipmi_context_t)
 {
     GetOEMShutdownPolicyRes* resp =
         reinterpret_cast<GetOEMShutdownPolicyRes*>(response);
@@ -1091,11 +1087,9 @@ ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
     return IPMI_CC_OK;
 }
 
-ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                    ipmi_request_t request,
-                                    ipmi_response_t response,
-                                    ipmi_data_len_t dataLen,
-                                    ipmi_context_t context)
+ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t,
+                                    ipmi_request_t request, ipmi_response_t,
+                                    ipmi_data_len_t dataLen, ipmi_context_t)
 {
     uint8_t* req = reinterpret_cast<uint8_t*>(request);
     sdbusplus::com::intel::Control::server::OCOTShutdownPolicy::Policy policy =
@@ -1381,7 +1375,7 @@ static void atScaleDebugEventlog(std::string msg, int severity)
  *  @param[in] userPassword - new password in 20 bytes
  *  @returns ipmi completion code.
  */
-ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr ctx,
+ipmi::RspType<> ipmiOEMSetSpecialUserPassword(ipmi::Context::ptr& ctx,
                                               uint8_t specialUserIndex,
                                               std::vector<uint8_t> userPassword)
 {
@@ -1518,11 +1512,11 @@ ipmi::RspType<uint8_t> ipmiOEMGetLEDStatus()
     return ipmi::responseSuccess(ledstate);
 }
 
-ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
+ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t, ipmi_cmd_t,
                                          ipmi_request_t request,
                                          ipmi_response_t response,
                                          ipmi_data_len_t dataLen,
-                                         ipmi_context_t context)
+                                         ipmi_context_t)
 {
     CfgHostSerialReq* req = reinterpret_cast<CfgHostSerialReq*>(request);
     uint8_t* resp = reinterpret_cast<uint8_t*>(response);
@@ -1684,13 +1678,11 @@ bool getFanProfileInterface(
  *
  * @return IPMI completion code.
  **/
-ipmi::RspType<> ipmiOEMSetFanConfig(uint8_t selectedFanProfile,
-
-                                    uint2_t reserved1, bool performanceMode,
-                                    uint3_t reserved2, bool setPerformanceMode,
-                                    bool setFanProfile,
-                                    std::optional<uint8_t> dimmGroupId,
-                                    std::optional<uint32_t> dimmPresenceBitmap)
+ipmi::RspType<> ipmiOEMSetFanConfig(
+    [[maybe_unused]] uint8_t selectedFanProfile, uint2_t reserved1,
+    bool performanceMode, uint3_t reserved2, bool setPerformanceMode,
+    [[maybe_unused]] bool setFanProfile, std::optional<uint8_t> dimmGroupId,
+    [[maybe_unused]] std::optional<uint32_t> dimmPresenceBitmap)
 {
     if (reserved1 || reserved2)
     {
@@ -2058,7 +2050,6 @@ ipmi::RspType<> ipmiOEMSetFscParameter(uint8_t command, uint8_t param1,
     }
     else if (command == static_cast<uint8_t>(setFscParamFlags::maxPwm))
     {
-        constexpr const size_t maxDomainCount = 8;
         uint8_t requestedDomainMask = param1;
         boost::container::flat_map data = getPidConfigs();
         if (data.empty())
@@ -2263,9 +2254,10 @@ ipmi::RspType<
 
 using crConfigVariant = ipmi::DbusVariant;
 
-int setCRConfig(ipmi::Context::ptr ctx, const std::string& property,
+int setCRConfig(ipmi::Context::ptr& ctx, const std::string& property,
                 const crConfigVariant& value,
-                std::chrono::microseconds timeout = ipmi::IPMI_DBUS_TIMEOUT)
+                [[maybe_unused]] std::chrono::microseconds timeout =
+                    ipmi::IPMI_DBUS_TIMEOUT)
 {
     boost::system::error_code ec;
     ctx->bus->yield_method_call<void>(
@@ -2284,9 +2276,11 @@ int setCRConfig(ipmi::Context::ptr ctx, const std::string& property,
 }
 
 int getCRConfig(
-    ipmi::Context::ptr ctx, const std::string& property, crConfigVariant& value,
+    ipmi::Context::ptr& ctx, const std::string& property,
+    crConfigVariant& value,
     const std::string& service = "xyz.openbmc_project.PSURedundancy",
-    std::chrono::microseconds timeout = ipmi::IPMI_DBUS_TIMEOUT)
+    [[maybe_unused]] std::chrono::microseconds timeout =
+        ipmi::IPMI_DBUS_TIMEOUT)
 {
     boost::system::error_code ec;
     value = ctx->bus->yield_method_call<crConfigVariant>(
@@ -2375,7 +2369,7 @@ static const constexpr uint32_t oneDay = 0x15180;
 static const constexpr uint32_t oneMonth = 0xf53700;
 static const constexpr uint8_t userSpecific = 0x01;
 static const constexpr uint8_t crSetCompleted = 0;
-ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(ipmi::Context::ptr ctx,
+ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(ipmi::Context::ptr& ctx,
                                           uint8_t parameter,
                                           ipmi::message::Payload& payload)
 {
@@ -2495,7 +2489,7 @@ ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(ipmi::Context::ptr ctx,
 }
 
 ipmi::RspType<uint8_t, std::variant<uint8_t, uint32_t, std::vector<uint8_t>>>
-    ipmiOEMGetCRConfig(ipmi::Context::ptr ctx, uint8_t parameter)
+    ipmiOEMGetCRConfig(ipmi::Context::ptr& ctx, uint8_t parameter)
 {
     crConfigVariant value;
     switch (static_cast<crParameter>(parameter))
@@ -2814,14 +2808,14 @@ ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
             // assemble ledState
             uint64_t ledState = 0;
             bool hasError = false;
-            for (int i = 0; i < sizeof(ledStateData); i++)
+            for (size_t i = 0; i < sizeof(ledStateData); i++)
             {
                 ledState = (uint64_t)(ledState << 8);
                 ledState = (uint64_t)(ledState | (uint64_t)ledStateData[i]);
             }
             std::bitset<size> ledStateBits(ledState);
 
-            for (int group = 0; group < pinGroupMax; group++)
+            for (size_t group = 0; group < pinGroupMax; group++)
             {
                 for (int i = 0; i < groupSize; i++)
                 { // skip non-existing pins
@@ -2916,7 +2910,7 @@ ipmi::RspType<uint8_t> ipmiOEMReadBoardProductId()
  *   - special mode value - As specified in
  * xyz.openbmc_project.Control.Security.SpecialMode.interface.yaml
  */
-ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr ctx)
+ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr& ctx)
 {
     namespace securityNameSpace =
         sdbusplus::xyz::openbmc_project::Control::Security::server;
@@ -2967,7 +2961,7 @@ ipmi::RspType<uint8_t, uint8_t> ipmiGetSecurityMode(ipmi::Context::ptr ctx)
  *
  *  @returns IPMI completion code
  */
-ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr ctx,
+ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr& ctx,
                                     uint8_t restrictionMode,
                                     std::optional<uint8_t> specialMode)
 {
@@ -3455,7 +3449,8 @@ ipmi::RspType<uint8_t,               // version
               uint8_t,               // data0, dependent on parameter
               std::optional<uint8_t> // data1, dependent on parameter
               >
-    ipmiOemGetEfiBootOptions(uint8_t parameter, uint8_t set, uint8_t block)
+    ipmiOemGetEfiBootOptions(uint8_t parameter, [[maybe_unused]] uint8_t set,
+                             [[maybe_unused]] uint8_t block)
 {
     using namespace boot_options;
     uint8_t bootOption = 0;
@@ -3640,7 +3635,7 @@ using PropertyMapType =
     boost::container::flat_map<std::string, BasicVariantType>;
 static constexpr const std::array<const char*, 1> psuPresenceTypes = {
     "xyz.openbmc_project.Configuration.PSUPresence"};
-int getPSUAddress(ipmi::Context::ptr ctx, uint8_t& bus,
+int getPSUAddress(ipmi::Context::ptr& ctx, uint8_t& bus,
                   std::vector<uint64_t>& addrTable)
 {
     boost::system::error_code ec;
@@ -3697,7 +3692,8 @@ static const constexpr uint8_t psuRevision = 0xd9;
 static const constexpr uint8_t defaultPSUBus = 7;
 // Second Minor, Primary Minor, Major
 static const constexpr size_t verLen = 3;
-ipmi::RspType<std::vector<uint8_t>> ipmiOEMGetPSUVersion(ipmi::Context::ptr ctx)
+ipmi::RspType<std::vector<uint8_t>>
+    ipmiOEMGetPSUVersion(ipmi::Context::ptr& ctx)
 {
     uint8_t bus = defaultPSUBus;
     std::vector<uint64_t> addrTable;
@@ -3735,7 +3731,7 @@ ipmi::RspType<std::vector<uint8_t>> ipmiOEMGetPSUVersion(ipmi::Context::ptr ctx)
     return ipmi::responseSuccess(result);
 }
 
-std::optional<uint8_t> getMultiNodeInfoPresence(ipmi::Context::ptr ctx,
+std::optional<uint8_t> getMultiNodeInfoPresence(ipmi::Context::ptr& ctx,
                                                 const std::string& name)
 {
     Value dbusValue = 0;
@@ -3791,10 +3787,10 @@ ipmi::RspType<uint4_t, // domain ID
               uint4_t, // reading Type
               uint16_t // reading Value
               >
-    ipmiOEMGetReading(ipmi::Context::ptr ctx, uint4_t domainId,
+    ipmiOEMGetReading(ipmi::Context::ptr& ctx, uint4_t domainId,
                       uint4_t readingType, uint16_t reserved)
 {
-    constexpr uint8_t platformPower = 0;
+    [[maybe_unused]] constexpr uint8_t platformPower = 0;
     constexpr uint8_t inletAirTemp = 1;
     constexpr uint8_t iccTdc = 2;
 
@@ -3884,49 +3880,46 @@ ipmi::RspType<std::vector<uint8_t>>
         case ipmi::mailbox::registerType::fifoReadRegister:
         {
             // Check if readRegister is an FIFO read register
-            if (registerIdentifier == 1)
+            if (ipmi::mailbox::readFifoReg.find(readRegister) ==
+                ipmi::mailbox::readFifoReg.end())
             {
-                if (ipmi::mailbox::readFifoReg.find(readRegister) ==
-                    ipmi::mailbox::readFifoReg.end())
-                {
-                    phosphor::logging::log<phosphor::logging::level::ERR>(
-                        "OEM IPMI command: Register is not a Read FIFO  ");
-                    return ipmi::responseInvalidFieldRequest();
-                }
-
                 phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "OEM IPMI command: Register is a Read FIFO  ");
+                    "OEM IPMI command: Register is not a Read FIFO  ");
+                return ipmi::responseInvalidFieldRequest();
+            }
 
-                ipmi::mailbox::writefifo(ipmi::mailbox::provisioningCommand,
-                                         readRegister);
-                ipmi::mailbox::writefifo(ipmi::mailbox::triggerCommand,
-                                         ipmi::mailbox::flushRead);
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "OEM IPMI command: Register is a Read FIFO  ");
 
-                std::vector<uint8_t> writeData = {ipmi::mailbox::readFifo};
-                std::vector<uint8_t> readBuf(1);
-                std::vector<uint8_t> result;
+            ipmi::mailbox::writefifo(ipmi::mailbox::provisioningCommand,
+                                     readRegister);
+            ipmi::mailbox::writefifo(ipmi::mailbox::triggerCommand,
+                                     ipmi::mailbox::flushRead);
 
-                for (int i = 0; i < numOfBytes; i++)
+            std::vector<uint8_t> writeData = {ipmi::mailbox::readFifo};
+            std::vector<uint8_t> readBuf(1);
+            std::vector<uint8_t> result;
+
+            for (int i = 0; i < numOfBytes; i++)
+            {
+                ipmi::Cc ret = ipmi::i2cWriteRead(ipmi::mailbox::i2cBus,
+                                                  ipmi::mailbox::targetAddr,
+                                                  writeData, readBuf);
+                if (ret != ipmi::ccSuccess)
                 {
-                    ipmi::Cc ret = ipmi::i2cWriteRead(ipmi::mailbox::i2cBus,
-                                                      ipmi::mailbox::targetAddr,
-                                                      writeData, readBuf);
-                    if (ret != ipmi::ccSuccess)
-                    {
-                        return ipmi::response(ret);
-                    }
-
-                    else
-                    {
-                        for (const uint8_t& data : readBuf)
-                        {
-                            result.emplace_back(data);
-                        }
-                    }
+                    return ipmi::response(ret);
                 }
 
-                return ipmi::responseSuccess(result);
+                else
+                {
+                    for (const uint8_t& data : readBuf)
+                    {
+                        result.emplace_back(data);
+                    }
+                }
             }
+
+            return ipmi::responseSuccess(result);
         }
 
         case ipmi::mailbox::registerType::singleByteRegister:

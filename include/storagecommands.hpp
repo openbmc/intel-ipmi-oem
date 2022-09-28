@@ -73,14 +73,6 @@ enum class SensorUnits : uint8_t
     rpm = 0x12,
 };
 
-enum class IPMINetfnStorageCmds : ipmi_cmd_t
-{
-    ipmiCmdGetRepositoryInfo = 0x20,
-    ipmiCmdGetSDRAllocationInfo = 0x21,
-    ipmiCmdReserveSDR = 0x22,
-    ipmiCmdGetSDR = 0x23,
-};
-
 #pragma pack(push, 1)
 struct FRUHeader
 {
@@ -159,10 +151,10 @@ namespace storage
 
 constexpr const size_t nmDiscoverySDRCount = 1;
 constexpr const size_t type12Count = 2;
-ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
-                      get_sdr::SensorDataFruRecord& resp);
+ipmi::Cc getFruSdrs(ipmi::Context::ptr& ctx, size_t index,
+                    get_sdr::SensorDataFruRecord& resp);
 
-ipmi_ret_t getFruSdrCount(ipmi::Context::ptr ctx, size_t& count);
+ipmi::Cc getFruSdrCount(ipmi::Context::ptr& ctx, size_t& count);
 
 std::vector<uint8_t> getType12SDRs(uint16_t index, uint16_t recordId);
 std::vector<uint8_t> getNMDiscoverySDR(uint16_t index, uint16_t recordId);
