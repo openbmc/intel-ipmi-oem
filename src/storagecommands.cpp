@@ -295,7 +295,7 @@ void replaceCacheFru(const std::shared_ptr<sdbusplus::asio::connection>& bus,
     recalculateHashes();
 }
 
-ipmi::Cc getFru(ipmi::Context::ptr ctx, uint8_t devId)
+ipmi::Cc getFru(ipmi::Context::ptr& ctx, uint8_t devId)
 {
     if (lastDevId == devId && devId != 0xFF)
     {
@@ -451,7 +451,7 @@ void startMatch(void)
 ipmi::RspType<uint8_t,             // Count
               std::vector<uint8_t> // Requested data
               >
-    ipmiStorageReadFruData(ipmi::Context::ptr ctx, uint8_t fruDeviceId,
+    ipmiStorageReadFruData(ipmi::Context::ptr& ctx, uint8_t fruDeviceId,
                            uint16_t fruInventoryOffset, uint8_t countToRead)
 {
     if (fruDeviceId == 0xFF)
@@ -499,7 +499,7 @@ ipmi::RspType<uint8_t,             // Count
  *   - countWritten  - Count written
  */
 ipmi::RspType<uint8_t>
-    ipmiStorageWriteFruData(ipmi::Context::ptr ctx, uint8_t fruDeviceId,
+    ipmiStorageWriteFruData(ipmi::Context::ptr& ctx, uint8_t fruDeviceId,
                             uint16_t fruInventoryOffset,
                             std::vector<uint8_t>& dataToWrite)
 {
@@ -515,7 +515,7 @@ ipmi::RspType<uint8_t>
     {
         return ipmi::response(status);
     }
-    int lastWriteAddr = fruInventoryOffset + writeLen;
+    size_t lastWriteAddr = fruInventoryOffset + writeLen;
     if (fruCache.size() < lastWriteAddr)
     {
         fruCache.resize(fruInventoryOffset + writeLen);
@@ -531,7 +531,7 @@ ipmi::RspType<uint8_t>
         FRUHeader* header = reinterpret_cast<FRUHeader*>(fruCache.data());
 
         int areaLength = 0;
-        int lastRecordStart = std::max(
+        size_t lastRecordStart = std::max(
             {header->internalOffset, header->chassisOffset, header->boardOffset,
              header->productOffset, header->multiRecordOffset});
         lastRecordStart *= 8; // header starts in are multiples of 8 bytes
@@ -608,7 +608,7 @@ ipmi::RspType<uint8_t>
  */
 ipmi::RspType<uint16_t, // inventorySize
               uint8_t>  // accessType
-    ipmiStorageGetFruInvAreaInfo(ipmi::Context::ptr ctx, uint8_t fruDeviceId)
+    ipmiStorageGetFruInvAreaInfo(ipmi::Context::ptr& ctx, uint8_t fruDeviceId)
 {
     if (fruDeviceId == 0xFF)
     {
@@ -627,18 +627,18 @@ ipmi::RspType<uint16_t, // inventorySize
     return ipmi::responseSuccess(fruCache.size(), accessType);
 }
 
-ipmi_ret_t getFruSdrCount(ipmi::Context::ptr ctx, size_t& count)
+ipmi::Cc getFruSdrCount(ipmi::Context::ptr&, size_t& count)
 {
     count = deviceHashes.size();
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
-ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
-                      get_sdr::SensorDataFruRecord& resp)
+ipmi::Cc getFruSdrs(ipmi::Context::ptr& ctx, size_t index,
+                    get_sdr::SensorDataFruRecord& resp)
 {
     if (deviceHashes.size() < index)
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::ccInvalidFieldRequest;
     }
     auto device = deviceHashes.begin() + index;
     uint16_t& bus = device->second.first;
@@ -672,7 +672,7 @@ ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
     });
     if (fru == frus.end())
     {
-        return IPMI_CC_RESPONSE_ERROR;
+        return ipmi::ccResponseError;
     }
 
 #ifdef USING_ENTITY_MANAGER_DECORATORS
@@ -807,7 +807,7 @@ ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
     resp.body.deviceIDLen = name.size();
     name.copy(resp.body.deviceID, name.size());
 
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 static bool getSELLogFiles(std::vector<std::filesystem::path>& selLogFiles)
@@ -1206,7 +1206,7 @@ ipmi::RspType<uint16_t> ipmiStorageAddSELEntry(
     return ipmi::responseSuccess(responseID);
 }
 
-ipmi::RspType<uint8_t> ipmiStorageClearSEL(ipmi::Context::ptr ctx,
+ipmi::RspType<uint8_t> ipmiStorageClearSEL(ipmi::Context::ptr&,
                                            uint16_t reservationID,
                                            const std::array<uint8_t, 3>& clr,
                                            uint8_t eraseOperation)
@@ -1283,7 +1283,7 @@ ipmi::RspType<uint32_t> ipmiStorageGetSELTime()
     return ipmi::responseSuccess(selTime.tv_sec);
 }
 
-ipmi::RspType<> ipmiStorageSetSELTime(uint32_t selTime)
+ipmi::RspType<> ipmiStorageSetSELTime([[maybe_unused]] uint32_t selTime)
 {
     // Set SEL Time is not supported
     return ipmi::responseInvalidCommand();
