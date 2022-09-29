@@ -16,6 +16,75 @@
       "message": "Addressed requests in review. Thank you Jonathan for modified commit message.",
       "revId": "b93ded79b4170fb0126359034fec36f15c7d6b62",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "688a23c7_9f3c9829",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 284,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-09-29T00:25:37Z",
+      "side": 1,
+      "message": "since you are using getManagedObjects, these two lines are unused",
+      "range": {
+        "startLine": 281,
+        "startChar": 1,
+        "endLine": 284,
+        "endChar": 76
+      },
+      "revId": "b93ded79b4170fb0126359034fec36f15c7d6b62",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f6afddd7_4c835257",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-09-29T00:25:37Z",
+      "side": 1,
+      "message": "I am not sure that this should be const.",
+      "range": {
+        "startLine": 286,
+        "startChar": 24,
+        "endLine": 286,
+        "endChar": 29
+      },
+      "revId": "b93ded79b4170fb0126359034fec36f15c7d6b62",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "99f8b969_3f7882dc",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-09-29T00:25:37Z",
+      "side": 1,
+      "message": "\"/xyz/openbmc_project/inventory\"",
+      "range": {
+        "startLine": 293,
+        "startChar": 70,
+        "endLine": 293,
+        "endChar": 72
+      },
+      "revId": "b93ded79b4170fb0126359034fec36f15c7d6b62",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
