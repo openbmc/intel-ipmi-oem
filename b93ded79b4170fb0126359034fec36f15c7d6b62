@@ -43,6 +43,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "0c76c15b_f47ce6e3",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 284,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-30T01:14:42Z",
+      "side": 1,
+      "message": "I moved these down to findFruDevice() which is still using them. I can make a separate commit to remove this from this function if it is something that is desired.",
+      "parentUuid": "688a23c7_9f3c9829",
+      "range": {
+        "startLine": 281,
+        "startChar": 1,
+        "endLine": 284,
+        "endChar": 76
+      },
+      "revId": "b93ded79b4170fb0126359034fec36f15c7d6b62",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "f6afddd7_4c835257",
         "filename": "src/manufacturingcommands.cpp",
         "patchSetId": 14
@@ -54,6 +78,30 @@
       "writtenOn": "2022-09-29T00:25:37Z",
       "side": 1,
       "message": "I am not sure that this should be const.",
+      "range": {
+        "startLine": 286,
+        "startChar": 24,
+        "endLine": 286,
+        "endChar": 29
+      },
+      "revId": "b93ded79b4170fb0126359034fec36f15c7d6b62",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "64667067_224fd792",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-30T01:14:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f6afddd7_4c835257",
       "range": {
         "startLine": 286,
         "startChar": 24,
@@ -77,6 +125,30 @@
       "writtenOn": "2022-09-29T00:25:37Z",
       "side": 1,
       "message": "\"/xyz/openbmc_project/inventory\"",
+      "range": {
+        "startLine": 293,
+        "startChar": 70,
+        "endLine": 293,
+        "endChar": 72
+      },
+      "revId": "b93ded79b4170fb0126359034fec36f15c7d6b62",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "54f60431_84a885ec",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-09-30T01:14:42Z",
+      "side": 1,
+      "message": "Done - Thanks for the reminder, I noticed the treewide change was merged upstream and implemented this.",
+      "parentUuid": "99f8b969_3f7882dc",
       "range": {
         "startLine": 293,
         "startChar": 70,
