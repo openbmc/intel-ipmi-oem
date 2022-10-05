@@ -241,7 +241,7 @@ static bool getSensorMap(boost::asio::yield_context yield,
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         boost::system::error_code ec;
         auto managedObjects = dbus->yield_method_call<ManagedObjectType>(
-            yield, ec, sensorConnection.c_str(), "/",
+            yield, ec, sensorConnection.c_str(), "/xyz/openbmc_project/sensors",
             "org.freedesktop.DBus.ObjectManager", "GetManagedObjects");
         if (ec)
         {
