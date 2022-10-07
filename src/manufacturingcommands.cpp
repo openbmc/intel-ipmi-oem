@@ -902,23 +902,15 @@ static constexpr uint8_t maxSupportedEth = 3;
 static constexpr const char* factoryEthAddrBaseFileName =
     "/var/sofs/factory-settings/network/mac/eth";
 
-using ObjectType = boost::container::flat_map<
-    std::string, boost::container::flat_map<std::string, DbusVariant>>;
-using ManagedObjectType =
-    boost::container::flat_map<sdbusplus::message::object_path, ObjectType>;
-
-bool findFruDevice(const std::shared_ptr<sdbusplus::asio::connection>& bus,
-                   boost::asio::yield_context& yield, uint64_t& macOffset,
+bool findFruDevice(ipmi::Context::ptr& ctx, uint64_t& macOffset,
                    uint64_t& busNum, uint64_t& address)
 {
-    boost::system::error_code ec;
+    boost::system::error_code ec{};
+    ObjectValueTree obj;
 
     // GetAll the objects under service FruDevice
-    ec = boost::system::errc::make_error_code(boost::system::errc::success);
-    auto obj = bus->yield_method_call<ManagedObjectType>(
-        yield, ec, "xyz.openbmc_project.EntityManager",
-        "/xyz/openbmc_project/inventory", "org.freedesktop.DBus.ObjectManager",
-        "GetManagedObjects");
+    ec = getManagedObjects(ctx, "xyz.openbmc_project.EntityManager",
+                           "/xyz/openbmc_project/inventory", obj);
     if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -987,7 +979,7 @@ bool readMacFromFru(ipmi::Context::ptr ctx, uint8_t macIndex,
     uint64_t fruBus = 0;
     uint64_t fruAddress = 0;
 
-    if (findFruDevice(ctx->bus, ctx->yield, macOffset, fruBus, fruAddress))
+    if (findFruDevice(ctx, macOffset, fruBus, fruAddress))
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "Found mac fru",
@@ -1032,7 +1024,7 @@ ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
     uint64_t fruBus = 0;
     uint64_t fruAddress = 0;
 
-    if (findFruDevice(ctx->bus, ctx->yield, macOffset, fruBus, fruAddress))
+    if (findFruDevice(ctx, macOffset, fruBus, fruAddress))
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "Found mac fru",
