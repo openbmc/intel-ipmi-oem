@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d6bd6680_d2124284",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-10-10T06:00:04Z",
+      "side": 1,
+      "message": "Clarification only: This change is good. Just to adopt same change in other places, I would like to clarify and so this query. In Technical terms, Whitelist and blocklist quite common from ages right? What is driving force now for this change?",
+      "range": {
+        "startLine": 9,
+        "startChar": 7,
+        "endLine": 9,
+        "endChar": 25
+      },
+      "revId": "caf9a2bdeb797e44383f51c9494354d619ccd9a2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
