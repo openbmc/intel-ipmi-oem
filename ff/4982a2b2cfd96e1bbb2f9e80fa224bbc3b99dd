@@ -1,0 +1,7 @@
+Code-Review+2: Vernon Mauery <vernon.mauery@linux.intel.com>
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Submitted-by: Vernon Mauery <vernon.mauery@linux.intel.com>
+Submitted-at: Mon, 17 Oct 2022 22:58:07 +0000
+Reviewed-on: https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/57654
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
