@@ -35,6 +35,13 @@ static auto revertTimeOut =
     std::chrono::duration_cast<std::chrono::microseconds>(
         std::chrono::seconds(60)); // 1 minute timeout
 
+static constexpr uint8_t Backward_Compatability = 0;
+static constexpr uint8_t Left_Riser_Mux = 1;
+static constexpr uint8_t Right_Riser_Mux = 2;
+static constexpr uint8_t PCIe_Mux = 3;
+static constexpr uint8_t HSBP_Mux = 4;
+static constexpr uint8_t HSBP_Drive_Mux = 5;
+
 static constexpr uint8_t slotAddressTypeBus = 0;
 static constexpr uint8_t slotAddressTypeUniqueid = 1;
 static constexpr uint8_t slotI2CMaxReadSize = 35;
@@ -1203,29 +1210,87 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
  *
  * @returns IPMI completion code plus response data
  */
-ipmi::RspType<std::vector<uint8_t>>
+
+/*ipmi::RspType<std::vector<uint8_t>>
     appSlotI2CMasterWriteRead(uint6_t reserved, uint2_t addressType,
                               uint3_t bbSlotNum, uint3_t riserSlotNum,
                               uint2_t reserved2, uint8_t slaveAddr,
-                              uint8_t readCount, std::vector<uint8_t> writeData)
+                              uint8_t readCount, std::vector<uint8_t>
+   writeData)*/
+
+ipmi::RspType<std::vector<uint8_t>> appSlotI2CMasterWriteRead(
+    uint3_t reserved, uint3_t value, uint2_t addressType, uint3_t bbSlotNum,
+    uint3_t riserSlotNum, uint2_t reserved2, uint8_t slaveAddr,
+    uint8_t readCount, std::vector<uint8_t> writeData)
 {
+    std::cerr << "entering the slot i2c method"
+              << "\n";
+    std::cerr << "bbSlotNum" << bbSlotNum << "\n";
+    std::cerr << "riserSlotNum" << riserSlotNum << "\n";
+
+    std::string path;
+
     if (reserved || reserved2)
     {
         return ipmi::responseInvalidFieldRequest();
     }
     const size_t writeCount = writeData.size();
     std::string i2cBus;
-    if (addressType == slotAddressTypeBus)
+
+    if (addressType == slotAddressTypeBus) // address type 0 (bus no. 0-7)
     {
-        std::string path = "/dev/i2c-mux/Riser_" +
-                           std::to_string(static_cast<uint8_t>(bbSlotNum)) +
-                           "_Mux/Pcie_Slot_" +
-                           std::to_string(static_cast<uint8_t>(riserSlotNum));
+        std::cerr << "address type 0"
+                  << "\n";
+
+        if (value == Backward_Compatability)
+        {
+            path = "/dev/i2c-mux/Riser_" +
+                   std::to_string(static_cast<uint8_t>(bbSlotNum)) +
+                   "_Mux/Pcie_Slot_" +
+                   std::to_string(static_cast<uint8_t>(riserSlotNum));
+        }
+
+        else if (value == Left_Riser_Mux)
+        {
+            path = "/dev/i2c-mux/Left_Riser_Mux/" + std::string("Slot_") +
+                   std::to_string(static_cast<uint8_t>(riserSlotNum));
+        }
+
+        else if (value == Right_Riser_Mux)
+        {
+            path = "/dev/i2c-mux/Right_Riser_Mux/" + std::string("Slot_") +
+                   std::to_string(static_cast<uint8_t>(riserSlotNum));
+        }
+
+        else if (value == PCIe_Mux)
+        {
+            path = "/dev/i2c-mux/PCIe_Mux/" + std::string("Slot_") +
+                   std::to_string(static_cast<uint8_t>(riserSlotNum));
+        }
+
+        else if (value == HSBP_Mux)
+        {
+            path = "/dev/i2c-mux/HSBP_Mux/" + std::string("FruChannel_") +
+                   std::to_string(static_cast<uint8_t>(riserSlotNum));
+
+            std::cerr << "path: " << path << "\n";
+        }
+
+        else if (value == HSBP_Drive_Mux)
+        {
+            path = "/dev/i2c-mux/HSBP_" +
+                   std::to_string(static_cast<uint8_t>(bbSlotNum)) +
+                   std::string("Mux_") +
+                   std::to_string(static_cast<uint8_t>(riserSlotNum)) +
+                   std::string("Drive_") /* + drive_slot_no - TBD */;
+        }
 
         if (std::filesystem::exists(path) && std::filesystem::is_symlink(path))
         {
             i2cBus = std::filesystem::read_symlink(path);
+            std::cerr << "i2cBus" << i2cBus << "\n";
         }
+
         else
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -1233,12 +1298,18 @@ ipmi::RspType<std::vector<uint8_t>>
             return ipmi::responseInvalidFieldRequest();
         }
     }
-    else if (addressType == slotAddressTypeUniqueid)
+
+    else if (addressType ==
+             slotAddressTypeUniqueid) // address type 1 (bus no. > 7)
     {
+        std::cerr << "address type 1"
+                  << "\n";
+
         i2cBus = "/dev/i2c-" +
                  std::to_string(static_cast<uint8_t>(bbSlotNum) |
                                 (static_cast<uint8_t>(riserSlotNum) << 3));
     }
+
     else
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -1250,11 +1321,16 @@ ipmi::RspType<std::vector<uint8_t>>
     // allow only in Special mode.
     if (writeCount > 1)
     {
+
         if (mtm.getMfgMode() == SpecialMode::none)
         {
+            std::cerr << "not in mtm mode"
+                      << "\n";
             return ipmi::responseInsufficientPrivilege();
         }
     }
+
+    std::cerr << "readCount" << readCount << "\n";
 
     if (readCount > slotI2CMaxReadSize)
     {
