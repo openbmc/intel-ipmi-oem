@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c05361e2_f603f577",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1219,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-11-15T06:27:49Z",
+      "side": 1,
+      "message": "Commented out code should not be checked in... Suggest removing this",
+      "range": {
+        "startLine": 1214,
+        "startChar": 0,
+        "endLine": 1219,
+        "endChar": 15
+      },
+      "revId": "d141a411e06d92e9f704e98a2bb3c8548e0fd410",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "07fdabc6_728c2e99",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1222,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-11-15T06:27:49Z",
+      "side": 1,
+      "message": "Can use a meaningful variable name like muxType",
+      "range": {
+        "startLine": 1222,
+        "startChar": 30,
+        "endLine": 1222,
+        "endChar": 35
+      },
+      "revId": "d141a411e06d92e9f704e98a2bb3c8548e0fd410",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "750d9454_9eb45c43",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1230,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-11-15T06:27:49Z",
+      "side": 1,
+      "message": "Use phosphor logging APIs for logging :) I think this is a relic from your workspace, can be removed here if possible.",
+      "range": {
+        "startLine": 1226,
+        "startChar": 0,
+        "endLine": 1230,
+        "endChar": 0
+      },
+      "revId": "d141a411e06d92e9f704e98a2bb3c8548e0fd410",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cdbdcabb_34f55df1",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1291,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-11-15T06:27:49Z",
+      "side": 1,
+      "message": "Either remove the log or add a DEBUG level phosphor-logging log",
+      "range": {
+        "startLine": 1291,
+        "startChar": 12,
+        "endLine": 1291,
+        "endChar": 52
+      },
+      "revId": "d141a411e06d92e9f704e98a2bb3c8548e0fd410",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "557f78d2_994ec7f1",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1307,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2022-11-15T06:27:49Z",
+      "side": 1,
+      "message": "Same here and everywhere else",
+      "range": {
+        "startLine": 1305,
+        "startChar": 0,
+        "endLine": 1307,
+        "endChar": 0
+      },
+      "revId": "d141a411e06d92e9f704e98a2bb3c8548e0fd410",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
