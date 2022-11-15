@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e871675b_5dca7667",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-11-15T06:38:55Z",
+      "side": 1,
+      "message": "All veriable names should be lowerCamelCase",
+      "range": {
+        "startLine": 38,
+        "startChar": 0,
+        "endLine": 43,
+        "endChar": 44
+      },
+      "revId": "6eed52db254d19e5fafffc3028ba534b7393e4c0",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "73f37b2c_6eb0cf8e",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1215,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-11-15T06:38:55Z",
+      "side": 1,
+      "message": "Did you update the EPS document for this request signature change? If not, that is first place to start with it.",
+      "range": {
+        "startLine": 1215,
+        "startChar": 4,
+        "endLine": 1215,
+        "endChar": 35
+      },
+      "revId": "6eed52db254d19e5fafffc3028ba534b7393e4c0",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "288d5477_ae626cbe",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1266,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-11-15T06:38:55Z",
+      "side": 1,
+      "message": "NIT: Remove empty lines (Line no: 1295, 1283 and lines between if-else)",
+      "revId": "6eed52db254d19e5fafffc3028ba534b7393e4c0",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
