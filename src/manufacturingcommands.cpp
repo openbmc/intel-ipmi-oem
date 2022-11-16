@@ -21,6 +21,7 @@
 #include <ipmid/api.hpp>
 #include <manufacturingcommands.hpp>
 #include <oemcommands.hpp>
+#include <phosphor-logging/lg2.hpp>
 #include <types.hpp>
 
 #include <filesystem>
@@ -61,8 +62,7 @@ static inline Cc resetMtmTimer(ipmi::Context::ptr ctx)
                                   "ResetTimer");
     if (ec)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Failed to reset the manufacturing mode timer");
+        lg2::error("Failed to reset the manufacturing mode timer");
         return ccUnspecifiedError;
     }
     return ccSuccess;
@@ -230,8 +230,7 @@ int8_t Manufacturing::getProperty(const std::string& service,
     }
     catch (const sdbusplus::exception_t& e)
     {
-        phosphor::logging::log<phosphor::logging::level::INFO>(
-            "ERROR: getProperty");
+        lg2::info("ERROR: getProperty");
         return -1;
     }
 
@@ -251,8 +250,7 @@ int8_t Manufacturing::setProperty(const std::string& service,
     }
     catch (const sdbusplus::exception_t& e)
     {
-        phosphor::logging::log<phosphor::logging::level::INFO>(
-            "ERROR: setProperty");
+        lg2::info("ERROR: setProperty");
         return -1;
     }
 
@@ -272,8 +270,7 @@ int8_t Manufacturing::disablePidControlService(const bool disable)
     }
     catch (const sdbusplus::exception_t& e)
     {
-        phosphor::logging::log<phosphor::logging::level::INFO>(
-            "ERROR: phosphor-pid-control service start or stop failed");
+        lg2::info("ERROR: phosphor-pid-control service start or stop failed");
         return -1;
     }
     return 0;
@@ -290,9 +287,7 @@ static bool findPwmName(ipmi::Context::ptr& ctx, uint8_t instance,
                            "/xyz/openbmc_project/inventory", obj);
     if (ec)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "GetMangagedObjects failed",
-            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+        lg2::error("GetMangagedObjects failed", "ERROR", ec.message().c_str());
         return false;
     }
     for (const auto& [path, objData] : obj)
@@ -304,14 +299,10 @@ static bool findPwmName(ipmi::Context::ptr& ctx, uint8_t instance,
                 intf == "xyz.openbmc_project.Configuration.I2CFan" ||
                 intf == "xyz.openbmc_project.Configuration.NuvotonFan")
             {
-                auto findIndex = propMap.find("Index");
-                if (findIndex == propMap.end())
-                {
-                    continue;
-                }
-
-                auto fanIndex = std::get_if<uint64_t>(&findIndex->second);
-                if (!fanIndex || *fanIndex != instance)
+                std::string fan_path = "/xyz/openbmc_project/inventory/system/"
+                                       "board/AVC_Baseboard/Fan_";
+                fan_path += std::to_string(instance);
+                if (path != fan_path)
                 {
                     continue;
                 }
@@ -327,8 +318,7 @@ static bool findPwmName(ipmi::Context::ptr& ctx, uint8_t instance,
                         std::get_if<std::string>(&findPwmName->second);
                     if (!fanPwmName)
                     {
-                        phosphor::logging::log<phosphor::logging::level::INFO>(
-                            "PwmName parse ERROR.");
+                        lg2::error("PwmName parse ERROR.");
                         return false;
                     }
                     pwmName = *fanPwmName;
@@ -404,7 +394,7 @@ ipmi::RspType<uint8_t,                // Signal value
         {
             ipmi::Value reply;
             std::string pwmName, fullPath;
-            if (!findPwmName(ctx, instance, pwmName))
+            if (!findPwmName(ctx, instance + 1, pwmName))
             {
                 // The default PWM name is Pwm_#
                 pwmName = "Pwm_" + std::to_string(instance + 1);
@@ -439,8 +429,7 @@ ipmi::RspType<uint8_t,                // Signal value
                 fanTachBasePath, 0, std::array<const char*, 1>{fanIntf});
             if (ec)
             {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "Failed to query fan tach sub tree objects");
+                lg2::error("Failed to query fan tach sub tree objects");
                 return ipmi::responseUnspecifiedError();
             }
             if (instance >= flatMap.size())
@@ -491,13 +480,11 @@ ipmi::RspType<uint8_t,                // Signal value
             switch (action)
             {
                 case SmActionGet::sample:
-                    phosphor::logging::log<phosphor::logging::level::INFO>(
-                        "case SmActionGet::sample");
+                    lg2::info("case SmActionGet::sample");
                     break;
                 case SmActionGet::ignore:
                 {
-                    phosphor::logging::log<phosphor::logging::level::INFO>(
-                        "case SmActionGet::ignore");
+                    lg2::info("case SmActionGet::ignore");
                     if (mtm.setProperty(buttonService, path, buttonIntf,
                                         "ButtonMasked", true) < 0)
                     {
@@ -507,8 +494,7 @@ ipmi::RspType<uint8_t,                // Signal value
                 break;
                 case SmActionGet::revert:
                 {
-                    phosphor::logging::log<phosphor::logging::level::INFO>(
-                        "case SmActionGet::revert");
+                    lg2::info("case SmActionGet::revert");
                     if (mtm.setProperty(buttonService, path, buttonIntf,
                                         "ButtonMasked", false) < 0)
                     {
@@ -582,8 +568,7 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
             {
                 case SmActionSet::forceDeasserted:
                 {
-                    phosphor::logging::log<phosphor::logging::level::INFO>(
-                        "case SmActionSet::forceDeasserted");
+                    lg2::info("case SmActionSet::forceDeasserted");
 
                     retCode = ledStoreAndSet(signalType, std::string("Off"));
                     if (retCode != ccSuccess)
@@ -595,8 +580,7 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                 break;
                 case SmActionSet::forceAsserted:
                 {
-                    phosphor::logging::log<phosphor::logging::level::INFO>(
-                        "case SmActionSet::forceAsserted");
+                    lg2::info("case SmActionSet::forceAsserted");
 
                     retCode = ledStoreAndSet(signalType, std::string("On"));
                     if (retCode != ccSuccess)
@@ -620,8 +604,7 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                 break;
                 case SmActionSet::revert:
                 {
-                    phosphor::logging::log<phosphor::logging::level::INFO>(
-                        "case SmActionSet::revert");
+                    lg2::info("case SmActionSet::revert");
                     retCode = ledRevert(signalType);
                 }
                 break;
@@ -676,7 +659,7 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                     }
                     mtm.revertTimer.start(revertTimeOut);
                     std::string pwmName, fanPwmInstancePath;
-                    if (!findPwmName(ctx, instance, pwmName))
+                    if (!findPwmName(ctx, instance + 1, pwmName))
                     {
                         pwmName = "Pwm_" + std::to_string(instance + 1);
                     }
@@ -699,10 +682,8 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
         break;
         case SmSignalSet::smSpeaker:
         {
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                "Performing Speaker SmActionSet",
-                phosphor::logging::entry("ACTION=%d",
-                                         static_cast<uint8_t>(action)));
+            lg2::info("Performing Speaker SmActionSet", "ACTION", lg2::dec,
+                      static_cast<uint8_t>(action));
             switch (action)
             {
                 case SmActionSet::forceAsserted:
@@ -710,8 +691,7 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                     char beepDevName[] = "/dev/input/event0";
                     if (mtm.mtmTestBeepFd != -1)
                     {
-                        phosphor::logging::log<phosphor::logging::level::INFO>(
-                            "mtm beep device is opened already!");
+                        lg2::info("mtm beep device is opened already!");
                         // returning success as already beep is in progress
                         return ipmi::response(retCode);
                     }
@@ -719,8 +699,7 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                     if ((mtm.mtmTestBeepFd =
                              ::open(beepDevName, O_RDWR | O_CLOEXEC)) < 0)
                     {
-                        phosphor::logging::log<phosphor::logging::level::ERR>(
-                            "Failed to open input device");
+                        lg2::error("Failed to open input device");
                         return ipmi::responseUnspecifiedError();
                     }
 
@@ -733,8 +712,7 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                                 sizeof(struct input_event)) !=
                         sizeof(struct input_event))
                     {
-                        phosphor::logging::log<phosphor::logging::level::ERR>(
-                            "Failed to write a tone sound event");
+                        lg2::error("Failed to write a tone sound event");
                         ::close(mtm.mtmTestBeepFd);
                         mtm.mtmTestBeepFd = -1;
                         return ipmi::responseUnspecifiedError();
@@ -777,8 +755,7 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                 driveBasePath, 0, std::array<const char*, 1>{driveLedIntf});
             if (ec)
             {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "Failed to query HSBP drive sub tree objects");
+                lg2::error("Failed to query HSBP drive sub tree objects");
                 return ipmi::responseUnspecifiedError();
             }
             std::string driveObjPath =
@@ -913,9 +890,7 @@ bool findFruDevice(ipmi::Context::ptr& ctx, uint64_t& macOffset,
                            "/xyz/openbmc_project/inventory", obj);
     if (ec)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "GetMangagedObjects failed",
-            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+        lg2::error("GetMangagedObjects failed", "ERROR", ec.message().c_str());
         return false;
     }
 
@@ -940,9 +915,8 @@ bool findFruDevice(ipmi::Context::ptr& ctx, uint64_t& macOffset,
                     std::get_if<uint64_t>(&findMacOffset->second);
                 if (!fruBus || !fruAddress || !macFruOffset)
                 {
-                    phosphor::logging::log<phosphor::logging::level::INFO>(
-                        "ERROR: MotherBoard FRU config data type invalid, not "
-                        "used");
+                    lg2::info("ERROR: MotherBoard FRU config data type "
+                              "invalid, not used");
                     return false;
                 }
                 busNum = *fruBus;
@@ -981,11 +955,9 @@ bool readMacFromFru(ipmi::Context::ptr ctx, uint8_t macIndex,
 
     if (findFruDevice(ctx, macOffset, fruBus, fruAddress))
     {
-        phosphor::logging::log<phosphor::logging::level::INFO>(
-            "Found mac fru",
-            phosphor::logging::entry("BUS=%d", static_cast<uint8_t>(fruBus)),
-            phosphor::logging::entry("ADDRESS=%d",
-                                     static_cast<uint8_t>(fruAddress)));
+        lg2::info("Found mac fru", "BUS", lg2::dec,
+                  static_cast<uint8_t>(fruBus), "ADDRESS", lg2::dec,
+                  static_cast<uint8_t>(fruAddress));
 
         if (macOffset % fruPageSize)
         {
@@ -994,8 +966,7 @@ bool readMacFromFru(ipmi::Context::ptr ctx, uint8_t macIndex,
         macOffset += macIndex * fruPageSize;
         if ((macOffset + macRecordSize) > fruEnd)
         {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "ERROR: read fru mac failed, offset invalid");
+            lg2::error("ERROR: read fru mac failed, offset invalid");
             return false;
         }
         std::vector<uint8_t> writeData;
@@ -1026,11 +997,9 @@ ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
 
     if (findFruDevice(ctx, macOffset, fruBus, fruAddress))
     {
-        phosphor::logging::log<phosphor::logging::level::INFO>(
-            "Found mac fru",
-            phosphor::logging::entry("BUS=%d", static_cast<uint8_t>(fruBus)),
-            phosphor::logging::entry("ADDRESS=%d",
-                                     static_cast<uint8_t>(fruAddress)));
+        lg2::info("Found mac fru", "BUS", lg2::dec,
+                  static_cast<uint8_t>(fruBus), "ADDRESS", lg2::dec,
+                  static_cast<uint8_t>(fruAddress));
 
         if (macOffset % fruPageSize)
         {
@@ -1039,8 +1008,7 @@ ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
         macOffset += macIndex * fruPageSize;
         if ((macOffset + macRecordSize) > fruEnd)
         {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "ERROR: write mac fru failed, offset invalid.");
+            lg2::error("ERROR: write mac fru failed, offset invalid.");
             return ipmi::ccParmOutOfRange;
         }
         std::vector<uint8_t> writeData;
@@ -1084,25 +1052,22 @@ ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
                     {
                         return ipmi::ccSuccess;
                     }
-                    phosphor::logging::log<phosphor::logging::level::INFO>(
-                        "INFO: write mac fru verify failed, fru may be write "
-                        "protected.");
+                    lg2::info("INFO: write mac fru verify failed, fru may be "
+                              "write protected.");
                 }
                 return ipmi::ccCommandNotAvailable;
             default:
                 if (ipmi::i2cWriteRead(i2cBus, fruAddress, writeData,
                                        readBuf) == ipmi::ccSuccess)
                 {
-                    phosphor::logging::log<phosphor::logging::level::INFO>(
-                        "INFO: write mac fru failed, but successfully read "
-                        "from fru, fru may be write protected.");
+                    lg2::info("INFO: write mac fru failed, but successfully "
+                              "read from fru, fru may be write protected.");
                     return ipmi::ccCommandNotAvailable;
                 }
                 else // assume failure is due to no eeprom on board
                 {
-                    phosphor::logging::log<phosphor::logging::level::ERR>(
-                        "ERROR: write mac fru failed, assume no eeprom is "
-                        "available.");
+                    lg2::error("ERROR: write mac fru failed, assume no eeprom "
+                               "is available.");
                 }
                 break;
         }
@@ -1228,8 +1193,7 @@ ipmi::RspType<std::vector<uint8_t>>
         }
         else
         {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "Master write read command: Cannot get BusID");
+            lg2::error("Master write read command: Cannot get BusID");
             return ipmi::responseInvalidFieldRequest();
         }
     }
@@ -1241,8 +1205,7 @@ ipmi::RspType<std::vector<uint8_t>>
     }
     else
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Master write read command: invalid request");
+        lg2::error("Master write read command: invalid request");
         return ipmi::responseInvalidFieldRequest();
     }
 
@@ -1258,15 +1221,13 @@ ipmi::RspType<std::vector<uint8_t>>
 
     if (readCount > slotI2CMaxReadSize)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Master write read command: Read count exceeds limit");
+        lg2::error("Master write read command: Read count exceeds limit");
         return ipmi::responseParmOutOfRange();
     }
 
     if (!readCount && !writeCount)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Master write read command: Read & write count are 0");
+        lg2::error("Master write read command: Read & write count are 0");
         return ipmi::responseInvalidFieldRequest();
     }
 
@@ -1392,16 +1353,14 @@ static ipmi::RspType<> startOrStopService(ipmi::Context::ptr& ctx,
             }
             break;
         default:
-            phosphor::logging::log<phosphor::logging::level::WARNING>(
-                "ERROR: Invalid feature action selected",
-                phosphor::logging::entry("ACTION=%d", enable));
+            lg2::warning("ERROR: Invalid feature action selected", "ACTION",
+                         lg2::dec, enable);
             return ipmi::responseInvalidFieldRequest();
     }
     if (ec)
     {
-        phosphor::logging::log<phosphor::logging::level::WARNING>(
-            "ERROR: Service start or stop failed",
-            phosphor::logging::entry("SERVICE=%s", serviceName.c_str()));
+        lg2::warning("ERROR: Service start or stop failed", "SERVICE",
+                     serviceName.c_str());
         return ipmi::responseUnspecifiedError();
     }
     return ipmi::responseSuccess();
@@ -1429,7 +1388,7 @@ static ipmi::RspType<> handleMCTPFeature(ipmi::Context::ptr& ctx,
     }
     catch (const std::exception& e)
     {
-        phosphor::logging::log<phosphor::logging::level::ERR>(e.what());
+        lg2::error(e.what());
         return ipmi::responseUnspecifiedError();
     }
 
