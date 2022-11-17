@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3005b634_328a5dfb",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-11-17T20:41:52Z",
+      "side": 1,
+      "message": "Why 6, this does not explain the root of problem",
+      "range": {
+        "startLine": 10,
+        "startChar": 23,
+        "endLine": 11,
+        "endChar": 69
+      },
+      "revId": "5994fcbec38221009985e672e320e03fcdacca68",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4f777965_f22ace4a",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 303,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2022-11-17T20:41:52Z",
+      "side": 1,
+      "message": "can\u0027t have hardcode baseboard path",
+      "range": {
+        "startLine": 303,
+        "startChar": 46,
+        "endLine": 303,
+        "endChar": 60
+      },
+      "revId": "5994fcbec38221009985e672e320e03fcdacca68",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
