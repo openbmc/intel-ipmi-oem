@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8526a69a_ea35da1d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-11-18T09:31:01Z",
+      "side": 1,
+      "message": "Minor debug log, other code lgtm.",
+      "revId": "9993ddbbebaa797a9628375f6e264f03a91d7465",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "232274e1_799984a5",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 1261,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2022-11-18T09:31:01Z",
+      "side": 1,
+      "message": "You can update the log message to print the \"path\" for better future debug, As path now is with many options filled above.",
+      "range": {
+        "startLine": 1260,
+        "startChar": 12,
+        "endLine": 1261,
+        "endChar": 63
+      },
+      "revId": "9993ddbbebaa797a9628375f6e264f03a91d7465",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
