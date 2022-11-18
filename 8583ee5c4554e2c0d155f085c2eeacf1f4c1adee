@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a6a4387a_4503d3f7",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1201,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-11-18T22:52:43Z",
+      "side": 1,
+      "message": "Please update the documentation as well.",
+      "range": {
+        "startLine": 1201,
+        "startChar": 10,
+        "endLine": 1201,
+        "endChar": 22
+      },
+      "revId": "8583ee5c4554e2c0d155f085c2eeacf1f4c1adee",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a4aebd47_f483585f",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1218,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-11-18T22:52:43Z",
+      "side": 1,
+      "message": "Don\u0027t change the scope of path.",
+      "range": {
+        "startLine": 1218,
+        "startChar": 0,
+        "endLine": 1218,
+        "endChar": 21
+      },
+      "revId": "8583ee5c4554e2c0d155f085c2eeacf1f4c1adee",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "49a6b682_4c0d80f8",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1226,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-11-18T22:52:43Z",
+      "side": 1,
+      "message": "We can keep the common bit here:\n\nstd::string path \u003d \"/dev/i2c-mux/\";",
+      "revId": "8583ee5c4554e2c0d155f085c2eeacf1f4c1adee",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "15314482_a96c2509",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 1229,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-11-18T22:52:43Z",
+      "side": 1,
+      "message": "path +\u003d \"Riser_\" + ...\n\n\nHere and below.",
+      "range": {
+        "startLine": 1229,
+        "startChar": 12,
+        "endLine": 1229,
+        "endChar": 33
+      },
+      "revId": "8583ee5c4554e2c0d155f085c2eeacf1f4c1adee",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
