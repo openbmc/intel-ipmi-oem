@@ -24,6 +24,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3bd79faf_1f004c76",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-12-06T23:11:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bbb9f055_609cf3c3",
+      "range": {
+        "startLine": 10,
+        "startChar": 33,
+        "endLine": 12,
+        "endChar": 7
+      },
+      "revId": "1fb026cef6c42fb5770dbafe0738a4361295c377",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6933c30e_e4171e43",
@@ -37,6 +61,30 @@
       "writtenOn": "2022-11-30T02:36:29Z",
       "side": 1,
       "message": "Please also add reference to the commit that introduce this issue. So it is clear this change address two issues and the tested section should also cover the two test cases",
+      "range": {
+        "startLine": 12,
+        "startChar": 9,
+        "endLine": 13,
+        "endChar": 64
+      },
+      "revId": "1fb026cef6c42fb5770dbafe0738a4361295c377",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "25950801_71ead2df",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-12-06T23:11:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6933c30e_e4171e43",
       "range": {
         "startLine": 12,
         "startChar": 9,
@@ -70,6 +118,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e516adf5_f9833046",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-12-06T23:11:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e3132bec_a96f0be7",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 14
+      },
+      "revId": "1fb026cef6c42fb5770dbafe0738a4361295c377",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "fd7b63c9_9e6eebfc",
@@ -83,6 +155,30 @@
       "writtenOn": "2022-11-30T02:36:29Z",
       "side": 1,
       "message": "1. System with multiple fan controllers that have duplicated index property",
+      "range": {
+        "startLine": 22,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 25
+      },
+      "revId": "1fb026cef6c42fb5770dbafe0738a4361295c377",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "472ff870_2302df5c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-12-06T23:11:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fd7b63c9_9e6eebfc",
       "range": {
         "startLine": 22,
         "startChar": 0,
@@ -116,6 +212,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a3d0f54c_6466d91a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-12-06T23:11:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5896b2b1_074d74c4",
+      "range": {
+        "startLine": 67,
+        "startChar": 0,
+        "endLine": 67,
+        "endChar": 61
+      },
+      "revId": "1fb026cef6c42fb5770dbafe0738a4361295c377",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "77068596_cf41e2ad",
@@ -129,6 +249,30 @@
       "writtenOn": "2022-11-30T02:36:29Z",
       "side": 1,
       "message": "follow the naming convention in coding standard https://github.com/openbmc/docs/blob/master/cpp-style-and-conventions.md",
+      "range": {
+        "startLine": 302,
+        "startChar": 28,
+        "endLine": 302,
+        "endChar": 36
+      },
+      "revId": "1fb026cef6c42fb5770dbafe0738a4361295c377",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "da96085a_0f248789",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 302,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2022-12-06T23:11:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "77068596_cf41e2ad",
       "range": {
         "startLine": 302,
         "startChar": 28,
