@@ -498,6 +498,26 @@ ipmi::RspType<bool,    // Power is on
         return ipmi::responseUnspecifiedError();
     }
 
+    bool chassisIntrusionActive = false;
+    try
+    {
+        constexpr const char* chassisIntrusionObj =
+            "/xyz/openbmc_project/Intrusion/Chassis_Intrusion";
+        constexpr const char* chassisIntrusionInf =
+            "xyz.openbmc_project.Chassis.Intrusion";
+
+        std::string intrusionService;
+        boost::system::error_code ec =
+            ipmi::getService(ctx, chassisIntrusionInf, chassisIntrusionObj, intrusionService);
+
+        chassisIntrusionActive = !intrusionService.empty();
+    }
+    catch (const std::exception& e)
+    {
+        log<level::ERR>("Failed to get Chassis Intrusion service",
+                        entry("ERROR=%s", e.what()));
+    }
+
     // This response has a lot of hard-coded, unsupported fields
     // They are set to false or 0
     constexpr bool powerOverload = false;
@@ -507,7 +527,6 @@ ipmi::RspType<bool,    // Power is on
     constexpr bool powerDownOverload = false;
     constexpr bool powerDownInterlock = false;
     constexpr bool powerDownPowerFault = false;
-    constexpr bool chassisIntrusionActive = false;
     constexpr bool frontPanelLockoutActive = false;
     constexpr bool driveFault = false;
     constexpr bool coolingFanFault = false;
