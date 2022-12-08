@@ -22,6 +22,30 @@
       },
       "revId": "5b435d0d3abb6ebf637881af4055611b09000b58",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0cb91458_cfaf6a94",
+        "filename": "generate-allowlist.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-12-08T18:35:15Z",
+      "side": 1,
+      "message": "This isn\u0027t a tuple though, is it?  There is no comma outside the string so it is equivalent to this:\n\n```\n\u003e\u003e\u003e ( \"a \" \"b\" )\n\u0027a b\u0027\n```",
+      "parentUuid": "ede22daf_b10111d8",
+      "range": {
+        "startLine": 105,
+        "startChar": 3,
+        "endLine": 108,
+        "endChar": 10
+      },
+      "revId": "5b435d0d3abb6ebf637881af4055611b09000b58",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
