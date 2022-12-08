@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-import re, sys, os.path
+import os.path
+import re
+import sys
+
 
 def usage():
     sys.stderr.write("Usage: $0 allowlist-config-in allowlist-header-out\n")
