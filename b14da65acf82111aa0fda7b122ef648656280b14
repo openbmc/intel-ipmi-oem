@@ -18,6 +18,24 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "869ba8d0_4e3b3252",
+        "filename": "src/chassiscommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 508,
+      "author": {
+        "id": 1001023
+      },
+      "writtenOn": "2022-12-09T21:26:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6acad8e8_080043bd",
+      "revId": "b14da65acf82111aa0fda7b122ef648656280b14",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c84565d3_a5ce3698",
@@ -41,6 +59,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3e93d951_40dfde3d",
+        "filename": "src/chassiscommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 511,
+      "author": {
+        "id": 1001023
+      },
+      "writtenOn": "2022-12-09T21:26:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c84565d3_a5ce3698",
+      "range": {
+        "startLine": 511,
+        "startChar": 11,
+        "endLine": 511,
+        "endChar": 34
+      },
+      "revId": "b14da65acf82111aa0fda7b122ef648656280b14",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6d2e49a3_7a85d819",
@@ -54,6 +96,30 @@
       "writtenOn": "2022-12-09T00:37:59Z",
       "side": 1,
       "message": "use the logging utility instead of cerr",
+      "range": {
+        "startLine": 512,
+        "startChar": 8,
+        "endLine": 512,
+        "endChar": 18
+      },
+      "revId": "b14da65acf82111aa0fda7b122ef648656280b14",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d5e47060_5705327a",
+        "filename": "src/chassiscommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 512,
+      "author": {
+        "id": 1001023
+      },
+      "writtenOn": "2022-12-09T21:26:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6d2e49a3_7a85d819",
       "range": {
         "startLine": 512,
         "startChar": 8,
