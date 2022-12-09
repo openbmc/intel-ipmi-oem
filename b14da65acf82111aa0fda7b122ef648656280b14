@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6acad8e8_080043bd",
+        "filename": "src/chassiscommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 508,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-12-09T00:37:59Z",
+      "side": 1,
+      "message": "with ctx passed into this function, there is no need for getSdBus()",
+      "revId": "b14da65acf82111aa0fda7b122ef648656280b14",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c84565d3_a5ce3698",
+        "filename": "src/chassiscommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 511,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-12-09T00:37:59Z",
+      "side": 1,
+      "message": "use the yielding variant that takes ctx instead of dbus",
+      "range": {
+        "startLine": 511,
+        "startChar": 11,
+        "endLine": 511,
+        "endChar": 34
+      },
+      "revId": "b14da65acf82111aa0fda7b122ef648656280b14",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6d2e49a3_7a85d819",
+        "filename": "src/chassiscommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 512,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2022-12-09T00:37:59Z",
+      "side": 1,
+      "message": "use the logging utility instead of cerr",
+      "range": {
+        "startLine": 512,
+        "startChar": 8,
+        "endLine": 512,
+        "endChar": 18
+      },
+      "revId": "b14da65acf82111aa0fda7b122ef648656280b14",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
