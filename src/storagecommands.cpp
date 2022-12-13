@@ -109,11 +109,11 @@ constexpr static const char* chassisTypeRackMount = "23";
 constexpr static const uint8_t deassertionEvent = 0x80;
 
 static std::vector<uint8_t> fruCache;
-static uint8_t cacheBus = 0xFF;
+static uint16_t cacheBus = 0xFFFF;
 static uint8_t cacheAddr = 0XFF;
 static uint8_t lastDevId = 0xFF;
 
-static uint8_t writeBus = 0xFF;
+static uint16_t writeBus = 0xFFFF;
 static uint8_t writeAddr = 0XFF;
 
 std::unique_ptr<phosphor::Timer> writeTimer = nullptr;
@@ -123,7 +123,7 @@ ManagedObjectType frus;
 
 // we unfortunately have to build a map of hashes in case there is a
 // collision to verify our dev-id
-boost::container::flat_map<uint8_t, std::pair<uint8_t, uint8_t>> deviceHashes;
+boost::container::flat_map<uint8_t, std::pair<uint16_t, uint8_t>> deviceHashes;
 // Map devId to Object Path
 boost::container::flat_map<uint8_t, std::string> devicePath;
 
@@ -131,7 +131,7 @@ void registerStorageFunctions() __attribute__((constructor));
 
 bool writeFru()
 {
-    if (writeBus == 0xFF && writeAddr == 0xFF)
+    if (writeBus == 0xFFFF && writeAddr == 0xFF)
     {
         return true;
     }
@@ -151,7 +151,7 @@ bool writeFru()
             "error writing fru");
         return false;
     }
-    writeBus = 0xFF;
+    writeBus = 0xFFFF;
     writeAddr = 0xFF;
     return true;
 }
@@ -188,7 +188,7 @@ void recalculateHashes()
             continue;
         }
 
-        uint8_t fruBus = std::get<uint32_t>(busFind->second);
+        uint16_t fruBus = std::get<uint32_t>(busFind->second);
         uint8_t fruAddr = std::get<uint32_t>(addrFind->second);
         auto chassisFind = fruIface->second.find("CHASSIS_TYPE");
         std::string chassisType;
@@ -207,7 +207,7 @@ void recalculateHashes()
                 fruHash = 1;
             }
         }
-        std::pair<uint8_t, uint8_t> newDev(fruBus, fruAddr);
+        std::pair<uint16_t, uint8_t> newDev(fruBus, fruAddr);
 
         bool emplacePassed = false;
         while (!emplacePassed)
@@ -350,7 +350,7 @@ ipmi::Cc getFru(ipmi::Context::ptr ctx, uint8_t devId)
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Couldn't get raw fru",
             phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
-        cacheBus = 0xFF;
+        cacheBus = 0xFFFF;
         cacheAddr = 0xFF;
         return ipmi::ccResponseError;
     }
@@ -638,7 +638,7 @@ ipmi_ret_t getFruSdrs(ipmi::Context::ptr ctx, size_t index,
         return IPMI_CC_INVALID_FIELD_REQUEST;
     }
     auto device = deviceHashes.begin() + index;
-    uint8_t& bus = device->second.first;
+    uint16_t& bus = device->second.first;
     uint8_t& address = device->second.second;
 
     boost::container::flat_map<std::string, DbusVariant>* fruData = nullptr;
