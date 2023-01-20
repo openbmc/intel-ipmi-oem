@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "443eecd8_1c7d0196",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2023-01-20T17:41:59Z",
+      "side": 1,
+      "message": "I couldn\u0027t find any useful information on why the build failed. It was the format-code shell, but I made sure clang-format ran before I pushed. It looks like there could be issues with the python test script?\n\n\u003e eslint: cannot find .eslintrc.json; using /data0/jenkins/workspace/ci-repository/openbmc/openbmc-build-scripts/config/eslint-global-config.json\n\u003e markdownlint: cannot find .markdownlint.yaml; using /data0/jenkins/workspace/ci-repository/openbmc/openbmc-build-scripts/config/markdownlint.yaml\n\u003e prettier: cannot find .prettierrc.yaml; using /data0/jenkins/workspace/ci-repository/openbmc/openbmc-build-scripts/config/prettierrc.yaml",
+      "revId": "b927bdf5893671dcdc644d7ce51fce39313e48d8",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
