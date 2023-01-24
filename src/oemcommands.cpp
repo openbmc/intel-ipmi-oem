@@ -1707,7 +1707,7 @@ ipmi::RspType<> ipmiOEMSetFanConfig(uint8_t selectedFanProfile,
         {
             return ipmi::responseInvalidFieldRequest();
         }
-        if (!cpuPresent("CPU_" + std::to_string(*dimmGroupId + 1)))
+        if (!cpuPresent("cpu" + std::to_string(*dimmGroupId)))
         {
             return ipmi::responseInvalidFieldRequest();
         }
@@ -1781,7 +1781,7 @@ ipmi::RspType<uint8_t, // profile support map
         return ipmi::responseInvalidFieldRequest();
     }
 
-    bool cpuStatus = cpuPresent("CPU_" + std::to_string(dimmGroupId + 1));
+    bool cpuStatus = cpuPresent("cpu" + std::to_string(dimmGroupId));
 
     if (!cpuStatus)
     {
