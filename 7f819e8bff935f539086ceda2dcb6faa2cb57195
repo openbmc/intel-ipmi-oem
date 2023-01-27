@@ -22,6 +22,30 @@
       },
       "revId": "7f819e8bff935f539086ceda2dcb6faa2cb57195",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2966b9b0_06e7b109",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1710,
+      "author": {
+        "id": 1000652
+      },
+      "writtenOn": "2023-01-27T13:49:29Z",
+      "side": 0,
+      "message": "It was working till bhs-0.15-62 and after that issue reported as there was many changes went through sdbusplus, dbus-sensors and changes related to ObjectMapper in phosphor-dbus-interfaces.\nBecause of that busctl ObjectMapper related to CPU got broke somewhere and with this change its working fine.",
+      "parentUuid": "db931a21_7bd06e9a",
+      "range": {
+        "startLine": 1710,
+        "startChar": 25,
+        "endLine": 1710,
+        "endChar": 29
+      },
+      "revId": "7f819e8bff935f539086ceda2dcb6faa2cb57195",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
