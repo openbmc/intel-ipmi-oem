@@ -28,7 +28,7 @@ constexpr int responseQueueMaxSize = 20;
  */
 constexpr uint8_t ipmbLunMask = 0x03;
 constexpr uint8_t ipmbSeqMask = 0x3F;
-constexpr uint8_t ipmbMeSlaveAddress = 0x2C;
+constexpr uint8_t ipmbMeTargetAddress = 0x2C;
 constexpr uint8_t ipmbMeChannelNum = 1;
 
 /**

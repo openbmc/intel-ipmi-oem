@@ -840,7 +840,7 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
     // Restricted commands, must be executed only in Manufacturing mode
     switch (makeCmdKey(request->ctx->netFn, request->ctx->cmd))
     {
-        // i2c master write read command needs additional checking
+        // i2c controller write read command needs additional checking
         case makeCmdKey(ipmi::netFnApp, ipmi::app::cmdMasterWriteRead):
             if (request->payload.size() > 4)
             {
@@ -1163,7 +1163,7 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
     return ipmi::responseSuccess(validData, ethData);
 }
 
-/** @brief implements slot master write read IPMI command which can be used
+/** @brief implements slot controller write read IPMI command which can be used
  * for low-level I2C/SMBus write, read or write-read access for PCIE slots
  * @param reserved - skip 3 bit
  * @param muxType - mux type
@@ -1171,16 +1171,16 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
  * @param bbSlotNum - baseboard slot number
  * @param riserSlotNum - riser slot number
  * @param reserved2 - skip 2 bit
- * @param slaveAddr - slave address
+ * @param targetAddr - target address
  * @param readCount - number of bytes to be read
  * @param writeData - data to be written
  *
  * @returns IPMI completion code plus response data
  */
 
-ipmi::RspType<std::vector<uint8_t>> appSlotI2CMasterWriteRead(
+ipmi::RspType<std::vector<uint8_t>> appSlotI2CControllerWriteRead(
     uint3_t reserved, uint3_t muxType, uint2_t addressType, uint3_t bbSlotNum,
-    uint3_t riserSlotNum, uint2_t reserved2, uint8_t slaveAddr,
+    uint3_t riserSlotNum, uint2_t reserved2, uint8_t targetAddr,
     uint8_t readCount, std::vector<uint8_t> writeData)
 {
     if (reserved || reserved2)
@@ -1226,7 +1226,7 @@ ipmi::RspType<std::vector<uint8_t>> appSlotI2CMasterWriteRead(
         }
         else
         {
-            lg2::error("Master write read command: Cannot get BusID");
+            lg2::error("Controller write read command: Cannot get BusID");
             return ipmi::responseInvalidFieldRequest();
         }
     }
@@ -1238,7 +1238,7 @@ ipmi::RspType<std::vector<uint8_t>> appSlotI2CMasterWriteRead(
     }
     else
     {
-        lg2::error("Master write read command: invalid request");
+        lg2::error("Controller write read command: invalid request");
         return ipmi::responseInvalidFieldRequest();
     }
 
@@ -1254,19 +1254,20 @@ ipmi::RspType<std::vector<uint8_t>> appSlotI2CMasterWriteRead(
 
     if (readCount > slotI2CMaxReadSize)
     {
-        lg2::error("Master write read command: Read count exceeds limit");
+        lg2::error("Controller write read command: Read count exceeds limit");
         return ipmi::responseParmOutOfRange();
     }
 
     if (!readCount && !writeCount)
     {
-        lg2::error("Master write read command: Read & write count are 0");
+        lg2::error("Controller write read command: Read & write count are 0");
         return ipmi::responseInvalidFieldRequest();
     }
 
     std::vector<uint8_t> readBuf(readCount);
 
-    ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
+    ipmi::Cc retI2C =
+        ipmi::i2cWriteRead(i2cBus, targetAddr, writeData, readBuf);
     if (retI2C != ipmi::ccSuccess)
     {
         return ipmi::response(retI2C);
@@ -1277,15 +1278,16 @@ ipmi::RspType<std::vector<uint8_t>> appSlotI2CMasterWriteRead(
 
 ipmi::RspType<> clearCMOS()
 {
-    // There is an i2c device on bus 4, the slave address is 0x38. Based on
+    // There is an i2c device on bus 4, the target address is 0x38. Based on
     // the spec, writing 0x1 to address 0x61 on this device, will trigger
     // the clear CMOS action.
-    constexpr uint8_t slaveAddr = 0x38;
+    constexpr uint8_t targetAddr = 0x38;
     std::string i2cBus = "/dev/i2c-4";
     std::vector<uint8_t> writeData = {0x61, 0x1};
     std::vector<uint8_t> readBuf(0);
 
-    ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
+    ipmi::Cc retI2C =
+        ipmi::i2cWriteRead(i2cBus, targetAddr, writeData, readBuf);
     return ipmi::response(retI2C);
 }
 
@@ -1522,9 +1524,9 @@ void register_mtm_commands()
                           ipmi::Privilege::Admin, ipmi::mtmBMCFeatureControl);
 
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnApp,
-                          ipmi::intel::general::cmdSlotI2CMasterWriteRead,
+                          ipmi::intel::general::cmdSlotI2CControllerWriteRead,
                           ipmi::Privilege::Admin,
-                          ipmi::appSlotI2CMasterWriteRead);
+                          ipmi::appSlotI2CControllerWriteRead);
 
     ipmi::registerHandler(ipmi::prioOemBase, ipmi::intel::netFnPlatform,
                           ipmi::intel::platform::cmdClearCMOS,
