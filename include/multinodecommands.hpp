@@ -24,7 +24,7 @@ static constexpr const char* multiNodeIntf =
 enum class NodeRole : uint8_t
 {
     single,
-    master,
-    slave,
+    controller,
+    target,
     arbitrating
 };

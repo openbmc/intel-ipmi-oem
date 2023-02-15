@@ -1331,7 +1331,7 @@ std::vector<uint8_t> getNMDiscoverySDR(uint16_t index, uint16_t recordId)
         nm.oemID2 = 0x0;
         nm.subType = 0x0D;
         nm.version = 0x1;
-        nm.slaveAddress = 0x2C;
+        nm.targetAddress = 0x2C;
         nm.channelNumber = 0x60;
         nm.healthEventSensor = 0x19;
         nm.exceptionEventSensor = 0x18;

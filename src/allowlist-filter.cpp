@@ -449,7 +449,7 @@ ipmi::Cc AllowlistFilter::filterMessage(ipmi::message::Request::ptr request)
             Allowlisted = false;
             break;
         }
-        default: // for Allowlist and blacklist
+        default: // for Allowlist and Blocklist
             return ipmi::ccInsufficientPrivilege;
     }
 

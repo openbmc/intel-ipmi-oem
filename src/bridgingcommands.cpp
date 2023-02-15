@@ -213,14 +213,14 @@ static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
     constexpr uint8_t cmdMeOemReadMemSmbus = 0x47;
     constexpr uint8_t cmdMeOemWriteMemSmbus = 0x48;
     constexpr uint8_t cmdMeOemSlotIpmb = 0x51;
-    constexpr uint8_t cmdMeOemSlotI2cMasterWriteRead = 0x52;
+    constexpr uint8_t cmdMeOemSlotI2cControllerWriteRead = 0x52;
     constexpr uint8_t cmdMeOemSendRawPmbus = 0xD9;
     constexpr uint8_t cmdMeOemUnlockMeRegion = 0xE7;
     constexpr uint8_t cmdMeOemAggSendRawPmbus = 0xEC;
 
     switch (makeCmdKey(netFn, cmd))
     {
-        // Restrict ME Master write command
+        // Restrict ME Controller write command
         case makeCmdKey(ipmi::netFnApp, ipmi::app::cmdMasterWriteRead):
         // Restrict ME OEM commands
         case makeCmdKey(netFnMeOEM, cmdMeOemSendRawPeci):
@@ -230,7 +230,7 @@ static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
         case makeCmdKey(netFnMeOEM, cmdMeOemReadMemSmbus):
         case makeCmdKey(netFnMeOEM, cmdMeOemWriteMemSmbus):
         case makeCmdKey(netFnMeOEMGeneral, cmdMeOemSlotIpmb):
-        case makeCmdKey(netFnMeOEMGeneral, cmdMeOemSlotI2cMasterWriteRead):
+        case makeCmdKey(netFnMeOEMGeneral, cmdMeOemSlotI2cControllerWriteRead):
         case makeCmdKey(netFnMeOEM, cmdMeOemSendRawPmbus):
         case makeCmdKey(netFnMeOEM, cmdMeOemUnlockMeRegion):
         case makeCmdKey(netFnMeOEM, cmdMeOemAggSendRawPmbus):
@@ -264,7 +264,7 @@ ipmi::Cc Bridging::handleIpmbChannel(ipmi::Context::ptr ctx,
     auto sendMsgReqData = reinterpret_cast<const ipmbHeader*>(msgData.data());
 
     // allow bridging to ME only
-    if (sendMsgReqData->Header.Req.address != ipmbMeSlaveAddress)
+    if (sendMsgReqData->Header.Req.address != ipmbMeTargetAddress)
     {
         phosphor::logging::log<phosphor::logging::level::INFO>(
             "handleIpmbChannel, IPMB address invalid");

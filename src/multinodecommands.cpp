@@ -62,9 +62,9 @@ std::optional<uint8_t> getMultiNodeRole()
         if (valueStr == "single")
             value = static_cast<uint8_t>(NodeRole::single);
         else if (valueStr == "master")
-            value = static_cast<uint8_t>(NodeRole::master);
+            value = static_cast<uint8_t>(NodeRole::controller);
         else if (valueStr == "slave")
-            value = static_cast<uint8_t>(NodeRole::slave);
+            value = static_cast<uint8_t>(NodeRole::target);
         else if (valueStr == "arbitrating")
             value = static_cast<uint8_t>(NodeRole::arbitrating);
         else
