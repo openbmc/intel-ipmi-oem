@@ -99,7 +99,7 @@ struct FRUHeader
 struct Type12Record
 {
     get_sdr::SensorDataRecordHeader header;
-    uint8_t slaveAddress;
+    uint8_t targetAddress;
     uint8_t channelNumber;
     uint8_t powerStateNotification;
     uint8_t deviceCapabilities;
@@ -116,7 +116,7 @@ struct Type12Record
                  uint8_t pwrStateNotification, uint8_t capabilities,
                  uint8_t eid, uint8_t entityInst, uint8_t mfrDefined,
                  const std::string& sensorname) :
-        slaveAddress(address),
+        targetAddress(address),
         channelNumber(chNumber), powerStateNotification(pwrStateNotification),
         deviceCapabilities(capabilities), reserved{}, entityID(eid),
         entityInstance(entityInst), oem(mfrDefined)
@@ -143,7 +143,7 @@ struct NMDiscoveryRecord
     uint8_t oemID2;
     uint8_t subType;
     uint8_t version;
-    uint8_t slaveAddress;
+    uint8_t targetAddress;
     uint8_t channelNumber;
     uint8_t healthEventSensor;
     uint8_t exceptionEventSensor;

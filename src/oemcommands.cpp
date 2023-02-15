@@ -171,7 +171,7 @@ namespace mailbox
 {
 static uint8_t bus = 4;
 static std::string i2cBus = "/dev/i2c-" + std::to_string(bus);
-static uint8_t slaveAddr = 56;
+static uint8_t targetAddr = 56;
 static constexpr auto systemRoot = "/xyz/openbmc_project/inventory/system";
 static constexpr auto sessionIntf = "xyz.openbmc_project.Configuration.PFR";
 const std::string match = "Baseboard/PFR";
@@ -258,7 +258,7 @@ void loadPfrConfig(ipmi::Context::ptr& ctx, bool& i2cConfigLoaded)
 
         bus = static_cast<int>(*i2cBusNum);
         i2cBus = "/dev/i2c-" + std::to_string(bus);
-        slaveAddr = static_cast<int>(*address);
+        targetAddr = static_cast<int>(*address);
 
         i2cConfigLoaded = true;
     }
@@ -270,7 +270,7 @@ void writefifo(const uint8_t cmdReg, const uint8_t val)
     // trigger the write FIFO operation.
     std::vector<uint8_t> writeData = {cmdReg, val};
     std::vector<uint8_t> readBuf(0);
-    ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, slaveAddr, writeData, readBuf);
+    ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, targetAddr, writeData, readBuf);
 }
 
 } // namespace mailbox
@@ -809,7 +809,7 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
 ipmi::RspType<uint8_t, std::vector<uint8_t>>
     ipmiOEMSlotIpmb(ipmi::Context::ptr ctx, uint6_t reserved1,
                     uint2_t slotNumber, uint3_t baseBoardSlotNum,
-                    uint3_t riserSlotNum, uint2_t reserved2, uint8_t slaveAddr,
+                    uint3_t riserSlotNum, uint2_t reserved2, uint8_t targetAddr,
                     uint8_t netFn, uint8_t cmd,
                     std::optional<std::vector<uint8_t>> writeData)
 {
@@ -825,7 +825,7 @@ ipmi::RspType<uint8_t, std::vector<uint8_t>>
         ctx->yield, ec, "xyz.openbmc_project.Ipmi.Channel.Ipmb",
         "/xyz/openbmc_project/Ipmi/Channel/Ipmb", "org.openbmc.Ipmb",
         "SlotIpmbRequest", static_cast<uint8_t>(slotNumber),
-        static_cast<uint8_t>(baseBoardSlotNum), slaveAddr, netFn, cmd,
+        static_cast<uint8_t>(baseBoardSlotNum), targetAddr, netFn, cmd,
         *writeData);
     if (ec)
     {
@@ -3720,11 +3720,11 @@ ipmi::RspType<std::vector<uint8_t>> ipmiOEMGetPSUVersion(ipmi::Context::ptr ctx)
         return ipmi::responseResponseError();
     }
 
-    for (const auto& slaveAddr : addrTable)
+    for (const auto& targetAddr : addrTable)
     {
         std::vector<uint8_t> writeData = {psuRevision};
         std::vector<uint8_t> readBuf(verLen);
-        uint8_t addr = static_cast<uint8_t>(slaveAddr) + addrOffset;
+        uint8_t addr = static_cast<uint8_t>(targetAddr) + addrOffset;
         std::string i2cBus = "/dev/i2c-" + std::to_string(bus);
 
         auto retI2C = ipmi::i2cWriteRead(i2cBus, addr, writeData, readBuf);
@@ -3879,7 +3879,7 @@ ipmi::RspType<std::vector<uint8_t>>
     {
 
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Calling PFR Load Configuration Function to Get I2C Bus and Slave "
+            "Calling PFR Load Configuration Function to Get I2C Bus and Target "
             "Address ");
 
         ipmi::mailbox::loadPfrConfig(ctx, ipmi::mailbox::i2cConfigLoaded);
@@ -3923,7 +3923,7 @@ ipmi::RspType<std::vector<uint8_t>>
                 {
 
                     ipmi::Cc ret = ipmi::i2cWriteRead(ipmi::mailbox::i2cBus,
-                                                      ipmi::mailbox::slaveAddr,
+                                                      ipmi::mailbox::targetAddr,
                                                       writeData, readBuf);
                     if (ret != ipmi::ccSuccess)
                     {
@@ -3952,7 +3952,7 @@ ipmi::RspType<std::vector<uint8_t>>
             std::vector<uint8_t> readBuf(numOfBytes);
 
             ipmi::Cc ret = ipmi::i2cWriteRead(ipmi::mailbox::i2cBus,
-                                              ipmi::mailbox::slaveAddr,
+                                              ipmi::mailbox::targetAddr,
                                               writeData, readBuf);
             if (ret != ipmi::ccSuccess)
             {
