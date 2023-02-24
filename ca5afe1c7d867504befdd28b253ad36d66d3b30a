@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "86153539_a4a210de",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-02-24T00:01:32Z",
+      "side": 1,
+      "message": "terminology",
+      "range": {
+        "startLine": 7,
+        "startChar": 7,
+        "endLine": 7,
+        "endChar": 18
+      },
+      "revId": "ca5afe1c7d867504befdd28b253ad36d66d3b30a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "26d259f6_5b4858ae",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-02-24T00:01:32Z",
+      "side": 1,
+      "message": "need a Tested: line. Tell us how you tested these changes.",
+      "revId": "ca5afe1c7d867504befdd28b253ad36d66d3b30a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "642c70b9_3bbe45d0",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-02-24T00:01:32Z",
+      "side": 1,
+      "message": "Code looks good. Please update the commit message.",
+      "revId": "ca5afe1c7d867504befdd28b253ad36d66d3b30a",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
