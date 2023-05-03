@@ -19,7 +19,7 @@ namespace bios
  * For example
  *  <option text="TIS" value="0x0"/>
  */
-using OptionType = std::tuple<std::string, ipmi::DbusVariant>;
+using OptionType = std::tuple<std::string, ipmi::DbusVariant, std::string>;
 
 /* Can hold one 'options'
  * For example
@@ -680,7 +680,7 @@ class Xml
 
                 for (auto& option : knob.options)
                 {
-                    options.emplace_back(text, option.value);
+                    options.emplace_back(text, option.value, option.text);
                 }
 
                 bios::BiosBaseTableTypeEntry baseTableEntry = std::make_tuple(
