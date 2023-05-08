@@ -686,7 +686,7 @@ class Xml
                 bios::BiosBaseTableTypeEntry baseTableEntry = std::make_tuple(
                     "xyz.openbmc_project.BIOSConfig.Manager.AttributeType."
                     "Enumeration",
-                    false, knob.nameStr, knob.descriptionStr, "./",
+                    false, knob.promptStr, knob.descriptionStr, "./",
                     knob.currentValStr, knob.defaultStr, options);
 
                 baseTable.emplace(knob.nameStr, baseTableEntry);
