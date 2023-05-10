@@ -82,8 +82,8 @@ static inline bool defaultMessageHook(const std::string& ipmiRaw)
     // Log the record as a default Redfish message instead of a SEL record
 
     static const std::string openBMCMessageRegistryVersion("0.1");
-    std::string messageID =
-        "OpenBMC." + openBMCMessageRegistryVersion + ".SELEntryAdded";
+    std::string messageID = "OpenBMC." + openBMCMessageRegistryVersion +
+                            ".SELEntryAdded";
 
     std::vector<std::string> messageArgs;
     messageArgs.push_back(ipmiRaw);

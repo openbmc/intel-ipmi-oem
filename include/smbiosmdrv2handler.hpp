@@ -34,11 +34,11 @@ static constexpr const int firstAgentIndex = 1;
 
 static constexpr const uint8_t maxDirEntries = 4; // Maximum directory entries
 static constexpr const uint32_t mdr2SMSize =
-    0x00100000; // Size of VGA share memory
+    0x00100000;                                   // Size of VGA share memory
 static constexpr const uint32_t mdr2SMBaseAddress =
     0x9FF00000; // Base address of VGA share memory
 
-static constexpr const uint8_t mdrTypeII = 2; // MDR V2 type
+static constexpr const uint8_t mdrTypeII = 2;          // MDR V2 type
 
 static constexpr const uint8_t mdr2Version = 2;        // MDR V2 versoin
 static constexpr const uint8_t smbiosAgentVersion = 1; // Agent version of
@@ -49,15 +49,15 @@ static constexpr const uint32_t pageMask =
 static constexpr const int smbiosDirIndex = 0; // SMBIOS directory index
 
 static constexpr const uint32_t smbiosTableVersion =
-    15; // Version of smbios table
+    15;          // Version of smbios table
 static constexpr const uint32_t smbiosTableTimestamp =
-    0x45464748; // Time stamp when smbios table created
+    0x45464748;  // Time stamp when smbios table created
 static constexpr const size_t smbiosSMMemoryOffset =
-    0; // Offset of VGA share memory
+    0;           // Offset of VGA share memory
 static constexpr const size_t smbiosSMMemorySize =
     1024 * 1024; // Total size of VGA share memory
 static constexpr const size_t smbiosTableStorageSize =
-    64 * 1024; // Total size of smbios table
+    64 * 1024;   // Total size of smbios table
 static constexpr const uint32_t defaultTimeout = 4000;
 static constexpr const uint16_t sysClock = 1000;
 static constexpr const int lastAgentIndex = -1;

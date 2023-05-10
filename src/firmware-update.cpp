@@ -212,8 +212,7 @@ class TransferHashCheck
         check = HashCheck::requested;
     }
 
-    ~TransferHashCheck()
-    {}
+    ~TransferHashCheck() {}
 
     bool hash(const std::vector<uint8_t>& data)
     {
@@ -381,29 +380,29 @@ class FwUpdateStatusCache
             sdbusplus::bus::match::rules::propertiesChanged(
                 objPath, "xyz.openbmc_project.Software.ActivationProgress"),
             [&](sdbusplus::message_t& msg) {
-                std::map<std::string, ipmi::DbusVariant> props;
-                std::vector<std::string> inVal;
-                std::string iface;
-                try
-                {
-                    msg.read(iface, props, inVal);
-                }
-                catch (const std::exception& e)
-                {
-                    phosphor::logging::log<phosphor::logging::level::ERR>(
-                        "Exception caught in get ActivationProgress");
-                    return;
-                }
+            std::map<std::string, ipmi::DbusVariant> props;
+            std::vector<std::string> inVal;
+            std::string iface;
+            try
+            {
+                msg.read(iface, props, inVal);
+            }
+            catch (const std::exception& e)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Exception caught in get ActivationProgress");
+                return;
+            }
 
-                auto it = props.find("Progress");
-                if (it != props.end())
+            auto it = props.find("Progress");
+            if (it != props.end())
+            {
+                progressPercent = std::get<uint8_t>(it->second);
+                if (progressPercent == 100)
                 {
-                    progressPercent = std::get<uint8_t>(it->second);
-                    if (progressPercent == 100)
-                    {
-                        fwUpdateState = fwStateUpdateSuccess;
-                    }
+                    fwUpdateState = fwStateUpdateSuccess;
                 }
+            }
             });
     }
     uint8_t activationTimerTimeout()
@@ -466,12 +465,12 @@ static void activateImage(const std::string& objPath)
         std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
         bus->async_method_call(
             [](const boost::system::error_code ec) {
-                if (ec)
-                {
-                    phosphor::logging::log<phosphor::logging::level::ERR>(
-                        "async_method_call error: activateImage failed");
-                    return;
-                }
+            if (ec)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "async_method_call error: activateImage failed");
+                return;
+            }
             },
             "xyz.openbmc_project.Software.BMC.Updater", objPath,
             "org.freedesktop.DBus.Properties", "Set",
@@ -510,7 +509,6 @@ static bool getFirmwareUpdateMode()
 
 static void setFirmwareUpdateMode(const bool mode)
 {
-
     std::string bmcState(bmcStateReady);
     if (mode)
     {
@@ -1064,7 +1062,7 @@ static constexpr uint8_t channelListSize = 3;
  *   - count - channel count
  *   - channelList - channel list information
  */
-ipmi::RspType<uint8_t, // channel count
+ipmi::RspType<uint8_t,                    // channel count
               std::array<std::tuple<uint8_t, uint32_t>,
                          channelListSize> // Channel List
               >
@@ -1671,8 +1669,8 @@ ipmi::RspType<uint32_t>
 static void registerFirmwareFunctions()
 {
     // guarantee that we start with an already timed out timestamp
-    fwRandomNumGenTs =
-        std::chrono::steady_clock::now() - fwRandomNumExpirySeconds;
+    fwRandomNumGenTs = std::chrono::steady_clock::now() -
+                       fwRandomNumExpirySeconds;
     fwUpdateStatus.setState(
         static_cast<uint8_t>(FwUpdateStatusCache::fwStateInit));
 

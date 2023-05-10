@@ -136,9 +136,9 @@ IpmbRequest::IpmbRequest(const ipmbHeader* ipmbBuffer, size_t bufferLength)
     rqLun = ipmbLunFromSeqLunGet(ipmbBuffer->Header.Req.rqSeqLUN);
     cmd = ipmbBuffer->Header.Req.cmd;
 
-    size_t dataLength =
-        bufferLength - (ipmbConnectionHeaderLength +
-                        ipmbRequestDataHeaderLength + ipmbChecksumSize);
+    size_t dataLength = bufferLength -
+                        (ipmbConnectionHeaderLength +
+                         ipmbRequestDataHeaderLength + ipmbChecksumSize);
 
     if (dataLength > 0)
     {
@@ -323,9 +323,9 @@ ipmi::Cc Bridging::handleIpmbChannel(ipmi::Context::ptr ctx,
 
     std::tie(status, netFn, lun, cmd, cc, dataReceived) = ipmbResponse;
 
-    auto respReceived =
-        IpmbResponse(ipmbRequest.rqSA, netFn, lun, ipmbRequest.address,
-                     ipmbRequest.seq, lun, cmd, cc, dataReceived);
+    auto respReceived = IpmbResponse(ipmbRequest.rqSA, netFn, lun,
+                                     ipmbRequest.address, ipmbRequest.seq, lun,
+                                     cmd, cc, dataReceived);
 
     // check IPMB layer status
     if (status)
@@ -688,10 +688,10 @@ using systemEventType = std::tuple<
     bool,     // Event Direction
     std::array<uint8_t, intel_oem::ipmi::sel::systemEventSize>>; // Event Data
 using oemTsEventType = std::tuple<
-    uint32_t,                                                   // Timestamp
-    std::array<uint8_t, intel_oem::ipmi::sel::oemTsEventSize>>; // Event Data
+    uint32_t,                                                    // Timestamp
+    std::array<uint8_t, intel_oem::ipmi::sel::oemTsEventSize>>;  // Event Data
 using oemEventType =
-    std::array<uint8_t, intel_oem::ipmi::sel::oemEventSize>; // Event Data
+    std::array<uint8_t, intel_oem::ipmi::sel::oemEventSize>;     // Event Data
 
 /** @brief implements of Read event message buffer command
  *
@@ -707,8 +707,8 @@ using oemEventType =
  *   - eventDir - Event Direction
  *   - eventData - Event Data field
  */
-ipmi::RspType<uint16_t, // Record ID
-              uint8_t,  // Record Type
+ipmi::RspType<uint16_t,                   // Record ID
+              uint8_t,                    // Record Type
               std::variant<systemEventType, oemTsEventType,
                            oemEventType>> // Record Content
     ipmiAppReadEventMessageBuffer(ipmi::Context::ptr ctx)

@@ -738,7 +738,6 @@ ipmi::RspType<> mdr2SendDataBlock(uint16_t agentId, uint16_t lockHandle,
                                   uint32_t xferOffset, uint32_t xferLength,
                                   uint32_t checksum)
 {
-
     if (mdrv2 == nullptr)
     {
         mdrv2 = std::make_unique<MDRV2>();
@@ -786,8 +785,8 @@ ipmi::RspType<> mdr2SendDataBlock(uint16_t agentId, uint16_t lockHandle,
                 "Offset is out of range");
             return ipmi::responseParmOutOfRange();
         }
-        uint8_t* destAddr =
-            mdrv2->smbiosDir.dir[idIndex].dataStorage + xferOffset;
+        uint8_t* destAddr = mdrv2->smbiosDir.dir[idIndex].dataStorage +
+                            xferOffset;
         uint8_t* sourceAddr = reinterpret_cast<uint8_t*>(mdrv2->area->vPtr);
         uint32_t calcChecksum = mdrv2->calcChecksum32(sourceAddr, xferLength);
         if (calcChecksum != checksum)
@@ -1144,8 +1143,8 @@ ipmi::RspType<uint8_t, uint16_t>
     {
         try
         {
-            mdrv2->area =
-                std::make_unique<SharedMemoryArea>(xferAddress, xferLength);
+            mdrv2->area = std::make_unique<SharedMemoryArea>(xferAddress,
+                                                             xferLength);
         }
         catch (const std::system_error& e)
         {
@@ -1187,7 +1186,6 @@ ipmi::RspType<uint8_t, uint16_t>
 **/
 ipmi::RspType<> cmd_mdr2_data_done(uint16_t agentId, uint16_t lockHandle)
 {
-
     if (mdrv2 == nullptr)
     {
         mdrv2 = std::make_unique<MDRV2>();
