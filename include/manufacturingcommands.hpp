@@ -152,8 +152,18 @@ enum SupportedFeatureControls : uint8_t
 {
     mctp = 0,
     pcieScan,
+    mctpSlotSupport
 };
 
+enum SupportedFeatureMuxs : uint8_t
+{
+    pcieMuxSlot = 0,
+    pcieMcioMuxSlot,
+    pcieM2EdSffMuxSlot,
+    leftRaiserMuxSlot,
+    rightRaiserMuxSlot,
+    HsbpMuxSlot
+};
 enum SupportedFeatureActions : uint8_t
 {
     stop = 0,
