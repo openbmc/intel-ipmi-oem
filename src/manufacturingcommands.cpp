@@ -24,9 +24,9 @@
 #include <phosphor-logging/lg2.hpp>
 #include <types.hpp>
 
+#include <charconv>
 #include <filesystem>
 #include <fstream>
-
 namespace ipmi
 {
 
@@ -1438,6 +1438,107 @@ static ipmi::RspType<> handleMCTPFeature(ipmi::Context::ptr& ctx,
     return ipmi::responseSuccess();
 }
 
+static bool isNum(const std::string& s)
+{
+    if (s.empty())
+    {
+        return false;
+    }
+    uint8_t busNumber;
+    const auto sEnd = s.data() + s.size();
+    const auto& [ptr, ec] = std::from_chars(s.data(), sEnd, busNumber);
+    if (ec == std::errc() || ptr == sEnd)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool getBusNumFromPath(const std::string& path, std::string& busStr)
+{
+    std::vector<std::string> parts;
+    boost::split(parts, path, boost::is_any_of("-"));
+    if (parts.size() == 2)
+    {
+        busStr = parts[1];
+        if (isNum(busStr))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+static ipmi::RspType<> muxSlotDisable(ipmi::Context::ptr& ctx,
+                                      std::string service, std::string muxName,
+                                      uint8_t action, uint8_t slotNum)
+{
+    boost::system::error_code ec;
+    const std::filesystem::path muxSymlinkDirPath =
+        "/dev/i2c-mux/" + muxName + "/Slot_" + std::to_string(slotNum + 1);
+    if (!std::filesystem::is_symlink(muxSymlinkDirPath))
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+    std::string linkPath = std::filesystem::read_symlink(muxSymlinkDirPath);
+
+    std::string portNum;
+    if (!getBusNumFromPath(linkPath, portNum))
+    {
+        return ipmi::responseInvalidFieldRequest();
+    }
+    auto res = ctx->bus->yield_method_call<int>(
+        ctx->yield, ec, service, mctpObjPath, mctpBaseIntf, "SkipList",
+        std::vector<uint8_t>{action, static_cast<uint8_t>(std::stoi(portNum))});
+    if (ec)
+    {
+        lg2::error("Failed to set mctp skiplist");
+        return ipmi::responseUnspecifiedError();
+    }
+
+    if (!res)
+    {
+        return ipmi::responseResponseError();
+    }
+    return ipmi::responseSuccess();
+}
+
+static ipmi::RspType<> handleMCTPSlotFeature(ipmi::Context::ptr& ctx,
+                                             const uint8_t enable,
+                                             const uint8_t featureArg)
+{
+    uint8_t slotNum = (featureArg & slotNumMask);
+    switch ((featureArg & muxTypeMask) >> muxTypeShift)
+    {
+        case ipmi::SupportedFeatureMuxs::pcieMuxSlot:
+            return muxSlotDisable(ctx, mctpPcieSlotService, "PCIe_Mux", enable,
+                                  slotNum);
+            break;
+        case ipmi::SupportedFeatureMuxs::pcieMcioMuxSlot:
+            return muxSlotDisable(ctx, mctpPcieSlotService, "PCIe_MCIO_Mux",
+                                  enable, slotNum);
+            break;
+        case ipmi::SupportedFeatureMuxs::pcieM2EdSffMuxSlot:
+            return muxSlotDisable(ctx, mctpPcieSlotService, "M2_EDSFF_Mux",
+                                  enable, slotNum);
+            break;
+        case ipmi::SupportedFeatureMuxs::leftRaiserMuxSlot:
+            return muxSlotDisable(ctx, mctpPcieSlotService, "Left_Riser_Mux",
+                                  enable, slotNum);
+            break;
+        case ipmi::SupportedFeatureMuxs::rightRaiserMuxSlot:
+            return muxSlotDisable(ctx, mctpPcieSlotService, "Right_Riser_Mux",
+                                  enable, slotNum);
+            break;
+        case ipmi::SupportedFeatureMuxs::HsbpMuxSlot:
+            muxSlotDisable(ctx, mctpHsbpService, "HSBP_Mux", enable, slotNum);
+            break;
+        default:
+            lg2::warning("ERROR: Invalid Mux slot selected");
+            return ipmi::responseInvalidFieldRequest();
+    }
+}
+
 /** @brief implements MTM BMC Feature Control IPMI command which can be
  * used to enable or disable the supported BMC features.
  * @param yield - context object that represents the currently executing
@@ -1482,6 +1583,9 @@ ipmi::RspType<> mtmBMCFeatureControl(ipmi::Context::ptr ctx,
                 return ipmi::responseInvalidFieldRequest();
             }
             startOrStopService(ctx, enable, "xyz.openbmc_project.PCIe.service");
+            break;
+        case ipmi::SupportedFeatureControls::mctpSlotSupport:
+            return handleMCTPSlotFeature(ctx, enable, featureArg);
             break;
         default:
             return ipmi::responseInvalidFieldRequest();
