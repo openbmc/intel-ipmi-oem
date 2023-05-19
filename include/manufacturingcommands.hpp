@@ -70,6 +70,17 @@ static constexpr const char* specialModeObjPath =
 static constexpr const char* specialModeIntf =
     "xyz.openbmc_project.Security.SpecialMode";
 
+static constexpr const char* mctpPcieSlotService =
+    "xyz.openbmc_project.MCTP_SMBus_PCIe_slot";
+static constexpr const char* mctpHsbpService =
+    "xyz.openbmc_project.MCTP_SMBus_HSBP";
+static constexpr const char* mctpObjPath = "/xyz/openbmc_project/mctp";
+static constexpr const char* mctpBaseIntf = "xyz.openbmc_project.MCTP.Base";
+
+constexpr const uint8_t slotNumMask = 0x0F;
+constexpr const uint8_t muxTypeMask = 0xF0;
+constexpr const uint8_t muxTypeShift = 4;
+
 enum class SpecialMode : uint8_t
 {
     none = 0,
@@ -152,6 +163,17 @@ enum SupportedFeatureControls : uint8_t
 {
     mctp = 0,
     pcieScan,
+    mctpSlotSupport
+};
+
+enum SupportedFeatureMuxs : uint8_t
+{
+    pcieMuxSlot = 0,
+    pcieMcioMuxSlot,
+    pcieM2EdSffMuxSlot,
+    leftRaiserMuxSlot,
+    rightRaiserMuxSlot,
+    HsbpMuxSlot
 };
 
 enum SupportedFeatureActions : uint8_t
