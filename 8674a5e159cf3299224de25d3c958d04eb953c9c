@@ -39,6 +39,29 @@
       "message": "constexpr const uint8_t slotNumMask \u003d 0x0F;\nconstexpr const uint8_t muxTypeMask \u003d 0xF0;\nconstexpr const uint8_t muxTypeShift \u003d 4;\n\nUse the above instead of magic numbers..",
       "revId": "8674a5e159cf3299224de25d3c958d04eb953c9c",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "118ae6e5_82b4b947",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1505,
+      "author": {
+        "id": 1000479
+      },
+      "writtenOn": "2023-05-22T09:36:56Z",
+      "side": 1,
+      "message": "May be use a local variable to store this long repetitive string.",
+      "range": {
+        "startLine": 1505,
+        "startChar": 0,
+        "endLine": 1505,
+        "endChar": 77
+      },
+      "revId": "8674a5e159cf3299224de25d3c958d04eb953c9c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
