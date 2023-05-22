@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "54e632c7_00d19cb9",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1499,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2023-05-22T07:09:43Z",
+      "side": 1,
+      "message": "constexpr const uint8_t slotNumMask \u003d 0x0F;\nconstexpr const uint8_t muxTypeMask \u003d 0xF0;\nconstexpr const uint8_t muxTypeShift \u003d 4;\n\nUse the above instead of magic numbers..",
+      "revId": "8674a5e159cf3299224de25d3c958d04eb953c9c",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
