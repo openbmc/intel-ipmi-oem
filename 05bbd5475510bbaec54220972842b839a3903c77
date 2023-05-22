@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bdc55066_00764d84",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 1520,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2023-05-22T18:35:00Z",
+      "side": 1,
+      "message": "shouldn\u0027t this be return muxSlotDisable(ctx, mctpHsbpService, \"HSBP_Mux\", enable, slotNum); ?",
+      "revId": "05bbd5475510bbaec54220972842b839a3903c77",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
