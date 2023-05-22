@@ -16,6 +16,24 @@
       "message": "Clang-format is updated to latest and today i merged it.https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/63235\n\nIs this patch still required?",
       "revId": "9387b6f80e3998bf8ea10aa933568d6dc314e94e",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d24161ba_cbbdb71a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000410
+      },
+      "writtenOn": "2023-05-22T17:27:10Z",
+      "side": 1,
+      "message": "Not required..",
+      "parentUuid": "b52414ee_ab56f713",
+      "revId": "9387b6f80e3998bf8ea10aa933568d6dc314e94e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
