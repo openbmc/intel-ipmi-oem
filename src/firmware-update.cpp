@@ -1064,7 +1064,7 @@ static constexpr uint8_t channelListSize = 3;
  *   - count - channel count
  *   - channelList - channel list information
  */
-ipmi::RspType<uint8_t, // channel count
+ipmi::RspType<uint8_t,                    // channel count
               std::array<std::tuple<uint8_t, uint32_t>,
                          channelListSize> // Channel List
               >

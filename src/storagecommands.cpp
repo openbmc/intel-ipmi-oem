@@ -959,14 +959,14 @@ using systemEventType = std::tuple<
     bool,     // Event Direction
     std::array<uint8_t, intel_oem::ipmi::sel::systemEventSize>>; // Event Data
 using oemTsEventType = std::tuple<
-    uint32_t,                                                   // Timestamp
-    std::array<uint8_t, intel_oem::ipmi::sel::oemTsEventSize>>; // Event Data
+    uint32_t,                                                    // Timestamp
+    std::array<uint8_t, intel_oem::ipmi::sel::oemTsEventSize>>;  // Event Data
 using oemEventType =
-    std::array<uint8_t, intel_oem::ipmi::sel::oemEventSize>; // Event Data
+    std::array<uint8_t, intel_oem::ipmi::sel::oemEventSize>;     // Event Data
 
-ipmi::RspType<uint16_t, // Next Record ID
-              uint16_t, // Record ID
-              uint8_t,  // Record Type
+ipmi::RspType<uint16_t,                   // Next Record ID
+              uint16_t,                   // Record ID
+              uint8_t,                    // Record Type
               std::variant<systemEventType, oemTsEventType,
                            oemEventType>> // Record Content
     ipmiStorageGetSELEntry(uint16_t reservationID, uint16_t targetID,
