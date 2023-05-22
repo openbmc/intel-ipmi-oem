@@ -97,8 +97,8 @@ bool getIDState(const char* objName, bool& state)
     try
     {
         std::string service = LEDService.getService(*bus);
-        ipmi::Value enabled =
-            getDbusProperty(*bus, service, objName, ledInterface, ledProp);
+        ipmi::Value enabled = getDbusProperty(*bus, service, objName,
+                                              ledInterface, ledProp);
         state = std::get<bool>(enabled);
     }
     catch (const sdbusplus::exception_t& e)
@@ -227,8 +227,8 @@ std::optional<uint2_t> getPowerRestorePolicy()
 
     try
     {
-        auto service =
-            ipmi::getService(*busp, powerRestoreIntf, powerRestorePath);
+        auto service = ipmi::getService(*busp, powerRestoreIntf,
+                                        powerRestorePath);
 
         ipmi::Value result =
             ipmi::getDbusProperty(*busp, service, powerRestorePath,
@@ -277,8 +277,8 @@ std::optional<bool> getPowerStatus()
             "/xyz/openbmc_project/state/chassis0";
         constexpr const char* chassisStateIntf =
             "xyz.openbmc_project.State.Chassis";
-        auto service =
-            ipmi::getService(*busp, chassisStateIntf, chassisStatePath);
+        auto service = ipmi::getService(*busp, chassisStateIntf,
+                                        chassisStatePath);
 
         ipmi::Value variant =
             ipmi::getDbusProperty(*busp, service, chassisStatePath,
@@ -375,8 +375,8 @@ static bool getRestartCause(ipmi::Context::ptr& ctx, std::string& restartCause)
         "xyz.openbmc_project.Control.Host.RestartCause";
 
     std::string service;
-    boost::system::error_code ec =
-        ipmi::getService(ctx, restartCauseIntf, restartCausePath, service);
+    boost::system::error_code ec = ipmi::getService(ctx, restartCauseIntf,
+                                                    restartCausePath, service);
 
     if (!ec)
     {
@@ -420,10 +420,10 @@ ipmi::RspType<bool,    // Power is on
               uint2_t, // power restore policy
               bool,    // reserved
 
-              bool, // AC failed
-              bool, // last power down caused by a Power overload
-              bool, // last power down caused by a power interlock
-              bool, // last power down caused by power fault
+              bool,    // AC failed
+              bool,    // last power down caused by a Power overload
+              bool,    // last power down caused by a power interlock
+              bool,    // last power down caused by power fault
               bool, // last ‘Power is on’ state was entered via IPMI command
               uint3_t, // reserved
 
@@ -435,14 +435,14 @@ ipmi::RspType<bool,    // Power is on
               bool,    // Chassis Identify command and state info supported
               bool,    // reserved
 
-              bool, // Power off button disabled
-              bool, // Reset button disabled
-              bool, // Diagnostic Interrupt button disabled
-              bool, // Standby (sleep) button disabled
-              bool, // Power off button disable allowed
-              bool, // Reset button disable allowed
-              bool, // Diagnostic Interrupt button disable allowed
-              bool  // Standby (sleep) button disable allowed
+              bool,    // Power off button disabled
+              bool,    // Reset button disabled
+              bool,    // Diagnostic Interrupt button disabled
+              bool,    // Standby (sleep) button disabled
+              bool,    // Power off button disable allowed
+              bool,    // Reset button disable allowed
+              bool,    // Diagnostic Interrupt button disable allowed
+              bool     // Standby (sleep) button disable allowed
               >
     ipmiGetChassisStatus(ipmi::Context::ptr ctx)
 {

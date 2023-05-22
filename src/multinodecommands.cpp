@@ -33,8 +33,8 @@ std::optional<uint8_t> getMultiNodeInfo(std::string name)
     auto pdbus = getSdBus();
     try
     {
-        std::string service =
-            getService(*pdbus, multiNodeIntf, multiNodeObjPath);
+        std::string service = getService(*pdbus, multiNodeIntf,
+                                         multiNodeObjPath);
         Value dbusValue = getDbusProperty(*pdbus, service, multiNodeObjPath,
                                           multiNodeIntf, name);
         return std::get<uint8_t>(dbusValue);
@@ -53,8 +53,8 @@ std::optional<uint8_t> getMultiNodeRole()
     auto pdbus = getSdBus();
     try
     {
-        std::string service =
-            getService(*pdbus, multiNodeIntf, multiNodeObjPath);
+        std::string service = getService(*pdbus, multiNodeIntf,
+                                         multiNodeObjPath);
         Value dbusValue = getDbusProperty(*pdbus, service, multiNodeObjPath,
                                           multiNodeIntf, "NodeRole");
         std::string valueStr = std::get<std::string>(dbusValue);

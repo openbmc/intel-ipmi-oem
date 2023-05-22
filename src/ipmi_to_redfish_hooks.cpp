@@ -49,8 +49,8 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
     // Walk through the SEL request record to build the appropriate Redfish
     // message
     static constexpr std::string_view openBMCMessageRegistryVersion = "0.1";
-    std::string messageID =
-        "OpenBMC." + std::string(openBMCMessageRegistryVersion);
+    std::string messageID = "OpenBMC." +
+                            std::string(openBMCMessageRegistryVersion);
     std::vector<std::string> messageArgs;
     BIOSSensors sensor = static_cast<BIOSSensors>(selData.sensorNum);
     BIOSEventTypes eventType = static_cast<BIOSEventTypes>(selData.eventType);
@@ -296,8 +296,8 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
     }
     else
     {
-        std::string messageArgsString =
-            boost::algorithm::join(messageArgs, ",");
+        std::string messageArgsString = boost::algorithm::join(messageArgs,
+                                                               ",");
         phosphor::logging::log<phosphor::logging::level::INFO>(
             journalMsg.c_str(),
             phosphor::logging::entry("REDFISH_MESSAGE_ID=%s",
@@ -319,8 +319,8 @@ static bool biosSMIMessageHook(const SELData& selData,
     // Walk through the SEL request record to build the appropriate Redfish
     // message
     static constexpr std::string_view openBMCMessageRegistryVersion = "0.1";
-    std::string messageID =
-        "OpenBMC." + std::string(openBMCMessageRegistryVersion);
+    std::string messageID = "OpenBMC." +
+                            std::string(openBMCMessageRegistryVersion);
     std::vector<std::string> messageArgs;
     BIOSSMISensors sensor = static_cast<BIOSSMISensors>(selData.sensorNum);
     BIOSEventTypes eventType = static_cast<BIOSEventTypes>(selData.eventType);

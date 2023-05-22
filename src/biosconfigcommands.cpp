@@ -199,8 +199,8 @@ bool getPendingList(ipmi::Context::ptr ctx, std::string& payloadData)
         return false;
     }
 
-    std::string service =
-        getService(*dbus, biosConfigIntf, biosConfigBaseMgrPath);
+    std::string service = getService(*dbus, biosConfigIntf,
+                                     biosConfigBaseMgrPath);
 
     try
     {
@@ -404,19 +404,19 @@ static bool sendAllAttributes(std::string service)
         {
             pSdBusPlus->async_method_call(
                 [](const boost::system::error_code ec) {
-                    /* No more need to keep attributes data in memory */
-                    attributesData.clear();
+                /* No more need to keep attributes data in memory */
+                attributesData.clear();
 
-                    if (ec)
-                    {
-                        phosphor::logging::log<phosphor::logging::level::ERR>(
-                            "sendAllAttributes error: send all attributes - "
-                            "failed");
-                        return;
-                    }
+                if (ec)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "sendAllAttributes error: send all attributes - "
+                        "failed");
+                    return;
+                }
 
-                    phosphor::logging::log<phosphor::logging::level::INFO>(
-                        "sendAllAttributes: send all attributes - done");
+                phosphor::logging::log<phosphor::logging::level::INFO>(
+                    "sendAllAttributes: send all attributes - done");
                 },
                 service, biosConfigBaseMgrPath,
                 "org.freedesktop.DBus.Properties", "Set", biosConfigIntf,
@@ -496,12 +496,11 @@ static bool getPostCompleted()
  */
 static int getResetBIOSSettings(uint8_t& ResetFlag)
 {
-
     try
     {
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        std::string service =
-            getService(*dbus, biosConfigIntf, biosConfigBaseMgrPath);
+        std::string service = getService(*dbus, biosConfigIntf,
+                                         biosConfigBaseMgrPath);
         Value variant = getDbusProperty(*dbus, service, biosConfigBaseMgrPath,
                                         biosConfigIntf, resetBIOSSettingsProp);
 
@@ -604,7 +603,6 @@ static void generateAndSendAttributesData(std::string service,
 template <typename... ArgTypes>
 static int generateBIOSXMLFile(const char* path, ArgTypes&&... tArgs)
 {
-
     boost::process::child execProg(path, const_cast<char*>(tArgs)...,
                                    boost::process::std_out > biosXMLFilePath);
     execProg.wait();
@@ -644,7 +642,6 @@ static Cc InitNVOOBdata()
 
     if (ifs.good())
     {
-
         ifs.seekg(std::ios_base::beg);
         ifs.read(reinterpret_cast<char*>(&gNVOOBdata),
                  sizeof(struct NVOOBdata));
@@ -785,8 +782,8 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
                 return ipmi::response(ipmiCCPayloadChecksumFailed);
             }
             // store the data in temp file
-            std::string FilePath =
-                "/var/oob/temp" + std::to_string(payloadType);
+            std::string FilePath = "/var/oob/temp" +
+                                   std::to_string(payloadType);
 
             std::ofstream outFile(FilePath, std::ios::binary | std::ios::app);
             outFile.seekp(pPayloadInProgress->payloadOffset);
@@ -823,12 +820,12 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
             {
                 return ipmi::response(ipmiCCPayloadPayloadInComplete);
             }
-            std::string tempFilePath =
-                "/var/oob/temp" + std::to_string(payloadType);
-            std::string payloadFilePath =
-                "/var/oob/Payload" + std::to_string(payloadType);
-            auto renamestatus =
-                std::rename(tempFilePath.c_str(), payloadFilePath.c_str());
+            std::string tempFilePath = "/var/oob/temp" +
+                                       std::to_string(payloadType);
+            std::string payloadFilePath = "/var/oob/Payload" +
+                                          std::to_string(payloadType);
+            auto renamestatus = std::rename(tempFilePath.c_str(),
+                                            payloadFilePath.c_str());
             if (renamestatus)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -842,7 +839,6 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
                                                     payloadFilePath.c_str());
                 if (response)
                 {
-
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "ipmiOEMSetPayload: generateBIOSXMLFile - failed");
                     gNVOOBdata.payloadInfo[payloadType].payloadStatus =
@@ -907,8 +903,8 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr ctx,
             gNVOOBdata.payloadInfo[payloadType].payloadType = 0;
             gNVOOBdata.payloadInfo[payloadType].payloadTotalSize = 0;
             // Delete the temp file
-            std::string tempFilePath =
-                "/var/oob/temp" + std::to_string(payloadType);
+            std::string tempFilePath = "/var/oob/temp" +
+                                       std::to_string(payloadType);
             unlink(tempFilePath.c_str());
             flushNVOOBdata();
             return ipmi::responseSuccess();
@@ -960,8 +956,8 @@ ipmi::RspType<message::Payload>
     {
         case ipmi::GetPayloadParameter::GetPayloadInfo:
         {
-            std::string payloadFilePath =
-                "/var/oob/Payload" + std::to_string(payloadType);
+            std::string payloadFilePath = "/var/oob/Payload" +
+                                          std::to_string(payloadType);
 
             std::ifstream ifs(payloadFilePath,
                               std::ios::in | std::ios::binary | std::ios::ate);
@@ -999,8 +995,8 @@ ipmi::RspType<message::Payload>
                 }
                 uint32_t offset = reqData.at(0);
                 uint32_t length = reqData.at(1);
-                std::string payloadFilePath =
-                    "/var/oob/Payload" + std::to_string(payloadType);
+                std::string payloadFilePath = "/var/oob/Payload" +
+                                              std::to_string(payloadType);
 
                 if (length > static_cast<uint32_t>(maxGetPayloadDataSize))
                 {
@@ -1165,7 +1161,6 @@ ipmi::RspType<std::array<uint8_t, maxSeedSize>, uint8_t,
     uint8_t adminPwdChangedFlag = 0;
     if (!data.is_discarded())
     {
-
         adminPwdChangedFlag = data["IsAdminPwdChanged"];
         newAdminHash = data["AdminPwdHash"];
         seed = data["Seed"];

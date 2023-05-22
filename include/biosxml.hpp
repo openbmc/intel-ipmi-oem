@@ -120,8 +120,7 @@ struct knob
 class Depex
 {
   public:
-    Depex(std::vector<knob::knob>& knobs) : mKnobs(knobs)
-    {}
+    Depex(std::vector<knob::knob>& knobs) : mKnobs(knobs) {}
 
     /* Compute 'depex' expression of all knobs in 'biosknobs'. */
     void compute()
@@ -183,7 +182,7 @@ class Depex
 
     /* Returns 'true' if the argument string is hex representation of a number.
      */
-    bool isHexNotation(std::string const& s)
+    bool isHexNotation(const std::string& s)
     {
         return s.compare(0, 2, "0x") == 0 && s.size() > 2 &&
                s.find_first_not_of("0123456789abcdefABCDEF", 2) ==
@@ -203,8 +202,8 @@ class Depex
             }
         }
 
-        std::string error =
-            "Unable to find knob: " + variableName + " in knob list\n";
+        std::string error = "Unable to find knob: " + variableName +
+                            " in knob list\n";
         phosphor::logging::log<phosphor::logging::level::ERR>(error.c_str());
 
         return false;
@@ -658,8 +657,8 @@ class Xml
     {
         if (!getKnobs(filePath))
         {
-            std::string error =
-                "Unable to get knobs in file: " + std::string(filePath);
+            std::string error = "Unable to get knobs in file: " +
+                                std::string(filePath);
             throw std::runtime_error(error);
         }
     }
