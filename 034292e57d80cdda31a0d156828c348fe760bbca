@@ -39,6 +39,81 @@
       },
       "revId": "034292e57d80cdda31a0d156828c348fe760bbca",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "15f8fd52_6b4468f9",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 1448,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-05-25T18:29:42Z",
+      "side": 1,
+      "message": "I agree; use standard coding please.\n\nAlso, rather than do your own checks here, it might be better to let stdlib do the checks.\n\nunsigned int u;\nconst auto sEnd \u003d s.data() + s.size();\nconst auto \u0026 [p, e ] \u003d std::from_chars(s.data(), sEnd, u);\nif (e \u003d\u003d errc() || p !\u003d sEnd || u \u003e bus_max)\n{\n    return false;\n}\nreturn true;",
+      "parentUuid": "e1b2770f_b64034b1",
+      "range": {
+        "startLine": 1443,
+        "startChar": 0,
+        "endLine": 1448,
+        "endChar": 25
+      },
+      "revId": "034292e57d80cdda31a0d156828c348fe760bbca",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "938ae627_8e4bf3c5",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 1477,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-05-25T18:29:42Z",
+      "side": 1,
+      "message": "Invalid argument might be a better option. The user provided information that does not match what was expected.",
+      "revId": "034292e57d80cdda31a0d156828c348fe760bbca",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4842d432_7f88fae5",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 1484,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-05-25T18:29:42Z",
+      "side": 1,
+      "message": "Again, invalid argument might be better here. The response from getBusNumFromPath depends wholly upon the difference between the user input and the paths existing on the BMC.",
+      "revId": "034292e57d80cdda31a0d156828c348fe760bbca",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "435f7018_2660b2e0",
+        "filename": "src/manufacturingcommands.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 1486,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-05-25T18:29:42Z",
+      "side": 1,
+      "message": "res is unused and ec is unchecked.",
+      "revId": "034292e57d80cdda31a0d156828c348fe760bbca",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
