@@ -72,6 +72,11 @@ if (YOCTO)
     include_directories (SYSTEM ${LIBIPMID_INCLUDE_DIRS})
     link_directories (${LIBIPMID_LIBRARY_DIRS})
 
+
+    pkg_check_modules (TINYXML2 tinyxml2 REQUIRED)
+    include_directories (SYSTEM ${TINYXML2_INCLUDE_DIRS})
+    link_directories (${TINYXML2_LIBRARY_DIRS})
+
 endif ()
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -120,8 +125,6 @@ target_link_libraries (zinteloemcmds -luserlayer)
 target_link_libraries (zinteloemcmds -lchannellayer)
 target_link_libraries (zinteloemcmds ${OPENSSL_CRYPTO_LIBRARY})
 target_link_libraries (zinteloemcmds gpiodcxx)
-
-find_package (tinyxml2 REQUIRED)
 target_link_libraries (zinteloemcmds tinyxml2)
 
 install (TARGETS zinteloemcmds DESTINATION lib/ipmid-providers)
