@@ -1497,7 +1497,7 @@ static ipmi::RspType<> muxSlotDisable(ipmi::Context::ptr& ctx,
         return ipmi::responseUnspecifiedError();
     }
 
-    if (!res)
+    if (res != 0)
     {
         return ipmi::responseResponseError();
     }
