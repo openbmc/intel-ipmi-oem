@@ -15,7 +15,8 @@
 */
 
 #pragma once
-#include <phosphor-ipmi-host/sensorhandler.hpp>
+#include <ipmid/api-types.hpp>
+#include <ipmid/api.hpp>
 
 #include <cstdint>
 
@@ -34,6 +35,183 @@ static constexpr uint8_t oemEventLast = 0xFF;
 static constexpr size_t oemEventSize = 13;
 static constexpr uint8_t eventMsgRev = 0x04;
 } // namespace intel_oem::ipmi::sel
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// blurbs from ipmi-host/sensorhandler.hpp
+//
+//////////////////////////////////////////////////////////////////////////////
+static constexpr int FULL_RECORD_ID_STR_MAX_LENGTH = 16;
+namespace get_sdr
+{
+// Record header
+struct SensorDataRecordHeader
+{
+    uint8_t record_id_lsb;
+    uint8_t record_id_msb;
+    uint8_t sdr_version;
+    uint8_t record_type;
+    uint8_t record_length; // Length not counting the header
+} __attribute__((packed));
+
+namespace header
+{
+
+inline void set_record_id(int id, SensorDataRecordHeader* hdr)
+{
+    hdr->record_id_lsb = (id & 0xFF);
+    hdr->record_id_msb = (id >> 8) & 0xFF;
+};
+
+} // namespace header
+
+/** @struct SensorDataFruRecordKey
+ *
+ *  FRU Device Locator Record(key) - SDR Type 11
+ */
+struct SensorDataFruRecordKey
+{
+    uint8_t deviceAddress;
+    uint8_t fruID;
+    uint8_t accessLun;
+    uint8_t channelNumber;
+} __attribute__((packed));
+
+static constexpr int FRU_RECORD_DEVICE_ID_MAX_LENGTH = 16;
+
+/** @struct SensorDataFruRecordBody
+ *
+ *  FRU Device Locator Record(body) - SDR Type 11
+ */
+struct SensorDataFruRecordBody
+{
+    uint8_t reserved;
+    uint8_t deviceType;
+    uint8_t deviceTypeModifier;
+    uint8_t entityID;
+    uint8_t entityInstance;
+    uint8_t oem;
+    uint8_t deviceIDLen;
+    char deviceID[FRU_RECORD_DEVICE_ID_MAX_LENGTH];
+} __attribute__((packed));
+
+/** @struct SensorDataFruRecord
+ *
+ *  FRU Device Locator Record - SDR Type 11
+ */
+struct SensorDataFruRecord
+{
+    SensorDataRecordHeader header;
+    SensorDataFruRecordKey key;
+    SensorDataFruRecordBody body;
+} __attribute__((packed));
+
+enum SensorDataRecordType
+{
+    SENSOR_DATA_FULL_RECORD = 0x1,
+    SENSOR_DATA_EVENT_RECORD = 0x3,
+    SENSOR_DATA_FRU_RECORD = 0x11,
+    SENSOR_DATA_ENTITY_RECORD = 0x8,
+};
+
+// Record key
+struct SensorDataRecordKey
+{
+    uint8_t owner_id;
+    uint8_t owner_lun;
+    uint8_t sensor_number;
+} __attribute__((packed));
+
+struct SensorDataFullRecordBody
+{
+    uint8_t entity_id;
+    uint8_t entity_instance;
+    uint8_t sensor_initialization;
+    uint8_t sensor_capabilities; // no macro support
+    uint8_t sensor_type;
+    uint8_t event_reading_type;
+    uint8_t supported_assertions[2];          // no macro support
+    uint8_t supported_deassertions[2];        // no macro support
+    uint8_t discrete_reading_setting_mask[2]; // no macro support
+    uint8_t sensor_units_1;
+    uint8_t sensor_units_2_base;
+    uint8_t sensor_units_3_modifier;
+    uint8_t linearization;
+    uint8_t m_lsb;
+    uint8_t m_msb_and_tolerance;
+    uint8_t b_lsb;
+    uint8_t b_msb_and_accuracy_lsb;
+    uint8_t accuracy_and_sensor_direction;
+    uint8_t r_b_exponents;
+    uint8_t analog_characteristic_flags; // no macro support
+    uint8_t nominal_reading;
+    uint8_t normal_max;
+    uint8_t normal_min;
+    uint8_t sensor_max;
+    uint8_t sensor_min;
+    uint8_t upper_nonrecoverable_threshold;
+    uint8_t upper_critical_threshold;
+    uint8_t upper_noncritical_threshold;
+    uint8_t lower_nonrecoverable_threshold;
+    uint8_t lower_critical_threshold;
+    uint8_t lower_noncritical_threshold;
+    uint8_t positive_threshold_hysteresis;
+    uint8_t negative_threshold_hysteresis;
+    uint16_t reserved;
+    uint8_t oem_reserved;
+    uint8_t id_string_info;
+    char id_string[FULL_RECORD_ID_STR_MAX_LENGTH];
+} __attribute__((packed));
+
+struct SensorDataFullRecord
+{
+    SensorDataRecordHeader header;
+    SensorDataRecordKey key;
+    SensorDataFullRecordBody body;
+} __attribute__((packed));
+
+namespace body
+{
+inline void set_id_strlen(uint8_t len, SensorDataFullRecordBody* body)
+{
+    body->id_string_info &= ~(0x1f);
+    body->id_string_info |= len & 0x1f;
+};
+inline void set_id_type(uint8_t type, SensorDataFullRecordBody* body)
+{
+    body->id_string_info &= ~(3 << 6);
+    body->id_string_info |= (type & 0x3) << 6;
+};
+} // namespace body
+} // namespace get_sdr
+//////////////////////////////////////////////////////////////////////////////
+//
+// <end> blurbs from ipmi-host/sensorhandler.hpp
+//
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// blurbs from ipmi-host/selutility.hpp
+//
+//////////////////////////////////////////////////////////////////////////////
+namespace ipmi::sel
+{
+static constexpr auto firstEntry = 0x0000;
+static constexpr auto lastEntry = 0xFFFF;
+static constexpr auto entireRecord = 0xFF;
+static constexpr auto selVersion = 0x51;
+static constexpr auto invalidTimeStamp = 0xFFFFFFFF;
+static constexpr auto getEraseStatus = 0x00;
+static constexpr auto eraseComplete = 0x01;
+static constexpr auto initiateErase = 0xAA;
+
+} // namespace ipmi::sel
+//////////////////////////////////////////////////////////////////////////////
+//
+// <end> blurbs from ipmi-host/selutility.hpp
+//
+//////////////////////////////////////////////////////////////////////////////
 
 #pragma pack(push, 1)
 struct GetSDRReq
