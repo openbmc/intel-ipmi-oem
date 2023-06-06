@@ -1,6 +1,8 @@
 /build*
 .idea/
 .vscode
+.*.sw*
+*~
 3rdparty/
 CMakeCache.txt
 CMakeFiles/
