@@ -650,9 +650,26 @@ static bool startFirmwareUpdate(const std::string& uri)
     // check if it is ready for activation)
     static std::unique_ptr<sdbusplus::bus::match_t> fwUpdateMatchSignal;
     postTransferCompleteHandler(fwUpdateMatchSignal);
-    std::filesystem::rename(
-        uri, "/tmp/images/" +
-                 boost::uuids::to_string(boost::uuids::random_generator()()));
+    std::string randomFname =
+        "/tmp/images/" +
+        boost::uuids::to_string(boost::uuids::random_generator()());
+    std::error_code fsError{};
+    std::filesystem::rename(uri, randomFname, fsError);
+    if (fsError)
+    {
+        // The source and destination may not be in the same
+        // filesystem.
+        std::filesystem::copy(uri, randomFname, fsError);
+        if (fsError)
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "Unable to move/copy image to destination directory.",
+                phosphor::logging::entry("ERROR=%s",
+                                         fsError.message().c_str()));
+            return false;
+        }
+        std::filesystem::remove(uri);
+    }
     return true;
 }
 
