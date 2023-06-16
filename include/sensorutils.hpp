@@ -17,6 +17,7 @@
 #pragma once
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <iostream>
 
 namespace ipmi
