@@ -309,6 +309,7 @@ ipmi::Cc getFru(ipmi::Context::ptr ctx, uint8_t devId)
         return IPMI_CC_SENSOR_INVALID;
     }
 
+    writeFruIfRunning();
     fruCache.clear();
 
     cacheBus = deviceFind->second.first;

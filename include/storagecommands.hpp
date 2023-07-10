@@ -166,5 +166,6 @@ ipmi_ret_t getFruSdrCount(ipmi::Context::ptr ctx, size_t& count);
 
 std::vector<uint8_t> getType12SDRs(uint16_t index, uint16_t recordId);
 std::vector<uint8_t> getNMDiscoverySDR(uint16_t index, uint16_t recordId);
+void writeFruIfRunning();
 } // namespace storage
 } // namespace ipmi
