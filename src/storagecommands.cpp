@@ -309,6 +309,12 @@ ipmi::Cc getFru(ipmi::Context::ptr ctx, uint8_t devId)
         return IPMI_CC_SENSOR_INVALID;
     }
 
+    if (writeTimer->isRunning())
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "Couldn't get raw fru as fru is updating");
+        return ipmi::ccBusy;
+    }
     fruCache.clear();
 
     cacheBus = deviceFind->second.first;
