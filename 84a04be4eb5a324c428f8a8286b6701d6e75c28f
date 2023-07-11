@@ -16,6 +16,23 @@
       "message": "LGTM, I am uncertain if calling writeFruIfRunning() will result in an unnecessary write to the FRU however, since if the FRU timer is still running in this case, the write should still be in-progress. Still, it seems to be rather innocuous.",
       "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "21b8c284_9e3ba4fc",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2023-07-11T21:13:34Z",
+      "side": 1,
+      "message": "Also, I believe this could still leave open the possibility to dump the FRU via a different method such as an i2cdump before the write is complete, still leaving that open as a possible way corrupt the FRU. Perhaps a change should be made at the driver level as well eventually?",
+      "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
