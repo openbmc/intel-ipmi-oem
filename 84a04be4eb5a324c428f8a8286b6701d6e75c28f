@@ -33,6 +33,23 @@
       "message": "Also, I believe this could still leave open the possibility to dump the FRU via a different method such as an i2cdump before the write is complete, still leaving that open as a possible way corrupt the FRU. Perhaps a change should be made at the driver level as well eventually?",
       "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "896f79dc_c11cf35f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2023-07-12T05:28:30Z",
+      "side": 1,
+      "message": "LGTM",
+      "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
