@@ -50,6 +50,41 @@
       "message": "LGTM",
       "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "10d21d8c_2c91b8d4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2023-07-12T05:54:03Z",
+      "side": 1,
+      "message": "I think, supporting at driver level is not expected by IPMI spec, and i2cdump command is internal interface command.\n\n\"Updating the FRU Inventory Data is presumed to be a system level, privileged\noperation.  There is no requirement for devices implementing this command\nto provide mechanisms for rolling back the FRU inventory area in the case of \nincomplete or incorrect writes.\"\n\n(Ref: IPMI spec, section 34.3 - Write FRU Data Command).\n\nHaving said that, \nIn the current design, it might still be possible to fail the previous FRU write.\n\nFor example, assume current FRU content size is 240-bytes, and a user is issuing\nIPMI write FRU command with entire data in one stretch.  If IPMI read FRU is issued immediately within writeTimeoutSeconds\u003d10-seconds (before content is sent to FruDevice service), it might return old FRU data. \nAlso, since \u0027fruCache.clear();\u0027 is called in FRU read, last issued write FRU data might be lost.\nThis fix avoids this scenario by writing the FRU contents to FruDevice service before read().\n\nHowever, If user decides to split the FRU writes to 120-byes each,\n1.) IPMI write FRU first 120-bytes (of the full FRU content).\n2.) IPMI read FRU (will return old data with or without this fix, as first 120-bytes won\u0027t pass checksum tests and FruDevice service will reject the writeFru request.).  FRU cache is also cleared by this operation.\n3.) IPMI write FRU next 120-bytes. FruDevice service will reject this write as data is incomplete.\n@pavan: Please check this scenario and update the results.\n\nIn general, FRU read operation, in the middle of privileged FRU write operation is not anticipated and might return wrong results.",
+      "parentUuid": "21b8c284_9e3ba4fc",
+      "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "29fa6a36_8a56aa1a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2023-07-12T05:54:03Z",
+      "side": 1,
+      "message": "LGTM",
+      "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
