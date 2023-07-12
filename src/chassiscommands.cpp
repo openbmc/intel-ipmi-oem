@@ -502,7 +502,7 @@ ipmi::RspType<bool,    // Power is on
     try
     {
         constexpr const char* chassisIntrusionObj =
-            "/xyz/openbmc_project/Intrusion/Chassis_Intrusion";
+            "/xyz/openbmc_project/Chassis/Intrusion";
         constexpr const char* chassisIntrusionInf =
             "xyz.openbmc_project.Chassis.Intrusion";
 
