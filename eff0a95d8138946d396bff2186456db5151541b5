@@ -24,6 +24,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "78fd65ab_d679ef65",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2023-07-14T12:45:20Z",
+      "side": 1,
+      "message": "+1, You must give explanation about the previous patch and if possible link to it.",
+      "parentUuid": "7f1aab81_e4e2ec66",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 33
+      },
+      "revId": "eff0a95d8138946d396bff2186456db5151541b5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "65e1d0fa_fd3a74b6",
@@ -37,6 +61,23 @@
       "writtenOn": "2023-06-27T19:56:37Z",
       "side": 1,
       "message": "Also add tested section in commit msg.",
+      "revId": "eff0a95d8138946d396bff2186456db5151541b5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "43aba8ea_ef4afb97",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2023-07-14T12:45:20Z",
+      "side": 1,
+      "message": "Code looks good but commit message needs update and Add Tested section with unit test results.",
       "revId": "eff0a95d8138946d396bff2186456db5151541b5",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
