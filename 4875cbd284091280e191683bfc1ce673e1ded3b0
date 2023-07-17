@@ -16,6 +16,23 @@
       "message": "LGTM",
       "revId": "4875cbd284091280e191683bfc1ce673e1ded3b0",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "402e5882_4bd745b8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001220
+      },
+      "writtenOn": "2023-07-17T17:23:05Z",
+      "side": 1,
+      "message": "To fix the build, please run clang-format before committing.",
+      "revId": "4875cbd284091280e191683bfc1ce673e1ded3b0",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
