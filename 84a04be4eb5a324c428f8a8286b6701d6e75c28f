@@ -110,6 +110,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ee97b9f2_b56e872e",
+        "filename": "include/storagecommands.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1001728
+      },
+      "writtenOn": "2023-07-17T13:56:06Z",
+      "side": 1,
+      "message": "Resolved, thanks",
+      "parentUuid": "286cebe2_273f36ee",
+      "range": {
+        "startLine": 169,
+        "startChar": 5,
+        "endLine": 169,
+        "endChar": 22
+      },
+      "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "087b9297_82928e87",
@@ -123,6 +147,24 @@
       "writtenOn": "2023-07-14T12:41:09Z",
       "side": 1,
       "message": "This is wrong, If write operation going on this will jus return and don\u0027t fix the described issue. It might have worked in unit test due to timing nature. \n\nIdeally you should check if Fru operation is going on (writeTimer-\u003eisRunning()). If so, You need to return the error.",
+      "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6632d102_3f17cdd7",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1001728
+      },
+      "writtenOn": "2023-07-17T13:56:06Z",
+      "side": 1,
+      "message": "Resolved, thanks",
+      "parentUuid": "087b9297_82928e87",
       "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
