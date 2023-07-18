@@ -185,6 +185,24 @@
       "parentUuid": "6632d102_3f17cdd7",
       "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bb97b7f2_2db650f9",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2023-07-18T14:58:59Z",
+      "side": 1,
+      "message": "Saravanan, patchset-1 stops the timers and triggers the write operation again Even though write is in progress which is not correct. When Write is in progress, BMC must return busy status and that is suggested.",
+      "parentUuid": "48b8e9f6_20d713f9",
+      "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
