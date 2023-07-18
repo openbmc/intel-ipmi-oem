@@ -167,6 +167,24 @@
       "parentUuid": "087b9297_82928e87",
       "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "48b8e9f6_20d713f9",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2023-07-18T12:21:19Z",
+      "side": 1,
+      "message": "I believe, patchset_1 triggers the FRU write if writeTimer is already running.\nSo, this code will work.\n\nHaving said that I am ok in defensively returning Busy when write is scheduled, as it is corner case scenario.",
+      "parentUuid": "6632d102_3f17cdd7",
+      "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
