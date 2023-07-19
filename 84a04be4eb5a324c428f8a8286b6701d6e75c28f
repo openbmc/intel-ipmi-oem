@@ -203,6 +203,24 @@
       "parentUuid": "48b8e9f6_20d713f9",
       "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "27c3da95_3da54675",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2023-07-19T07:23:02Z",
+      "side": 1,
+      "message": "This timer is meant for scheduling FRU write after 10-seconds (like batch mode FRU write), not to indicate FRU write is in progress.\n\nSo, Every time actual FRU write to be done, this timer either has to be expired or be stopped like in this place:\nhttps://github.com/openbmc/intel-ipmi-oem/blob/3432a0ace7ef0ea1d6478cdf3d5e95f6c982da30/src/storagecommands.cpp#L582",
+      "parentUuid": "bb97b7f2_2db650f9",
+      "revId": "84a04be4eb5a324c428f8a8286b6701d6e75c28f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
