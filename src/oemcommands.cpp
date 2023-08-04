@@ -274,6 +274,43 @@ void writefifo(const uint8_t cmdReg, const uint8_t val)
 
 } // namespace mailbox
 
+ipmi::RspType<std::string> ipmiOEMGetBmcVersionString()
+{
+    static std::string version{};
+    if (version.empty())
+    {
+        std::regex expr{"^VERSION_ID=(.*)$"};
+        static constexpr auto osReleasePath{"/etc/os-release"};
+        std::ifstream ifs(osReleasePath);
+        if (!ifs.is_open())
+        {
+            version = "os-release not present";
+        }
+        std::string line{};
+        while (std::getline(ifs, line))
+        {
+            std::smatch sm;
+            if (regex_match(line, sm, expr))
+            {
+                if (sm.size() == 2)
+                {
+                    std::string v = sm[1].str();
+                    // remove the quotes
+                    v.erase(std::remove(v.begin(), v.end(), '\"'), v.end());
+                    version = v;
+                    break;
+                }
+            }
+        }
+        ifs.close();
+        if (version.empty())
+        {
+            version = "VERSION_ID not present";
+        }
+    }
+    return ipmi::responseSuccess(version);
+}
+
 // Returns the Chassis Identifier (serial #)
 ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
                                        ipmi_request_t request,
@@ -3963,6 +4000,10 @@ static void registerOEMFunctions(void)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Registering OEM commands");
+    registerHandler(prioOemBase, intel::netFnGeneral,
+                    intel::general::cmdGetBmcVersionString, Privilege::User,
+                    ipmiOEMGetBmcVersionString);
+
     ipmiPrintAndRegister(intel::netFnGeneral,
                          intel::general::cmdGetChassisIdentifier, NULL,
                          ipmiOEMGetChassisIdentifier,

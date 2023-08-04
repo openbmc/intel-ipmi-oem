@@ -29,6 +29,7 @@ static constexpr NetFn netFnApp = netFnOemEight;
 
 namespace general
 {
+static constexpr Cmd cmdGetBmcVersionString = 0x01;
 static constexpr Cmd cmdRestoreConfiguration = 0x02;
 static constexpr Cmd cmdGetSmSignal = 0x14;
 static constexpr Cmd cmdSetSmSignal = 0x15;
