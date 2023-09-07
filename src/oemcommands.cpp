@@ -939,28 +939,28 @@ static bool cpuPresent(const std::string& cpuName)
     }
 }
 
-ipmi::RspType<bool,    // CATERR Reset Enabled
+ipmi::RspType<bool,    // IERR Reset Enabled
               bool,    // ERR2 Reset Enabled
               uint6_t, // reserved
               uint8_t, // reserved, returns 0x3F
-              uint6_t, // CPU1 CATERR Count
+              uint6_t, // CPU1 IERR Count
               uint2_t, // CPU1 Status
-              uint6_t, // CPU2 CATERR Count
+              uint6_t, // CPU2 IERR Count
               uint2_t, // CPU2 Status
-              uint6_t, // CPU3 CATERR Count
+              uint6_t, // CPU3 IERR Count
               uint2_t, // CPU3 Status
-              uint6_t, // CPU4 CATERR Count
+              uint6_t, // CPU4 IERR Count
               uint2_t, // CPU4 Status
               uint8_t  // Crashdump Count
               >
     ipmiOEMGetProcessorErrConfig()
 {
-    bool resetOnCATERR = false;
+    bool resetOnIERR = false;
     bool resetOnERR2 = false;
-    uint6_t cpu1CATERRCount = 0;
-    uint6_t cpu2CATERRCount = 0;
-    uint6_t cpu3CATERRCount = 0;
-    uint6_t cpu4CATERRCount = 0;
+    uint6_t cpu1IERRCount = 0;
+    uint6_t cpu2IERRCount = 0;
+    uint6_t cpu3IERRCount = 0;
+    uint6_t cpu4IERRCount = 0;
     uint8_t crashdumpCount = 0;
     uint2_t cpu1Status = cpuPresent("CPU_1")
                              ? types::enum_cast<uint8_t>(CPUStatus::enabled)
@@ -983,12 +983,12 @@ ipmi::RspType<bool,    // CATERR Reset Enabled
 
         ipmi::PropertyMap result = ipmi::getAllDbusProperties(
             *busp, service, processorErrConfigObjPath, processorErrConfigIntf);
-        resetOnCATERR = std::get<bool>(result.at("ResetOnCATERR"));
+        resetOnIERR = std::get<bool>(result.at("ResetOnIERR"));
         resetOnERR2 = std::get<bool>(result.at("ResetOnERR2"));
-        cpu1CATERRCount = std::get<uint8_t>(result.at("ErrorCountCPU1"));
-        cpu2CATERRCount = std::get<uint8_t>(result.at("ErrorCountCPU2"));
-        cpu3CATERRCount = std::get<uint8_t>(result.at("ErrorCountCPU3"));
-        cpu4CATERRCount = std::get<uint8_t>(result.at("ErrorCountCPU4"));
+        cpu1IERRCount = std::get<uint8_t>(result.at("ErrorCountCPU1"));
+        cpu2IERRCount = std::get<uint8_t>(result.at("ErrorCountCPU2"));
+        cpu3IERRCount = std::get<uint8_t>(result.at("ErrorCountCPU3"));
+        cpu4IERRCount = std::get<uint8_t>(result.at("ErrorCountCPU4"));
         crashdumpCount = std::get<uint8_t>(result.at("CrashdumpCount"));
     }
     catch (const std::exception& e)
@@ -999,14 +999,14 @@ ipmi::RspType<bool,    // CATERR Reset Enabled
         return ipmi::responseUnspecifiedError();
     }
 
-    return ipmi::responseSuccess(resetOnCATERR, resetOnERR2, 0, 0x3F,
-                                 cpu1CATERRCount, cpu1Status, cpu2CATERRCount,
-                                 cpu2Status, cpu3CATERRCount, cpu3Status,
-                                 cpu4CATERRCount, cpu4Status, crashdumpCount);
+    return ipmi::responseSuccess(resetOnIERR, resetOnERR2, 0, 0x3F,
+                                 cpu1IERRCount, cpu1Status, cpu2IERRCount,
+                                 cpu2Status, cpu3IERRCount, cpu3Status,
+                                 cpu4IERRCount, cpu4Status, crashdumpCount);
 }
 
 ipmi::RspType<> ipmiOEMSetProcessorErrConfig(
-    bool resetOnCATERR, bool resetOnERR2, uint6_t reserved1, uint8_t reserved2,
+    bool resetOnIERR, bool resetOnERR2, uint6_t reserved1, uint8_t reserved2,
     std::optional<bool> clearCPUErrorCount,
     std::optional<bool> clearCrashdumpCount, std::optional<uint6_t> reserved3)
 {
@@ -1026,8 +1026,8 @@ ipmi::RspType<> ipmiOEMSetProcessorErrConfig(
         auto service = ipmi::getService(*busp, processorErrConfigIntf,
                                         processorErrConfigObjPath);
         ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
-                              processorErrConfigIntf, "ResetOnCATERR",
-                              resetOnCATERR);
+                              processorErrConfigIntf, "ResetOnIERR",
+                              resetOnIERR);
         ipmi::setDbusProperty(*busp, service, processorErrConfigObjPath,
                               processorErrConfigIntf, "ResetOnERR2",
                               resetOnERR2);
