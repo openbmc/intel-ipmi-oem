@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4153b3e9_998917dd",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 986,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-09-08T21:26:54Z",
+      "side": 1,
+      "message": "Is the name changed on the remote as well?",
+      "range": {
+        "startLine": 986,
+        "startChar": 48,
+        "endLine": 986,
+        "endChar": 59
+      },
+      "revId": "3f6f36fff09c02e09afea34eab7bb5a629e0ba55",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "289e6ac7_8d146248",
+        "filename": "src/oemcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1029,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-09-08T21:26:54Z",
+      "side": 1,
+      "message": "Is the name changed on the remote as well?",
+      "range": {
+        "startLine": 1029,
+        "startChar": 55,
+        "endLine": 1029,
+        "endChar": 66
+      },
+      "revId": "3f6f36fff09c02e09afea34eab7bb5a629e0ba55",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
