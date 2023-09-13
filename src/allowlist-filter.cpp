@@ -9,7 +9,6 @@
 #include <array>
 
 using namespace phosphor::logging;
-using namespace sdbusplus::xyz::openbmc_project::Common::Error;
 using namespace sdbusplus::xyz::openbmc_project::Control::Security::server;
 
 namespace ipmi
