@@ -198,7 +198,7 @@ int getActiveSoftwareVersionInfo(ipmi::Context::ptr ctx,
 //   openbmcHash 14dc00e79
 //   MetaHasg    5e7d997
 //
-// 2.New solution  wht-0.2-3-gab3500-38384ac
+// 2.New solution  wht-0.2-3-gab3500-38384ac or wht-2000.2.3-gab3500-38384ac
 //   IdStr        wht
 //   Major        0
 //   Minor        2
@@ -232,13 +232,16 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
         }
     }
     constexpr size_t matchedIntel = 7;
-    std::regex pattern2("(\\w+?)-(\\d+?).(\\d+?)-(\\d+?)-g(\\w+?)-(\\w+?)");
+    std::regex pattern2("(\\w+?)-(\\d+?).(\\d+?)[-.](\\d+?)-g(\\w+?)-(\\w+?)");
     if (std::regex_match(s, results, pattern2))
     {
         if (results.size() == matchedIntel)
         {
             rev.platform = results[1];
-            rev.major = static_cast<uint8_t>(std::stoi(results[2]));
+            std::string majorVer = results[2].str();
+            // Take only the last two digits of the major version
+            rev.major = static_cast<uint8_t>(
+                std::stoi(majorVer.substr(majorVer.size() - 2)));
             rev.minor = static_cast<uint8_t>(std::stoi(results[3]));
             rev.buildNo = static_cast<uint32_t>(std::stoi(results[4]));
             rev.openbmcHash = results[6];
