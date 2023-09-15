@@ -22,6 +22,30 @@
       },
       "revId": "a5a616f2bacf06cf9c5847de413f323c4da122b4",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "31a94a1f_ec44562d",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 1000276
+      },
+      "writtenOn": "2023-09-15T14:18:23Z",
+      "side": 1,
+      "message": "That makes sense. Done.",
+      "parentUuid": "50ed3bb3_6b0ed919",
+      "range": {
+        "startLine": 235,
+        "startChar": 48,
+        "endLine": 235,
+        "endChar": 52
+      },
+      "revId": "a5a616f2bacf06cf9c5847de413f323c4da122b4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
