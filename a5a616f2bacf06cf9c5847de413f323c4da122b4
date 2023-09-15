@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "50ed3bb3_6b0ed919",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-09-15T00:21:29Z",
+      "side": 1,
+      "message": "generally in a character class list, if \u0027-\u0027 is present, it would be first so the regex parser doesn\u0027t think that it is part of a range.",
+      "range": {
+        "startLine": 235,
+        "startChar": 48,
+        "endLine": 235,
+        "endChar": 52
+      },
+      "revId": "a5a616f2bacf06cf9c5847de413f323c4da122b4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
