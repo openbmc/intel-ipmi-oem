@@ -1,6 +1,7 @@
 {
   "comments": [
     {
+      "unresolved": true,
       "key": {
         "uuid": "8830a22c_a04eaa08",
         "filename": "/COMMIT_MSG",
@@ -14,10 +15,10 @@
       "side": 1,
       "message": "Did you tested this change? Add Unit test results under Tested section.",
       "revId": "801a498e2477076ab3ec6e35f1c8d33fbb072334",
-      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
-      "unresolved": true
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": true,
       "key": {
         "uuid": "76cffb2e_c92fdbc8",
         "filename": "src/sensorcommands.cpp",
@@ -37,8 +38,8 @@
         "endChar": 72
       },
       "revId": "801a498e2477076ab3ec6e35f1c8d33fbb072334",
-      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4",
-      "unresolved": true
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
-  ]
+  ],
+  "submitRequirementResults": []
 }
