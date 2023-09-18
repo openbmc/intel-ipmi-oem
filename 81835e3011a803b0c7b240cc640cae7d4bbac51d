@@ -24,6 +24,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "caf0c37b_7eb7daeb",
+        "filename": ".gitignore",
+        "patchSetId": 4
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-09-18T19:17:13Z",
+      "side": 1,
+      "message": "Yes, I have a follow-on patch to remove CMake",
+      "parentUuid": "81bbe08a_6f4f6602",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 23,
+        "endChar": 20
+      },
+      "revId": "81835e3011a803b0c7b240cc640cae7d4bbac51d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3804b30c_3c4a6107",
@@ -37,6 +61,24 @@
       "writtenOn": "2023-08-30T17:54:13Z",
       "side": 1,
       "message": "Should probably use c++23 now here.",
+      "revId": "81835e3011a803b0c7b240cc640cae7d4bbac51d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9d01dbaa_43eda1cd",
+        "filename": "meson.build",
+        "patchSetId": 4
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-09-18T19:17:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3804b30c_3c4a6107",
       "revId": "81835e3011a803b0c7b240cc640cae7d4bbac51d",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
@@ -58,6 +100,24 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "24aa4856_271b491e",
+        "filename": "meson.build",
+        "patchSetId": 4
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-09-18T19:17:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b2fbc4f8_e6736f43",
+      "revId": "81835e3011a803b0c7b240cc640cae7d4bbac51d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1a0067ac_62b86df2",
@@ -71,6 +131,24 @@
       "writtenOn": "2023-08-30T17:54:13Z",
       "side": 1,
       "message": "\u0027allowed\u0027",
+      "revId": "81835e3011a803b0c7b240cc640cae7d4bbac51d",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e936ebc2_6ba603c6",
+        "filename": "meson.build",
+        "patchSetId": 4
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2023-09-18T19:17:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a0067ac_62b86df2",
       "revId": "81835e3011a803b0c7b240cc640cae7d4bbac51d",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
