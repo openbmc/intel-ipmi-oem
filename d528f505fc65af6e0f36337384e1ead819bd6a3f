@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "96e07e50_15a9ec16",
+        "filename": "meson.build",
+        "patchSetId": 8
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1001496
+      },
+      "writtenOn": "2023-09-19T08:10:13Z",
+      "side": 1,
+      "message": "nit: If not needed, can we remove this comment?",
+      "revId": "d528f505fc65af6e0f36337384e1ead819bd6a3f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
