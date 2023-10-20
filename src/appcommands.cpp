@@ -109,7 +109,7 @@ int initBMCDeviceState(ipmi::Context::ptr ctx)
                     "BMC device state updated");
             }
         }
-        });
+    });
 
     return 0;
 }

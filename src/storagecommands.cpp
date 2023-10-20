@@ -730,7 +730,7 @@ ipmi::Cc getFruSdrs(ipmi::Context::ptr& ctx, size_t index,
         }
 
         return true;
-        });
+    });
 
     if (entity == entities.end())
     {

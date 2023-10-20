@@ -97,7 +97,7 @@ static sdbusplus::bus::match_t sensorAdded(
     sdrLastAdd = std::chrono::duration_cast<std::chrono::seconds>(
                      std::chrono::system_clock::now().time_since_epoch())
                      .count();
-    });
+});
 
 static sdbusplus::bus::match_t sensorRemoved(
     *getSdBus(),
@@ -108,7 +108,7 @@ static sdbusplus::bus::match_t sensorRemoved(
     sdrLastRemove = std::chrono::duration_cast<std::chrono::seconds>(
                         std::chrono::system_clock::now().time_since_epoch())
                         .count();
-    });
+});
 
 // this keeps track of deassertions for sensor event status command. A
 // deasertion can only happen if an assertion was seen first.
@@ -156,7 +156,7 @@ static sdbusplus::bus::match_t thresholdChanged(
             }
         }
     }
-    });
+});
 
 static void getSensorMaxMin(const SensorMap& sensorMap, double& max,
                             double& min)

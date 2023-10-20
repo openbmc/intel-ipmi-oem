@@ -417,7 +417,7 @@ static bool sendAllAttributes(std::string service)
 
                 phosphor::logging::log<phosphor::logging::level::INFO>(
                     "sendAllAttributes: send all attributes - done");
-                },
+            },
                 service, biosConfigBaseMgrPath,
                 "org.freedesktop.DBus.Properties", "Set", biosConfigIntf,
                 "BaseBIOSTable",

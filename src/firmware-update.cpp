@@ -403,7 +403,7 @@ class FwUpdateStatusCache
                     fwUpdateState = fwStateUpdateSuccess;
                 }
             }
-            });
+        });
     }
     uint8_t activationTimerTimeout()
     {
@@ -471,7 +471,7 @@ static void activateImage(const std::string& objPath)
                     "async_method_call error: activateImage failed");
                 return;
             }
-            },
+        },
             "xyz.openbmc_project.Software.BMC.Updater", objPath,
             "org.freedesktop.DBus.Properties", "Set",
             "xyz.openbmc_project.Software.Activation", "RequestedActivation",

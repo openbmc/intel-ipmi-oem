@@ -177,8 +177,8 @@ class Depex
     {
         return !s.empty() &&
                std::find_if(s.begin(), s.end(), [](unsigned char c) {
-                   return !std::isdigit(c);
-               }) == s.end();
+            return !std::isdigit(c);
+        }) == s.end();
     }
 
     /* Returns 'true' if the argument string is hex representation of a number.

@@ -276,7 +276,7 @@ void AllowlistFilter::cacheCoreBiosDone()
         coreBIOSDone = std::get<bool>(v);
         log<level::INFO>("Read CoreBiosDone",
                          entry("VALUE=%d", static_cast<int>(coreBIOSDone)));
-        },
+    },
         coreBiosDoneService, coreBiosDonePath,
         "org.freedesktop.DBus.Properties", "Get", hostMiscIntf, "CoreBiosDone");
 }
@@ -293,7 +293,7 @@ void AllowlistFilter::handleCoreBiosDoneChange(sdbusplus::message_t& msg)
             std::find_if(propertyList.begin(), propertyList.end(),
                          [](const std::pair<std::string, ipmi::Value>& prop) {
             return prop.first == "CoreBiosDone";
-            });
+        });
 
         if (it != propertyList.end())
         {
@@ -397,7 +397,7 @@ ipmi::Cc AllowlistFilter::filterMessage(ipmi::message::Request::ptr request)
                                              std::get<1>(value),
                                              std::get<2>(first))
                    : first < value;
-        });
+    });
 
     // no special handling for non-system-interface channels
     if (!(request->ctx->channel == ipmi::channelSystemIface ||
