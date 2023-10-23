@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "040d4806_d60788ed",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 424,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2023-10-23T02:26:15Z",
+      "side": 1,
+      "message": "Is 421-424 Lines formatted correctly? I believe, these should Left shift by 4 spaces for better readability, Isn\u0027t it? May be some clang-format property incorrect/missing?",
+      "range": {
+        "startLine": 421,
+        "startChar": 0,
+        "endLine": 424,
+        "endChar": 71
+      },
+      "revId": "87381417f045de7465bf1a3a80ad41e8f35ef54e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
