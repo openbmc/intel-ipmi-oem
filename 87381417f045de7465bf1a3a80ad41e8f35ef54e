@@ -22,6 +22,30 @@
       },
       "revId": "87381417f045de7465bf1a3a80ad41e8f35ef54e",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "93ec7688_4bd4b44d",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 424,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-23T02:34:34Z",
+      "side": 1,
+      "message": "Yes, these are formatted correctly.\n\nThere is a change between clang-16 and clang-17 in how clang-format applies the lambda indentation rules (which we\u0027ve selected as OuterScope).  This caused the } on line 420 to be out-dented 1 step.\n\nI don\u0027t personally like OuterScope, but it was a project-agreed default in order to (hopefully) reduce the indentation churn on lambda functions.",
+      "parentUuid": "040d4806_d60788ed",
+      "range": {
+        "startLine": 421,
+        "startChar": 0,
+        "endLine": 424,
+        "endChar": 71
+      },
+      "revId": "87381417f045de7465bf1a3a80ad41e8f35ef54e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
