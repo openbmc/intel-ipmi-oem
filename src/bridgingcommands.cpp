@@ -106,7 +106,7 @@ static inline bool ipmbDataChecksumValidate(const ipmbHeader* ipmbHeader,
                                 (length - ipmbConnectionHeaderLength));
 }
 
-static bool isFrameValid(const ipmbHeader* frame, uint8_t length)
+static bool isFrameValid(const ipmbHeader* frame, size_t length)
 {
     if ((length < ipmbMinFrameLength) || (length > ipmbMaxFrameLength))
     {
