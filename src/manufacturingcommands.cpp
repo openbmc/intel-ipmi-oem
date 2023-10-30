@@ -711,7 +711,7 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                         return ipmi::responseUnspecifiedError();
                     }
 
-                    struct input_event event;
+                    struct input_event event = {0};
                     event.type = EV_SND;
                     event.code = SND_TONE;
                     event.value = 2000;
