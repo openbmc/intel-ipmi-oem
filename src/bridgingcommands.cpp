@@ -99,14 +99,14 @@ static inline bool
 }
 
 static inline bool ipmbDataChecksumValidate(const ipmbHeader* ipmbHeader,
-                                            uint8_t length)
+                                            size_t length)
 {
     return ipmbChecksumValidate((reinterpret_cast<const uint8_t*>(ipmbHeader) +
                                  ipmbConnectionHeaderLength),
                                 (length - ipmbConnectionHeaderLength));
 }
 
-static bool isFrameValid(const ipmbHeader* frame, uint8_t length)
+static bool isFrameValid(const ipmbHeader* frame, size_t length)
 {
     if ((length < ipmbMinFrameLength) || (length > ipmbMaxFrameLength))
     {
