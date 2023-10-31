@@ -6,3 +6,8 @@
 Testing/
 subprojects/*
 !subprojects/*.wrap
+# Explicitly ignore wrap-redirect files.
+subprojects/CLI11.wrap
+subprojects/function2.wrap
+subprojects/googletest.wrap
+subprojects/phosphor-objmgr.wrap
