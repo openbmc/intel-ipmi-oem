@@ -111,6 +111,7 @@ zinteloemcmds_src = [
   'src/me_to_redfish_hooks.cpp',
   'src/chassiscommands.cpp',
   'src/allowlist-filter.cpp',
+  'src/fruutils.cpp',
   ipmiallowlist,
 ]
 
