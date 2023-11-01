@@ -221,7 +221,7 @@ static constexpr bool isMeCmdAllowed(uint8_t netFn, uint8_t cmd)
     switch (makeCmdKey(netFn, cmd))
     {
         // Restrict ME Controller write command
-        case makeCmdKey(ipmi::netFnApp, ipmi::app::cmdMasterWriteRead):
+        case makeCmdKey(ipmi::netFnApp, ipmi::app::cmdControllerWriteRead):
         // Restrict ME OEM commands
         case makeCmdKey(netFnMeOEM, cmdMeOemSendRawPeci):
         case makeCmdKey(netFnMeOEM, cmdMeOemAggSendRawPeci):

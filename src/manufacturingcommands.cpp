@@ -841,7 +841,7 @@ ipmi::Cc mfgFilterMessage(ipmi::message::Request::ptr request)
     switch (makeCmdKey(request->ctx->netFn, request->ctx->cmd))
     {
         // i2c controller write read command needs additional checking
-        case makeCmdKey(ipmi::netFnApp, ipmi::app::cmdMasterWriteRead):
+        case makeCmdKey(ipmi::netFnApp, ipmi::app::cmdControllerWriteRead):
             if (request->payload.size() > 4)
             {
                 // Allow write data count > 1 only in Special mode
