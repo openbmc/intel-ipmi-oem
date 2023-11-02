@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bd58046d_170578e2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2023-11-02T14:58:03Z",
+      "side": 1,
+      "message": "Add unit test results with \"Tested\" section header.",
+      "revId": "e4e40739617f55aaeafbd741e8447a28bd2e75cd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6331c104_fdc8830a",
+        "filename": "src/fruutils.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2023-11-02T14:58:03Z",
+      "side": 1,
+      "message": "2022-2023",
+      "range": {
+        "startLine": 2,
+        "startChar": 17,
+        "endLine": 2,
+        "endChar": 26
+      },
+      "revId": "e4e40739617f55aaeafbd741e8447a28bd2e75cd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7bc17a68_e14fbca9",
+        "filename": "src/fruutils.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2023-11-02T14:58:03Z",
+      "side": 1,
+      "message": "LowerCamelCase as per OpenBMC coding guideline.\n\nAlso IMO, You can rename it as just \"basicValidateFruContent\"",
+      "range": {
+        "startLine": 37,
+        "startChar": 5,
+        "endLine": 37,
+        "endChar": 24
+      },
+      "revId": "e4e40739617f55aaeafbd741e8447a28bd2e75cd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
