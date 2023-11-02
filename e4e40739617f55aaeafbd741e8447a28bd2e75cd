@@ -18,6 +18,24 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a99956b1_dce8ab04",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1001059
+      },
+      "writtenOn": "2023-11-02T15:35:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bd58046d_170578e2",
+      "revId": "e4e40739617f55aaeafbd741e8447a28bd2e75cd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6331c104_fdc8830a",
@@ -41,6 +59,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "19cb8322_6046391e",
+        "filename": "src/fruutils.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1001059
+      },
+      "writtenOn": "2023-11-02T15:35:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6331c104_fdc8830a",
+      "range": {
+        "startLine": 2,
+        "startChar": 17,
+        "endLine": 2,
+        "endChar": 26
+      },
+      "revId": "e4e40739617f55aaeafbd741e8447a28bd2e75cd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7bc17a68_e14fbca9",
@@ -54,6 +96,30 @@
       "writtenOn": "2023-11-02T14:58:03Z",
       "side": 1,
       "message": "LowerCamelCase as per OpenBMC coding guideline.\n\nAlso IMO, You can rename it as just \"basicValidateFruContent\"",
+      "range": {
+        "startLine": 37,
+        "startChar": 5,
+        "endLine": 37,
+        "endChar": 24
+      },
+      "revId": "e4e40739617f55aaeafbd741e8447a28bd2e75cd",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "88276910_737f982b",
+        "filename": "src/fruutils.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1001059
+      },
+      "writtenOn": "2023-11-02T15:35:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7bc17a68_e14fbca9",
       "range": {
         "startLine": 37,
         "startChar": 5,
