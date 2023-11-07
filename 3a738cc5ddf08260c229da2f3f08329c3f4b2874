@@ -16,6 +16,24 @@
       "message": "I don\u0027t have a problem with this, but it might be easier to access this function if you do this same thing to the dbus-sdr code in phosphor-ipmi-host and make the function a part of libipmi20",
       "revId": "3a738cc5ddf08260c229da2f3f08329c3f4b2874",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "568fe505_76142050",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001059
+      },
+      "writtenOn": "2023-11-07T23:28:01Z",
+      "side": 1,
+      "message": "Probably, but at this point I\u0027m just trying to upstream an internal patch we\u0027re carrying.\nThat kind of refactor would be a larger effort.",
+      "parentUuid": "de38e538_4d4b841d",
+      "revId": "3a738cc5ddf08260c229da2f3f08329c3f4b2874",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
