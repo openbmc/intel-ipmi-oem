@@ -46,6 +46,30 @@
       },
       "revId": "87381417f045de7465bf1a3a80ad41e8f35ef54e",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "029fe98d_83ab52b2",
+        "filename": "src/bridgingcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2023-11-10T09:35:32Z",
+      "side": 0,
+      "message": "In that scenario, You need to change the data type of \"length\" to size_t. I checked in caller its already size_t only. \n\nWe can\u0027t avoid upper boundary check.",
+      "parentUuid": "8dfc4d00_76b9d5db",
+      "range": {
+        "startLine": 111,
+        "startChar": 0,
+        "endLine": 111,
+        "endChar": 71
+      },
+      "revId": "87381417f045de7465bf1a3a80ad41e8f35ef54e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
