@@ -302,7 +302,14 @@ class Depex
                 {
                     if (cnt > 3)
                     {
-                        subExpression += " OR ";
+                        if (operatorStr == "_EQU_" || operatorStr == "EQU")
+                        {
+                            subExpression += " OR ";
+                        }
+                        if (operatorStr == "_NEQ_" || operatorStr == "NEQ")
+                        {
+                            subExpression += " AND ";
+                        }
                     }
 
                     subExpression += "( ";
@@ -496,6 +503,7 @@ class Depex
 
         size_t i;
         int value;
+        bool ifFormSetOperator = false;
         std::stack<int> values;
         std::stack<knob::DepexOperators> operators;
         std::string subExpression;
@@ -587,6 +595,10 @@ class Depex
                      * by taking the inner/sub expression and evaluating it */
                     if (word.back() == '(')
                     {
+                        if (word == "Sif(" || word == "Gif(" || word == "Dif(")
+                        {
+                            ifFormSetOperator = true;
+                        }
                         if (!getSubExpression(expression, subExpression, i))
                             break;
 
@@ -612,7 +624,7 @@ class Depex
                     {
                         try
                         {
-                            value = std::stoi(word);
+                            value = std::stoi(word, nullptr, 0);
                         }
                         catch (const std::exception& ex)
                         {
@@ -627,6 +639,12 @@ class Depex
                             break;
                     }
 
+                    /* 'Sif(', 'Gif(', 'Dif( == IF NOT,
+                    we have to negate the vaule */
+                    if (ifFormSetOperator == true)
+                    {
+                        value = !value;
+                    }
                     values.emplace(value);
                 }
             }
