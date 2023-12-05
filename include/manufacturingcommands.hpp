@@ -329,7 +329,7 @@ class Manufacturing
 
     bool revertFanPWM = false;
     bool revertLedCallback = false;
-    phosphor::Timer revertTimer;
+    sdbusplus::Timer revertTimer;
     int mtmTestBeepFd = -1;
 };
 

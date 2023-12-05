@@ -64,7 +64,7 @@ static ChassisIDState chassisIDState = ChassisIDState::off;
 
 constexpr size_t defaultIdentifyTimeOut = 15;
 
-std::unique_ptr<phosphor::Timer> identifyTimer
+std::unique_ptr<sdbusplus::Timer> identifyTimer
     __attribute__((init_priority(101)));
 std::unique_ptr<sdbusplus::bus::match_t> matchPtr
     __attribute__((init_priority(101)));
@@ -177,7 +177,7 @@ void createIdentifyTimer()
     if (!identifyTimer)
     {
         identifyTimer =
-            std::make_unique<phosphor::Timer>(enclosureIdentifyLedBlinkOff);
+            std::make_unique<sdbusplus::Timer>(enclosureIdentifyLedBlinkOff);
     }
 }
 

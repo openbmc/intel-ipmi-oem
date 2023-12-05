@@ -256,7 +256,7 @@ class MDRV2
     MDRV2()
     {
         timer =
-            std::make_unique<phosphor::Timer>([&](void) { timeoutHandler(); });
+            std::make_unique<sdbusplus::Timer>([&](void) { timeoutHandler(); });
     }
 
     int agentLookup(const uint16_t& agentId);
@@ -311,7 +311,7 @@ class MDRV2
                              smbiosTableStorageSize,
                              smbiosTableStorage}};
     std::unique_ptr<SharedMemoryArea> area;
-    std::unique_ptr<phosphor::Timer> timer;
+    std::unique_ptr<sdbusplus::Timer> timer;
 
   private:
     uint8_t lockIndex = 0;

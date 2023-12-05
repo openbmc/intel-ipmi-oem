@@ -562,10 +562,10 @@ static void postTransferCompleteHandler(
     std::unique_ptr<sdbusplus::bus::match_t>& fwUpdateMatchSignal)
 {
     // Setup timer for watching signal
-    static phosphor::Timer timer(
+    static sdbusplus::Timer timer(
         [&fwUpdateMatchSignal]() { fwUpdateMatchSignal = nullptr; });
 
-    static phosphor::Timer activationStatusTimer([]() {
+    static sdbusplus::Timer activationStatusTimer([]() {
         if (fwUpdateStatus.activationTimerTimeout() > 95)
         {
             activationStatusTimer.stop();
