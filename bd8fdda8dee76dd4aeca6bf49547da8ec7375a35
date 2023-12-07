@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8995cf17_9bacff6f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001059
+      },
+      "writtenOn": "2023-12-07T18:26:26Z",
+      "side": 1,
+      "message": "Any updates? Can I get a +2?",
+      "revId": "bd8fdda8dee76dd4aeca6bf49547da8ec7375a35",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
