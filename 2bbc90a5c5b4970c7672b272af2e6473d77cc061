@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0ec83aed_f07d2a83",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2023-12-08T04:56:51Z",
+      "side": 1,
+      "message": "LGTM, Wait for one more vote before +2",
+      "revId": "2bbc90a5c5b4970c7672b272af2e6473d77cc061",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
