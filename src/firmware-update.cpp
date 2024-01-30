@@ -167,7 +167,7 @@ constexpr std::size_t operator""_MB(unsigned long long v)
 {
     return 1024u * 1024u * v;
 }
-static constexpr size_t maxFirmwareImageSize = 32_MB;
+static constexpr size_t maxFirmwareImageSize = 33_MB;
 
 static bool localDownloadInProgress(void)
 {
