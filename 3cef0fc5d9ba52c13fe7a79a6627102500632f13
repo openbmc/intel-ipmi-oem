@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "35da5a14_f020379e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1001496
+      },
+      "writtenOn": "2024-01-31T13:55:34Z",
+      "side": 1,
+      "message": "nit: update via KCS",
+      "revId": "3cef0fc5d9ba52c13fe7a79a6627102500632f13",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "acb2d167_c64e9d14",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 1001496
+      },
+      "writtenOn": "2024-01-31T13:55:34Z",
+      "side": 1,
+      "message": "No need to jump to that high value.",
+      "revId": "3cef0fc5d9ba52c13fe7a79a6627102500632f13",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "449f7b67_538ceba2",
+        "filename": "src/firmware-update.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 1001496
+      },
+      "writtenOn": "2024-01-31T13:55:34Z",
+      "side": 1,
+      "message": "Please use 33MB",
+      "revId": "3cef0fc5d9ba52c13fe7a79a6627102500632f13",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
