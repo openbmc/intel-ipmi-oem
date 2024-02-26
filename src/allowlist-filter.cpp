@@ -73,7 +73,7 @@ class AllowlistFilter
     static constexpr const char* restrictionModePath =
         "/xyz/openbmc_project/control/security/restriction_mode";
     static constexpr const char* systemOsStatusPath =
-        "/xyz/openbmc_project/state/os";
+        "/xyz/openbmc_project/state/host0";
 };
 
 static inline uint8_t getSMMChannel()
@@ -345,7 +345,7 @@ void AllowlistFilter::postInit()
 
     const std::string filterStrPostIntfAdd =
         rules::interfacesAdded() +
-        rules::argNpath(0, "/xyz/openbmc_project/state/os");
+        rules::argNpath(0, "/xyz/openbmc_project/state/host0");
 
     const std::string filterStrPlatStateChange =
         rules::type::signal() + rules::member("PropertiesChanged") +

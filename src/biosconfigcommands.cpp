@@ -468,8 +468,8 @@ static bool getPostCompleted()
     {
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
         Value variant =
-            getDbusProperty(*dbus, "xyz.openbmc_project.State.OperatingSystem",
-                            "/xyz/openbmc_project/state/os",
+            getDbusProperty(*dbus, "xyz.openbmc_project.State.Host0",
+                            "/xyz/openbmc_project/state/host0",
                             "xyz.openbmc_project.State.OperatingSystem.Status",
                             "OperatingSystemState");
         auto& value = std::get<std::string>(variant);
@@ -484,8 +484,7 @@ static bool getPostCompleted()
     catch (const std::exception& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "'getDbusProperty' failed to read "
-            "xyz.openbmc_project.State.OperatingSystem");
+            "'getDbusProperty' failed to read xyz.openbmc_project.State.Host0");
     }
 
     return postCompleted;
