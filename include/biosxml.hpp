@@ -92,8 +92,7 @@ struct knob
          std::string descriptionStr, std::string defaultStr,
          std::string promptStr, std::string depexStr,
          std::string& setupTypeStr) :
-        depex(false),
-        readOnly(("ReadOnly" == setupTypeStr) ? true : false),
+        depex(false), readOnly(("ReadOnly" == setupTypeStr) ? true : false),
         currentVal(currentVal), nameStr(std::move(nameStr)),
         currentValStr(std::move(currentValStr)),
         descriptionStr(std::move(descriptionStr)),

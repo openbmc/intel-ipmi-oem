@@ -276,9 +276,8 @@ void AllowlistFilter::cacheCoreBiosDone()
         coreBIOSDone = std::get<bool>(v);
         log<level::INFO>("Read CoreBiosDone",
                          entry("VALUE=%d", static_cast<int>(coreBIOSDone)));
-    },
-        coreBiosDoneService, coreBiosDonePath,
-        "org.freedesktop.DBus.Properties", "Get", hostMiscIntf, "CoreBiosDone");
+    }, coreBiosDoneService, coreBiosDonePath, "org.freedesktop.DBus.Properties",
+        "Get", hostMiscIntf, "CoreBiosDone");
 }
 
 void AllowlistFilter::handleCoreBiosDoneChange(sdbusplus::message_t& msg)
