@@ -1,0 +1,10 @@
+Code-Review+1: Zhikui Ren <zhikui.ren@intel.com>
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Code-Review+1: Patrick Williams <patrick@stwcx.xyz>
+Code-Review+2: AppaRao Puli <apparao.puli@linux.intel.com>
+Submitted-by: PL <potin.lai@quantatw.com>
+Submitted-at: Thu, 20 Jun 2024 15:19:24 +0000
+Reviewed-on: https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/69669
+Comments-Total: 4
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
