@@ -16,6 +16,23 @@
       "message": "No change to the code.",
       "revId": "aa55d7fc53207c3f137ef4d6deeabe6774581d78",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "569b4d83_bf701609",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000163
+      },
+      "writtenOn": "2024-06-24T23:26:56Z",
+      "side": 1,
+      "message": "Do we need to do any other stuff to incorporate this correctly (yocto options in the phosphor-ipmi-host bbappend, etc?)",
+      "revId": "aa55d7fc53207c3f137ef4d6deeabe6774581d78",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
