@@ -33,6 +33,23 @@
       "message": "Do we need to do any other stuff to incorporate this correctly (yocto options in the phosphor-ipmi-host bbappend, etc?)",
       "revId": "aa55d7fc53207c3f137ef4d6deeabe6774581d78",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "87107172_7398b281",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2024-06-25T13:44:11Z",
+      "side": 1,
+      "message": "We need to pull this commit:\nhttps://gerrit.openbmc.org/c/openbmc/phosphor-host-ipmid/+/72044\nand the immediate successor.\n\nIt also requires phosphor-ipmi-host.bbappend changes in our meta-openbmc-intel public layer. Enable dynamic-sensors, shortname-replace, sensors-oem. Disable shortname-remove-suffix, and hybrid-sensors. As we\u0027re enabling sensors-oem, there has to be a sensorcommands_oem.cpp file in the bbappend too.\n\nI believe that to be sufficient.",
+      "revId": "aa55d7fc53207c3f137ef4d6deeabe6774581d78",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
