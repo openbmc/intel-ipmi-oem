@@ -1,6 +1,29 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "ef0c7eb9_eca13394",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2024-06-27T18:04:06Z",
+      "side": 1,
+      "message": "What is the commit number that is being reverted?",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 57
+      },
+      "revId": "a6a46f1c18b5f7b53a73ca181fb78d385a3653c2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "70e83b65_ad5a94ac",
