@@ -38,7 +38,7 @@ static constexpr std::array<std::pair<uint8_t, const char*>, 4> bmcServices = {{
     {rmcpServiceBitPos, "phosphor-ipmi-net"},
     {webServiceBitPos, "bmcweb"},
     {solServiceBitPos, "obmc-console-ssh"},
-    {kvmServiceBitPos, "start-ipkvm"},
+    {kvmServiceBitPos, "obmc-ikvm"},
 }};
 
 static constexpr uint16_t maskBit15 = 0x8000;
