@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "70e83b65_ad5a94ac",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000278
+      },
+      "writtenOn": "2024-06-27T14:54:54Z",
+      "side": 1,
+      "message": "commit #3 was just to retrigger the CI.\ncommit #4 reverts commit #3",
+      "revId": "a6a46f1c18b5f7b53a73ca181fb78d385a3653c2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
