@@ -50,6 +50,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "f37b59e5_577b5e0c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000559
+      },
+      "writtenOn": "2024-07-03T22:43:10Z",
+      "side": 1,
+      "message": "Yes, add the link in commit message it is easier to reference the old commit",
+      "parentUuid": "7cefcda8_ee16c993",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 57
+      },
+      "revId": "a6a46f1c18b5f7b53a73ca181fb78d385a3653c2",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "70e83b65_ad5a94ac",
         "filename": "/PATCHSET_LEVEL",
         "patchSetId": 4
