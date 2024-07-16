@@ -107,14 +107,13 @@ ipmi_ret_t ledStoreAndSet(SmSignalSet signal, const std::string& setState)
     }
 
     std::string ledName = ledProp->getName();
-    std::string ledService = ledServicePrefix + ledName;
     std::string ledPath = ledPathPrefix + ledName;
     ipmi::Value presentState;
 
     if (false == ledProp->getLock())
     {
-        if (mtm.getProperty(ledService.c_str(), ledPath.c_str(), ledIntf,
-                            "State", &presentState) != 0)
+        if (mtm.getProperty(ledService, ledPath.c_str(), ledIntf, "State",
+                            &presentState) != 0)
         {
             return IPMI_CC_UNSPECIFIED_ERROR;
         }
@@ -162,7 +161,6 @@ ipmi_ret_t ledRevert(SmSignalSet signal)
         else
         {
             std::string ledName = ledProp->getName();
-            std::string ledService = ledServicePrefix + ledName;
             std::string ledPath = ledPathPrefix + ledName;
             if (mtm.setProperty(ledService, ledPath, ledIntf, "State",
                                 ledProp->getPrevState()) != 0)
