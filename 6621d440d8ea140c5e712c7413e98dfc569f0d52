@@ -22,6 +22,47 @@
       },
       "revId": "6621d440d8ea140c5e712c7413e98dfc569f0d52",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "932f63d7_be4dccea",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2024-07-24T16:17:26Z",
+      "side": 1,
+      "message": "yes, the review here\nhttps://gerrit.openbmc.org/c/openbmc/phosphor-led-sysfs/+/56590\n\nthe bump already happened\nhttps://gerrit.openbmc.org/c/openbmc/openbmc/+/72927",
+      "parentUuid": "78b94966_04549167",
+      "range": {
+        "startLine": 16,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 35
+      },
+      "revId": "6621d440d8ea140c5e712c7413e98dfc569f0d52",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ed47c1cd_a40ff112",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2024-07-24T16:17:26Z",
+      "side": 1,
+      "message": "we can merge this since the bump has been done\nhttps://gerrit.openbmc.org/c/openbmc/openbmc/+/72927",
+      "revId": "6621d440d8ea140c5e712c7413e98dfc569f0d52",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
