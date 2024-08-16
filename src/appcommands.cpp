@@ -50,8 +50,8 @@ static uint8_t bmcDeviceBusy = true;
 int initBMCDeviceState(ipmi::Context::ptr ctx)
 {
     DbusObjectInfo objInfo;
-    boost::system::error_code ec = ipmi::getDbusObject(ctx, bmcStateIntf, "/",
-                                                       "bmc0", objInfo);
+    boost::system::error_code ec =
+        ipmi::getDbusObject(ctx, bmcStateIntf, "/", "bmc0", objInfo);
     if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -84,32 +84,32 @@ int initBMCDeviceState(ipmi::Context::ptr ctx)
         sdbusplus::bus::match::rules::propertiesChanged(objInfo.first,
                                                         bmcStateIntf),
         [](sdbusplus::message_t& msg) {
-        std::map<std::string, ipmi::DbusVariant> props;
-        std::vector<std::string> inVal;
-        std::string iface;
-        try
-        {
-            msg.read(iface, props, inVal);
-        }
-        catch (const std::exception& e)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "Exception caught in Get CurrentBMCState");
-            return;
-        }
-
-        auto it = props.find(currentBmcStateProp);
-        if (it != props.end())
-        {
-            std::string* state = std::get_if<std::string>(&it->second);
-            if (state)
+            std::map<std::string, ipmi::DbusVariant> props;
+            std::vector<std::string> inVal;
+            std::string iface;
+            try
             {
-                bmcDeviceBusy = (*state != bmcStateReadyStr);
-                phosphor::logging::log<phosphor::logging::level::INFO>(
-                    "BMC device state updated");
+                msg.read(iface, props, inVal);
             }
-        }
-    });
+            catch (const std::exception& e)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Exception caught in Get CurrentBMCState");
+                return;
+            }
+
+            auto it = props.find(currentBmcStateProp);
+            if (it != props.end())
+            {
+                std::string* state = std::get_if<std::string>(&it->second);
+                if (state)
+                {
+                    bmcDeviceBusy = (*state != bmcStateReadyStr);
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "BMC device state updated");
+                }
+            }
+        });
 
     return 0;
 }
@@ -381,10 +381,10 @@ RspType<uint8_t,  // Device ID
         }
     }
 
-    return ipmi::responseSuccess(devId.id, devId.revision, devId.fwMajor,
-                                 bmcDeviceBusy, devId.fwMinor, devId.ipmiVer,
-                                 devId.addnDevSupport, devId.manufId,
-                                 devId.prodId, devId.aux);
+    return ipmi::responseSuccess(
+        devId.id, devId.revision, devId.fwMajor, bmcDeviceBusy, devId.fwMinor,
+        devId.ipmiVer, devId.addnDevSupport, devId.manufId, devId.prodId,
+        devId.aux);
 }
 
 static void registerAPPFunctions(void)

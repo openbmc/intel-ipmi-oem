@@ -81,22 +81,23 @@ static const boost::container::flat_map<uint8_t, std::string>
                "to ME while MCTP stack is configured in Bus Owner Proxy mode"}};
 
 static const boost::container::flat_map<uint8_t, std::string>
-    unsupportedFeature = {{0x00, "Other Segment Defined Feature"},
-                          {0x01, "Fast NM limiting"},
-                          {0x02, "Volumetric Airflow and Outlet Temperature"},
-                          {0x03, "CUPS"},
-                          {0x04, "Thermal policies and Inlet Temperature"},
-                          {0x05, "Platform limiting with MICs"},
-                          {0x07, "Shared power supplies"},
-                          {0x08, "MIC Proxy"},
-                          {0x09, "Reset warning"},
-                          {0x0A, "PMBus Proxy"},
-                          {0x0B, "Always on"},
-                          {0x0C, "IPMI Intel ME FW update"},
-                          {0x0D, "MCTP bus owner"},
-                          {0x0E, "MCTP bus owner proxy"},
-                          {0x0F, "Dual BIOS"},
-                          {0x10, "Battery less"}};
+    unsupportedFeature = {
+        {0x00, "Other Segment Defined Feature"},
+        {0x01, "Fast NM limiting"},
+        {0x02, "Volumetric Airflow and Outlet Temperature"},
+        {0x03, "CUPS"},
+        {0x04, "Thermal policies and Inlet Temperature"},
+        {0x05, "Platform limiting with MICs"},
+        {0x07, "Shared power supplies"},
+        {0x08, "MIC Proxy"},
+        {0x09, "Reset warning"},
+        {0x0A, "PMBus Proxy"},
+        {0x0B, "Always on"},
+        {0x0C, "IPMI Intel ME FW update"},
+        {0x0D, "MCTP bus owner"},
+        {0x0E, "MCTP bus owner proxy"},
+        {0x0F, "Dual BIOS"},
+        {0x10, "Battery less"}};
 
 static const boost::container::flat_map<uint8_t, std::string> umaError = {
     {0x00, "UMA Read integrity error. Checksum of data read from UMA differs "

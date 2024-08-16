@@ -272,8 +272,8 @@ struct Type12Record
                  uint8_t pwrStateNotification, uint8_t capabilities,
                  uint8_t eid, uint8_t entityInst, uint8_t mfrDefined,
                  const std::string& sensorname) :
-        targetAddress(address),
-        channelNumber(chNumber), powerStateNotification(pwrStateNotification),
+        targetAddress(address), channelNumber(chNumber),
+        powerStateNotification(pwrStateNotification),
         deviceCapabilities(capabilities), reserved{}, entityID(eid),
         entityInstance(entityInst), oem(mfrDefined)
     {
@@ -281,9 +281,9 @@ struct Type12Record
         header.sdr_version = ipmiSdrVersion;
         header.record_type = 0x12;
         size_t nameLen = std::min(sensorname.size(), sizeof(name));
-        header.record_length = sizeof(Type12Record) -
-                               sizeof(get_sdr::SensorDataRecordHeader) -
-                               sizeof(name) + nameLen;
+        header.record_length =
+            sizeof(Type12Record) - sizeof(get_sdr::SensorDataRecordHeader) -
+            sizeof(name) + nameLen;
         typeLengthCode = 0xc0 | nameLen;
         std::copy(sensorname.begin(), sensorname.begin() + nameLen, name);
     }

@@ -74,9 +74,9 @@ constexpr size_t ipmbRequestDataHeaderLength = 3;
 constexpr size_t ipmbChecksum2StartOffset = 3;
 constexpr size_t ipmbChecksumSize = 1;
 constexpr size_t ipmbMinFrameLength = 7;
-constexpr size_t ipmbMaxFrameLength = ipmbConnectionHeaderLength +
-                                      ipmbResponseDataHeaderLength +
-                                      ipmbChecksumSize + ipmbMaxDataSize;
+constexpr size_t ipmbMaxFrameLength =
+    ipmbConnectionHeaderLength + ipmbResponseDataHeaderLength +
+    ipmbChecksumSize + ipmbMaxDataSize;
 
 /**
  * @brief Channel types

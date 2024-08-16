@@ -37,10 +37,9 @@ inline static void printRegistration(unsigned int netfn, unsigned int cmd)
     }
 }
 
-inline static void ipmiPrintAndRegister(ipmi_netfn_t netfn, ipmi_cmd_t cmd,
-                                        ipmi_context_t context,
-                                        ipmid_callback_t handler,
-                                        ipmi_cmd_privilege_t priv)
+inline static void ipmiPrintAndRegister(
+    ipmi_netfn_t netfn, ipmi_cmd_t cmd, ipmi_context_t context,
+    ipmid_callback_t handler, ipmi_cmd_privilege_t priv)
 {
     printRegistration(netfn, cmd);
     ipmi_register_callback(netfn, cmd, context, handler, priv);

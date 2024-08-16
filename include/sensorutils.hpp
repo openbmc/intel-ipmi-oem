@@ -155,10 +155,9 @@ static inline void normalizeIntExp(int16_t& ibase, int8_t& expShift,
 // To use with Wolfram Alpha, make all variables single letters
 // bExp becomes E, rExp becomes R
 // https://www.wolframalpha.com/input/?i=y%3D%28%28M*x%29%2B%28B*%2810%5EE%29%29%29*%2810%5ER%29
-static inline bool getSensorAttributes(const double max, const double min,
-                                       int16_t& mValue, int8_t& rExp,
-                                       int16_t& bValue, int8_t& bExp,
-                                       bool& bSigned)
+static inline bool getSensorAttributes(
+    const double max, const double min, int16_t& mValue, int8_t& rExp,
+    int16_t& bValue, int8_t& bExp, bool& bSigned)
 {
     if (!(std::isfinite(min)))
     {
@@ -249,9 +248,8 @@ static inline bool getSensorAttributes(const double max, const double min,
     // Step 4: Constrain B, and set bExp accordingly
     if (!(scaleFloatExp(dB, bExp)))
     {
-        std::cerr << "getSensorAttributes: Offset (B=" << dB
-                  << ", bExp=" << (int)bExp
-                  << ") exceeds multiplier scale (M=" << dM
+        std::cerr << "getSensorAttributes: Offset (B=" << dB << ", bExp="
+                  << (int)bExp << ") exceeds multiplier scale (M=" << dM
                   << ", rExp=" << (int)rExp << ")\n";
         return false;
     }
@@ -264,10 +262,9 @@ static inline bool getSensorAttributes(const double max, const double min,
     return true;
 }
 
-static inline uint8_t
-    scaleIPMIValueFromDouble(const double value, const int16_t mValue,
-                             const int8_t rExp, const int16_t bValue,
-                             const int8_t bExp, const bool bSigned)
+static inline uint8_t scaleIPMIValueFromDouble(
+    const double value, const int16_t mValue, const int8_t rExp,
+    const int16_t bValue, const int8_t bExp, const bool bSigned)
 {
     // Avoid division by zero below
     if (mValue == 0)
@@ -322,8 +319,8 @@ static inline uint8_t getScaledIPMIValue(const double value, const double max,
     int8_t bExp = 0;
     bool bSigned = false;
 
-    bool result = getSensorAttributes(max, min, mValue, rExp, bValue, bExp,
-                                      bSigned);
+    bool result =
+        getSensorAttributes(max, min, mValue, rExp, bValue, bExp, bSigned);
     if (!result)
     {
         throw std::runtime_error("Illegal sensor attributes");

@@ -268,8 +268,8 @@ void writefifo(const uint8_t cmdReg, const uint8_t val)
     // trigger the write FIFO operation.
     std::vector<uint8_t> writeData = {cmdReg, val};
     std::vector<uint8_t> readBuf(0);
-    ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, targetAddr, writeData,
-                                         readBuf);
+    ipmi::Cc retI2C =
+        ipmi::i2cWriteRead(i2cBus, targetAddr, writeData, readBuf);
     if (retI2C)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -374,8 +374,8 @@ ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t, ipmi_cmd_t,
     return IPMI_CC_OK;
 }
 
-ipmi::RspType<> ipmiOEMDisableBMCSystemReset(bool disableResetOnSMI,
-                                             uint7_t reserved1)
+ipmi::RspType<>
+    ipmiOEMDisableBMCSystemReset(bool disableResetOnSMI, uint7_t reserved1)
 {
     if (reserved1)
     {
@@ -386,8 +386,8 @@ ipmi::RspType<> ipmiOEMDisableBMCSystemReset(bool disableResetOnSMI,
 
     try
     {
-        auto service = ipmi::getService(*busp, bmcResetDisablesIntf,
-                                        bmcResetDisablesPath);
+        auto service =
+            ipmi::getService(*busp, bmcResetDisablesIntf, bmcResetDisablesPath);
         ipmi::setDbusProperty(*busp, service, bmcResetDisablesPath,
                               bmcResetDisablesIntf, "ResetOnSMI",
                               !disableResetOnSMI);
@@ -413,8 +413,8 @@ ipmi::RspType<bool,   // disableResetOnSMI
     std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
     try
     {
-        auto service = ipmi::getService(*busp, bmcResetDisablesIntf,
-                                        bmcResetDisablesPath);
+        auto service =
+            ipmi::getService(*busp, bmcResetDisablesIntf, bmcResetDisablesPath);
         Value variant =
             ipmi::getDbusProperty(*busp, service, bmcResetDisablesPath,
                                   bmcResetDisablesIntf, "ResetOnSMI");
@@ -469,8 +469,8 @@ bool getActiveHSCSoftwareVersionInfo(std::string& hscVersion, size_t hscNumber)
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     try
     {
-        std::string hsbpObjPath = "/xyz/openbmc_project/software/HSBP_" +
-                                  std::to_string(hscNumber);
+        std::string hsbpObjPath =
+            "/xyz/openbmc_project/software/HSBP_" + std::to_string(hscNumber);
         auto service = getService(*dbus, biosVersionIntf, hsbpObjPath);
         Value hscVersionValue =
             getDbusProperty(*dbus, "xyz.openbmc_project.HsbpManager",
@@ -560,8 +560,8 @@ bool getSwVerInfo(ipmi::Context::ptr& ctx, uint8_t& bmcMajor, uint8_t& bmcMinor,
         if (results.size() == matchedPhosphor)
         {
             meMajor = static_cast<uint8_t>(std::stoi(results[1]));
-            meMinor = static_cast<uint8_t>(std::stoi(results[2]) << 4 |
-                                           std::stoi(results[3]));
+            meMinor = static_cast<uint8_t>(
+                std::stoi(results[2]) << 4 | std::stoi(results[3]));
         }
     }
     return true;
@@ -594,8 +594,8 @@ ipmi::RspType<
             }
 
             std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-            std::string service = getService(*dbus, biosVersionIntf,
-                                             biosActiveObjPath);
+            std::string service =
+                getService(*dbus, biosVersionIntf, biosActiveObjPath);
             try
             {
                 Value variant =
@@ -717,11 +717,11 @@ ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
     }
 
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    std::string service = getService(*dbus, powerRestoreDelayIntf,
-                                     powerRestoreDelayObjPath);
-    Value variant = getDbusProperty(*dbus, service, powerRestoreDelayObjPath,
-                                    powerRestoreDelayIntf,
-                                    powerRestoreDelayProp);
+    std::string service =
+        getService(*dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
+    Value variant =
+        getDbusProperty(*dbus, service, powerRestoreDelayObjPath,
+                        powerRestoreDelayIntf, powerRestoreDelayProp);
 
     uint64_t val = std::get<uint64_t>(variant);
     val /= 1000000UL;
@@ -742,10 +742,9 @@ static uint8_t bcdToDec(uint8_t val)
 // Allows an update utility or system BIOS to send the status of an embedded
 // firmware update attempt to the BMC. After received, BMC will create a logging
 // record.
-ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
-                                               uint8_t majorRevision,
-                                               uint8_t minorRevision,
-                                               uint32_t auxInfo)
+ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(
+    uint8_t status, uint8_t target, uint8_t majorRevision,
+    uint8_t minorRevision, uint32_t auxInfo)
 {
     std::string firmware;
     int instance = (target & targetInstanceMask) >> targetInstanceShift;
@@ -830,8 +829,8 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
             break;
     }
 
-    std::string firmwareInstanceStr = firmware +
-                                      " instance: " + std::to_string(instance);
+    std::string firmwareInstanceStr =
+        firmware + " instance: " + std::to_string(instance);
     std::string message("[firmware update] " + firmwareInstanceStr +
                         " status: <" + action + "> " + buildInfo);
 
@@ -842,12 +841,11 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(uint8_t status, uint8_t target,
     return ipmi::responseSuccess();
 }
 
-ipmi::RspType<uint8_t, std::vector<uint8_t>>
-    ipmiOEMSlotIpmb(ipmi::Context::ptr& ctx, uint6_t reserved1,
-                    uint2_t slotNumber, uint3_t baseBoardSlotNum,
-                    [[maybe_unused]] uint3_t riserSlotNum, uint2_t reserved2,
-                    uint8_t targetAddr, uint8_t netFn, uint8_t cmd,
-                    std::optional<std::vector<uint8_t>> writeData)
+ipmi::RspType<uint8_t, std::vector<uint8_t>> ipmiOEMSlotIpmb(
+    ipmi::Context::ptr& ctx, uint6_t reserved1, uint2_t slotNumber,
+    uint3_t baseBoardSlotNum, [[maybe_unused]] uint3_t riserSlotNum,
+    uint2_t reserved2, uint8_t targetAddr, uint8_t netFn, uint8_t cmd,
+    std::optional<std::vector<uint8_t>> writeData)
 {
     if (reserved1 || reserved2)
     {
@@ -902,8 +900,8 @@ ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t, ipmi_cmd_t,
     delay = (delay << 8) | data->byteLSB;
     uint64_t val = delay * 1000000;
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    std::string service = getService(*dbus, powerRestoreDelayIntf,
-                                     powerRestoreDelayObjPath);
+    std::string service =
+        getService(*dbus, powerRestoreDelayIntf, powerRestoreDelayObjPath);
     setDbusProperty(*dbus, service, powerRestoreDelayObjPath,
                     powerRestoreDelayIntf, powerRestoreDelayProp, val);
     *dataLen = 0;
@@ -921,8 +919,8 @@ static bool cpuPresent(const std::string& cpuName)
     std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
     try
     {
-        auto service = ipmi::getService(*busp, cpuPresenceIntf,
-                                        cpuPresencePath);
+        auto service =
+            ipmi::getService(*busp, cpuPresenceIntf, cpuPresencePath);
 
         ipmi::Value result = ipmi::getDbusProperty(
             *busp, service, cpuPresencePath, cpuPresenceIntf, "Present");
@@ -1000,10 +998,10 @@ ipmi::RspType<bool,    // IERR Reset Enabled
         return ipmi::responseUnspecifiedError();
     }
 
-    return ipmi::responseSuccess(resetOnIERR, resetOnERR2, allowResetOnMCERR, 0,
-                                 0x3F, cpu1IERRCount, cpu1Status, cpu2IERRCount,
-                                 cpu2Status, cpu3IERRCount, cpu3Status,
-                                 cpu4IERRCount, cpu4Status, crashdumpCount);
+    return ipmi::responseSuccess(
+        resetOnIERR, resetOnERR2, allowResetOnMCERR, 0, 0x3F, cpu1IERRCount,
+        cpu1Status, cpu2IERRCount, cpu2Status, cpu3IERRCount, cpu3Status,
+        cpu4IERRCount, cpu4Status, crashdumpCount);
 }
 
 ipmi::RspType<> ipmiOEMSetProcessorErrConfig(
@@ -1089,8 +1087,8 @@ ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
     try
     {
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        std::string service = getService(*dbus, oemShutdownPolicyIntf,
-                                         oemShutdownPolicyObjPath);
+        std::string service =
+            getService(*dbus, oemShutdownPolicyIntf, oemShutdownPolicyObjPath);
         Value variant = getDbusProperty(
             *dbus, service, oemShutdownPolicyObjPath, oemShutdownPolicyIntf,
             oemShutdownPolicyObjPathProp);
@@ -1172,8 +1170,8 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t,
     try
     {
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        std::string service = getService(*dbus, oemShutdownPolicyIntf,
-                                         oemShutdownPolicyObjPath);
+        std::string service =
+            getService(*dbus, oemShutdownPolicyIntf, oemShutdownPolicyObjPath);
         setDbusProperty(
             *dbus, service, oemShutdownPolicyObjPath, oemShutdownPolicyIntf,
             oemShutdownPolicyObjPathProp,
@@ -1203,8 +1201,8 @@ static bool isDHCPEnabled(uint8_t Channel)
         }
         auto ethIP = ethdevice + "/ipv4";
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        auto ethernetObj = getDbusObject(*dbus, networkIPIntf, networkRoot,
-                                         ethIP);
+        auto ethernetObj =
+            getDbusObject(*dbus, networkIPIntf, networkRoot, ethIP);
         auto value = getDbusProperty(*dbus, networkService, ethernetObj.first,
                                      networkIPIntf, "Origin");
         if (std::get<std::string>(value) ==
@@ -1239,8 +1237,8 @@ static bool isDHCPIPv6Enabled(uint8_t Channel)
         }
         auto ethIP = ethdevice + "/ipv6";
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        auto objectInfo = getDbusObject(*dbus, networkIPIntf, networkRoot,
-                                        ethIP);
+        auto objectInfo =
+            getDbusObject(*dbus, networkIPIntf, networkRoot, ethIP);
         auto properties = getAllDbusProperties(*dbus, objectInfo.second,
                                                objectInfo.first, networkIPIntf);
         if (std::get<std::string>(properties["Origin"]) ==
@@ -1521,8 +1519,8 @@ int8_t getLEDState(sdbusplus::bus_t& bus, const std::string& intf,
     try
     {
         std::string service = getService(bus, intf, objPath);
-        Value stateValue = getDbusProperty(bus, service, objPath, intf,
-                                           "State");
+        Value stateValue =
+            getDbusProperty(bus, service, objPath, intf, "State");
         std::string strState = std::get<std::string>(stateValue);
         state = ledAction::actionDbusToIpmi.at(
             sdbusplus::xyz::openbmc_project::Led::server::Physical::
@@ -1556,11 +1554,9 @@ ipmi::RspType<uint8_t> ipmiOEMGetLEDStatus()
     return ipmi::responseSuccess(ledstate);
 }
 
-ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(ipmi_netfn_t, ipmi_cmd_t,
-                                         ipmi_request_t request,
-                                         ipmi_response_t response,
-                                         ipmi_data_len_t dataLen,
-                                         ipmi_context_t)
+ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
+    ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t request, ipmi_response_t response,
+    ipmi_data_len_t dataLen, ipmi_context_t)
 {
     CfgHostSerialReq* req = reinterpret_cast<CfgHostSerialReq*>(request);
     uint8_t* resp = reinterpret_cast<uint8_t*>(response);
@@ -1864,10 +1860,10 @@ constexpr const char* pidConfigurationIface =
 static std::string getConfigPath(const std::string& name)
 {
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    auto method = dbus->new_method_call("xyz.openbmc_project.ObjectMapper",
-                                        "/xyz/openbmc_project/object_mapper",
-                                        "xyz.openbmc_project.ObjectMapper",
-                                        "GetSubTree");
+    auto method =
+        dbus->new_method_call("xyz.openbmc_project.ObjectMapper",
+                              "/xyz/openbmc_project/object_mapper",
+                              "xyz.openbmc_project.ObjectMapper", "GetSubTree");
 
     method.append("/", 0, std::array<const char*, 1>{pidConfigurationIface});
     std::string path;
@@ -1882,10 +1878,10 @@ static std::string getConfigPath(const std::string& name)
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmiOEMGetFscParameter: mapper error");
     };
-    auto config = std::find_if(resp.begin(), resp.end(),
-                               [&name](const auto& pair) {
-        return pair.first.find(name) != std::string::npos;
-    });
+    auto config =
+        std::find_if(resp.begin(), resp.end(), [&name](const auto& pair) {
+            return pair.first.find(name) != std::string::npos;
+        });
     if (config != resp.end())
     {
         path = std::move(config->first);
@@ -1898,10 +1894,10 @@ static boost::container::flat_map<std::string, PropertyMap> getPidConfigs()
 {
     boost::container::flat_map<std::string, PropertyMap> ret;
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    auto method = dbus->new_method_call("xyz.openbmc_project.ObjectMapper",
-                                        "/xyz/openbmc_project/object_mapper",
-                                        "xyz.openbmc_project.ObjectMapper",
-                                        "GetSubTree");
+    auto method =
+        dbus->new_method_call("xyz.openbmc_project.ObjectMapper",
+                              "/xyz/openbmc_project/object_mapper",
+                              "xyz.openbmc_project.ObjectMapper", "GetSubTree");
 
     method.append("/", 0, std::array<const char*, 1>{pidConfigurationIface});
     GetSubTreeType resp;
@@ -2413,9 +2409,8 @@ static const constexpr uint32_t oneDay = 0x15180;
 static const constexpr uint32_t oneMonth = 0xf53700;
 static const constexpr uint8_t userSpecific = 0x01;
 static const constexpr uint8_t crSetCompleted = 0;
-ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(ipmi::Context::ptr& ctx,
-                                          uint8_t parameter,
-                                          ipmi::message::Payload& payload)
+ipmi::RspType<uint8_t> ipmiOEMSetCRConfig(
+    ipmi::Context::ptr& ctx, uint8_t parameter, ipmi::message::Payload& payload)
 {
     switch (static_cast<crParameter>(parameter))
     {
@@ -2702,10 +2697,9 @@ ipmi::RspType<uint8_t, std::variant<uint8_t, uint32_t, std::vector<uint8_t>>>
     }
 }
 
-ipmi::RspType<> ipmiOEMSetFaultIndication(uint8_t sourceId, uint8_t faultType,
-                                          uint8_t faultState,
-                                          uint8_t faultGroup,
-                                          std::array<uint8_t, 8>& ledStateData)
+ipmi::RspType<> ipmiOEMSetFaultIndication(
+    uint8_t sourceId, uint8_t faultType, uint8_t faultState, uint8_t faultGroup,
+    std::array<uint8_t, 8>& ledStateData)
 {
     constexpr auto maxFaultType = static_cast<size_t>(RemoteFaultType::max);
     static const std::array<std::string, maxFaultType> faultNames = {
@@ -3174,11 +3168,11 @@ ipmi::RspType<uint8_t> ipmiOEMGetNmiSource(void)
     try
     {
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        std::string service = getService(*dbus, oemNmiSourceIntf,
-                                         oemNmiSourceObjPath);
-        Value variant = getDbusProperty(*dbus, service, oemNmiSourceObjPath,
-                                        oemNmiSourceIntf,
-                                        oemNmiBmcSourceObjPathProp);
+        std::string service =
+            getService(*dbus, oemNmiSourceIntf, oemNmiSourceObjPath);
+        Value variant =
+            getDbusProperty(*dbus, service, oemNmiSourceObjPath,
+                            oemNmiSourceIntf, oemNmiBmcSourceObjPathProp);
 
         switch (nmi::NMISource::convertBMCSourceSignalFromString(
             std::get<std::string>(variant)))
@@ -3267,8 +3261,8 @@ ipmi::RspType<> ipmiOEMSetNmiSource(uint8_t sourceId)
     {
         // keep NMI signal source
         std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-        std::string service = getService(*dbus, oemNmiSourceIntf,
-                                         oemNmiSourceObjPath);
+        std::string service =
+            getService(*dbus, oemNmiSourceIntf, oemNmiSourceObjPath);
         setDbusProperty(*dbus, service, oemNmiSourceObjPath, oemNmiSourceIntf,
                         oemNmiBmcSourceObjPathProp,
                         nmi::convertForMessage(bmcSourceSignal));
@@ -3303,9 +3297,8 @@ constexpr const char* property = "DimmOffset";
 
 }; // namespace dimmOffset
 
-ipmi::RspType<>
-    ipmiOEMSetDimmOffset(uint8_t type,
-                         const std::vector<std::tuple<uint8_t, uint8_t>>& data)
+ipmi::RspType<> ipmiOEMSetDimmOffset(
+    uint8_t type, const std::vector<std::tuple<uint8_t, uint8_t>>& data)
 {
     if (type != static_cast<uint8_t>(dimmOffsetTypes::dimmPower) &&
         type != static_cast<uint8_t>(dimmOffsetTypes::staticCltt))
@@ -3775,8 +3768,8 @@ ipmi::RspType<std::vector<uint8_t>>
     return ipmi::responseSuccess(result);
 }
 
-std::optional<uint8_t> getMultiNodeInfoPresence(ipmi::Context::ptr& ctx,
-                                                const std::string& name)
+std::optional<uint8_t>
+    getMultiNodeInfoPresence(ipmi::Context::ptr& ctx, const std::string& name)
 {
     Value dbusValue = 0;
     std::string serviceName;
@@ -3846,8 +3839,8 @@ ipmi::RspType<uint4_t, // domain ID
     // This command should run only from multi-node product.
     // For all other platforms this command will return invalid.
 
-    std::optional<uint8_t> nodeInfo = getMultiNodeInfoPresence(ctx,
-                                                               "NodePresence");
+    std::optional<uint8_t> nodeInfo =
+        getMultiNodeInfoPresence(ctx, "NodePresence");
     if (!nodeInfo || !*nodeInfo)
     {
         return ipmi::responseInvalidCommand();

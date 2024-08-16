@@ -223,11 +223,10 @@ Manufacturing::Manufacturing() :
     initData();
 }
 
-int8_t Manufacturing::getProperty(const std::string& service,
-                                  const std::string& path,
-                                  const std::string& interface,
-                                  const std::string& propertyName,
-                                  ipmi::Value* reply)
+int8_t Manufacturing::getProperty(
+    const std::string& service, const std::string& path,
+    const std::string& interface, const std::string& propertyName,
+    ipmi::Value* reply)
 {
     try
     {
@@ -243,11 +242,10 @@ int8_t Manufacturing::getProperty(const std::string& service,
     return 0;
 }
 
-int8_t Manufacturing::setProperty(const std::string& service,
-                                  const std::string& path,
-                                  const std::string& interface,
-                                  const std::string& propertyName,
-                                  ipmi::Value value)
+int8_t Manufacturing::setProperty(
+    const std::string& service, const std::string& path,
+    const std::string& interface, const std::string& propertyName,
+    ipmi::Value value)
 {
     try
     {
@@ -536,8 +534,8 @@ ipmi::RspType<uint8_t,                // Signal value
         {
             constexpr const char* netBasePath = "/sys/class/net/eth";
             constexpr const char* carrierSuffix = "/carrier";
-            std::ifstream netIfs(netBasePath + std::to_string(instance) +
-                                 carrierSuffix);
+            std::ifstream netIfs(
+                netBasePath + std::to_string(instance) + carrierSuffix);
             if (!netIfs.good())
             {
                 return ipmi::responseInvalidFieldRequest();
@@ -672,9 +670,9 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                         pwmName = "Pwm_" + std::to_string(instance + 1);
                     }
                     fanPwmInstancePath = fanPwmPath + pwmName;
-                    ret = mtm.setProperty(fanService, fanPwmInstancePath,
-                                          fanIntf, "Value",
-                                          static_cast<double>(pwmValue));
+                    ret =
+                        mtm.setProperty(fanService, fanPwmInstancePath, fanIntf,
+                                        "Value", static_cast<double>(pwmValue));
                     if (ret < 0)
                     {
                         return ipmi::responseUnspecifiedError();
@@ -704,8 +702,8 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                         return ipmi::response(retCode);
                     }
 
-                    if ((mtm.mtmTestBeepFd = ::open(beepDevName,
-                                                    O_RDWR | O_CLOEXEC)) < 0)
+                    if ((mtm.mtmTestBeepFd =
+                             ::open(beepDevName, O_RDWR | O_CLOEXEC)) < 0)
                     {
                         lg2::error("Failed to open input device");
                         return ipmi::responseUnspecifiedError();
@@ -766,8 +764,8 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                 lg2::error("Failed to query HSBP drive sub tree objects");
                 return ipmi::responseUnspecifiedError();
             }
-            std::string driveObjPath = driveBasePath + "Drive_" +
-                                       std::to_string(instance + 1);
+            std::string driveObjPath =
+                driveBasePath + "Drive_" + std::to_string(instance + 1);
             if (std::find(driveList.begin(), driveList.end(), driveObjPath) ==
                 driveList.end())
             {
@@ -981,8 +979,8 @@ bool readMacFromFru(ipmi::Context::ptr ctx, uint8_t macIndex,
         writeData.push_back(static_cast<uint8_t>(macOffset));
         std::vector<uint8_t> readBuf(macRecordSize);
         std::string i2cBus = "/dev/i2c-" + std::to_string(fruBus);
-        ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, fruAddress, writeData,
-                                             readBuf);
+        ipmi::Cc retI2C =
+            ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf);
         if (retI2C == ipmi::ccSuccess)
         {
             uint8_t cs = calculateChecksum(readBuf.cbegin(), readBuf.cend());
@@ -1025,14 +1023,14 @@ ipmi::Cc writeMacToFru(ipmi::Context::ptr ctx, uint8_t macIndex,
         writeData.push_back(macHeader);
         std::for_each(ethData.cbegin(), ethData.cend(),
                       [&](uint8_t i) { writeData.push_back(i); });
-        uint8_t macCheckSum = calculateChecksum(++writeData.cbegin(),
-                                                writeData.cend());
+        uint8_t macCheckSum =
+            calculateChecksum(++writeData.cbegin(), writeData.cend());
         writeData.push_back(macCheckSum);
 
         std::string i2cBus = "/dev/i2c-" + std::to_string(fruBus);
         std::vector<uint8_t> readBuf;
-        ipmi::Cc ret = ipmi::i2cWriteRead(i2cBus, fruAddress, writeData,
-                                          readBuf);
+        ipmi::Cc ret =
+            ipmi::i2cWriteRead(i2cBus, fruAddress, writeData, readBuf);
 
         // prepare for read to detect chip is write protected
         writeData.resize(1);
@@ -1108,9 +1106,9 @@ ipmi::RspType<> setManufacturingData(ipmi::Context::ptr ctx, uint8_t dataType,
                   "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx\n", ethData.at(0),
                   ethData.at(1), ethData.at(2), ethData.at(3), ethData.at(4),
                   ethData.at(5));
-    std::ofstream oEthFile(factoryEthAddrBaseFileName +
-                               std::to_string(dataType),
-                           std::ofstream::out);
+    std::ofstream oEthFile(
+        factoryEthAddrBaseFileName + std::to_string(dataType),
+        std::ofstream::out);
     if (!oEthFile.good())
     {
         return ipmi::responseUnspecifiedError();
@@ -1137,9 +1135,9 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>>
     constexpr uint8_t invalidData = 0;
     constexpr uint8_t validData = 1;
 
-    std::ifstream iEthFile(factoryEthAddrBaseFileName +
-                               std::to_string(dataType),
-                           std::ifstream::in);
+    std::ifstream iEthFile(
+        factoryEthAddrBaseFileName + std::to_string(dataType),
+        std::ifstream::in);
     if (!iEthFile.good())
     {
         if (readMacFromFru(ctx, dataType, ethData))
@@ -1263,8 +1261,8 @@ ipmi::RspType<std::vector<uint8_t>> appSlotI2CControllerWriteRead(
 
     std::vector<uint8_t> readBuf(readCount);
 
-    ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, targetAddr, writeData,
-                                         readBuf);
+    ipmi::Cc retI2C =
+        ipmi::i2cWriteRead(i2cBus, targetAddr, writeData, readBuf);
     if (retI2C != ipmi::ccSuccess)
     {
         return ipmi::response(retI2C);
@@ -1283,8 +1281,8 @@ ipmi::RspType<> clearCMOS()
     std::vector<uint8_t> writeData = {0x61, 0x1};
     std::vector<uint8_t> readBuf(0);
 
-    ipmi::Cc retI2C = ipmi::i2cWriteRead(i2cBus, targetAddr, writeData,
-                                         readBuf);
+    ipmi::Cc retI2C =
+        ipmi::i2cWriteRead(i2cBus, targetAddr, writeData, readBuf);
     return ipmi::response(retI2C);
 }
 
@@ -1334,10 +1332,9 @@ static std::vector<std::string>
     return configPaths;
 }
 
-static ipmi::RspType<> startOrStopService(ipmi::Context::ptr& ctx,
-                                          const uint8_t enable,
-                                          const std::string& serviceName,
-                                          bool disableOrEnableUnitFiles = true)
+static ipmi::RspType<> startOrStopService(
+    ipmi::Context::ptr& ctx, const uint8_t enable,
+    const std::string& serviceName, bool disableOrEnableUnitFiles = true)
 {
     constexpr bool runtimeOnly = false;
     constexpr bool force = false;
@@ -1404,14 +1401,13 @@ static std::string getMCTPServiceName(const std::string& objectPath)
         boost::algorithm::replace_first_copy(
             objectPath, "/xyz/openbmc_project/inventory/system/board/", ""),
         "/", "_2f");
-    std::string unitName = "xyz.openbmc_project.mctpd@" + serviceArgument +
-                           ".service";
+    std::string unitName =
+        "xyz.openbmc_project.mctpd@" + serviceArgument + ".service";
     return unitName;
 }
 
-static ipmi::RspType<> handleMCTPFeature(ipmi::Context::ptr& ctx,
-                                         const uint8_t enable,
-                                         const std::string& binding)
+static ipmi::RspType<> handleMCTPFeature(
+    ipmi::Context::ptr& ctx, const uint8_t enable, const std::string& binding)
 {
     std::vector<std::string> configPaths;
     try
@@ -1501,9 +1497,8 @@ static ipmi::RspType<> muxSlotDisable(ipmi::Context::ptr& ctx,
     return ipmi::responseSuccess();
 }
 
-static ipmi::RspType<> handleMCTPSlotFeature(ipmi::Context::ptr& ctx,
-                                             const uint8_t enable,
-                                             const uint8_t featureArg)
+static ipmi::RspType<> handleMCTPSlotFeature(
+    ipmi::Context::ptr& ctx, const uint8_t enable, const uint8_t featureArg)
 {
     uint8_t slotNum = (featureArg & slotNumMask);
     switch ((featureArg & muxTypeMask) >> muxTypeShift)
@@ -1549,11 +1544,9 @@ static ipmi::RspType<> handleMCTPSlotFeature(ipmi::Context::ptr& ctx,
  *
  * @returns IPMI completion code
  */
-ipmi::RspType<> mtmBMCFeatureControl(ipmi::Context::ptr ctx,
-                                     const uint8_t feature,
-                                     const uint8_t enable,
-                                     const uint8_t featureArg,
-                                     const uint16_t reserved)
+ipmi::RspType<> mtmBMCFeatureControl(
+    ipmi::Context::ptr ctx, const uint8_t feature, const uint8_t enable,
+    const uint8_t featureArg, const uint16_t reserved)
 {
     if (reserved != 0)
     {
@@ -1636,6 +1629,6 @@ void register_mtm_commands()
 
     ipmi::registerFilter(ipmi::prioOemBase,
                          [](ipmi::message::Request::ptr request) {
-        return ipmi::mfgFilterMessage(request);
-    });
+                             return ipmi::mfgFilterMessage(request);
+                         });
 }

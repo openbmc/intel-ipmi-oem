@@ -119,9 +119,8 @@ class IPMIStatsEntry
         if ((numStreakRead == 0) && (numReadings != 0))
         {
             std::cerr << "IPMI sensor " << sensorName
-                      << ": Recovered reading, value=" << reading
-                      << " byte=" << raw
-                      << ", Reading counts good=" << numReadings
+                      << ": Recovered reading, value=" << reading << " byte="
+                      << raw << ", Reading counts good=" << numReadings
                       << " miss=" << numMissings
                       << ", Prior miss streak=" << numStreakMiss << "\n";
         }
@@ -249,10 +248,10 @@ inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
 
     sensorTreePtr = std::make_shared<SensorSubTree>();
 
-    auto mapperCall = dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
-                                           "/xyz/openbmc_project/object_mapper",
-                                           "xyz.openbmc_project.ObjectMapper",
-                                           "GetSubTree");
+    auto mapperCall =
+        dbus.new_method_call("xyz.openbmc_project.ObjectMapper",
+                             "/xyz/openbmc_project/object_mapper",
+                             "xyz.openbmc_project.ObjectMapper", "GetSubTree");
     static constexpr const auto depth = 2;
     static constexpr std::array<const char*, 3> interfaces = {
         "xyz.openbmc_project.Sensor.Value",
@@ -539,10 +538,9 @@ static inline const std::string* getSensorConfigurationInterface(
 
 // Follow Association properties for Sensor back to the Board dbus object to
 // check for an EntityId and EntityInstance property.
-static inline void updateIpmiFromAssociation(const std::string& path,
-                                             const SensorMap& sensorMap,
-                                             uint8_t& entityId,
-                                             uint8_t& entityInstance)
+static inline void updateIpmiFromAssociation(
+    const std::string& path, const SensorMap& sensorMap, uint8_t& entityId,
+    uint8_t& entityInstance)
 {
     namespace fs = std::filesystem;
 

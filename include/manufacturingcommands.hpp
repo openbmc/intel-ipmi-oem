@@ -270,8 +270,8 @@ class Manufacturing
     {
         auto it = std::find_if(ledPropertyList.begin(), ledPropertyList.end(),
                                [&signal](const LedProperty& led) {
-            return led.getSignal() == signal;
-        });
+                                   return led.getSignal() == signal;
+                               });
         if (it != ledPropertyList.end())
         {
             return &(*it);

@@ -92,8 +92,7 @@ struct knob
          std::string descriptionStr, std::string defaultStr,
          std::string promptStr, std::string depexStr,
          std::string& setupTypeStr) :
-        depex(false),
-        readOnly(("ReadOnly" == setupTypeStr) ? true : false),
+        depex(false), readOnly(("ReadOnly" == setupTypeStr) ? true : false),
         currentVal(currentVal), nameStr(std::move(nameStr)),
         currentValStr(std::move(currentValStr)),
         descriptionStr(std::move(descriptionStr)),
@@ -177,8 +176,8 @@ class Depex
     {
         return !s.empty() &&
                std::find_if(s.begin(), s.end(), [](unsigned char c) {
-            return !std::isdigit(c);
-        }) == s.end();
+                   return !std::isdigit(c);
+               }) == s.end();
     }
 
     /* Returns 'true' if the argument string is hex representation of a number.
@@ -203,8 +202,8 @@ class Depex
             }
         }
 
-        std::string error = "Unable to find knob: " + variableName +
-                            " in knob list\n";
+        std::string error =
+            "Unable to find knob: " + variableName + " in knob list\n";
         phosphor::logging::log<phosphor::logging::level::ERR>(error.c_str());
 
         return false;
@@ -676,8 +675,8 @@ class Xml
     {
         if (!getKnobs(filePath))
         {
-            std::string error = "Unable to get knobs in file: " +
-                                std::string(filePath);
+            std::string error =
+                "Unable to get knobs in file: " + std::string(filePath);
             throw std::runtime_error(error);
         }
     }

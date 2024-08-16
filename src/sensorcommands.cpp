@@ -93,22 +93,22 @@ static sdbusplus::bus::match_t sensorAdded(
     "type='signal',member='InterfacesAdded',arg0path='/xyz/openbmc_project/"
     "sensors/'",
     [](sdbusplus::message_t&) {
-    sensorTree.clear();
-    sdrLastAdd = std::chrono::duration_cast<std::chrono::seconds>(
-                     std::chrono::system_clock::now().time_since_epoch())
-                     .count();
-});
+        sensorTree.clear();
+        sdrLastAdd = std::chrono::duration_cast<std::chrono::seconds>(
+                         std::chrono::system_clock::now().time_since_epoch())
+                         .count();
+    });
 
 static sdbusplus::bus::match_t sensorRemoved(
     *getSdBus(),
     "type='signal',member='InterfacesRemoved',arg0path='/xyz/openbmc_project/"
     "sensors/'",
     [](sdbusplus::message_t&) {
-    sensorTree.clear();
-    sdrLastRemove = std::chrono::duration_cast<std::chrono::seconds>(
-                        std::chrono::system_clock::now().time_since_epoch())
-                        .count();
-});
+        sensorTree.clear();
+        sdrLastRemove = std::chrono::duration_cast<std::chrono::seconds>(
+                            std::chrono::system_clock::now().time_since_epoch())
+                            .count();
+    });
 
 // this keeps track of deassertions for sensor event status command. A
 // deasertion can only happen if an assertion was seen first.
@@ -121,42 +121,43 @@ static sdbusplus::bus::match_t thresholdChanged(
     "type='signal',member='PropertiesChanged',interface='org.freedesktop.DBus."
     "Properties',arg0namespace='xyz.openbmc_project.Sensor.Threshold'",
     [](sdbusplus::message_t& m) {
-    boost::container::flat_map<std::string, ipmi::DbusVariant> values;
-    m.read(std::string(), values);
+        boost::container::flat_map<std::string, ipmi::DbusVariant> values;
+        m.read(std::string(), values);
 
-    auto findAssert = std::find_if(values.begin(), values.end(),
-                                   [](const auto& pair) {
-        return pair.first.find("Alarm") != std::string::npos;
-    });
-    if (findAssert != values.end())
-    {
-        auto ptr = std::get_if<bool>(&(findAssert->second));
-        if (ptr == nullptr)
+        auto findAssert =
+            std::find_if(values.begin(), values.end(), [](const auto& pair) {
+                return pair.first.find("Alarm") != std::string::npos;
+            });
+        if (findAssert != values.end())
         {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "thresholdChanged: Assert non bool");
-            return;
-        }
-        if (*ptr)
-        {
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                "thresholdChanged: Assert",
-                phosphor::logging::entry("SENSOR=%s", m.get_path()));
-            thresholdDeassertMap[m.get_path()][findAssert->first] = *ptr;
-        }
-        else
-        {
-            auto& value = thresholdDeassertMap[m.get_path()][findAssert->first];
-            if (value)
+            auto ptr = std::get_if<bool>(&(findAssert->second));
+            if (ptr == nullptr)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "thresholdChanged: Assert non bool");
+                return;
+            }
+            if (*ptr)
             {
                 phosphor::logging::log<phosphor::logging::level::INFO>(
-                    "thresholdChanged: deassert",
+                    "thresholdChanged: Assert",
                     phosphor::logging::entry("SENSOR=%s", m.get_path()));
-                value = *ptr;
+                thresholdDeassertMap[m.get_path()][findAssert->first] = *ptr;
+            }
+            else
+            {
+                auto& value =
+                    thresholdDeassertMap[m.get_path()][findAssert->first];
+                if (value)
+                {
+                    phosphor::logging::log<phosphor::logging::level::INFO>(
+                        "thresholdChanged: deassert",
+                        phosphor::logging::entry("SENSOR=%s", m.get_path()));
+                    value = *ptr;
+                }
             }
         }
-    }
-});
+    });
 
 static void getSensorMaxMin(const SensorMap& sensorMap, double& max,
                             double& min)
@@ -323,9 +324,9 @@ static void setMeStatus(uint8_t eventData2, uint8_t eventData3, bool disable)
     }
 
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
-    auto setHealth = dbus->new_method_call(meHealth::busname, meHealth::path,
-                                           meHealth::interface,
-                                           meHealth::method);
+    auto setHealth =
+        dbus->new_method_call(meHealth::busname, meHealth::path,
+                              meHealth::interface, meHealth::method);
     setHealth.append(std::to_string(static_cast<size_t>(eventData2)), state);
     try
     {
@@ -468,8 +469,8 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, std::optional<uint8_t>>
         return ipmi::responseResponseError();
     }
 
-    uint8_t value = scaleIPMIValueFromDouble(reading, mValue, rExp, bValue,
-                                             bExp, bSigned);
+    uint8_t value =
+        scaleIPMIValueFromDouble(reading, mValue, rExp, bValue, bExp, bSigned);
     uint8_t operation =
         static_cast<uint8_t>(IPMISensorReadingByte2::sensorScanningEnable);
     operation |=
@@ -781,8 +782,8 @@ IPMIThresholds getIPMIThresholds(const SensorMap& sensorMap)
 
             if (warningHigh != warningMap.end())
             {
-                double value = std::visit(VariantToDoubleVisitor(),
-                                          warningHigh->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), warningHigh->second);
                 if (std::isfinite(value))
                 {
                     resp.warningHigh = scaleIPMIValueFromDouble(
@@ -791,8 +792,8 @@ IPMIThresholds getIPMIThresholds(const SensorMap& sensorMap)
             }
             if (warningLow != warningMap.end())
             {
-                double value = std::visit(VariantToDoubleVisitor(),
-                                          warningLow->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), warningLow->second);
                 if (std::isfinite(value))
                 {
                     resp.warningLow = scaleIPMIValueFromDouble(
@@ -809,8 +810,8 @@ IPMIThresholds getIPMIThresholds(const SensorMap& sensorMap)
 
             if (criticalHigh != criticalMap.end())
             {
-                double value = std::visit(VariantToDoubleVisitor(),
-                                          criticalHigh->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), criticalHigh->second);
                 if (std::isfinite(value))
                 {
                     resp.criticalHigh = scaleIPMIValueFromDouble(
@@ -819,8 +820,8 @@ IPMIThresholds getIPMIThresholds(const SensorMap& sensorMap)
             }
             if (criticalLow != criticalMap.end())
             {
-                double value = std::visit(VariantToDoubleVisitor(),
-                                          criticalLow->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), criticalLow->second);
                 if (std::isfinite(value))
                 {
                     resp.criticalLow = scaleIPMIValueFromDouble(
@@ -971,8 +972,8 @@ ipmi::RspType<uint8_t, // enabled
             auto warningLow = warningMap.find("WarningLow");
             if (warningHigh != warningMap.end())
             {
-                double value = std::visit(VariantToDoubleVisitor(),
-                                          warningHigh->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), warningHigh->second);
                 if (std::isfinite(value))
                 {
                     assertionEnabledLsb |= static_cast<uint8_t>(
@@ -985,8 +986,8 @@ ipmi::RspType<uint8_t, // enabled
             }
             if (warningLow != warningMap.end())
             {
-                double value = std::visit(VariantToDoubleVisitor(),
-                                          warningLow->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), warningLow->second);
                 if (std::isfinite(value))
                 {
                     assertionEnabledLsb |= static_cast<uint8_t>(
@@ -1007,8 +1008,8 @@ ipmi::RspType<uint8_t, // enabled
 
             if (criticalHigh != criticalMap.end())
             {
-                double value = std::visit(VariantToDoubleVisitor(),
-                                          criticalHigh->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), criticalHigh->second);
                 if (std::isfinite(value))
                 {
                     assertionEnabledMsb |= static_cast<uint8_t>(
@@ -1020,8 +1021,8 @@ ipmi::RspType<uint8_t, // enabled
             }
             if (criticalLow != criticalMap.end())
             {
-                double value = std::visit(VariantToDoubleVisitor(),
-                                          criticalLow->second);
+                double value =
+                    std::visit(VariantToDoubleVisitor(), criticalLow->second);
                 if (std::isfinite(value))
                 {
                     assertionEnabledLsb |= static_cast<uint8_t>(
@@ -1141,15 +1142,15 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
             }
             if (warningHighAlarm)
             {
-                assertions.set(
-                    static_cast<size_t>(IPMIGetSensorEventEnableThresholds::
-                                            upperNonCriticalGoingHigh));
+                assertions.set(static_cast<size_t>(
+                    IPMIGetSensorEventEnableThresholds::
+                        upperNonCriticalGoingHigh));
             }
             if (warningLowAlarm)
             {
-                assertions.set(
-                    static_cast<size_t>(IPMIGetSensorEventEnableThresholds::
-                                            lowerNonCriticalGoingLow));
+                assertions.set(static_cast<size_t>(
+                    IPMIGetSensorEventEnableThresholds::
+                        lowerNonCriticalGoingLow));
             }
         }
         if (criticalInterface != sensorMap.end())
@@ -1171,9 +1172,9 @@ ipmi::RspType<uint8_t,         // sensorEventStatus
             }
             if (criticalHighAlarm)
             {
-                assertions.set(
-                    static_cast<size_t>(IPMIGetSensorEventEnableThresholds::
-                                            upperCriticalGoingHigh));
+                assertions.set(static_cast<size_t>(
+                    IPMIGetSensorEventEnableThresholds::
+                        upperCriticalGoingHigh));
             }
             if (criticalLowAlarm)
             {
@@ -1205,9 +1206,9 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
         return GENERAL_ERROR;
     }
 
-    size_t lastRecord = getNumberOfSensors() + fruCount +
-                        ipmi::storage::type12Count +
-                        ipmi::storage::nmDiscoverySDRCount - 1;
+    size_t lastRecord =
+        getNumberOfSensors() + fruCount + ipmi::storage::type12Count +
+        ipmi::storage::nmDiscoverySDRCount - 1;
     if (recordID == lastRecordIndex)
     {
         recordID = lastRecord;
@@ -1234,8 +1235,8 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
                     "getSensorDataRecord: NM DiscoveryIndex error");
                 return GENERAL_ERROR;
             }
-            recordData = ipmi::storage::getNMDiscoverySDR(nmDiscoveryIndex,
-                                                          recordID);
+            recordData =
+                ipmi::storage::getNMDiscoverySDR(nmDiscoveryIndex, recordID);
         }
         else if (fruIndex >= fruCount)
         {
@@ -1441,8 +1442,8 @@ static int getSensorDataRecord(ipmi::Context::ptr ctx,
     uint8_t bExpBits = bExp & 0x07;
 
     // move rExp and bExp into place
-    record.body.r_b_exponents = (rExpSign << 7) | (rExpBits << 4) |
-                                (bExpSign << 3) | bExpBits;
+    record.body.r_b_exponents =
+        (rExpSign << 7) | (rExpBits << 4) | (bExpSign << 3) | bExpBits;
 
     // Set the analog reading byte interpretation accordingly
     record.body.sensor_units_1 = (bSigned ? 1 : 0) << 7;
@@ -1602,8 +1603,8 @@ static ipmi::RspType<uint8_t, // respcount
         // Return the number of sensors attached to the LUN
         if ((ctx->lun == 0) && (numSensors > 0))
         {
-            sdrCount = (numSensors > maxSensorsPerLUN) ? maxSensorsPerLUN
-                                                       : numSensors;
+            sdrCount =
+                (numSensors > maxSensorsPerLUN) ? maxSensorsPerLUN : numSensors;
         }
         else if ((ctx->lun == 1) && (numSensors > maxSensorsPerLUN))
         {
@@ -1680,9 +1681,9 @@ ipmi::RspType<uint8_t,  // sdr version
         return ipmi::response(ret);
     }
 
-    uint16_t recordCount = getNumberOfSensors() + fruCount +
-                           ipmi::storage::type12Count +
-                           ipmi::storage::nmDiscoverySDRCount;
+    uint16_t recordCount =
+        getNumberOfSensors() + fruCount + ipmi::storage::type12Count +
+        ipmi::storage::nmDiscoverySDRCount;
 
     uint8_t operationSupport = static_cast<uint8_t>(
         SdrRepositoryInfoOps::overflow); // write not supported
@@ -1763,9 +1764,9 @@ ipmi::RspType<uint16_t,            // next record ID
         return ipmi::response(ret);
     }
 
-    size_t lastRecord = getNumberOfSensors() + fruCount +
-                        ipmi::storage::type12Count +
-                        ipmi::storage::nmDiscoverySDRCount - 1;
+    size_t lastRecord =
+        getNumberOfSensors() + fruCount + ipmi::storage::type12Count +
+        ipmi::storage::nmDiscoverySDRCount - 1;
     uint16_t nextRecordId = lastRecord > recordID ? recordID + 1 : 0XFFFF;
 
     if (!getSensorSubtree(sensorTree) && sensorTree.empty())
@@ -1791,8 +1792,8 @@ ipmi::RspType<uint16_t,            // next record ID
         return ipmi::responseSuccess(nextRecordId, record);
     }
 
-    size_t sdrLength = sizeof(get_sdr::SensorDataRecordHeader) +
-                       hdr->record_length;
+    size_t sdrLength =
+        sizeof(get_sdr::SensorDataRecordHeader) + hdr->record_length;
     if (offset >= sdrLength)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(

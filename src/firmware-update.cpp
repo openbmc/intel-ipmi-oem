@@ -380,30 +380,30 @@ class FwUpdateStatusCache
             sdbusplus::bus::match::rules::propertiesChanged(
                 objPath, "xyz.openbmc_project.Software.ActivationProgress"),
             [&](sdbusplus::message_t& msg) {
-            std::map<std::string, ipmi::DbusVariant> props;
-            std::vector<std::string> inVal;
-            std::string iface;
-            try
-            {
-                msg.read(iface, props, inVal);
-            }
-            catch (const std::exception& e)
-            {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "Exception caught in get ActivationProgress");
-                return;
-            }
-
-            auto it = props.find("Progress");
-            if (it != props.end())
-            {
-                progressPercent = std::get<uint8_t>(it->second);
-                if (progressPercent == 100)
+                std::map<std::string, ipmi::DbusVariant> props;
+                std::vector<std::string> inVal;
+                std::string iface;
+                try
                 {
-                    fwUpdateState = fwStateUpdateSuccess;
+                    msg.read(iface, props, inVal);
                 }
-            }
-        });
+                catch (const std::exception& e)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "Exception caught in get ActivationProgress");
+                    return;
+                }
+
+                auto it = props.find("Progress");
+                if (it != props.end())
+                {
+                    progressPercent = std::get<uint8_t>(it->second);
+                    if (progressPercent == 100)
+                    {
+                        fwUpdateState = fwStateUpdateSuccess;
+                    }
+                }
+            });
     }
     uint8_t activationTimerTimeout()
     {
@@ -465,13 +465,13 @@ static void activateImage(const std::string& objPath)
         std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
         bus->async_method_call(
             [](const boost::system::error_code ec) {
-            if (ec)
-            {
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    "async_method_call error: activateImage failed");
-                return;
-            }
-        },
+                if (ec)
+                {
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        "async_method_call error: activateImage failed");
+                    return;
+                }
+            },
             "xyz.openbmc_project.Software.BMC.Updater", objPath,
             "org.freedesktop.DBus.Properties", "Set",
             "xyz.openbmc_project.Software.Activation", "RequestedActivation",
@@ -562,8 +562,9 @@ static void postTransferCompleteHandler(
     std::unique_ptr<sdbusplus::bus::match_t>& fwUpdateMatchSignal)
 {
     // Setup timer for watching signal
-    static sdbusplus::Timer timer(
-        [&fwUpdateMatchSignal]() { fwUpdateMatchSignal = nullptr; });
+    static sdbusplus::Timer timer([&fwUpdateMatchSignal]() {
+        fwUpdateMatchSignal = nullptr;
+    });
 
     static sdbusplus::Timer activationStatusTimer([]() {
         if (fwUpdateStatus.activationTimerTimeout() > 95)
@@ -831,12 +832,13 @@ static uint8_t getActiveBootImage(ipmi::Context::ptr ctx)
 }
 
 #ifdef INTEL_PFR_ENABLED
-using fwVersionInfoType = std::tuple<uint8_t,   // ID Tag
-                                     uint8_t,   // Major Version Number
-                                     uint8_t,   // Minor Version Number
-                                     uint32_t,  // Build Number
-                                     uint32_t,  // Build Timestamp
-                                     uint32_t>; // Update Timestamp
+using fwVersionInfoType =
+    std::tuple<uint8_t,   // ID Tag
+               uint8_t,   // Major Version Number
+               uint8_t,   // Minor Version Number
+               uint32_t,  // Build Number
+               uint32_t,  // Build Timestamp
+               uint32_t>; // Update Timestamp
 ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
 {
     // Byte 1 - Count (N) Number of devices data is being returned for.
@@ -926,9 +928,8 @@ ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
     return ipmi::responseSuccess(fwVerInfoList.size(), fwVerInfoList);
 }
 
-std::array<uint8_t, imageCount> getSecurityVersionInfo(const char* mtdDevBuf,
-                                                       size_t svnVerOffsetInPfm,
-                                                       size_t bkcVerOffsetInPfm)
+std::array<uint8_t, imageCount> getSecurityVersionInfo(
+    const char* mtdDevBuf, size_t svnVerOffsetInPfm, size_t bkcVerOffsetInPfm)
 {
     constexpr size_t bufLength = 1;
     std::array<uint8_t, imageCount> fwSecurityVersionBuf = {0}, temp;
@@ -1301,10 +1302,9 @@ ipmi::RspType<> ipmiExitFirmwareUpdateMode(const ipmi::Context::ptr& ctx)
  *  @returns IPMI completion code plus response data
  *   - Byte 2: Current control status
  **/
-ipmi::RspType<bool, bool, bool, bool, uint4_t>
-    ipmiGetSetFirmwareUpdateControl(const ipmi::Context::ptr& ctx,
-                                    const uint8_t controlReq,
-                                    const std::optional<std::string>& fileName)
+ipmi::RspType<bool, bool, bool, bool, uint4_t> ipmiGetSetFirmwareUpdateControl(
+    const ipmi::Context::ptr& ctx, const uint8_t controlReq,
+    const std::optional<std::string>& fileName)
 {
     bool isIPMBChannel = false;
 
@@ -1687,8 +1687,8 @@ ipmi::RspType<uint32_t>
 static void registerFirmwareFunctions()
 {
     // guarantee that we start with an already timed out timestamp
-    fwRandomNumGenTs = std::chrono::steady_clock::now() -
-                       fwRandomNumExpirySeconds;
+    fwRandomNumGenTs =
+        std::chrono::steady_clock::now() - fwRandomNumExpirySeconds;
     fwUpdateStatus.setState(
         static_cast<uint8_t>(FwUpdateStatusCache::fwStateInit));
 

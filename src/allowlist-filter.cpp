@@ -108,8 +108,8 @@ AllowlistFilter::AllowlistFilter()
 
     ipmi::registerFilter(ipmi::prioOpenBmcBase,
                          [this](ipmi::message::Request::ptr request) {
-        return filterMessage(request);
-    });
+                             return filterMessage(request);
+                         });
 
     channelSMM = getSMMChannel();
     // wait until io->run is going to fetch RestrictionMode
@@ -120,8 +120,8 @@ void AllowlistFilter::cacheRestrictedAndPostCompleteMode()
 {
     try
     {
-        auto service = ipmi::getService(*bus, restrictionModeIntf,
-                                        restrictionModePath);
+        auto service =
+            ipmi::getService(*bus, restrictionModeIntf, restrictionModePath);
         ipmi::Value v =
             ipmi::getDbusProperty(*bus, service, restrictionModePath,
                                   restrictionModeIntf, "RestrictionMode");
@@ -139,11 +139,11 @@ void AllowlistFilter::cacheRestrictedAndPostCompleteMode()
 
     try
     {
-        auto service = ipmi::getService(*bus, systemOsStatusIntf,
-                                        systemOsStatusPath);
-        ipmi::Value v = ipmi::getDbusProperty(*bus, service, systemOsStatusPath,
-                                              systemOsStatusIntf,
-                                              "OperatingSystemState");
+        auto service =
+            ipmi::getService(*bus, systemOsStatusIntf, systemOsStatusPath);
+        ipmi::Value v =
+            ipmi::getDbusProperty(*bus, service, systemOsStatusPath,
+                                  systemOsStatusIntf, "OperatingSystemState");
         auto& value = std::get<std::string>(v);
         updatePostComplete(value);
         log<level::INFO>("Read POST complete value",
@@ -267,16 +267,16 @@ void AllowlistFilter::cacheCoreBiosDone()
 
     bus->async_method_call(
         [this](boost::system::error_code ec, const ipmi::Value& v) {
-        if (ec)
-        {
-            log<level::ERR>(
-                "async call failed, coreBIOSDone asserted as default");
-            return;
-        }
-        coreBIOSDone = std::get<bool>(v);
-        log<level::INFO>("Read CoreBiosDone",
-                         entry("VALUE=%d", static_cast<int>(coreBIOSDone)));
-    },
+            if (ec)
+            {
+                log<level::ERR>(
+                    "async call failed, coreBIOSDone asserted as default");
+                return;
+            }
+            coreBIOSDone = std::get<bool>(v);
+            log<level::INFO>("Read CoreBiosDone",
+                             entry("VALUE=%d", static_cast<int>(coreBIOSDone)));
+        },
         coreBiosDoneService, coreBiosDonePath,
         "org.freedesktop.DBus.Properties", "Get", hostMiscIntf, "CoreBiosDone");
 }
@@ -292,8 +292,8 @@ void AllowlistFilter::handleCoreBiosDoneChange(sdbusplus::message_t& msg)
         auto it =
             std::find_if(propertyList.begin(), propertyList.end(),
                          [](const std::pair<std::string, ipmi::Value>& prop) {
-            return prop.first == "CoreBiosDone";
-        });
+                             return prop.first == "CoreBiosDone";
+                         });
 
         if (it != propertyList.end())
         {
@@ -392,12 +392,12 @@ ipmi::Cc AllowlistFilter::filterMessage(ipmi::message::Request::ptr request)
         allowlist.cbegin(), allowlist.cend(),
         std::make_tuple(request->ctx->netFn, request->ctx->cmd, channelMask),
         [](const netfncmd_tuple& first, const netfncmd_tuple& value) {
-        return (std::get<2>(first) & std::get<2>(value))
-                   ? first < std::make_tuple(std::get<0>(value),
-                                             std::get<1>(value),
-                                             std::get<2>(first))
-                   : first < value;
-    });
+            return (std::get<2>(first) & std::get<2>(value))
+                       ? first < std::make_tuple(std::get<0>(value),
+                                                 std::get<1>(value),
+                                                 std::get<2>(first))
+                       : first < value;
+        });
 
     // no special handling for non-system-interface channels
     if (!(request->ctx->channel == ipmi::channelSystemIface ||

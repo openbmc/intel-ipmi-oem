@@ -49,8 +49,8 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
     // Walk through the SEL request record to build the appropriate Redfish
     // message
     static constexpr std::string_view openBMCMessageRegistryVersion = "0.1";
-    std::string messageID = "OpenBMC." +
-                            std::string(openBMCMessageRegistryVersion);
+    std::string messageID =
+        "OpenBMC." + std::string(openBMCMessageRegistryVersion);
     std::vector<std::string> messageArgs;
     BIOSSensors sensor = static_cast<BIOSSensors>(selData.sensorNum);
     BIOSEventTypes eventType = static_cast<BIOSEventTypes>(selData.eventType);
@@ -296,8 +296,8 @@ static bool biosMessageHook(const SELData& selData, const std::string& ipmiRaw)
     }
     else
     {
-        std::string messageArgsString = boost::algorithm::join(messageArgs,
-                                                               ",");
+        std::string messageArgsString =
+            boost::algorithm::join(messageArgs, ",");
         phosphor::logging::log<phosphor::logging::level::INFO>(
             journalMsg.c_str(),
             phosphor::logging::entry("REDFISH_MESSAGE_ID=%s",
@@ -319,8 +319,8 @@ static bool biosSMIMessageHook(const SELData& selData,
     // Walk through the SEL request record to build the appropriate Redfish
     // message
     static constexpr std::string_view openBMCMessageRegistryVersion = "0.1";
-    std::string messageID = "OpenBMC." +
-                            std::string(openBMCMessageRegistryVersion);
+    std::string messageID =
+        "OpenBMC." + std::string(openBMCMessageRegistryVersion);
     std::vector<std::string> messageArgs;
     BIOSSMISensors sensor = static_cast<BIOSSMISensors>(selData.sensorNum);
     BIOSEventTypes eventType = static_cast<BIOSEventTypes>(selData.eventType);
@@ -869,22 +869,23 @@ bool checkRedfishHooks(uint16_t recordID, uint8_t recordType,
 {
     // Save the raw IPMI string of the request
     std::string ipmiRaw;
-    std::array selBytes = {static_cast<uint8_t>(recordID),
-                           static_cast<uint8_t>(recordID >> 8),
-                           recordType,
-                           static_cast<uint8_t>(timestamp),
-                           static_cast<uint8_t>(timestamp >> 8),
-                           static_cast<uint8_t>(timestamp >> 16),
-                           static_cast<uint8_t>(timestamp >> 24),
-                           static_cast<uint8_t>(generatorID),
-                           static_cast<uint8_t>(generatorID >> 8),
-                           evmRev,
-                           sensorType,
-                           sensorNum,
-                           eventType,
-                           eventData1,
-                           eventData2,
-                           eventData3};
+    std::array selBytes = {
+        static_cast<uint8_t>(recordID),
+        static_cast<uint8_t>(recordID >> 8),
+        recordType,
+        static_cast<uint8_t>(timestamp),
+        static_cast<uint8_t>(timestamp >> 8),
+        static_cast<uint8_t>(timestamp >> 16),
+        static_cast<uint8_t>(timestamp >> 24),
+        static_cast<uint8_t>(generatorID),
+        static_cast<uint8_t>(generatorID >> 8),
+        evmRev,
+        sensorType,
+        sensorNum,
+        eventType,
+        eventData1,
+        eventData2,
+        eventData3};
     redfish_hooks::toHexStr(boost::beast::span<uint8_t>(selBytes), ipmiRaw);
 
     // First check that this is a system event record type since that
@@ -896,12 +897,13 @@ bool checkRedfishHooks(uint16_t recordID, uint8_t recordType,
     }
 
     // Extract the SEL data for the hook
-    redfish_hooks::SELData selData = {.generatorID = generatorID,
-                                      .sensorNum = sensorNum,
-                                      .eventType = eventType,
-                                      .offset = eventData1 & 0x0F,
-                                      .eventData2 = eventData2,
-                                      .eventData3 = eventData3};
+    redfish_hooks::SELData selData = {
+        .generatorID = generatorID,
+        .sensorNum = sensorNum,
+        .eventType = eventType,
+        .offset = eventData1 & 0x0F,
+        .eventData2 = eventData2,
+        .eventData3 = eventData3};
 
     return redfish_hooks::startRedfishHook(selData, ipmiRaw);
 }
@@ -912,24 +914,26 @@ bool checkRedfishHooks(uint16_t generatorID, uint8_t evmRev, uint8_t sensorType,
 {
     // Save the raw IPMI string of the selData
     std::string ipmiRaw;
-    std::array selBytes = {static_cast<uint8_t>(generatorID),
-                           static_cast<uint8_t>(generatorID >> 8),
-                           evmRev,
-                           sensorType,
-                           sensorNum,
-                           eventType,
-                           eventData1,
-                           eventData2,
-                           eventData3};
+    std::array selBytes = {
+        static_cast<uint8_t>(generatorID),
+        static_cast<uint8_t>(generatorID >> 8),
+        evmRev,
+        sensorType,
+        sensorNum,
+        eventType,
+        eventData1,
+        eventData2,
+        eventData3};
     redfish_hooks::toHexStr(boost::beast::span<uint8_t>(selBytes), ipmiRaw);
 
     // Extract the SEL data for the hook
-    redfish_hooks::SELData selData = {.generatorID = generatorID,
-                                      .sensorNum = sensorNum,
-                                      .eventType = eventType,
-                                      .offset = eventData1 & 0x0F,
-                                      .eventData2 = eventData2,
-                                      .eventData3 = eventData3};
+    redfish_hooks::SELData selData = {
+        .generatorID = generatorID,
+        .sensorNum = sensorNum,
+        .eventType = eventType,
+        .offset = eventData1 & 0x0F,
+        .eventData2 = eventData2,
+        .eventData3 = eventData3};
 
     return redfish_hooks::startRedfishHook(selData, ipmiRaw);
 }
