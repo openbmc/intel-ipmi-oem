@@ -1,0 +1,11 @@
+Code-Review+1: Arun Lal K M <arun.lal@intel.com>
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Code-Review+2: Vernon Mauery <vernon.mauery@linux.intel.com>
+Code-Review+1: Zev Weiss <zev@bewilderbeest.net>
+Code-Review+1: Zhikui Ren <zhikui.ren@intel.com>
+Submitted-by: Mohammed Javith Akthar M <mohammedjavitham@ami.com>
+Submitted-at: Thu, 19 Sep 2024 19:21:46 +0000
+Reviewed-on: https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/72477
+Comments-Total: 2
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
