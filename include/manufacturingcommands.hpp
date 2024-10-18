@@ -38,7 +38,7 @@ static constexpr const char* fanService = "xyz.openbmc_project.FanSensor";
 static constexpr const char* buttonService =
     "xyz.openbmc_project.Chassis.Buttons";
 static constexpr const char* ledServicePrefix =
-    "xyz.openbmc_project.LED.Controller.";
+    "xyz.openbmc_project.LED.Controller";
 
 static constexpr const char* ledPathPrefix =
     "/xyz/openbmc_project/led/physical/";
