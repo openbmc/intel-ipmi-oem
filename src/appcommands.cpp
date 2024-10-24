@@ -13,17 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
+#include "xyz/openbmc_project/Common/error.hpp"
+
 #include <byteswap.h>
 
 #include <appcommands.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/utils.hpp>
 #include <nlohmann/json.hpp>
+#include <phosphor-logging/elog-errors.hpp>
+#include <phosphor-logging/lg2.hpp>
 #include <phosphor-logging/log.hpp>
 #include <types.hpp>
 
 #include <fstream>
 #include <regex>
+
+using namespace phosphor::logging;
+using namespace sdbusplus::error::xyz::openbmc_project::common;
 
 namespace ipmi
 {
@@ -260,6 +267,106 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
     return std::nullopt;
 }
 
+static constexpr size_t uuidLength = 16;
+static std::array<uint8_t, uuidLength>
+    rfc4122ToIpmiConvesrion(std::string rfc4122)
+{
+    using Argument = xyz::openbmc_project::common::InvalidArgument;
+    // UUID is in RFC4122 format. Ex: 61a39523-78f2-11e5-9862-e6402cfc3223
+    // Per IPMI Spec 2.0 need to convert to 16 hex bytes and reverse the byte
+    // order
+    // Ex: 0x2332fc2c40e66298e511f2782395a361
+    constexpr size_t uuidHexLength = (2 * uuidLength);
+    constexpr size_t uuidRfc4122Length = (uuidHexLength + 4);
+    std::array<uint8_t, uuidLength> uuid;
+    if (rfc4122.size() == uuidRfc4122Length)
+    {
+        rfc4122.erase(std::remove(rfc4122.begin(), rfc4122.end(), '-'),
+                      rfc4122.end());
+    }
+    if (rfc4122.size() != uuidHexLength)
+    {
+        elog<InvalidArgument>(Argument::ARGUMENT_NAME("rfc4122"),
+                              Argument::ARGUMENT_VALUE(rfc4122.c_str()));
+    }
+    for (size_t ind = 0; ind < uuidHexLength; ind += 2)
+    {
+        char v[3];
+        v[0] = rfc4122[ind];
+        v[1] = rfc4122[ind + 1];
+        v[2] = 0;
+        size_t err;
+        long b;
+        try
+        {
+            b = std::stoul(v, &err, 16);
+        }
+        catch (const std::exception& e)
+        {
+            elog<InvalidArgument>(Argument::ARGUMENT_NAME("rfc4122"),
+                                  Argument::ARGUMENT_VALUE(rfc4122.c_str()));
+        }
+        // check that exactly two ascii bytes were converted
+        if (err != 2)
+        {
+            elog<InvalidArgument>(Argument::ARGUMENT_NAME("rfc4122"),
+                                  Argument::ARGUMENT_VALUE(rfc4122.c_str()));
+        }
+        uuid[uuidLength - (ind / 2) - 1] = static_cast<uint8_t>(b);
+    }
+    return uuid;
+}
+
+ipmi::RspType<std::array<uint8_t, 16>>
+    ipmiAppGetSystemGuid(ipmi::Context::ptr& ctx)
+{
+    static constexpr auto uuidInterface = "xyz.openbmc_project.Common.UUID";
+    static constexpr auto uuidProperty = "UUID";
+    // Get the Inventory object implementing BMC interface
+    ipmi::DbusObjectInfo objectInfo{};
+    boost::system::error_code ec =
+        ipmi::getDbusObject(ctx, uuidInterface, objectInfo);
+
+    if (ec.value())
+    {
+        lg2::error("Failed to locate System UUID object, "
+                   "interface: {INTERFACE}, error: {ERROR}",
+                   "INTERFACE", uuidInterface, "ERROR", ec.message());
+    }
+
+    // Read UUID property value from bmcObject
+    // UUID is in RFC4122 format Ex: 61a39523-78f2-11e5-9862-e6402cfc3223
+    std::string rfc4122Uuid{};
+    ec = ipmi::getDbusProperty(ctx, objectInfo.second, objectInfo.first,
+                               uuidInterface, uuidProperty, rfc4122Uuid);
+
+    if (ec.value())
+    {
+        lg2::error("Failed to read System UUID property, "
+                   "interface: {INTERFACE}, property: {PROPERTY}, "
+                   "error: {ERROR}",
+                   "INTERFACE", uuidInterface, "PROPERTY", uuidProperty,
+                   "ERROR", ec.message());
+        return ipmi::responseUnspecifiedError();
+    }
+    std::array<uint8_t, 16> uuid;
+    try
+    {
+        // convert to IPMI format
+        uuid = rfc4122ToIpmiConvesrion(rfc4122Uuid);
+    }
+    catch (const InvalidArgument& e)
+    {
+        lg2::error("Failed in parsing BMC UUID property, "
+                   "interface: {INTERFACE}, property: {PROPERTY}, "
+                   "value: {VALUE}, error: {ERROR}",
+                   "INTERFACE", uuidInterface, "PROPERTY", uuidProperty,
+                   "VALUE", rfc4122Uuid, "ERROR", e);
+        return ipmi::responseUnspecifiedError();
+    }
+    return ipmi::responseSuccess(uuid);
+}
+
 RspType<uint8_t,  // Device ID
         uint8_t,  // Device Revision
         uint7_t,  // Firmware Revision Major
@@ -392,6 +499,9 @@ static void registerAPPFunctions(void)
     // <Get Device ID>
     registerHandler(prioOemBase, netFnApp, app::cmdGetDeviceId, Privilege::User,
                     ipmiAppGetDeviceId);
+    // <Get System GUID>
+    registerHandler(prioOemBase, netFnApp, app::cmdGetSystemGuid,
+                    Privilege::User, ipmiAppGetSystemGuid);
 }
 
 } // namespace ipmi
