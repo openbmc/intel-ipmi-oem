@@ -22,6 +22,30 @@
       },
       "revId": "eaddfc8b60fe4591bb2ec21230ce6f3e75fd59d5",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5c175ada_df287da8",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 1000416
+      },
+      "writtenOn": "2024-10-29T17:55:19Z",
+      "side": 1,
+      "message": "Fixed. Thanks.",
+      "parentUuid": "bf101779_1e872ee2",
+      "range": {
+        "startLine": 329,
+        "startChar": 0,
+        "endLine": 335,
+        "endChar": 5
+      },
+      "revId": "eaddfc8b60fe4591bb2ec21230ce6f3e75fd59d5",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
