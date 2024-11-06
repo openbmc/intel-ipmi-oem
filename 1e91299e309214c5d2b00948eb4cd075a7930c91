@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5d36cba3_d5b5f9e7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001810
+      },
+      "writtenOn": "2024-11-06T10:37:46Z",
+      "side": 1,
+      "message": "responded for the review comments. Thanks.",
+      "revId": "1e91299e309214c5d2b00948eb4cd075a7930c91",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "654efa9c_fe500091",
@@ -14,6 +31,30 @@
       "writtenOn": "2024-11-04T23:35:22Z",
       "side": 1,
       "message": "should it continue here?",
+      "range": {
+        "startLine": 289,
+        "startChar": 0,
+        "endLine": 290,
+        "endChar": 73
+      },
+      "revId": "1e91299e309214c5d2b00948eb4cd075a7930c91",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9a90a47d_7fadc972",
+        "filename": "src/appcommands.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 290,
+      "author": {
+        "id": 1001810
+      },
+      "writtenOn": "2024-11-06T10:37:46Z",
+      "side": 1,
+      "message": "Since elog has static_assert, it doesn\u0027t need any explicit return messages.",
+      "parentUuid": "654efa9c_fe500091",
       "range": {
         "startLine": 289,
         "startChar": 0,
