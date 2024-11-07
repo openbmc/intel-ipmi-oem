@@ -68,22 +68,6 @@ int initBMCDeviceState(ipmi::Context::ptr ctx)
         return -1;
     }
 
-    std::string bmcState;
-    ec = ipmi::getDbusProperty(ctx, objInfo.second, objInfo.first, bmcStateIntf,
-                               currentBmcStateProp, bmcState);
-    if (ec)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "initBMCDeviceState: Failed to get CurrentBMCState property",
-            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
-        return -1;
-    }
-
-    bmcDeviceBusy = (bmcState != bmcStateReadyStr);
-
-    phosphor::logging::log<phosphor::logging::level::INFO>(
-        "BMC device state updated");
-
     // BMC state may change runtime while doing firmware udpate.
     // Register for property change signal to update state.
     bmcStateChangedSignal = std::make_unique<sdbusplus::bus::match_t>(
@@ -117,6 +101,22 @@ int initBMCDeviceState(ipmi::Context::ptr ctx)
                 }
             }
         });
+
+    std::string bmcState;
+    ec = ipmi::getDbusProperty(ctx, objInfo.second, objInfo.first, bmcStateIntf,
+                               currentBmcStateProp, bmcState);
+    if (ec)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "initBMCDeviceState: Failed to get CurrentBMCState property",
+            phosphor::logging::entry("ERROR=%s", ec.message().c_str()));
+        return -1;
+    }
+
+    bmcDeviceBusy = (bmcState != bmcStateReadyStr);
+
+    phosphor::logging::log<phosphor::logging::level::INFO>(
+        "BMC device state updated");
 
     return 0;
 }
