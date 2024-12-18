@@ -426,7 +426,7 @@ ipmi::RspType<bool,    // Power is on
               bool,    // last power down caused by a Power overload
               bool,    // last power down caused by a power interlock
               bool,    // last power down caused by power fault
-              bool, // last ‘Power is on’ state was entered via IPMI command
+              bool,    // last ‘Power is on’ state was entered via IPMI command
               uint3_t, // reserved
 
               bool,    // Chassis intrusion active
