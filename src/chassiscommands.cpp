@@ -21,6 +21,7 @@
 #include <phosphor-logging/elog-errors.hpp>
 #include <phosphor-logging/log.hpp>
 #include <sdbusplus/timer.hpp>
+#include <xyz/openbmc_project/Chassis/Intrusion/client.hpp>
 #include <xyz/openbmc_project/Control/Power/RestorePolicy/server.hpp>
 
 #include <fstream>
@@ -500,22 +501,24 @@ ipmi::RspType<bool,    // Power is on
         return ipmi::responseUnspecifiedError();
     }
 
-    bool chassisIntrusionActive = false;
-    constexpr const char* chassisIntrusionObj =
-        "/xyz/openbmc_project/Chassis/Intrusion";
-    constexpr const char* chassisIntrusionInf =
-        "xyz.openbmc_project.Chassis.Intrusion";
+    using Intrusion =
+        sdbusplus::client::xyz::openbmc_project::chassis::Intrusion<>;
 
-    std::string intrusionService;
-    boost::system::error_code ec = ipmi::getService(
-        ctx, chassisIntrusionInf, chassisIntrusionObj, intrusionService);
+    std::vector<std::string> chassisIntrusionIntf = {
+        std::string(Intrusion::interface)};
+    ipmi::ObjectTree chassisIntrusionObjs;
+    bool chassisIntrusionActive = false;
+
+    boost::system::error_code ec = ipmi::getSubTree(
+        ctx, chassisIntrusionIntf, std::string("/"), 0, chassisIntrusionObjs);
+
     if (ec)
     {
-        log<level::ERR>("Failed to get Chassis Intrusion service",
+        log<level::ERR>("Failed to find Chassis Intrusion Interface on D-Bus",
                         entry("ERROR=%s", ec.message().c_str()));
     }
 
-    chassisIntrusionActive = !intrusionService.empty();
+    chassisIntrusionActive = !chassisIntrusionObjs.empty();
 
     // This response has a lot of hard-coded, unsupported fields
     // They are set to false or 0
