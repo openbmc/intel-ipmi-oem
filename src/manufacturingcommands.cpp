@@ -1277,7 +1277,7 @@ ipmi::RspType<> clearCMOS()
     constexpr uint8_t targetAddr = 0x38;
     std::string i2cBus = "/dev/i2c-4";
     std::vector<uint8_t> writeData = {0x61, 0x1};
-    std::vector<uint8_t> readBuf(0);
+    std::vector<uint8_t> readBuf{};
 
     ipmi::Cc retI2C =
         ipmi::i2cWriteRead(i2cBus, targetAddr, writeData, readBuf);

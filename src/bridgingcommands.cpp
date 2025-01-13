@@ -315,7 +315,7 @@ ipmi::Cc Bridging::handleIpmbChannel(
         return ipmi::ccUnspecifiedError;
     }
 
-    std::vector<uint8_t> dataReceived(0);
+    std::vector<uint8_t> dataReceived{};
     int status = -1;
     uint8_t netFn = 0, lun = 0, cmd = 0, cc = 0;
 
