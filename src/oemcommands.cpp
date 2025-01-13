@@ -267,7 +267,7 @@ void writefifo(const uint8_t cmdReg, const uint8_t val)
     // Based on the spec, writing cmdReg to address val on this device, will
     // trigger the write FIFO operation.
     std::vector<uint8_t> writeData = {cmdReg, val};
-    std::vector<uint8_t> readBuf(0);
+    std::vector<uint8_t> readBuf{};
     ipmi::Cc retI2C =
         ipmi::i2cWriteRead(i2cBus, targetAddr, writeData, readBuf);
     if (retI2C)
@@ -868,7 +868,7 @@ ipmi::RspType<uint8_t, std::vector<uint8_t>> ipmiOEMSlotIpmb(
         return ipmi::responseUnspecifiedError();
     }
 
-    std::vector<uint8_t> dataReceived(0);
+    std::vector<uint8_t> dataReceived{};
     int status = -1;
     uint8_t resNetFn = 0, resLun = 0, resCmd = 0, cc = 0;
 
