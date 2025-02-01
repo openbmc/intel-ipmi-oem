@@ -474,8 +474,8 @@ static inline std::map<std::string, std::vector<std::string>>
     return interfacesResponse;
 }
 
-static inline std::map<std::string, DbusVariant>
-    getEntityManagerProperties(const char* path, const char* interface)
+static inline std::map<std::string, DbusVariant> getEntityManagerProperties(
+    const char* path, const char* interface)
 {
     std::map<std::string, DbusVariant> properties;
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
