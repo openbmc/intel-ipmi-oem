@@ -1,4 +1,16 @@
 option('tests', type: 'feature', description: 'Build tests')
-option('intel-pfr', type: 'feature', description: 'Intel Platform Firmware Resilience enabled')
-option('bmc-validation-unsecure-feature', type: 'feature', description: 'Enables unsecure features required by validation. Note: must be turned off for production images.')
-option('using-entity-manager-decorators', type: 'feature', description: 'Enable using EM decorators to map FRUs to entity IDs')
+option(
+    'intel-pfr',
+    type: 'feature',
+    description: 'Intel Platform Firmware Resilience enabled',
+)
+option(
+    'bmc-validation-unsecure-feature',
+    type: 'feature',
+    description: 'Enables unsecure features required by validation. Note: must be turned off for production images.',
+)
+option(
+    'using-entity-manager-decorators',
+    type: 'feature',
+    description: 'Enable using EM decorators to map FRUs to entity IDs',
+)
