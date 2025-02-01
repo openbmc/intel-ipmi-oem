@@ -103,10 +103,10 @@ static inline std::string toHex(uint8_t byte)
 }
 
 template <int idx>
-static inline bool
-    logByte(const SELData& selData, std::string& /* unused */,
-            std::vector<std::string>& args,
-            std::function<std::string(uint8_t)> conversion = nullptr)
+static inline bool logByte(
+    const SELData& selData, std::string& /* unused */,
+    std::vector<std::string>& args,
+    std::function<std::string(uint8_t)> conversion = nullptr)
 {
     uint8_t byte;
     switch (idx)

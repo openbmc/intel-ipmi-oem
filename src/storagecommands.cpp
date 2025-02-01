@@ -768,9 +768,9 @@ static bool findSELEntry(const int recordID,
     return false;
 }
 
-static uint16_t
-    getNextRecordID(const uint16_t recordID,
-                    const std::vector<std::filesystem::path>& selLogFiles)
+static uint16_t getNextRecordID(
+    const uint16_t recordID,
+    const std::vector<std::filesystem::path>& selLogFiles)
 {
     uint16_t nextRecordID = recordID + 1;
     std::string entry;
