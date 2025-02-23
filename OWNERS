@@ -33,7 +33,6 @@
 
 owners:
 - apparao.puli@linux.intel.com
-- vernon.mauery@linux.intel.com
 
 reviewers:
 - chunhui.jia@linux.intel.com
@@ -47,6 +46,3 @@ openbmc:
 - name: Chunhui Jia
   email: chunhui.jia@linux.intel.com
   discord: cjia_
-- name: Vernon Mauery
-  email: vernon.mauery@linux.intel.com
-  discord: vmauery
