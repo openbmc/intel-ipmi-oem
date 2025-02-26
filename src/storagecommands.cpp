@@ -361,10 +361,10 @@ void startMatch(void)
 
     // call once to populate
     boost::asio::spawn(*getIoContext(),
-                       [](boost::asio::yield_context yield) {
-                           replaceCacheFru(getSdBus(), yield);
-                       },
-                       {});
+                             [](boost::asio::yield_context yield) {
+                                 replaceCacheFru(getSdBus(), yield);
+                             },
+                             boost::asio::detached);
 }
 
 /** @brief implements the read FRU data command
