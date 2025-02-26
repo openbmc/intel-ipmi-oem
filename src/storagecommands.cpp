@@ -360,11 +360,11 @@ void startMatch(void)
         });
 
     // call once to populate
-    boost::asio::spawn(*getIoContext(),
-                       [](boost::asio::yield_context yield) {
-                           replaceCacheFru(getSdBus(), yield);
-                       },
-                       {});
+    std::ignore = boost::asio::spawn(*getIoContext(),
+                                     [](boost::asio::yield_context yield) {
+                                         replaceCacheFru(getSdBus(), yield);
+                                     },
+                                     {});
 }
 
 /** @brief implements the read FRU data command
