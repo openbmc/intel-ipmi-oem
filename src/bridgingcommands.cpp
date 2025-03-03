@@ -91,15 +91,15 @@ static uint8_t ipmbChecksumCompute(uint8_t* data, uint8_t length)
     return checksum;
 }
 
-static inline bool
-    ipmbConnectionHeaderChecksumValidate(const ipmbHeader* ipmbHeader)
+static inline bool ipmbConnectionHeaderChecksumValidate(
+    const ipmbHeader* ipmbHeader)
 {
     return ipmbChecksumValidate(reinterpret_cast<const uint8_t*>(ipmbHeader),
                                 ipmbConnectionHeaderLength);
 }
 
-static inline bool
-    ipmbDataChecksumValidate(const ipmbHeader* ipmbHeader, size_t length)
+static inline bool ipmbDataChecksumValidate(const ipmbHeader* ipmbHeader,
+                                            size_t length)
 {
     return ipmbChecksumValidate((reinterpret_cast<const uint8_t*>(ipmbHeader) +
                                  ipmbConnectionHeaderLength),

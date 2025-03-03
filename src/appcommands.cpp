@@ -268,8 +268,8 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
 }
 
 static constexpr size_t uuidLength = 16;
-static std::array<uint8_t, uuidLength>
-    rfc4122ToIpmiConvesrion(std::string rfc4122)
+static std::array<uint8_t, uuidLength> rfc4122ToIpmiConvesrion(
+    std::string rfc4122)
 {
     using Argument = xyz::openbmc_project::common::InvalidArgument;
     // UUID is in RFC4122 format. Ex: 61a39523-78f2-11e5-9862-e6402cfc3223
@@ -317,8 +317,8 @@ static std::array<uint8_t, uuidLength>
     return uuid;
 }
 
-ipmi::RspType<std::array<uint8_t, 16>>
-    ipmiAppGetSystemGuid(ipmi::Context::ptr& ctx)
+ipmi::RspType<std::array<uint8_t, 16>> ipmiAppGetSystemGuid(
+    ipmi::Context::ptr& ctx)
 {
     static constexpr auto uuidInterface = "xyz.openbmc_project.Common.UUID";
     static constexpr auto uuidProperty = "UUID";
