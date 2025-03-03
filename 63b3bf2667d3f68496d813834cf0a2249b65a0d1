@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "538dec3c_72150bcb",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001526
+      },
+      "writtenOn": "2025-03-03T04:36:46Z",
+      "side": 1,
+      "message": "Rebased onto Patrick\u0027s 2 format update patches to pass CI. Friendly ping...",
+      "revId": "63b3bf2667d3f68496d813834cf0a2249b65a0d1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
