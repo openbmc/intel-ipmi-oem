@@ -234,8 +234,8 @@ uint32_t MDRV2::calcChecksum32(uint8_t* buf, uint32_t len)
  *  - dirEntries
  *  - dataRequest
  */
-ipmi::RspType<uint8_t, uint8_t, uint8_t, uint8_t, uint8_t>
-    mdr2AgentStatus(uint16_t agentId, uint8_t dirVersion)
+ipmi::RspType<uint8_t, uint8_t, uint8_t, uint8_t, uint8_t> mdr2AgentStatus(
+    uint16_t agentId, uint8_t dirVersion)
 {
     if (mdrv2 == nullptr)
     {
@@ -278,8 +278,8 @@ ipmi::RspType<uint8_t, uint8_t, uint8_t, uint8_t, uint8_t>
  *  @returns IPMI completion code plus response data
  *  - dataOut
  */
-ipmi::RspType<std::vector<uint8_t>>
-    mdr2GetDir(uint16_t agentId, uint8_t dirIndex)
+ipmi::RspType<std::vector<uint8_t>> mdr2GetDir(uint16_t agentId,
+                                               uint8_t dirIndex)
 {
     std::shared_ptr<sdbusplus::asio::connection> bus = getSdBus();
     std::string service = ipmi::getService(*bus, mdrv2Interface, mdrv2Path);
@@ -369,10 +369,10 @@ ipmi::RspType<std::vector<uint8_t>>
  *  - bool
  */
 
-ipmi::RspType<bool>
-    mdr2SendDir(uint16_t agentId, uint8_t dirVersion, uint8_t dirIndex,
-                uint8_t returnedEntries, uint8_t remainingEntries,
-                std::vector<uint8_t> dataInfo)
+ipmi::RspType<bool> mdr2SendDir(uint16_t agentId, uint8_t dirVersion,
+                                uint8_t dirIndex, uint8_t returnedEntries,
+                                uint8_t remainingEntries,
+                                std::vector<uint8_t> dataInfo)
 {
     if ((static_cast<size_t>(returnedEntries) * dataInfoSize) !=
         dataInfo.size())
@@ -434,8 +434,8 @@ ipmi::RspType<bool>
  *  - response - mdrVersion, data info, validFlag,
  *               dataLength, dataVersion, timeStamp
  */
-ipmi::RspType<std::vector<uint8_t>>
-    mdr2GetDataInfo(uint16_t agentId, std::vector<uint8_t> dataInfo)
+ipmi::RspType<std::vector<uint8_t>> mdr2GetDataInfo(
+    uint16_t agentId, std::vector<uint8_t> dataInfo)
 {
     constexpr size_t getDataInfoReqSize = 16;
 

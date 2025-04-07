@@ -1098,8 +1098,8 @@ ipmi::RspType<uint8_t,                    // channel count
     return ipmi::responseSuccess(channelListSize, channelList);
 }
 
-ipmi::RspType<uint8_t, uint8_t>
-    ipmiGetBmcExecutionContext(ipmi::Context::ptr ctx)
+ipmi::RspType<uint8_t, uint8_t> ipmiGetBmcExecutionContext(
+    ipmi::Context::ptr ctx)
 {
     // Byte 1 - Current execution context
     //          0x10 - Linux OS, 0x11 - Bootloader, Forced-firmware updat mode
@@ -1160,9 +1160,9 @@ ipmi::RspType<std::array<uint8_t, fwRandomNumLength>>
  * @parameter randNum - Random number(token)
  * @returns IPMI completion code
  **/
-ipmi::RspType<>
-    ipmiSetFirmwareUpdateMode(const ipmi::Context::ptr& ctx,
-                              std::array<uint8_t, fwRandomNumLength>& randNum)
+ipmi::RspType<> ipmiSetFirmwareUpdateMode(
+    const ipmi::Context::ptr& ctx,
+    std::array<uint8_t, fwRandomNumLength>& randNum)
 {
     phosphor::logging::log<phosphor::logging::level::INFO>(
         "Start FW update mode");
@@ -1590,8 +1590,8 @@ ipmi::RspType<bool, bool, bool, uint5_t> ipmiSetFirmwareUpdateOptions(
                                  sha2CheckState, uint5_t{});
 }
 
-ipmi::RspType<uint32_t>
-    ipmiFwImageWriteData(const std::vector<uint8_t>& writeData)
+ipmi::RspType<uint32_t> ipmiFwImageWriteData(
+    const std::vector<uint8_t>& writeData)
 {
     const uint8_t ccCmdNotSupportedInPresentState = 0xD5;
     size_t writeDataLen = writeData.size();
