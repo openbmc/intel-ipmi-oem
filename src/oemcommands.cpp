@@ -374,8 +374,8 @@ ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t, ipmi_cmd_t,
     return IPMI_CC_OK;
 }
 
-ipmi::RspType<>
-    ipmiOEMDisableBMCSystemReset(bool disableResetOnSMI, uint7_t reserved1)
+ipmi::RspType<> ipmiOEMDisableBMCSystemReset(bool disableResetOnSMI,
+                                             uint7_t reserved1)
 {
     if (reserved1)
     {
@@ -3107,8 +3107,8 @@ ipmi::RspType<> ipmiSetSecurityMode(ipmi::Context::ptr& ctx,
     return ipmi::responseSuccess();
 }
 
-ipmi::RspType<uint8_t /* restore status */>
-    ipmiRestoreConfiguration(const std::array<uint8_t, 3>& clr, uint8_t cmd)
+ipmi::RspType<uint8_t /* restore status */> ipmiRestoreConfiguration(
+    const std::array<uint8_t, 3>& clr, uint8_t cmd)
 {
     static constexpr std::array<uint8_t, 3> expClr = {'C', 'L', 'R'};
 
@@ -3728,8 +3728,8 @@ static const constexpr uint8_t psuRevision = 0xd9;
 static const constexpr uint8_t defaultPSUBus = 7;
 // Second Minor, Primary Minor, Major
 static const constexpr size_t verLen = 3;
-ipmi::RspType<std::vector<uint8_t>>
-    ipmiOEMGetPSUVersion(ipmi::Context::ptr& ctx)
+ipmi::RspType<std::vector<uint8_t>> ipmiOEMGetPSUVersion(
+    ipmi::Context::ptr& ctx)
 {
     uint8_t bus = defaultPSUBus;
     std::vector<uint64_t> addrTable;
@@ -3767,8 +3767,8 @@ ipmi::RspType<std::vector<uint8_t>>
     return ipmi::responseSuccess(result);
 }
 
-std::optional<uint8_t>
-    getMultiNodeInfoPresence(ipmi::Context::ptr& ctx, const std::string& name)
+std::optional<uint8_t> getMultiNodeInfoPresence(ipmi::Context::ptr& ctx,
+                                                const std::string& name)
 {
     Value dbusValue = 0;
     std::string serviceName;
@@ -3891,9 +3891,9 @@ ipmi::RspType<uint8_t, uint8_t> ipmiOEMGetBufferSize()
     return ipmi::responseSuccess(kcsMaxBufferSize, ipmbMaxBufferSize);
 }
 
-ipmi::RspType<std::vector<uint8_t>>
-    ipmiOEMReadPFRMailbox(ipmi::Context::ptr& ctx, const uint8_t readRegister,
-                          const uint8_t numOfBytes, uint8_t registerIdentifier)
+ipmi::RspType<std::vector<uint8_t>> ipmiOEMReadPFRMailbox(
+    ipmi::Context::ptr& ctx, const uint8_t readRegister,
+    const uint8_t numOfBytes, uint8_t registerIdentifier)
 {
     if (!ipmi::mailbox::i2cConfigLoaded)
     {
