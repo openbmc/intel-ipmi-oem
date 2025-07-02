@@ -325,7 +325,7 @@ ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
     if (*dataLen != 0) // invalid request if there are extra parameters
     {
         *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::ccReqDataLenInvalid;
     }
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     if (getChassisSerialNumber(*dbus, serial) == 0)
@@ -334,10 +334,10 @@ ipmi_ret_t ipmiOEMGetChassisIdentifier(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
                                   // as it is checked in getChassisSerialNumber
         char* resp = static_cast<char*>(response);
         serial.copy(resp, *dataLen);
-        return IPMI_CC_OK;
+        return ipmi::ccSuccess;
     }
     *dataLen = 0;
-    return IPMI_CC_RESPONSE_ERROR;
+    return ipmi::ccResponseError;
 }
 
 ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t, ipmi_cmd_t,
@@ -351,7 +351,7 @@ ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t, ipmi_cmd_t,
     if (*dataLen != sizeof(GUIDData)) // 16bytes
     {
         *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::ccReqDataLenInvalid;
     }
 
     *dataLen = 0;
@@ -371,7 +371,7 @@ ipmi_ret_t ipmiOEMSetSystemGUID(ipmi_netfn_t, ipmi_cmd_t,
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
     std::string service = getService(*dbus, intf, objpath);
     setDbusProperty(*dbus, service, objpath, intf, "UUID", guid);
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 ipmi::RspType<> ipmiOEMDisableBMCSystemReset(bool disableResetOnSMI,
@@ -440,7 +440,7 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t request,
     if ((*dataLen < 2ul) || (*dataLen != (1ul + data->biosIDLength)))
     {
         *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::ccReqDataLenInvalid;
     }
     std::string idString((char*)data->biosId, data->biosIDLength);
     for (auto idChar : idString)
@@ -449,7 +449,7 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t request,
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "BIOS ID contains non printable character");
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::ccInvalidFieldRequest;
         }
     }
 
@@ -461,7 +461,7 @@ ipmi_ret_t ipmiOEMSetBIOSID(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t request,
     *bytesWritten =
         data->biosIDLength; // how many bytes are written into storage
     *dataLen = 1;
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 bool getActiveHSCSoftwareVersionInfo(std::string& hscVersion, size_t hscNumber)
@@ -691,7 +691,7 @@ ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
     if (*dataLen != 0)
     {
         *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::ccReqDataLenInvalid;
     }
 
     *dataLen = 1;
@@ -700,7 +700,7 @@ ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
     // AIC is available so that BIOS will not timeout repeatly which leads to
     // slow booting.
     *res = 0; // Byte1=Count of SlotPosition/FruID records.
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
@@ -713,7 +713,7 @@ ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
     if (*dataLen != 0)
     {
         *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::ccReqDataLenInvalid;
     }
 
     std::shared_ptr<sdbusplus::asio::connection> dbus = getSdBus();
@@ -731,7 +731,7 @@ ipmi_ret_t ipmiOEMGetPowerRestoreDelay(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
 
     *dataLen = sizeof(GetPowerRestoreDelayRes);
 
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 static uint8_t bcdToDec(uint8_t val)
@@ -894,7 +894,7 @@ ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t, ipmi_cmd_t,
     if (*dataLen != sizeof(SetPowerRestoreDelayReq))
     {
         *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::ccReqDataLenInvalid;
     }
     delay = data->byteMSB;
     delay = (delay << 8) | data->byteLSB;
@@ -906,7 +906,7 @@ ipmi_ret_t ipmiOEMSetPowerRestoreDelay(ipmi_netfn_t, ipmi_cmd_t,
                     powerRestoreDelayIntf, powerRestoreDelayProp, val);
     *dataLen = 0;
 
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 static bool cpuPresent(const std::string& cpuName)
@@ -1078,7 +1078,7 @@ ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "oem_get_shutdown_policy: invalid input len!");
         *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::ccReqDataLenInvalid;
     }
 
     *dataLen = 0;
@@ -1112,7 +1112,7 @@ ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
                 "oem_set_shutdown_policy: invalid property!",
                 phosphor::logging::entry(
                     "PROP=%s", std::get<std::string>(variant).c_str()));
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return ipmi::ccUnspecifiedError;
         }
         // TODO needs to check if it is multi-node products,
         // policy is only supported on node 3/4
@@ -1121,11 +1121,11 @@ ipmi_ret_t ipmiOEMGetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
     catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.description());
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::ccUnspecifiedError;
     }
 
     *dataLen = sizeof(GetOEMShutdownPolicyRes);
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t,
@@ -1144,7 +1144,7 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t,
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "oem_set_shutdown_policy: invalid input len!");
         *dataLen = 0;
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::ccReqDataLenInvalid;
     }
 
     *dataLen = 0;
@@ -1152,7 +1152,7 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t,
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "oem_set_shutdown_policy: invalid input!");
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::ccInvalidFieldRequest;
     }
 
     if (*req == noShutdownOnOCOT)
@@ -1179,10 +1179,10 @@ ipmi_ret_t ipmiOEMSetShutdownPolicy(ipmi_netfn_t, ipmi_cmd_t,
     catch (const sdbusplus::exception_t& e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(e.description());
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::ccUnspecifiedError;
     }
 
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 /** @brief implementation for check the DHCP or not in IPv4
@@ -1565,7 +1565,7 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "CfgHostSerial: invalid input len!",
             phosphor::logging::entry("LEN=%d", *dataLen));
-        return IPMI_CC_REQ_DATA_LEN_INVALID;
+        return ipmi::ccReqDataLenInvalid;
     }
 
     switch (req->command)
@@ -1577,7 +1577,7 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "CfgHostSerial: invalid input len!");
                 *dataLen = 0;
-                return IPMI_CC_REQ_DATA_LEN_INVALID;
+                return ipmi::ccReqDataLenInvalid;
             }
 
             *dataLen = 0;
@@ -1608,7 +1608,7 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "CfgHostSerial:: error on read env");
-                    return IPMI_CC_UNSPECIFIED_ERROR;
+                    return ipmi::ccUnspecifiedError;
                 }
                 try
                 {
@@ -1624,14 +1624,14 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "invalid config ",
                         phosphor::logging::entry("ERR=%s", e.what()));
-                    return IPMI_CC_UNSPECIFIED_ERROR;
+                    return ipmi::ccUnspecifiedError;
                 }
                 catch (const std::out_of_range& e)
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
                         "out_of_range config ",
                         phosphor::logging::entry("ERR=%s", e.what()));
-                    return IPMI_CC_UNSPECIFIED_ERROR;
+                    return ipmi::ccUnspecifiedError;
                 }
             }
 
@@ -1645,7 +1645,7 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "CfgHostSerial: invalid input len!");
                 *dataLen = 0;
-                return IPMI_CC_REQ_DATA_LEN_INVALID;
+                return ipmi::ccReqDataLenInvalid;
             }
 
             *dataLen = 0;
@@ -1654,7 +1654,7 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "CfgHostSerial: invalid input!");
-                return IPMI_CC_INVALID_FIELD_REQUEST;
+                return ipmi::ccInvalidFieldRequest;
             }
 
             boost::process::child c1(fwSetEnvCmd, fwHostSerailCfgEnvName,
@@ -1666,7 +1666,7 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "CfgHostSerial:: error on execute",
                     phosphor::logging::entry("EXECUTE=%s", fwGetEnvCmd));
-                return IPMI_CC_UNSPECIFIED_ERROR;
+                return ipmi::ccUnspecifiedError;
             }
             break;
         }
@@ -1674,10 +1674,10 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "CfgHostSerial: invalid input!");
             *dataLen = 0;
-            return IPMI_CC_INVALID_FIELD_REQUEST;
+            return ipmi::ccInvalidFieldRequest;
     }
 
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 constexpr const char* thermalModeInterface =
@@ -2249,7 +2249,7 @@ ipmi::RspType<
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
                 "ipmiOEMGetFscParameter: invalid input len!");
-            return IPMI_CC_REQ_DATA_LEN_INVALID;
+            return ipmi::ccReqDataLenInvalid;
         }
         */
         Value cfmLimit;

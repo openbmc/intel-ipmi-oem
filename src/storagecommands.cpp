@@ -253,7 +253,7 @@ ipmi::Cc getFru(ipmi::Context::ptr& ctx, uint8_t devId)
     auto deviceFind = deviceHashes.find(devId);
     if (deviceFind == deviceHashes.end())
     {
-        return IPMI_CC_SENSOR_INVALID;
+        return ipmi::ccSensorInvalid;
     }
 
     if (writeTimer->isRunning())

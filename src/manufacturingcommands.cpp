@@ -103,7 +103,7 @@ ipmi_ret_t ledStoreAndSet(SmSignalSet signal, const std::string& setState)
     LedProperty* ledProp = mtm.findLedProperty(signal);
     if (ledProp == nullptr)
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::ccInvalidFieldRequest;
     }
 
     std::string ledName = ledProp->getName();
@@ -115,7 +115,7 @@ ipmi_ret_t ledStoreAndSet(SmSignalSet signal, const std::string& setState)
         if (mtm.getProperty(ledService, ledPath.c_str(), ledIntf, "State",
                             &presentState) != 0)
         {
-            return IPMI_CC_UNSPECIFIED_ERROR;
+            return ipmi::ccUnspecifiedError;
         }
         ledProp->setPrevState(std::get<std::string>(presentState));
         ledProp->setLock(true);
@@ -128,9 +128,9 @@ ipmi_ret_t ledStoreAndSet(SmSignalSet signal, const std::string& setState)
     if (mtm.setProperty(ledService, ledPath, ledIntf, "State",
                         ledStateStr + setState) != 0)
     {
-        return IPMI_CC_UNSPECIFIED_ERROR;
+        return ipmi::ccUnspecifiedError;
     }
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 ipmi_ret_t ledRevert(SmSignalSet signal)
@@ -138,7 +138,7 @@ ipmi_ret_t ledRevert(SmSignalSet signal)
     LedProperty* ledProp = mtm.findLedProperty(signal);
     if (ledProp == nullptr)
     {
-        return IPMI_CC_INVALID_FIELD_REQUEST;
+        return ipmi::ccInvalidFieldRequest;
     }
     if (true == ledProp->getLock())
     {
@@ -154,7 +154,7 @@ ipmi_ret_t ledRevert(SmSignalSet signal)
             }
             catch (const sdbusplus::exception_t& e)
             {
-                return IPMI_CC_UNSPECIFIED_ERROR;
+                return ipmi::ccUnspecifiedError;
             }
             mtm.revertLedCallback = false;
         }
@@ -165,11 +165,11 @@ ipmi_ret_t ledRevert(SmSignalSet signal)
             if (mtm.setProperty(ledService, ledPath, ledIntf, "State",
                                 ledProp->getPrevState()) != 0)
             {
-                return IPMI_CC_UNSPECIFIED_ERROR;
+                return ipmi::ccUnspecifiedError;
             }
         }
     }
-    return IPMI_CC_OK;
+    return ipmi::ccSuccess;
 }
 
 void Manufacturing::initData()
