@@ -56,6 +56,12 @@ bool validateBasicFruContent(const std::vector<uint8_t>& fru,
             // Walk the MultiRecord headers until the last record
             while (!endOfList)
             {
+                // It should not cross the fru size, while accessing the memory
+                if ((lastRecordStart + 1 >= fru.size()) ||
+                    (lastRecordStart + 2 >= fru.size()))
+                {
+                    break;
+                }
                 // The MSB in the second byte of the MultiRecord header signals
                 // "End of list"
                 endOfList = fru[lastRecordStart + 1] & 0x80;
