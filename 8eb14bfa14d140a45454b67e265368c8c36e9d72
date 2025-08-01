@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9e3c0dc6_f2fb5f97",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2025-08-01T12:40:00Z",
+      "side": 1,
+      "message": "Logic looks good, minor correction required.",
+      "revId": "8eb14bfa14d140a45454b67e265368c8c36e9d72",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "48bda7a6_a97a2727",
+        "filename": "src/fruutils.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1000418
+      },
+      "writtenOn": "2025-08-01T12:40:00Z",
+      "side": 1,
+      "message": "I think, We are fixing a defect where someone edits the FRU with input arguments for Multi-Record Area Record.Record_Length field (3rd byte of the record) containing a garbage value.  You are adding a check to ensure this field location is within the FRU.  You can extend this check till end of the Header itself and simplify this.\n\n```suggestion\n                // Multi-Record Area Record Header should not contain garbage\n                // values.  Ensure that the header is within the FRU size limits.\n                if (lastRecordStart + 4 \u003e\u003d fru.size())\n                {\n                    break;\n                }\n```",
+      "range": {
+        "startLine": 60,
+        "startChar": 15,
+        "endLine": 64,
+        "endChar": 17
+      },
+      "revId": "8eb14bfa14d140a45454b67e265368c8c36e9d72",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
