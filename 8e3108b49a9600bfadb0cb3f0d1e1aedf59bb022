@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3a01ad28_d264e9e2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001526
+      },
+      "writtenOn": "2025-08-05T07:18:19Z",
+      "side": 1,
+      "message": "Hi @apparao.puli@intel.com,https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/82534/1 is needed for this patch to bypass CI failure.",
+      "revId": "8e3108b49a9600bfadb0cb3f0d1e1aedf59bb022",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
