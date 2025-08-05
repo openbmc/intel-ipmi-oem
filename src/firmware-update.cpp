@@ -10,7 +10,7 @@
 #include <appcommands.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/container/flat_map.hpp>
-#include <boost/process/child.hpp>
+#include <boost/process/v1/child.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <commandutils.hpp>
@@ -712,7 +712,7 @@ static bool transferImageFromFile(const std::string& uri, bool move = true)
 template <typename... ArgTypes>
 static int executeCmd(const char* path, ArgTypes&&... tArgs)
 {
-    boost::process::child execProg(path, const_cast<char*>(tArgs)...);
+    boost::process::v1::child execProg(path, const_cast<char*>(tArgs)...);
     execProg.wait();
     return execProg.exit_code();
 }

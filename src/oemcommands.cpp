@@ -23,8 +23,8 @@
 
 #include <appcommands.hpp>
 #include <boost/container/flat_map.hpp>
-#include <boost/process/child.hpp>
-#include <boost/process/io.hpp>
+#include <boost/process/v1/child.hpp>
+#include <boost/process/v1/io.hpp>
 #include <com/intel/Control/OCOTShutdownPolicy/server.hpp>
 #include <commandutils.hpp>
 #include <gpiod.hpp>
@@ -1386,7 +1386,7 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
 
 static uint8_t executeCmd(const char* path)
 {
-    boost::process::child execProg(path);
+    boost::process::v1::child execProg(path);
     execProg.wait();
 
     int retCode = execProg.exit_code();
@@ -1582,11 +1582,12 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
 
             *dataLen = 0;
 
-            boost::process::ipstream is;
+            boost::process::v1::ipstream is;
             std::vector<std::string> data;
             std::string line;
-            boost::process::child c1(fwGetEnvCmd, "-n", fwHostSerailCfgEnvName,
-                                     boost::process::std_out > is);
+            boost::process::v1::child c1(fwGetEnvCmd, "-n",
+                                         fwHostSerailCfgEnvName,
+                                         boost::process::v1::std_out > is);
 
             while (c1.running() && std::getline(is, line) && !line.empty())
             {
@@ -1657,8 +1658,8 @@ ipmi_ret_t ipmiOEMCfgHostSerialPortSpeed(
                 return ipmi::ccInvalidFieldRequest;
             }
 
-            boost::process::child c1(fwSetEnvCmd, fwHostSerailCfgEnvName,
-                                     std::to_string(req->parameter));
+            boost::process::v1::child c1(fwSetEnvCmd, fwHostSerailCfgEnvName,
+                                         std::to_string(req->parameter));
 
             c1.wait();
             if (c1.exit_code())

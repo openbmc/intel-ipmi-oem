@@ -20,8 +20,8 @@
 
 #include <biosconfigcommands.hpp>
 #include <boost/crc.hpp>
-#include <boost/process/child.hpp>
-#include <boost/process/io.hpp>
+#include <boost/process/v1/child.hpp>
+#include <boost/process/v1/io.hpp>
 #include <ipmid/api.hpp>
 #include <ipmid/message.hpp>
 #include <ipmid/message/types.hpp>
@@ -602,8 +602,9 @@ static void generateAndSendAttributesData(std::string service,
 template <typename... ArgTypes>
 static int generateBIOSXMLFile(const char* path, ArgTypes&&... tArgs)
 {
-    boost::process::child execProg(path, const_cast<char*>(tArgs)...,
-                                   boost::process::std_out > biosXMLFilePath);
+    boost::process::v1::child execProg(
+        path, const_cast<char*>(tArgs)...,
+        boost::process::v1::std_out > biosXMLFilePath);
     execProg.wait();
     return execProg.exit_code();
 }
