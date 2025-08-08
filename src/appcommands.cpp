@@ -45,7 +45,7 @@ static constexpr const char* softwareActivationIntf =
 static constexpr const char* associationIntf =
     "xyz.openbmc_project.Association";
 static constexpr const char* softwareFunctionalPath =
-    "/xyz/openbmc_project/software/functional";
+    "/xyz/openbmc_project/software/bmc/functional";
 
 static constexpr const char* currentBmcStateProp = "CurrentBMCState";
 static constexpr const char* bmcStateReadyStr =
