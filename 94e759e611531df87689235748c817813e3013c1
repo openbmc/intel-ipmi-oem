@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "768070c1_d6d42d32",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001526
+      },
+      "writtenOn": "2025-08-18T10:28:25Z",
+      "side": 1,
+      "message": "Hi, can you help review this https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/82534? This seems to be a duplicate to the patch.",
+      "revId": "94e759e611531df87689235748c817813e3013c1",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
