@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d67c807d_a28ec269",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001497
+      },
+      "writtenOn": "2025-08-26T11:46:05Z",
+      "side": 1,
+      "message": "Hello,\nChanged the code as per the review comment.",
+      "revId": "344e6a1aff68dfd9ba2b41c2a7197cf5438eae02",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
