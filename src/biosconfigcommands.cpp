@@ -1110,7 +1110,7 @@ ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
 
     std::string hashFilePath = "/var/lib/bios-settings-manager/seedData";
     std::ofstream ofs(hashFilePath, std::ios::out);
-    const auto& writeData = json.dump();
+    const auto& writeData = json.dump(4);
     ofs << writeData;
     ofs.close();
     return ipmi::responseSuccess();
