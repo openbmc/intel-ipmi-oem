@@ -56,6 +56,30 @@
       },
       "revId": "344e6a1aff68dfd9ba2b41c2a7197cf5438eae02",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "68f4435c_a14c8c99",
+        "filename": "src/fruutils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1001497
+      },
+      "writtenOn": "2025-10-09T10:16:30Z",
+      "side": 1,
+      "message": "Hi Jason,\nThank you for the comment. I have added more description.",
+      "parentUuid": "4cea7e89_1ad0c157",
+      "range": {
+        "startLine": 61,
+        "startChar": 38,
+        "endLine": 61,
+        "endChar": 39
+      },
+      "revId": "344e6a1aff68dfd9ba2b41c2a7197cf5438eae02",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
