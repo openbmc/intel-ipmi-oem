@@ -16,6 +16,24 @@
       "message": "Seems okay.  Any concerns about storage space with the extra characters?  That is, is the JSON data large enough that the extra space characters could have an impact that we may need to worry about?",
       "revId": "c93a81df691749e911f4b219391773aff2624e8f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0fe9e920_4939c4a7",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1113,
+      "author": {
+        "id": 1000397
+      },
+      "writtenOn": "2025-10-24T00:50:47Z",
+      "side": 1,
+      "message": "No need to worry. Unless the JSON file is very large or the storage medium is extremely limited (eg: EEPROM or NOR Flash), the extra few kilobytes caused by using dump(4) are negligible.",
+      "parentUuid": "1377ee85_9f4dbd13",
+      "revId": "c93a81df691749e911f4b219391773aff2624e8f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
