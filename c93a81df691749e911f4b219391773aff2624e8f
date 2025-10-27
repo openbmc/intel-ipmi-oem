@@ -34,6 +34,24 @@
       "parentUuid": "1377ee85_9f4dbd13",
       "revId": "c93a81df691749e911f4b219391773aff2624e8f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b2081e26_c6928aad",
+        "filename": "src/biosconfigcommands.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1113,
+      "author": {
+        "id": 1000276
+      },
+      "writtenOn": "2025-10-27T15:51:19Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "0fe9e920_4939c4a7",
+      "revId": "c93a81df691749e911f4b219391773aff2624e8f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
