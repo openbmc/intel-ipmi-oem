@@ -29,3 +29,4 @@ Main extensions to vanilla OpenBMC IPMI stack are the following:
 2. [Phosphor IPMI Host](https://github.com/openbmc/phosphor-host-ipmid)
 3. [IPMI Specification v2.0](https://www.intel.pl/content/www/pl/pl/products/docs/servers/ipmi/ipmi-second-gen-interface-spec-v2-rev1-1.html)
 4. [Intel Platform Events parsing](docs/Intel_IPMI_Platform_Events.md)
+test
