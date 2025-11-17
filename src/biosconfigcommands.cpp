@@ -696,7 +696,7 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr&, uint8_t paramSel,
     }
 
     // Validate the Payload Type
-    if (payloadType > maxPayloadSupported)
+    if (payloadType >= maxPayloadSupported)
     {
         return ipmi::responseInvalidFieldRequest();
     }
@@ -910,7 +910,6 @@ ipmi::RspType<uint32_t> ipmiOEMSetPayload(ipmi::Context::ptr&, uint8_t paramSel,
         default:
             return ipmi::responseInvalidFieldRequest();
     }
-    return ipmi::responseResponseError();
 }
 
 ipmi::RspType<message::Payload> ipmiOEMGetPayload(
@@ -931,7 +930,7 @@ ipmi::RspType<message::Payload> ipmiOEMGetPayload(
         return ipmi::response(ipmiCCBIOSCapabilityInitNotDone);
     }
     // Validate the Payload Type
-    if (payloadType > maxPayloadSupported)
+    if (payloadType >= maxPayloadSupported)
     {
         return ipmi::responseInvalidFieldRequest();
     }
@@ -1068,7 +1067,6 @@ ipmi::RspType<message::Payload> ipmiOEMGetPayload(
         default:
             return ipmi::responseInvalidFieldRequest();
     }
-    return ipmi::responseInvalidFieldRequest();
 }
 
 ipmi::RspType<> ipmiOEMSetBIOSHashInfo(
