@@ -1148,10 +1148,14 @@ ipmi::RspType<uint8_t, std::array<uint8_t, maxEthSize>> getManufacturingData(
     std::string ethStr;
     iEthFile >> ethStr;
     uint8_t* data = ethData.data();
-    std::sscanf(ethStr.c_str(), "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx",
-                data, (data + 1), (data + 2), (data + 3), (data + 4),
-                (data + 5));
-
+    int ret = std::sscanf(
+        ethStr.c_str(), "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx", data,
+        (data + 1), (data + 2), (data + 3), (data + 4), (data + 5));
+    if (ret != 6)
+    {
+        lg2::error("Failed to parse MAC address: {MAC}", "MAC", ethStr.c_str());
+        return ipmi::responseSuccess(invalidData, ethData);
+    }
     resetMtmTimer(ctx);
     return ipmi::responseSuccess(validData, ethData);
 }
