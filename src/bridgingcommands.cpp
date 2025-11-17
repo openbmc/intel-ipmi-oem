@@ -352,12 +352,6 @@ ipmi::Cc Bridging::handleIpmbChannel(
             rspData.resize(dataLength);
             break;
         }
-        default:
-        {
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                "handleIpmbChannel, mode not supported");
-            return ipmi::ccParmOutOfRange;
-        }
     }
 
     return ipmi::ccSuccess;
