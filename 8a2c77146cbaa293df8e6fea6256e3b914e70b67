@@ -16,6 +16,24 @@
       "message": "Please leave a blank line after the subject line, so it gets correctly separated from the body.  Details on the commit message guidelines we follow are here: https://cbea.ms/git-commit/",
       "revId": "8a2c77146cbaa293df8e6fea6256e3b914e70b67",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5031353f_1c9ed63a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000276
+      },
+      "writtenOn": "2025-11-18T14:45:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b61969a4_8ec2c4fe",
+      "revId": "8a2c77146cbaa293df8e6fea6256e3b914e70b67",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
