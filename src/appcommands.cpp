@@ -25,12 +25,14 @@
 #include <phosphor-logging/lg2.hpp>
 #include <phosphor-logging/log.hpp>
 #include <types.hpp>
+#include <xyz/openbmc_project/ObjectMapper/common.hpp>
 
 #include <fstream>
 #include <regex>
 
 using namespace phosphor::logging;
 using namespace sdbusplus::error::xyz::openbmc_project::common;
+using ObjectMapper = sdbusplus::common::xyz::openbmc_project::ObjectMapper;
 
 namespace ipmi
 {
@@ -139,8 +141,8 @@ int getActiveSoftwareVersionInfo(ipmi::Context::ptr ctx,
 {
     std::vector<std::string> activeEndPoints;
     boost::system::error_code ec = ipmi::getDbusProperty(
-        ctx, ipmi::MAPPER_BUS_NAME, softwareFunctionalPath, associationIntf,
-        "endpoints", activeEndPoints);
+        ctx, ObjectMapper::default_service, softwareFunctionalPath,
+        associationIntf, "endpoints", activeEndPoints);
     if (ec)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
