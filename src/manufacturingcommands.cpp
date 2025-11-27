@@ -338,7 +338,7 @@ static bool findPwmName(ipmi::Context::ptr& ctx, uint8_t instance,
                 {
                     return false;
                 }
-                pwmName = "Pwm_" + std::to_string(*fanPwm + 1);
+                pwmName = "Pwm_" + std::to_string(*fanPwm);
                 return true;
             }
         }
@@ -398,10 +398,10 @@ ipmi::RspType<uint8_t,                // Signal value
         {
             ipmi::Value reply;
             std::string pwmName, fullPath;
-            if (!findPwmName(ctx, instance + 1, pwmName))
+            if (!findPwmName(ctx, instance, pwmName))
             {
                 // The default PWM name is Pwm_#
-                pwmName = "Pwm_" + std::to_string(instance + 1);
+                pwmName = "Pwm_" + std::to_string(instance);
             }
             fullPath = fanPwmPath + pwmName;
             if (mtm.getProperty(fanService, fullPath, fanIntf, "Value",
@@ -663,9 +663,9 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                     }
                     mtm.revertTimer.start(revertTimeOut);
                     std::string pwmName, fanPwmInstancePath;
-                    if (!findPwmName(ctx, instance + 1, pwmName))
+                    if (!findPwmName(ctx, instance, pwmName))
                     {
-                        pwmName = "Pwm_" + std::to_string(instance + 1);
+                        pwmName = "Pwm_" + std::to_string(instance);
                     }
                     fanPwmInstancePath = fanPwmPath + pwmName;
                     ret =
@@ -763,7 +763,7 @@ ipmi::RspType<> appMTMSetSignal(ipmi::Context::ptr ctx, uint8_t signalTypeByte,
                 return ipmi::responseUnspecifiedError();
             }
             std::string driveObjPath =
-                driveBasePath + "Drive_" + std::to_string(instance + 1);
+                driveBasePath + "Drive_" + std::to_string(instance);
             if (std::find(driveList.begin(), driveList.end(), driveObjPath) ==
                 driveList.end())
             {
