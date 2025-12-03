@@ -1,0 +1,8 @@
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Code-Review+1: <patryk.marciniak@intel.com>
+Code-Review+2: Jason Bills <jason.m.bills@linux.intel.com>
+Submitted-by: Florian Breska <florian.breska@intel.com>
+Submitted-at: Wed, 03 Dec 2025 07:31:10 +0000
+Reviewed-on: https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/85612
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
