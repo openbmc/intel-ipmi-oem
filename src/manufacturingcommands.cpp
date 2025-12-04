@@ -24,6 +24,7 @@
 #include <phosphor-logging/lg2.hpp>
 #include <types.hpp>
 
+#include <algorithm>
 #include <charconv>
 #include <filesystem>
 #include <fstream>
@@ -292,6 +293,10 @@ static bool findPwmName(ipmi::Context::ptr& ctx, uint8_t instance,
         lg2::error("GetMangagedObjects failed", "ERROR", ec.message().c_str());
         return false;
     }
+
+    uint8_t hpmIdx = (instance >> 6) & 0x03;
+    uint8_t fanIdx = instance & 0x3F;
+
     for (const auto& [path, objData] : obj)
     {
         for (const auto& [intf, propMap] : objData)
@@ -301,12 +306,17 @@ static bool findPwmName(ipmi::Context::ptr& ctx, uint8_t instance,
                 intf == "xyz.openbmc_project.Configuration.I2CFan" ||
                 intf == "xyz.openbmc_project.Configuration.NuvotonFan")
             {
-                std::string fanPath = "/Fan_";
-
-                fanPath += std::to_string(instance);
                 std::string objPath = path.str;
-                objPath = objPath.substr(objPath.find_last_of("/"));
-                if (objPath != fanPath)
+                objPath = objPath.substr(objPath.find_last_of("/") + 1);
+
+                std::string fanSuffix = "Fan_" + std::to_string(fanIdx);
+                std::string hpmPrefix = "HPM_" + std::to_string(hpmIdx);
+                
+                bool isRegularFan = (objPath == fanSuffix);
+                bool isMultiHpmFan = (objPath.starts_with(hpmPrefix) && 
+                                 objPath.ends_with(fanSuffix));
+                
+                if (!isRegularFan && !isMultiHpmFan)
                 {
                     continue;
                 }
@@ -326,6 +336,8 @@ static bool findPwmName(ipmi::Context::ptr& ctx, uint8_t instance,
                         return false;
                     }
                     pwmName = *fanPwmName;
+                    // The Dbus object name will have spaces replaced with '_'
+                    std::replace(pwmName.begin(), pwmName.end(), ' ', '_');
                     return true;
                 }
                 auto findPwm = connector->second.find("Pwm");
