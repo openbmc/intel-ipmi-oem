@@ -374,16 +374,21 @@ ipmi::RspType<uint8_t,                // Signal value
             }
 
             uint8_t status = 0;
-            if (!intrusionStatus->compare("Normal"))
+            if (!intrusionStatus->compare(
+                    "xyz.openbmc_project.Chassis.Intrusion.Status.Normal"))
             {
                 status = static_cast<uint8_t>(IntrusionStatus::normal);
             }
-            else if (!intrusionStatus->compare("HardwareIntrusion"))
+            else if (
+                !intrusionStatus->compare(
+                    "xyz.openbmc_project.Chassis.Intrusion.Status.HardwareIntrusion"))
             {
                 status =
                     static_cast<uint8_t>(IntrusionStatus::hardwareIntrusion);
             }
-            else if (!intrusionStatus->compare("TamperingDetected"))
+            else if (
+                !intrusionStatus->compare(
+                    "xyz.openbmc_project.Chassis.Intrusion.Status.TamperingDetected"))
             {
                 status =
                     static_cast<uint8_t>(IntrusionStatus::tamperingDetected);
