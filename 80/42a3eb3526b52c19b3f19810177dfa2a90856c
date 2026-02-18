@@ -1,0 +1,7 @@
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Code-Review+2: Jason Bills <jason.m.bills@linux.intel.com>
+Submitted-by: Swaroop Aradhya <swaroopx.aradhya.n.m@intel.com>
+Submitted-at: Wed, 18 Feb 2026 10:32:22 +0000
+Reviewed-on: https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/87471
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
