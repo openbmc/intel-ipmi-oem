@@ -1166,7 +1166,7 @@ ipmi::RspType<uint8_t, uint16_t> cmd_mdr2_data_start(
     else
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "Canot lock smbios");
+            "Cannot lock smbios");
         return ipmi::responseUnspecifiedError();
     }
 
@@ -1226,7 +1226,7 @@ ipmi::RspType<> cmd_mdr2_data_done(uint16_t agentId, uint16_t lockHandle)
         if (flag != 0)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
-                "create folder failed for writting smbios file");
+                "create folder failed for writing smbios file");
         }
     }
     if (!mdrv2->storeDatatoFlash(

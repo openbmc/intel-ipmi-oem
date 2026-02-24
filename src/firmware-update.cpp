@@ -818,7 +818,7 @@ static uint8_t getActiveBootImage(ipmi::Context::ptr ctx)
         bootImage = undefinedImage;
     }
 
-    /* cheking for secondary FitImage Address 22480000  */
+    /* checking for secondary FitImage Address 22480000  */
     else if (value.find(secondaryFitImageStartAddr) != std::string::npos)
     {
         bootImage = secondaryImage;
@@ -842,7 +842,7 @@ using fwVersionInfoType =
 ipmi::RspType<uint8_t, std::vector<fwVersionInfoType>> ipmiGetFwVersionInfo()
 {
     // Byte 1 - Count (N) Number of devices data is being returned for.
-    // Bytes  2:16 - Device firmare information(fwVersionInfoType)
+    // Bytes  2:16 - Device firmware information(fwVersionInfoType)
     // Bytes - 17:(15xN) - Repeat of 2 through 16
 
     std::vector<fwVersionInfoType> fwVerInfoList;
@@ -1102,7 +1102,7 @@ ipmi::RspType<uint8_t, uint8_t> ipmiGetBmcExecutionContext(
     ipmi::Context::ptr ctx)
 {
     // Byte 1 - Current execution context
-    //          0x10 - Linux OS, 0x11 - Bootloader, Forced-firmware updat mode
+    //          0x10 - Linux OS, 0x11 - Bootloader, Forced-firmware update mode
     // Byte 2 - Partition pointer
     //          0x01 - primary, 0x02 - secondary
     uint8_t partitionPtr = getActiveBootImage(ctx);

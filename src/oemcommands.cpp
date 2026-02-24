@@ -697,7 +697,7 @@ ipmi_ret_t ipmiOEMGetAICFRU(ipmi_netfn_t, ipmi_cmd_t, ipmi_request_t,
     *dataLen = 1;
     uint8_t* res = reinterpret_cast<uint8_t*>(response);
     // temporary fix. We don't support AIC FRU now. Just tell BIOS that no
-    // AIC is available so that BIOS will not timeout repeatly which leads to
+    // AIC is available so that BIOS will not timeout repeatedly which leads to
     // slow booting.
     *res = 0; // Byte1=Count of SlotPosition/FruID records.
     return ipmi::ccSuccess;
@@ -760,7 +760,7 @@ ipmi::RspType<> ipmiOEMSendEmbeddedFwUpdStatus(
     {
         return ipmi::response(ipmi::ccInvalidFieldRequest);
     }
-    /*orignal OEM command is to record OEM SEL.
+    /*original OEM command is to record OEM SEL.
     But openbmc does not support OEM SEL, so we redirect it to redfish event
     logging. */
     std::string buildInfo;
@@ -1221,7 +1221,7 @@ static bool isDHCPEnabled(uint8_t Channel)
     }
 }
 
-/** @brief implementes for check the DHCP or not in IPv6
+/** @brief implements for check the DHCP or not in IPv6
  *  @param[in] Channel - Channel number
  *  @returns true or false.
  */
@@ -1257,7 +1257,7 @@ static bool isDHCPIPv6Enabled(uint8_t Channel)
     }
 }
 
-/** @brief implementes the creating of default new user
+/** @brief implements the creating of default new user
  *  @param[in] userName - new username in 16 bytes.
  *  @param[in] userPassword - new password in 20 bytes
  *  @returns ipmi completion code.
@@ -1379,7 +1379,7 @@ ipmi::RspType<> ipmiOEMSetUser2Activation(
     return ipmi::response(ipmi::ccCommandNotAvailable);
 }
 
-/** @brief implementes executing the linux command
+/** @brief implements executing the linux command
  *  @param[in] linux command
  *  @returns status
  */
@@ -1397,7 +1397,7 @@ static uint8_t executeCmd(const char* path)
     return ipmi::ccSuccess;
 }
 
-/** @brief implementes ASD Security event logging
+/** @brief implements ASD Security event logging
  *  @param[in] Event message string
  *  @param[in] Event Severity
  *  @returns status
@@ -1411,7 +1411,7 @@ static void atScaleDebugEventlog(std::string msg, int severity)
                     eventStr.c_str(), NULL);
 }
 
-/** @brief implementes setting password for special user
+/** @brief implements setting password for special user
  *  @param[in] specialUserIndex
  *  @param[in] userPassword - new password in 20 bytes
  *  @returns ipmi completion code.

@@ -56,7 +56,7 @@ namespace knob
 {
 /* These are the operators we support in a 'depex' expression
  * Note: We also support '_LIST_', 'Sif', 'Gif', 'Dif', and 'NOT'. But they are
- * handeled sepeartely. */
+ * handeled separately. */
 enum class DepexOperators
 {
     unknown = 0,
@@ -639,7 +639,7 @@ class Depex
                     }
 
                     /* 'Sif(', 'Gif(', 'Dif( == IF NOT,
-                    we have to negate the vaule */
+                    we have to negate the value */
                     if (ifFormSetOperator == true)
                     {
                         value = !value;
