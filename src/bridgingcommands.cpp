@@ -499,7 +499,7 @@ ipmi::RspType<uint8_t,             // channelNumber
     // channel number set.
     channelData |= static_cast<uint8_t>(targetChannelSystemInterface) & 0x0F;
 
-    // Priviledge level set.
+    // Privilege level set.
     channelData |= SYSTEM_INTERFACE & 0xF0;
 
     // Get the first message from queue
@@ -523,7 +523,7 @@ std::size_t Bridging::getResponseQueueSize()
 }
 
 /**
-@brief This command is used to retrive present message available states.
+@brief This command is used to retrieve present message available states.
 
 @return IPMI completion code plus Flags as response data on success.
 **/

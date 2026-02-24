@@ -40,7 +40,7 @@ static constexpr const uint32_t mdr2SMBaseAddress =
 
 static constexpr const uint8_t mdrTypeII = 2;          // MDR V2 type
 
-static constexpr const uint8_t mdr2Version = 2;        // MDR V2 versoin
+static constexpr const uint8_t mdr2Version = 2;        // MDR V2 version
 static constexpr const uint8_t smbiosAgentVersion = 1; // Agent version of
                                                        // smbios
 
@@ -92,7 +92,7 @@ enum MDR2DirLockEnum
 
 struct MDRSMBIOSHeader
 {
-    uint8_t dirVer;
+    uint8_t driver;
     uint8_t mdrType;
     uint32_t timestamp;
     uint32_t dataSize;

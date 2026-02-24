@@ -250,7 +250,7 @@ class LedProperty
 
 /** @class Manufacturing
  *
- *  @brief Implemet commands to support Manufacturing Test Mode.
+ *  @brief Implement commands to support Manufacturing Test Mode.
  */
 class Manufacturing
 {

@@ -1,8 +1,8 @@
 # Intel IPMI Platform Events parsing
 
-In many cases Manufacturers-specific IPMI Platfrom Events are stored in binary
-form in System Event Log making it very difficult to easily understand platfrom
-state. This document specifies a solution for presenting Manufacturer Spcific
+In many cases Manufacturers-specific IPMI Platform Events are stored in binary
+form in System Event Log making it very difficult to easily understand platform
+state. This document specifies a solution for presenting Manufacturer Specific
 IPMI Platform Events in a human readable form by defining a generic framework
 for parsing and defining new messages in an easy and scallable way. Example of
 events originating from Intel Management Engine (ME) is used as a case-study.
@@ -11,7 +11,7 @@ OpenBMC described in detail.
 
 ## Glossary
 
-- **IPMI** - Intelligent Platform Management Interface; standarized binary
+- **IPMI** - Intelligent Platform Management Interface; standardized binary
   protocol of communication between endpoints in datacenter `[1]`
 - **Platform Event** - specific type of IPMI binary payload, used for encoding
   and sending asynchronous one-way messages to recipient `[1]-29.3`
@@ -28,13 +28,13 @@ IPMI is designed to be a compact and efficient binary format of data exchanged
 between entities in data-center. Recipient is responsible to receive data,
 properly analyze, parse and translate the binary representation to
 human-readable format. IPMI Platform Events is one type of these messages, used
-to inform recipient about occurence of a particular well defined situation.
+to inform recipient about occurrence of a particular well defined situation.
 
-Part of IPMI Platform Events are standarized and described in the specification
+Part of IPMI Platform Events are standardized and described in the specification
 and already have an open-source implementation ready `[6]`, however this is only
-part of the spectrum. Increasing complexity of datacenter systems have multipled
+part of the spectrum. Increasing complexity of datacenter systems have multiplied
 possible sources of events which are defined by manufacturer-specirfic
-extenstions to platform event data. One of these sources is Intel ME, which is
+extensions to platform event data. One of these sources is Intel ME, which is
 able to deliver information about its own state of operation and in some cases
 notify about certain erroneous system-wide conditions, like interface errors.
 

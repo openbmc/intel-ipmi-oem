@@ -70,7 +70,7 @@ int initBMCDeviceState(ipmi::Context::ptr ctx)
         return -1;
     }
 
-    // BMC state may change runtime while doing firmware udpate.
+    // BMC state may change runtime while doing firmware update.
     // Register for property change signal to update state.
     bmcStateChangedSignal = std::make_unique<sdbusplus::bus::match_t>(
         *(ctx->bus),
