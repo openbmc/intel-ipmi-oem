@@ -625,17 +625,22 @@ ipmi::Cc getFruSdrs(ipmi::Context::ptr& ctx, size_t index,
 #endif
 
     std::string name;
-    auto findProductName = fruData->find("BOARD_PRODUCT_NAME");
-    auto findBoardName = fruData->find("PRODUCT_PRODUCT_NAME");
-    if (findProductName != fruData->end())
+    std::vector<std::string> nameProperties = {
+        "BOARD_PRODUCT_NAME",    "PRODUCT_PRODUCT_NAME",
+        "PRODUCT_PART_NUMBER",   "BOARD_PART_NUMBER",
+        "PRODUCT_MANUFACTURER",  "BOARD_MANUFACTURER",
+        "PRODUCT_SERIAL_NUMBER", "BOARD_SERIAL_NUMBER"};
+
+    for (const std::string& prop : nameProperties)
     {
-        name = std::get<std::string>(findProductName->second);
+        auto findProp = fruData->find(prop);
+        if (findProp != fruData->end())
+        {
+            name = std::get<std::string>(findProp->second);
+            break;
+        }
     }
-    else if (findBoardName != fruData->end())
-    {
-        name = std::get<std::string>(findBoardName->second);
-    }
-    else
+    if (name.empty())
     {
         name = "UNKNOWN";
     }
