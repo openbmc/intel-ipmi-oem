@@ -1,0 +1,10 @@
+Code-Review+1: <patryk.marciniak@intel.com>
+Code-Review+2: Jason Bills <jason.m.bills@linux.intel.com>
+Code-Review+1: Saravanan Palanisamy <saravanan.palanisamy@linux.intel.com>
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Submitted-by: Saravanan Palanisamy <saravanan.palanisamy@linux.intel.com>
+Submitted-at: Tue, 31 Mar 2026 07:46:44 +0000
+Reviewed-on: https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/88343
+Comments-Total: 1
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
