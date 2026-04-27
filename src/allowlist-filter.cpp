@@ -181,7 +181,7 @@ void AllowlistFilter::handleRestrictedModeChange(sdbusplus::message_t& m)
     }
     else if (signal == "InterfacesAdded")
     {
-        sdbusplus::message::object_path path;
+        sdbusplus::object_path path;
         DbusInterfaceMap restModeObj;
         m.read(path, restModeObj);
         auto intfItr = restModeObj.find(restrictionModeIntf);
@@ -228,7 +228,7 @@ void AllowlistFilter::handlePostCompleteChange(sdbusplus::message_t& m)
     }
     else if (signal == "InterfacesAdded")
     {
-        sdbusplus::message::object_path path;
+        sdbusplus::object_path path;
         DbusInterfaceMap postCompleteObj;
         m.read(path, postCompleteObj);
         auto intfItr = postCompleteObj.find(systemOsStatusIntf);
@@ -304,7 +304,7 @@ void AllowlistFilter::handleCoreBiosDoneChange(sdbusplus::message_t& msg)
     }
     else if (signal == "InterfacesAdded")
     {
-        sdbusplus::message::object_path path;
+        sdbusplus::object_path path;
         DbusInterfaceMap eSpiresetObj;
         msg.read(path, eSpiresetObj);
         auto intfItr = eSpiresetObj.find(hostMiscIntf);
