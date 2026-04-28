@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "da10f0fc_15035067",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001717
+      },
+      "writtenOn": "2026-04-28T11:08:13Z",
+      "side": 1,
+      "message": "Added inline comment before nameProperties and removed PRODUCT_SERIAL_NUMBER and BOARD_SERIAL_NUMBER from the searchable field properties",
+      "revId": "6ae9e4c29444bbacde109595a9b404ac54679c1f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
