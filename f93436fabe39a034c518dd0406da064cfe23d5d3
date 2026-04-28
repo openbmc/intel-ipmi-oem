@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "68d0a050_6cdb35dd",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 628,
+      "author": {
+        "id": 1002762
+      },
+      "writtenOn": "2026-04-28T06:14:36Z",
+      "side": 1,
+      "message": "Could you add a brief inline comment before the property list to explain the intent? it will help to understand Easily",
+      "range": {
+        "startLine": 628,
+        "startChar": 0,
+        "endLine": 628,
+        "endChar": 47
+      },
+      "revId": "f93436fabe39a034c518dd0406da064cfe23d5d3",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c8a3dd18_adc1dbc7",
+        "filename": "src/storagecommands.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 631,
+      "author": {
+        "id": 1002762
+      },
+      "writtenOn": "2026-04-28T06:14:36Z",
+      "side": 1,
+      "message": "Are PRODUCT_SERIAL_NUMBER and BOARD_SERIAL_NUMBER useful as FRU device description names? A serial like 2334429D69B7 is no more recognizable than UNKNOWN to an operator, and it could be misleading since it looks like a real device name. ?",
+      "range": {
+        "startLine": 631,
+        "startChar": 0,
+        "endLine": 631,
+        "endChar": 56
+      },
+      "revId": "f93436fabe39a034c518dd0406da064cfe23d5d3",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
