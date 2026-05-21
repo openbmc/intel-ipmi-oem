@@ -583,7 +583,7 @@ static void postTransferCompleteHandler(
             std::pair<std::string,
                       std::vector<std::pair<std::string, ipmi::DbusVariant>>>>
             intfPropsPair;
-        sdbusplus::message::object_path objPath;
+        sdbusplus::object_path objPath;
 
         try
         {
