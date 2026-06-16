@@ -194,7 +194,6 @@ enum registerType : uint8_t
 {
     singleByteRegister = 0,
     fifoReadRegister,
-
 };
 
 void loadPfrConfig(ipmi::Context::ptr& ctx, bool& i2cConfigLoaded)
