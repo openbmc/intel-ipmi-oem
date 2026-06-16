@@ -218,51 +218,50 @@ std::optional<MetaRevision> convertIntelVersion(std::string& s)
 {
     std::smatch results;
     MetaRevision rev;
+
+    auto logAndReturnRev = [&](const std::string& platform, int majIdx,
+                               int minIdx, int buildIdx, int hashIdx,
+                               int metaIdx,
+                               std::optional<uint8_t> majorOverride = std::nullopt)
+        -> std::optional<MetaRevision> {
+        rev.platform = platform;
+        rev.major = majorOverride.value_or(
+            static_cast<uint8_t>(std::stoi(results[majIdx])));
+        rev.minor = static_cast<uint8_t>(std::stoi(results[minIdx]));
+        rev.buildNo = static_cast<uint32_t>(std::stoi(results[buildIdx]));
+        rev.openbmcHash = results[hashIdx];
+        rev.metaHash = results[metaIdx];
+        std::string versionString =
+            rev.platform + ":" + std::to_string(rev.major) + ":" +
+            std::to_string(rev.minor) + ":" + std::to_string(rev.buildNo) +
+            ":" + rev.openbmcHash + ":" + rev.metaHash;
+        phosphor::logging::log<phosphor::logging::level::INFO>(
+            "Get BMC version",
+            phosphor::logging::entry("VERSION=%s", versionString.c_str()));
+        return rev;
+    };
+
     std::regex pattern1("(\\d+?).(\\d+?).\\d+?-\\w*?-(\\d+?)-g(\\w+?)-(\\w+?)");
     constexpr size_t matchedPhosphor = 6;
     if (std::regex_match(s, results, pattern1))
     {
         if (results.size() == matchedPhosphor)
         {
-            rev.platform = "whtref";
-            rev.major = static_cast<uint8_t>(std::stoi(results[1]));
-            rev.minor = static_cast<uint8_t>(std::stoi(results[2]));
-            rev.buildNo = static_cast<uint32_t>(std::stoi(results[3]));
-            rev.openbmcHash = results[4];
-            rev.metaHash = results[5];
-            std::string versionString =
-                rev.platform + ":" + std::to_string(rev.major) + ":" +
-                std::to_string(rev.minor) + ":" + std::to_string(rev.buildNo) +
-                ":" + rev.openbmcHash + ":" + rev.metaHash;
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                "Get BMC version",
-                phosphor::logging::entry("VERSION=%s", versionString.c_str()));
-            return rev;
+            return logAndReturnRev("whtref", 1, 2, 3, 4, 5);
         }
     }
-    constexpr size_t matchedIntel = 7;
+
     std::regex pattern2("(\\w+?)-(\\d+?).(\\d+?)[-.](\\d+?)-g(\\w+?)-(\\w+?)");
+    constexpr size_t matchedIntel = 7;
     if (std::regex_match(s, results, pattern2))
     {
         if (results.size() == matchedIntel)
         {
-            rev.platform = results[1];
             std::string majorVer = results[2].str();
             // Take only the last two digits of the major version
-            rev.major = static_cast<uint8_t>(
-                std::stoi(majorVer.substr(majorVer.size() - 2)));
-            rev.minor = static_cast<uint8_t>(std::stoi(results[3]));
-            rev.buildNo = static_cast<uint32_t>(std::stoi(results[4]));
-            rev.openbmcHash = results[6];
-            rev.metaHash = results[5];
-            std::string versionString =
-                rev.platform + ":" + std::to_string(rev.major) + ":" +
-                std::to_string(rev.minor) + ":" + std::to_string(rev.buildNo) +
-                ":" + rev.openbmcHash + ":" + rev.metaHash;
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                "Get BMC version",
-                phosphor::logging::entry("VERSION=%s", versionString.c_str()));
-            return rev;
+            int majorVal = std::stoi(majorVer.substr(majorVer.size() - 2));
+            return logAndReturnRev(results[1], 2, 3, 4, 6, 5,
+                                   static_cast<uint8_t>(majorVal));
         }
     }
 
