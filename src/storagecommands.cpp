@@ -116,7 +116,7 @@ static uint16_t writeBus = 0xFFFF;
 static uint8_t writeAddr = 0XFF;
 
 std::unique_ptr<sdbusplus::Timer> writeTimer = nullptr;
-static std::vector<sdbusplus::bus::match_t> fruMatches;
+static std::vector<sdbusplus::match> fruMatches;
 
 ManagedObjectType frus;
 

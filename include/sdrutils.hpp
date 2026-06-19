@@ -228,13 +228,13 @@ inline static uint16_t getSensorSubtree(std::shared_ptr<SensorSubTree>& subtree)
         return sensorUpdatedIndex;
     }
     sdbusplus::bus_t dbus(bus);
-    static sdbusplus::bus::match_t sensorAdded(
+    static sdbusplus::match sensorAdded(
         dbus,
         "type='signal',member='InterfacesAdded',arg0path='/xyz/openbmc_project/"
         "sensors/'",
         [](sdbusplus::message_t&) { sensorTreePtr.reset(); });
 
-    static sdbusplus::bus::match_t sensorRemoved(
+    static sdbusplus::match sensorRemoved(
         dbus,
         "type='signal',member='InterfacesRemoved',arg0path='/xyz/"
         "openbmc_project/sensors/'",
