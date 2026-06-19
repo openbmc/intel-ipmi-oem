@@ -67,8 +67,7 @@ constexpr size_t defaultIdentifyTimeOut = 15;
 
 std::unique_ptr<sdbusplus::Timer> identifyTimer
     __attribute__((init_priority(101)));
-std::unique_ptr<sdbusplus::bus::match_t> matchPtr
-    __attribute__((init_priority(101)));
+std::unique_ptr<sdbusplus::match> matchPtr __attribute__((init_priority(101)));
 
 static void registerChassisFunctions() __attribute__((constructor));
 
@@ -662,13 +661,12 @@ static void registerChassisFunctions(void)
 
     if (matchPtr == nullptr)
     {
-        using namespace sdbusplus::bus::match::rules;
+        using namespace sdbusplus::match_rules;
         auto bus = getSdBus();
 
-        matchPtr = std::make_unique<sdbusplus::bus::match_t>(
+        matchPtr = std::make_unique<sdbusplus::match>(
             *bus,
-            sdbusplus::bus::match::rules::propertiesChanged(idButtonPath,
-                                                            buttonIntf),
+            sdbusplus::match_rules::propertiesChanged(idButtonPath, buttonIntf),
             std::bind(idButtonPropChanged, std::placeholders::_1));
     }
 
