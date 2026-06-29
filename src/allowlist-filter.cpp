@@ -57,12 +57,12 @@ class AllowlistFilter
     bool coreBIOSDone = true;
     int channelSMM = -1;
     std::shared_ptr<sdbusplus::asio::connection> bus;
-    std::unique_ptr<sdbusplus::bus::match_t> modeChangeMatch;
-    std::unique_ptr<sdbusplus::bus::match_t> modeIntfAddedMatch;
-    std::unique_ptr<sdbusplus::bus::match_t> postCompleteMatch;
-    std::unique_ptr<sdbusplus::bus::match_t> postCompleteIntfAddedMatch;
-    std::unique_ptr<sdbusplus::bus::match_t> platStateChangeMatch;
-    std::unique_ptr<sdbusplus::bus::match_t> platStateIntfAddedMatch;
+    std::unique_ptr<sdbusplus::match> modeChangeMatch;
+    std::unique_ptr<sdbusplus::match> modeIntfAddedMatch;
+    std::unique_ptr<sdbusplus::match> postCompleteMatch;
+    std::unique_ptr<sdbusplus::match> postCompleteIntfAddedMatch;
+    std::unique_ptr<sdbusplus::match> platStateChangeMatch;
+    std::unique_ptr<sdbusplus::match> platStateIntfAddedMatch;
 
     static constexpr const char restrictionModeIntf[] =
         "xyz.openbmc_project.Control.Security.RestrictionMode";
@@ -327,7 +327,7 @@ void AllowlistFilter::handleCoreBiosDoneChange(sdbusplus::message_t& msg)
 void AllowlistFilter::postInit()
 {
     // Wait for changes on Restricted mode
-    namespace rules = sdbusplus::bus::match::rules;
+    namespace rules = sdbusplus::match_rules;
     const std::string filterStrModeChange =
         rules::type::signal() + rules::member("PropertiesChanged") +
         rules::interface("org.freedesktop.DBus.Properties") +
@@ -356,26 +356,26 @@ void AllowlistFilter::postInit()
         rules::interfacesAdded() +
         rules::argNpath(0, "/xyz/openbmc_project/misc/platform_state");
 
-    modeChangeMatch = std::make_unique<sdbusplus::bus::match_t>(
+    modeChangeMatch = std::make_unique<sdbusplus::match>(
         *bus, filterStrModeChange,
         [this](sdbusplus::message_t& m) { handleRestrictedModeChange(m); });
-    modeIntfAddedMatch = std::make_unique<sdbusplus::bus::match_t>(
+    modeIntfAddedMatch = std::make_unique<sdbusplus::match>(
         *bus, filterStrModeIntfAdd,
         [this](sdbusplus::message_t& m) { handleRestrictedModeChange(m); });
 
-    postCompleteMatch = std::make_unique<sdbusplus::bus::match_t>(
+    postCompleteMatch = std::make_unique<sdbusplus::match>(
         *bus, filterStrPostComplete,
         [this](sdbusplus::message_t& m) { handlePostCompleteChange(m); });
 
-    postCompleteIntfAddedMatch = std::make_unique<sdbusplus::bus::match_t>(
+    postCompleteIntfAddedMatch = std::make_unique<sdbusplus::match>(
         *bus, filterStrPostIntfAdd,
         [this](sdbusplus::message_t& m) { handlePostCompleteChange(m); });
 
-    platStateChangeMatch = std::make_unique<sdbusplus::bus::match_t>(
+    platStateChangeMatch = std::make_unique<sdbusplus::match>(
         *bus, filterStrPlatStateChange,
         [this](sdbusplus::message_t& m) { handleCoreBiosDoneChange(m); });
 
-    platStateIntfAddedMatch = std::make_unique<sdbusplus::bus::match_t>(
+    platStateIntfAddedMatch = std::make_unique<sdbusplus::match>(
         *bus, filterStrPlatStateIntfAdd,
         [this](sdbusplus::message_t& m) { handleCoreBiosDoneChange(m); });
 

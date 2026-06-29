@@ -375,9 +375,9 @@ class FwUpdateStatusCache
         std::shared_ptr<sdbusplus::asio::connection> busp = getSdBus();
         fwUpdateState = fwStateProgram;
         progressPercent = 0;
-        match = std::make_shared<sdbusplus::bus::match_t>(
+        match = std::make_shared<sdbusplus::match>(
             *busp,
-            sdbusplus::bus::match::rules::propertiesChanged(
+            sdbusplus::match_rules::propertiesChanged(
                 objPath, "xyz.openbmc_project.Software.ActivationProgress"),
             [&](sdbusplus::message_t& msg) {
                 std::map<std::string, ipmi::DbusVariant> props;
@@ -444,7 +444,7 @@ class FwUpdateStatusCache
 
   protected:
     std::shared_ptr<sdbusplus::asio::connection> busp;
-    std::shared_ptr<sdbusplus::bus::match_t> match;
+    std::shared_ptr<sdbusplus::match> match;
     uint8_t fwUpdateState = 0;
     uint8_t progressPercent = 0;
     bool deferRestartState = false;
@@ -559,7 +559,7 @@ ipmi::Cc checkIPMBChannel(const ipmi::Context::ptr& ctx, bool& isIPMBChannel)
 }
 
 static void postTransferCompleteHandler(
-    std::unique_ptr<sdbusplus::bus::match_t>& fwUpdateMatchSignal)
+    std::unique_ptr<sdbusplus::match>& fwUpdateMatchSignal)
 {
     // Setup timer for watching signal
     static sdbusplus::Timer timer([&fwUpdateMatchSignal]() {
@@ -635,7 +635,7 @@ static void postTransferCompleteHandler(
     };
 
     // Adding matcher
-    fwUpdateMatchSignal = std::make_unique<sdbusplus::bus::match_t>(
+    fwUpdateMatchSignal = std::make_unique<sdbusplus::match>(
         *getSdBus(),
         "interface='org.freedesktop.DBus.ObjectManager',type='signal',"
         "member='InterfacesAdded',path='/xyz/openbmc_project/software'",
@@ -647,7 +647,7 @@ static bool startFirmwareUpdate(const std::string& uri)
     // the code gets to this point, the file should be transferred start the
     // request (creating a new file in /tmp/images causes the update manager to
     // check if it is ready for activation)
-    static std::unique_ptr<sdbusplus::bus::match_t> fwUpdateMatchSignal;
+    static std::unique_ptr<sdbusplus::match> fwUpdateMatchSignal;
     postTransferCompleteHandler(fwUpdateMatchSignal);
     std::string randomFname =
         "/tmp/images/" +
