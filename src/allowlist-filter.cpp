@@ -40,8 +40,6 @@ class AllowlistFilter
     void updatePostComplete(const std::string& value);
     void updateRestrictionMode(const std::string& value);
     ipmi::Cc filterMessage(ipmi::message::Request::ptr request);
-    void handleCoreBiosDoneChange(sdbusplus::message_t& m);
-    void cacheCoreBiosDone();
 
     // the BMC KCS Policy Control Modes document uses different names
     // than the RestrictionModes D-Bus interface; use aliases
@@ -54,7 +52,6 @@ class AllowlistFilter
 
     RestrictionMode::Modes restrictionMode = restrictionModeRestricted;
     bool postCompleted = true;
-    bool coreBIOSDone = true;
     int channelSMM = -1;
     std::shared_ptr<sdbusplus::asio::connection> bus;
     std::unique_ptr<sdbusplus::bus::match_t> modeChangeMatch;
@@ -68,8 +65,6 @@ class AllowlistFilter
         "xyz.openbmc_project.Control.Security.RestrictionMode";
     static constexpr const char* systemOsStatusIntf =
         "xyz.openbmc_project.State.OperatingSystem.Status";
-    static constexpr const char* hostMiscIntf =
-        "xyz.openbmc_project.State.Host.Misc";
     static constexpr const char* restrictionModePath =
         "/xyz/openbmc_project/control/security/restriction_mode";
     static constexpr const char* systemOsStatusPath =
@@ -246,84 +241,6 @@ void AllowlistFilter::handlePostCompleteChange(sdbusplus::message_t& m)
     }
 }
 
-void AllowlistFilter::cacheCoreBiosDone()
-{
-    std::string coreBiosDonePath;
-    std::string coreBiosDoneService;
-    try
-    {
-        ipmi::DbusObjectInfo coreBiosDoneObj =
-            ipmi::getDbusObject(*bus, hostMiscIntf);
-
-        coreBiosDonePath = coreBiosDoneObj.first;
-        coreBiosDoneService = coreBiosDoneObj.second;
-    }
-    catch (const std::exception&)
-    {
-        log<level::ERR>("Could not initialize CoreBiosDone, "
-                        "coreBIOSDone asserted as default");
-        return;
-    }
-
-    bus->async_method_call(
-        [this](boost::system::error_code ec, const ipmi::Value& v) {
-            if (ec)
-            {
-                log<level::ERR>(
-                    "async call failed, coreBIOSDone asserted as default");
-                return;
-            }
-            coreBIOSDone = std::get<bool>(v);
-            log<level::INFO>("Read CoreBiosDone",
-                             entry("VALUE=%d", static_cast<int>(coreBIOSDone)));
-        },
-        coreBiosDoneService, coreBiosDonePath,
-        "org.freedesktop.DBus.Properties", "Get", hostMiscIntf, "CoreBiosDone");
-}
-
-void AllowlistFilter::handleCoreBiosDoneChange(sdbusplus::message_t& msg)
-{
-    std::string signal = msg.get_member();
-    if (signal == "PropertiesChanged")
-    {
-        std::string intf;
-        std::vector<std::pair<std::string, ipmi::Value>> propertyList;
-        msg.read(intf, propertyList);
-        auto it =
-            std::find_if(propertyList.begin(), propertyList.end(),
-                         [](const std::pair<std::string, ipmi::Value>& prop) {
-                             return prop.first == "CoreBiosDone";
-                         });
-
-        if (it != propertyList.end())
-        {
-            coreBIOSDone = std::get<bool>(it->second);
-            log<level::INFO>(coreBIOSDone ? "coreBIOSDone asserted"
-                                          : "coreBIOSDone not asserted");
-        }
-    }
-    else if (signal == "InterfacesAdded")
-    {
-        sdbusplus::object_path path;
-        DbusInterfaceMap eSpiresetObj;
-        msg.read(path, eSpiresetObj);
-        auto intfItr = eSpiresetObj.find(hostMiscIntf);
-        if (intfItr == eSpiresetObj.end())
-        {
-            return;
-        }
-        PropertyMap& propertyList = intfItr->second;
-        auto itr = propertyList.find("CoreBiosDone");
-        if (itr == propertyList.end())
-        {
-            return;
-        }
-        coreBIOSDone = std::get<bool>(itr->second);
-        log<level::INFO>(coreBIOSDone ? "coreBIOSDone asserted"
-                                      : "coreBIOSDone not asserted");
-    }
-}
-
 void AllowlistFilter::postInit()
 {
     // Wait for changes on Restricted mode
@@ -347,15 +264,6 @@ void AllowlistFilter::postInit()
         rules::interfacesAdded() +
         rules::argNpath(0, "/xyz/openbmc_project/state/host0");
 
-    const std::string filterStrPlatStateChange =
-        rules::type::signal() + rules::member("PropertiesChanged") +
-        rules::interface("org.freedesktop.DBus.Properties") +
-        rules::argN(0, hostMiscIntf);
-
-    const std::string filterStrPlatStateIntfAdd =
-        rules::interfacesAdded() +
-        rules::argNpath(0, "/xyz/openbmc_project/misc/platform_state");
-
     modeChangeMatch = std::make_unique<sdbusplus::bus::match_t>(
         *bus, filterStrModeChange,
         [this](sdbusplus::message_t& m) { handleRestrictedModeChange(m); });
@@ -371,18 +279,8 @@ void AllowlistFilter::postInit()
         *bus, filterStrPostIntfAdd,
         [this](sdbusplus::message_t& m) { handlePostCompleteChange(m); });
 
-    platStateChangeMatch = std::make_unique<sdbusplus::bus::match_t>(
-        *bus, filterStrPlatStateChange,
-        [this](sdbusplus::message_t& m) { handleCoreBiosDoneChange(m); });
-
-    platStateIntfAddedMatch = std::make_unique<sdbusplus::bus::match_t>(
-        *bus, filterStrPlatStateIntfAdd,
-        [this](sdbusplus::message_t& m) { handleCoreBiosDoneChange(m); });
-
     // Initialize restricted mode
     cacheRestrictedAndPostCompleteMode();
-    // Initialize CoreBiosDone
-    cacheCoreBiosDone();
 }
 
 ipmi::Cc AllowlistFilter::filterMessage(ipmi::message::Request::ptr request)
@@ -420,9 +318,9 @@ ipmi::Cc AllowlistFilter::filterMessage(ipmi::message::Request::ptr request)
     //                  ( Allowlist ? ccSuccess : ccInsufficientPrivilege )
     // Deny All:   preboot ? ccSuccess : ccInsufficientPrivilege
 
-    if (!(postCompleted || coreBIOSDone))
+    if (!postCompleted)
     {
-        // Allow all commands, till POST or CoreBiosDone is completed
+        // Allow all commands, till POST is completed
         return ipmi::ccSuccess;
     }
 
