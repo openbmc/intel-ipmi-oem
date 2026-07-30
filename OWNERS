@@ -32,7 +32,6 @@
 # data within them will be kept sorted.
 
 owners:
-- apparao.puli@linux.intel.com
 
 reviewers:
 - chunhui.jia@linux.intel.com
@@ -40,9 +39,6 @@ reviewers:
 matchers:
 
 openbmc:
-- name: Apparao Puli
-  email: apparao.puli@linux.intel.com
-  discord: apparao.puli
 - name: Chunhui Jia
   email: chunhui.jia@linux.intel.com
   discord: cjia_
