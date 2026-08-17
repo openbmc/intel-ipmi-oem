@@ -34,15 +34,9 @@
 owners:
 - jason.m.bills@linux.intel.com
 
-reviewers:
-- chunhui.jia@linux.intel.com
-
 matchers:
 
 openbmc:
-- name: Chunhui Jia
-  email: chunhui.jia@linux.intel.com
-  discord: cjia_
 - name: Jason Bills
   email: jason.m.bills@linux.intel.com
   discord: jmbills
