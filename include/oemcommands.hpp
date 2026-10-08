@@ -148,7 +148,6 @@ enum class IPMIIntelOEMReturnCodes
     ipmiCCCanNotActivateWithoutEncryption = 0x84,
     ipmiCCInvalidChecksum = 0x85,
     ipmiCCNoCabledPCIEPortsAvailable = 0xC2,
-
 };
 
 enum class IPMIReturnCodeExt
