@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "616bc627_3c48d83c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000276
+      },
+      "writtenOn": "2026-10-20T15:37:49Z",
+      "side": 1,
+      "message": "Looks good.  The referenced code also check \"PRODUCT_SERIAL_NUMBER\" and \"BOARD_SERIAL_NUMBER\".  Should we also add those here?",
+      "revId": "1f3b3b8702959c538cf1c9e08d31402bf9d3a4b4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
