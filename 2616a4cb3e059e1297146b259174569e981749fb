@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "cb3118a6_b34a7939",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000276
+      },
+      "writtenOn": "2026-10-20T15:18:59Z",
+      "side": 1,
+      "message": "The change itself looks okay.  If it will simplify things, I don\u0027t think we need pattern1 anymore.  All current platforms now use pattern2, so we could also just remove pattern1.",
+      "revId": "2616a4cb3e059e1297146b259174569e981749fb",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
