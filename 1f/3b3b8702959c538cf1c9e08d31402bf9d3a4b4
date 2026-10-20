@@ -1,0 +1,8 @@
+Code-Review+2: Jason Bills <jason.m.bills@linux.intel.com>
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Submitted-by: Nnamdi Ajah <nnamdi@cloudflare.com>
+Submitted-at: Tue, 20 Oct 2026 15:49:16 +0000
+Reviewed-on: https://gerrit.openbmc.org/c/openbmc/intel-ipmi-oem/+/88285
+Comments-Total: 6
+Project: openbmc/intel-ipmi-oem
+Branch: refs/heads/master
