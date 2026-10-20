@@ -16,6 +16,24 @@
       "message": "Looks good.  The referenced code also check \"PRODUCT_SERIAL_NUMBER\" and \"BOARD_SERIAL_NUMBER\".  Should we also add those here?",
       "revId": "1f3b3b8702959c538cf1c9e08d31402bf9d3a4b4",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "80ba2d58_6c4893be",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001717
+      },
+      "writtenOn": "2026-10-20T15:49:23Z",
+      "side": 1,
+      "message": "PRODUCT_SERIAL_NUMBER and BOARD_SERIAL_NUMBER were dropped, because a serial like 2334429D69B7 isn\u0027t easily recognizable as pointed out by @saipavann@ami.com",
+      "parentUuid": "616bc627_3c48d83c",
+      "revId": "1f3b3b8702959c538cf1c9e08d31402bf9d3a4b4",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ],
   "submitRequirementResults": []
